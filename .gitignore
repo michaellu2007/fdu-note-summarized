@@ -1,0 +1,10 @@
+# WorkBuddy 会话工作数据（临时脚本、记忆文件、PDF 渲染产物等）
+# 不属于笔记内容，不纳入版本管理
+.workbuddy-ai/
+
+# 系统 / 编辑器
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
+*~

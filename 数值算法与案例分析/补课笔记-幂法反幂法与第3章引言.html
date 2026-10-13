@@ -1,0 +1,3526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>补课笔记 · 幂法 / 反幂法 / QR 方法 + 第 3 章引言</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.8; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px; margin:0 auto; padding:56px 32px 96px}
+.eyebrow{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+h1{font-size:30px; line-height:1.35; font-weight:600; margin:0 0 18px; letter-spacing:-.01em}
+.lede{font-size:15px; color:var(--ink2); margin:0 0 8px}
+h2{
+  font-size:21px; font-weight:600; margin:56px 0 18px; padding-bottom:10px;
+  border-bottom:1px solid var(--line); letter-spacing:-.01em;
+}
+h3{font-size:17px; font-weight:600; margin:34px 0 12px}
+h4{font-size:15px; font-weight:600; margin:24px 0 8px; color:var(--ink2)}
+p{margin:12px 0}
+ul,ol{margin:12px 0; padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; background:var(--bg2); padding:1px 5px; border-radius:4px}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+.toc{background:var(--bg3); border:1px solid var(--line); border-radius:12px; padding:18px 24px; margin:28px 0 8px}
+.toc ol{margin:8px 0 0; padding-left:22px}
+.toc li{margin:3px 0; font-size:14.5px}
+.toc ol ol{margin:2px 0 8px; padding-left:20px; border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px; color:var(--ink2)}
+.tag{
+  display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.02em;
+  padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:2px;
+  background:var(--gold-bg); color:var(--gold); white-space:nowrap;
+}
+.tag.a{background:var(--accent-bg); color:var(--accent)}
+.tag.o{background:var(--ok-bg); color:var(--ok)}
+.box{border:1px solid var(--line); border-radius:12px; padding:16px 22px; margin:20px 0; background:var(--bg3)}
+.box.key{background:var(--accent-bg); border-color:transparent}
+.box.warn{background:var(--warn-bg); border-color:transparent}
+.box.ok{background:var(--ok-bg); border-color:transparent}
+.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px; text-transform:uppercase}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse; width:100%; margin:20px 0; font-size:14.5px}
+th,td{border-bottom:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
+.katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.5px; color:var(--ink3); margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">数值算法与案例分析 Ⅰ · 补课笔记</p>
+<h1>幂法 / 反幂法 / QR 方法<br>与第 3 章引言</h1>
+<p class="lede">对照讲义 PDF 5 §5.1–§5.4 与 PDF 3 §3.0，按课堂板书（第 3、7、11、12、13 张 + 第 5、6 张）的顺序整理；§5.3 为提前自学内容。所有公式用 KaTeX 排版。</p>
+
+<div class="toc">
+<strong>目录</strong>
+<ol>
+  <li><a href="#p1">第一部分 · 幂法</a><span class="tag">PDF 5 §5.1</span>
+    <ol>
+      <li><a href="#s11">1.1 起点：$Ax=\lambda x$ 的三种情形</a></li>
+      <li><a href="#s12">1.2 幂法的基本思想</a></li>
+      <li><a href="#s13">1.3 迭代格式</a></li>
+      <li><a href="#s14">1.4 收敛性定理与证明骨架</a></li>
+      <li><a href="#s15">1.5 降阶（deflation）</a></li>
+    </ol>
+  </li>
+  <li><a href="#p2">第二部分 · 反幂法</a><span class="tag">PDF 5 §5.2</span>
+    <ol>
+      <li><a href="#s21">2.1 基本想法：对 $A^{-1}$ 用幂法</a></li>
+      <li><a href="#s22">2.2 带位移的反幂法</a></li>
+      <li><a href="#why">2.3 为什么挑出「最近」的那个特征值</a></li>
+      <li><a href="#s24">2.4 为什么病态性不影响收敛速度</a></li>
+      <li><a href="#s25">2.5 初始向量的选取：半次迭代法</a></li>
+      <li><a href="#s26">2.6 Rayleigh 商迭代（RQI）</a></li>
+    </ol>
+  </li>
+  <li><a href="#p3">第三部分 · QR 方法</a><span class="tag a">PDF 5 §5.3–§5.4</span>
+    <ol>
+      <li><a href="#s531">5.3.1 显式 QR 迭代格式与收敛性</a></li>
+      <li><a href="#s532">5.3.2 实 Schur 标准型</a></li>
+      <li><a href="#s533">5.3.3 上 Hessenberg 分解</a></li>
+      <li><a href="#s534">5.3.4 上 Hessenberg 阵的显式 QR 迭代</a></li>
+      <li><a href="#s535">5.3.5 带位移的 QR 迭代</a></li>
+      <li><a href="#s536">5.3.6 双位移的隐式 QR 迭代（Francis）</a></li>
+      <li><a href="#s537">5.3.7 隐式 QR 算法</a></li>
+      <li><a href="#s54">5.4 实 Schur 型的后处理</a></li>
+    </ol>
+  </li>
+  <li><a href="#p4">第四部分 · 第 3 章引言</a><span class="tag a">PDF 3 §3.0</span>
+    <ol>
+      <li><a href="#s31">3.1 为什么要迭代法</a></li>
+      <li><a href="#s32">3.2 存储：COO 与 CSC</a></li>
+      <li><a href="#s33">3.3 为什么矩阵-向量乘法是核心</a></li>
+      <li><a href="#s34">3.4 一维 Poisson 方程</a></li>
+      <li><a href="#s35">3.5 二维 Poisson 方程</a></li>
+      <li><a href="#s36">3.6 迭代法总论：单步线性定常迭代法</a></li>
+      <li><a href="#s37">3.7 Jacobi 迭代法</a></li>
+      <li><a href="#s38">3.8 Gauss-Seidel 迭代法</a></li>
+      <li><a href="#s39">3.9 收敛的充要条件 ρ(B) &lt; 1</a></li>
+      <li><a href="#refine">3.10 迭代精化</a></li>
+    </ol>
+  </li>
+  <li><a href="#p5">附录 · 板书逐张对照</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="p1">第一部分 · 幂法<span class="tag">板书 7、11、12、13</span></h2>
+
+<h3 id="s11">1.1 起点：$Ax=\lambda x$ 的三种情形</h3>
+
+<p>整个特征值问题的出发点就是特征方程 $Ax=\lambda x$。按「谁已知、谁未知」分成三种情形：</p>
+
+<table>
+<tr><th>情形</th><th>转化为什么问题</th><th>解法</th></tr>
+<tr><td>① $\lambda$ 已知，$x$ 未知</td><td>齐次线性方程组 $(A-\lambda I)x=0$</td><td>一般默认 $\lambda$ 不是重特征值，零空间一维</td></tr>
+<tr><td>② $x$ 已知，$\lambda$ 未知</td><td>超定的矛盾方程组 $Ax=\lambda x$</td><td>转为最小二乘，得 Rayleigh 商</td></tr>
+<tr><td>③ 两者都未知</td><td>——</td><td><strong>幂法 / 反幂法</strong>（本文重点）</td></tr>
+</table>
+
+<h4>情形 ② 的推导：Rayleigh 商从哪来</h4>
+
+<p>把 $Ax=\lambda x$ 看成关于 $\lambda$ 的方程组：它是超定的（$n$ 个方程、$1$ 个未知量），一般无解，所以退而求其次解最小二乘</p>
+
+\[
+\min_{\lambda\in\mathbb{C}}\ \|Ax-\lambda x\|_2
+\]
+
+<p>由第 2 章的法方程，系数矩阵是 $x$，于是 $x^{*}(Ax-\lambda x)=0$，即 $x^{*}x\,\lambda=x^{*}Ax$，解出</p>
+
+\[
+\hat\lambda=\frac{x^{*}Ax}{x^{*}x}
+\]
+
+<p>这就是 <strong>Rayleigh 商</strong>。它的意义是：<em>给定一个近似特征向量 $x$，能给出使残量 $\|Ax-\lambda x\|_2$ 最小的那个 $\lambda$。</em>后面幂法里用它来估计特征值，就是出于这个理由。</p>
+
+<div class="box">
+<p class="label">一句话</p>
+<p>Rayleigh 商是「已知方向、反推特征值」的最优答案；幂法是「已知矩阵、反推方向」的迭代过程。两者互为对偶，这也是为什么幂法里总把 Rayleigh 商当作特征值的估计。</p>
+</div>
+
+<h3 id="s12">1.2 幂法的基本思想</h3>
+
+<p>先假设 $A$ 可对角化，即存在分解</p>
+
+\[
+A=Q\,\operatorname{diag}(\lambda_1,\lambda_2,\dots,\lambda_n)\,Q^{-1},\qquad Q=[q_1,q_2,\dots,q_n]
+\]
+
+<p>并假定特征值按模严格分离：</p>
+
+\[
+|\lambda_1|>|\lambda_2|\ge|\lambda_3|\ge\cdots\ge|\lambda_n|
+\]
+
+<p>取任一初始向量 $x^{(0)}$。由于 $\{q_1,\dots,q_n\}$ 构成一组基，存在系数 $\alpha_i$ 使得</p>
+
+\[
+x^{(0)}=\sum_{i=1}^{n}\alpha_i q_i
+\]
+
+<p>假定 $\alpha_1\neq0$（这是后面收敛性定理的条件）。把 $A$ 反复作用上去：</p>
+
+\[
+A^{k}x^{(0)}=\sum_{i=1}^{n}\alpha_i\lambda_i^{k}q_i
+=\lambda_1^{k}\Big[\alpha_1q_1+\sum_{i\ge2}\alpha_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^{k}q_i\Big]
+\]
+
+<div class="box key">
+<p class="label">核心</p>
+<p>因为 $|\lambda_i/\lambda_1|<1\ (i\ge2)$，所以括号里第二项随 $k\to\infty$ 指数衰减到 $0$。于是</p>
+\[
+\frac{A^{k}x^{(0)}}{\lambda_1^{k}}\ \longrightarrow\ \alpha_1q_1
+\]
+<p>也就是说，<strong>$A^{k}$ 只把 $\lambda_1$ 对应的方向留了下来</strong>——因为那是被放大倍数最大的方向。方向收敛到 $q_1$，与初始向量的选取无关（只要 $\alpha_1\neq0$）。</p>
+</div>
+
+<h4>为什么不能直接这么算</h4>
+
+<p>理论式子很漂亮，但实际算不了，有两个原因：</p>
+
+<ol>
+<li>我们<strong>不知道 $\lambda_1$</strong>，没法除以 $\lambda_1^k$；</li>
+<li>直接算 $A^k$ 的工作量太大，而且 $\lambda_1^k$ 会溢出或下溢。</li>
+</ol>
+
+<p>第一个问题的解决靠一个关键观察：</p>
+
+\[
+\lambda_1\ \text{只改变向量的模长，不改变方向}
+\]
+
+<p>既然我们只关心<strong>方向</strong>，那就不必用 $\lambda_1$ 来控制模长，随便找一个「方便得到的常数」归一化就行（同时这也顺便解决了溢出问题）。第二个问题靠迭代：$A^{k}x^{(0)}=A\,(A^{k-1}x^{(0)})$，一步步乘过去即可。</p>
+
+<h3 id="s13">1.3 迭代格式</h3>
+
+\[
+\begin{aligned}
+&\textbf{幂法迭代：}\\[4pt]
+&\quad \tilde x^{(k)}=A\,x^{(k-1)}\\[2pt]
+&\quad x^{(k)}=\frac{\tilde x^{(k)}}{\|\tilde x^{(k)}\|_\infty}
+\qquad(\text{用 }\infty\text{-范数归一化，即除以分量模最大值})
+\end{aligned}
+\]
+
+<p>特征值的估计用 Rayleigh 商：</p>
+
+\[
+\lambda^{(k)}=\frac{\big(x^{(k)}\big)^{*}A\,x^{(k)}}{\big(x^{(k)}\big)^{*}x^{(k)}}
+\]
+
+<p>收敛判据用残量 $r^{(k)}=A x^{(k)}-\lambda^{(k)}x^{(k)}$（这正是板书第 13 张上的写法）：</p>
+
+\[
+\|r^{(k)}\|_\infty\le \tau\Big(\|A\|_\infty\|x^{(k)}\|_\infty+|\lambda^{(k)}|\,\|x^{(k)}\|_\infty\Big)
+\]
+
+<div class="box ok">
+<p class="label">为什么残量判据里带着 $\|A\|\|x\|$ 这一项</p>
+<p>因为判据是<strong>相对的</strong>：$A x$ 的舍入误差本身就在 $O(u\cdot\|A\|\|x\|)$ 量级。如果只要求 $\|r\|$ 小，在 $A$ 病态或尺度很大时会「假收敛」。带上 $\|A\|\|x\|+|\lambda|\|x\|$ 这个尺度，判据才有意义。</p>
+</div>
+
+<h3 id="s14">1.4 收敛性定理与证明骨架</h3>
+
+<div class="box">
+<p class="label">定理（徐树方《数值线性代数》）</p>
+<p>设 $A$ 有 $n$ 个互不相同的特征值，满足 $|\lambda_1|>|\lambda_2|\ge\cdots\ge|\lambda_n|$，且模最大特征值 $\lambda_1$ 是<strong>半简单</strong>的（几何重数等于代数重数）。若初始向量 $x^{(0)}$ 在 $\lambda_1$ 的特征子空间上的投影不为零，则幂法产生的向量序列 $\{x^{(k)}\}$ 收敛到 $A$ 的一个特征向量，且数值序列 $\{\lambda^{(k)}\}$ 收敛到 $\lambda_1$。</p>
+</div>
+
+<p>证明走 Jordan 分解的路子，骨架是这样：</p>
+
+\[
+A=PJP^{-1},\qquad J=\begin{bmatrix}\lambda_1& &\\ & \hat J\end{bmatrix}
+\]
+
+<p>其中 $\hat J$ 是其余特征值构成的 Jordan 块对角阵。$\lambda_1$ 半简单意味着属于 $\lambda_1$ 的 Jordan 块只有一个（$1\times1$ 的）。于是</p>
+
+\[
+\rho(\hat J)=|\lambda_2|<|\lambda_1|=1\cdot|\lambda_1|
+\ \Longrightarrow\ \rho\!\left(\frac{\hat J}{\lambda_1}\right)<1
+\ \Longrightarrow\ \Big(\frac{\hat J}{\lambda_1}\Big)^{k}\to 0
+\]
+
+<p>把 $P$ 和 $P^{-1}$ 对应分块：$P$ 的第一列是右特征向量 $q_1$，$P^{-1}$ 的第一行是左特征向量 $z_1^{*}$（因为 $P^{-1}A=\Lambda P^{-1}$，$P^{-1}$ 的第 $i$ 行 $z_i^{*}$ 满足 $z_i^{*}A=\lambda_iz_i^{*}$）。于是</p>
+
+\[
+\Big(\frac{A}{\lambda_1}\Big)^{k}\ \longrightarrow\ P\begin{bmatrix}1&\\ &0\end{bmatrix}P^{-1}=c\,q_1z_1^{*}
+\]
+
+<div class="box key">
+<p class="label">这句话在说什么（一句话）</p>
+<p>它把「迭代 $k$ 步后方向会收敛」这个<strong>定性</strong>的说法，写成一个<strong>极限矩阵</strong>。写成矩阵之后，三件事一眼可见：收敛到<strong>哪</strong>（$q_1$ 的方向）、<strong>什么条件下</strong>收敛（$z_1^{*}x^{(0)}\neq0$）、<strong>多快</strong>（由 $|\lambda_2/\lambda_1|$ 决定）。</p>
+</div>
+
+<p><strong>拆解 ① · 为什么要除以 $\lambda_1^k$。</strong>$A^kx^{(0)}$ 本身按 $\lambda_1^k$ 指数增长（或衰减），序列根本不收敛，谈不上「极限」。除以 $\lambda_1^k$ 是把主导项归一化成 $1$，让<strong>剩下的部分</strong>才有极限。</p>
+
+<p><strong>拆解 ② · 极限矩阵从哪来。</strong>对角化 $A=P\Lambda P^{-1}$，于是 $A^k=P\Lambda^kP^{-1}$，把幂次推进对角阵：</p>
+
+\[
+\Big(\frac{A}{\lambda_1}\Big)^{k}=P\begin{bmatrix}
+(\lambda_1/\lambda_1)^k&&\\&(\lambda_2/\lambda_1)^k&\\&&\ddots
+\end{bmatrix}P^{-1}
+\]
+
+<p>第 $1$ 个对角元恒等于 $1$；第 $j$ 个是 $(\lambda_j/\lambda_1)^k$。因为 $|\lambda_j/\lambda_1|<1\ (j\ge2)$，它 $\to0$。所以中间那个对角阵 $\to\operatorname{diag}(1,0,\dots,0)$。</p>
+
+<div class="box ok">
+<p class="label">拆解 ③ · 为什么「一夹」就只剩 $q_1z_1^{*}$（最容易跳过的一步）</p>
+<p>$P\cdot D\cdot P^{-1}$ 是个<strong>夹心结构</strong>，关键是要<strong>分两次算</strong>，不能一口气吞下去：</p>
+<ul>
+<li><strong>先算 $PD$。</strong>$D$ 在<strong>右边</strong>，作用是「按列筛」。$D$ 只有第 $1$ 个对角元非零，所以 $PD$ 只保留 $P$ 的<strong>第 $1$ 列</strong>，其余列清零：$PD=[\,q_1\ \ 0\ \ \cdots\ \ 0\,]=q_1e_1^{\mathsf T}$。</li>
+<li><strong>再右乘 $P^{-1}$。</strong>而 $e_1^{\mathsf T}P^{-1}$ 恰好取的是 $P^{-1}$ 的<strong>第 $1$ 行</strong>，也就是左特征向量 $z_1^{*}$。</li>
+</ul>
+<p>合起来 $PDP^{-1}=q_1z_1^{*}$（写成 $c\,q_1z_1^{*}$ 只是把归一化常数吸收进 $c$，对方向没有任何影响）。<strong>记忆要点</strong>：$D$ 在右边 ⇒ 筛掉 $P$ 的列；$D$ 在左边 ⇒ 筛掉 $P^{-1}$ 的行。这里 $D$ 只有一个非零元，所以最后只剩「第 $1$ 列 × 第 $1$ 行」这一项。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 220" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>幂法极限矩阵分解为秩一外积</title>
+<desc>矩阵 P 乘对角阵 diag(1,0,…,0) 再乘 P 的逆，等价于只保留 P 的第一列 q1 与 P 的逆的第一行 z1 的外积，得到秩一矩阵，值域是 q1 张成的一维子空间。</desc>
+<defs>
+<marker id="arrowFig" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="78" y="46" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ink)">P</text>
+<text x="184" y="46" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ink)">diag(1,0,…,0)</text>
+<text x="290" y="46" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ink)">P⁻¹</text>
+<text x="396" y="46" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ink)">q₁ z₁*</text>
+<rect x="40" y="62" width="25.33" height="76" fill="var(--accent-bg)"/>
+<rect x="40" y="62" width="76" height="76" rx="4" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="65.33" y1="62" x2="65.33" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="90.67" y1="62" x2="90.67" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="40" y1="87.33" x2="116" y2="87.33" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="40" y1="112.67" x2="116" y2="112.67" stroke="#b4b2a9" stroke-width="0.5"/>
+<rect x="146" y="62" width="25.33" height="25.33" fill="var(--accent-bg)"/>
+<rect x="146" y="62" width="76" height="76" rx="4" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="146" y1="62" x2="222" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="171.33" y1="62" x2="171.33" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="196.67" y1="62" x2="196.67" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="146" y1="87.33" x2="222" y2="87.33" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="146" y1="112.67" x2="222" y2="112.67" stroke="#b4b2a9" stroke-width="0.5"/>
+<rect x="252" y="62" width="76" height="25.33" fill="var(--accent-bg)"/>
+<rect x="252" y="62" width="76" height="76" rx="4" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="277.33" y1="62" x2="277.33" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="302.67" y1="62" x2="302.67" y2="138" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="252" y1="87.33" x2="328" y2="87.33" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="252" y1="112.67" x2="328" y2="112.67" stroke="#b4b2a9" stroke-width="0.5"/>
+<rect x="358" y="62" width="76" height="76" rx="4" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<line x1="370.67" y1="82" x2="370.67" y2="118" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig)"/>
+<line x1="396" y1="82" x2="396" y2="118" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig)"/>
+<line x1="421.33" y1="82" x2="421.33" y2="118" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig)"/>
+<text x="131" y="100" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink3)">×</text>
+<text x="237" y="100" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink3)">×</text>
+<text x="343" y="100" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink3)">=</text>
+<text x="78" y="152" text-anchor="middle" font-size="12" fill="var(--ink2)">第 1 列 = q₁</text>
+<text x="184" y="152" text-anchor="middle" font-size="12" fill="var(--ink2)">其余 → 0</text>
+<text x="290" y="152" text-anchor="middle" font-size="12" fill="var(--ink2)">第 1 行 = z₁*</text>
+<text x="396" y="152" text-anchor="middle" font-size="12" fill="var(--ink2)">每列 ∥ q₁</text>
+<text x="450" y="84" font-size="12" fill="var(--ink2)">值域 = span(q₁)</text>
+<text x="450" y="106" font-size="12" fill="var(--ink2)">秩 = 1</text>
+<text x="450" y="128" font-size="12" fill="var(--ink2)">核 = {v : z₁*v = 0}</text>
+<text x="40" y="180" font-size="12" fill="var(--ink3)">只有 P 的第 1 列 与 P⁻¹ 的第 1 行存活 —— 一夹就只剩外积 q₁z₁*</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 1 · 极限矩阵的分解：夹在中间的 diag(1,0,…,0) 只让「第 1 列 × 第 1 行」存活</figcaption>
+</figure>
+
+<p><strong>拆解 ④ · 「秩一」和「值域 $=\operatorname{span}(q_1)$」是什么意思。</strong>$q_1z_1^{*}$ 是<strong>外积</strong>（$n\times1$ 列向量 × $1\times n$ 行向量）。对任意向量 $v$：</p>
+
+\[
+(q_1z_1^{*})\,v=q_1\underbrace{(z_1^{*}v)}_{\text{标量}}
+\]
+
+<p>括号里是个<strong>标量</strong>，所以结果永远是 $q_1$ 的倍数。于是值域 $=\{tq_1\}=\operatorname{span}(q_1)$，<strong>一维</strong>；秩 $=1$；核 $=\{v:z_1^{*}v=0\}$。只要 $v$ 不落在这个超平面里，就会被「压」到 $q_1$ 方向。这就是「幂法把向量压向主特征方向」的几何含义——<strong>极限算子本身就是一个投影</strong>（差一个标量）。</p>
+
+<p><strong>拆解 ⑤ · $z_1^{*}x^{(0)}\neq0$ 到底是什么条件。</strong>把 $x^{(0)}$ 按特征基展开 $x^{(0)}=\sum_jc_jq_j$，用 $z_i^{*}$ 左乘两边，利用双正交性 $z_i^{*}q_j=\delta_{ij}$，得</p>
+
+\[
+z_i^{*}x^{(0)}=\sum_jc_j\,z_i^{*}q_j=c_i
+\]
+
+<p>所以 <strong>$z_1^{*}x^{(0)}$ 就是 $x^{(0)}$ 在 $q_1$ 上的系数 $c_1$</strong>。条件翻译成人话就是：<strong>初始向量必须在主导特征方向上有非零分量</strong>。若 $c_1=0$（$x^{(0)}$ 恰好落在 $z_1$ 的正交补里），主导项就「没被点燃」，迭代会收敛到 $q_2$ 去。这是个零测度的巧合，随机取 $x^{(0)}$ 几乎碰不上。于是整个收敛关系可以写成一个特别干净的式子：</p>
+
+\[
+A^kx^{(0)}\ \approx\ \lambda_1^k\,q_1\,\underbrace{(z_1^{*}x^{(0)})}_{\text{常数}}
+\]
+
+<p>$\lambda_1^k$ 管模长，$z_1^{*}x^{(0)}$ 是常数系数，$q_1$ 是方向。方向只由 $q_1$ 决定，收敛速度只由 $|\lambda_2/\lambda_1|^k$ 决定。</p>
+
+<h4>附注 · 双正交性 $z_i^{*}q_j=\delta_{ij}$ 从哪来</h4>
+
+<p>上面用到了「双正交性」，但它其实<strong>一点都不神秘</strong>——就是矩阵求逆的定义式，逐元素写出来而已。</p>
+
+<div class="box ok">
+<p class="label">一行证明</p>
+<p>记 $P=[q_1\ q_2\ \cdots\ q_n]$（列是右特征向量），$P^{-1}$ 的行是 $z_1^{*},z_2^{*},\dots,z_n^{*}$（左特征向量）。按「行 × 列」的乘法，$P^{-1}P$ 的第 $(i,j)$ 个元素就是「$P^{-1}$ 的第 $i$ 行」乘「$P$ 的第 $j$ 列」，即 $z_i^{*}q_j$。而 $P^{-1}P=I$，所以</p>
+\[
+z_i^{*}q_j=(P^{-1}P)_{ij}=(I)_{ij}=\delta_{ij}
+\]
+<p><strong>证完。没有别的来源。</strong></p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 230" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>P 的逆乘以 P 等于单位阵即双正交性</title>
+<desc>矩阵 P 的逆乘以 P 等于单位阵，其第 i 行第 j 列元素是 z_i 的共轭转置乘 q_j，等于克罗内克 delta。</desc>
+<rect x="50" y="55" width="100" height="100" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="100" y="88" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="500" fill="var(--accent)">P⁻¹</text>
+<text x="100" y="116" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--accent)">第 i 行 = zᵢ*</text>
+<text x="168" y="105" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink2)">×</text>
+<rect x="186" y="55" width="100" height="100" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="236" y="88" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="500" fill="var(--accent)">P</text>
+<text x="236" y="116" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--accent)">第 j 列 = qⱼ</text>
+<text x="304" y="105" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink2)">=</text>
+<rect x="322" y="55" width="100" height="100" rx="8" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="0.5"/>
+<line x1="355.3" y1="55" x2="355.3" y2="155" stroke="var(--ok)" stroke-width="0.5"/>
+<line x1="388.7" y1="55" x2="388.7" y2="155" stroke="var(--ok)" stroke-width="0.5"/>
+<line x1="322" y1="88.3" x2="422" y2="88.3" stroke="var(--ok)" stroke-width="0.5"/>
+<line x1="322" y1="121.7" x2="422" y2="121.7" stroke="var(--ok)" stroke-width="0.5"/>
+<text x="338.7" y="71.7" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ok)">1</text>
+<text x="372" y="71.7" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="405.3" y="71.7" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="338.7" y="105" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="372" y="105" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ok)">1</text>
+<text x="405.3" y="105" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="338.7" y="138.3" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="372" y="138.3" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink3)">0</text>
+<text x="405.3" y="138.3" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ok)">1</text>
+<text x="450" y="86" font-size="12.5" fill="var(--ink)">第 i 行 × 第 j 列</text>
+<text x="450" y="108" font-size="12.5" fill="var(--accent)">= zᵢ*qⱼ</text>
+<text x="450" y="134" font-size="12.5" fill="var(--ok)">= δᵢⱼ</text>
+<text x="50" y="188" font-size="12.5" fill="var(--ink3)">把 P⁻¹P = I 逐元素写开，就是双正交性 —— 没有别的来源</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 2 · 双正交性 = 求逆的定义式</figcaption>
+</figure>
+
+<p><strong>$z_i^{*}$ 为什么是「左」特征向量。</strong>从 $A=P\Lambda P^{-1}$ 两边左乘 $P^{-1}$ 得 $P^{-1}A=\Lambda P^{-1}$。取第 $i$ 行：左边是 $z_i^{*}A$；右边因为 $\Lambda$ 对角，等于把 $P^{-1}$ 的第 $i$ 行整体乘 $\lambda_i$，即 $\lambda_i z_i^{*}$。所以</p>
+
+\[
+z_i^{*}A=\lambda_i z_i^{*}
+\]
+
+<div class="box warn">
+<p class="label">关键：这是「双正交」，不是普通的正交</p>
+<p>$z_i^{*}q_j=\delta_{ij}$ 里的 $z_i$ 和 $q_i$ <strong>一般不是同一个向量</strong>！</p>
+<ul>
+<li><strong>正规矩阵</strong>（对称、Hermite、酉矩阵）：$z_i=q_i$，双正交<strong>退化</strong>成普通正交。</li>
+<li><strong>一般矩阵</strong>：$z_i\ne q_i$，是真正的双正交。</li>
+</ul>
+<p>几何意义：$z_i^{*}q_j=0\ (j\ne i)$ 说明 <strong>$z_i$ 垂直于所有 $q_j$</strong>，即 $\{z_i\}$ 是 $\{q_i\}$ 的<strong>对偶基</strong>。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 250" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>左特征向量与右特征向量构成对偶基</title>
+<desc>在二维平面上，右特征向量 q1 与 q2 并不互相垂直；左特征向量 z1 垂直于 q2，z2 垂直于 q1，二者构成 q 基的对偶基。</desc>
+<defs>
+<marker id="arrowFig6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<line x1="110" y1="60" x2="250" y2="200" stroke="#d3d1c7" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="180" y1="50" x2="180" y2="210" stroke="#d3d1c7" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="180" y1="130" x2="248" y2="130" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig6)"/>
+<line x1="180" y1="130" x2="248" y2="62" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig6)"/>
+<line x1="180" y1="130" x2="248" y2="198" stroke="var(--warn)" stroke-width="1.5" marker-end="url(#arrowFig6)"/>
+<line x1="180" y1="130" x2="180" y2="62" stroke="var(--warn)" stroke-width="1.5" marker-end="url(#arrowFig6)"/>
+<text x="256" y="130" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--accent)">q₁</text>
+<text x="256" y="58" text-anchor="middle" font-size="13" font-weight="500" fill="var(--accent)">q₂</text>
+<text x="256" y="204" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--warn)">z₁</text>
+<text x="172" y="58" text-anchor="end" font-size="13" font-weight="500" fill="var(--warn)">z₂</text>
+<text x="290" y="95" font-size="12.5" fill="var(--ink)">z₁ ⊥ q₂，z₂ ⊥ q₁</text>
+<text x="290" y="119" font-size="12.5" fill="var(--ink3)">（虚线 = 与 q₂ / q₁ 垂直的方向）</text>
+<text x="290" y="157" font-size="12.5" fill="var(--accent)">q₁、q₂ 之间并不垂直</text>
+<text x="290" y="181" font-size="12.5" fill="var(--ink3)">q₁ᵀq₂ = 1 ≠ 0</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 3 · 右特征向量之间不正交，左特征向量垂直于「别的」右特征向量</figcaption>
+</figure>
+
+<p><strong>具体验算（非对称，$z_i\ne q_i$）。</strong>取 $A=\begin{bmatrix}2&1\\0&3\end{bmatrix}$，$\lambda_1=2,\lambda_2=3$。解得 $q_1=\binom{1}{0}$、$q_2=\binom{1}{1}$，于是</p>
+
+\[
+P=\begin{bmatrix}1&1\\0&1\end{bmatrix},\qquad P^{-1}=\begin{bmatrix}1&-1\\0&1\end{bmatrix}\ \Longrightarrow\ z_1=\binom{1}{-1},\quad z_2=\binom{0}{1}
+\]
+
+<p>验算：$z_1^{*}q_1=1$，$z_1^{*}q_2=1-1=0$，$z_2^{*}q_1=0$，$z_2^{*}q_2=1$ ✓。注意两件事：① $z_1=\binom{1}{-1}\ne q_1=\binom{1}{0}$，<strong>真不是同一个向量</strong>；② $q_1^{\mathsf T}q_2=1\ne0$，<strong>右特征向量自己之间也不正交</strong>。所以「正交」在这里指的是<strong>交叉</strong>关系（$z$ 对 $q$），不是同一族内部的关系。</p>
+
+<p><strong>$z_i$ 到底是什么向量。</strong>对 $z_i^{*}A=\lambda_i z_i^{*}$ 取共轭转置，得 $A^{*}z_i=\bar\lambda_i z_i$，所以一句话：$z_i$ 就是 $A^{*}$ 的属于 $\bar\lambda_i$ 的右特征向量。（上例验证：$A^{*}=\begin{bmatrix}2&0\\1&3\end{bmatrix}$，解 $(A^{*}-2I)z=0$ 得 $z=\binom{1}{-1}$ ✓）</p>
+
+<p><strong>为什么这个 $\delta_{ij}$ 很重要。</strong>① 它是<strong>展开系数的提取器</strong>：$x=\sum_jc_jq_j$ 两边左乘 $z_j^{*}$，只有第 $j$ 项活下来，得 $c_j=z_j^{*}x$——这正是上面拆解 ⑤ 里 $z_1^{*}x^{(0)}=c_1$ 的来处。② 它决定了<strong>特征向量的条件数</strong> $c_i=\dfrac{\|q_i\|_2\|z_i\|_2}{|z_i^{*}q_i|}$：$z_i$ 与 $q_i$ 越接近平行，$c_i$ 越接近 $1$（对称矩阵 $c_i=1$，完美良态）；越接近垂直，$c_i$ 越大、越敏感。这就是 §2.4 反复用到的那个 $c_i$。</p>
+
+<p><strong>拆解 ⑥ · 最后那句「$\|x^{(k)}\|_\infty=1\Rightarrow\lambda^{(k)}\to\lambda_1$」。</strong></p>
+
+<ul>
+<li><strong>为什么要归一化</strong>：$A^kx^{(0)}$ 的模长指数变化，不归一化序列既收敛不了、还会上溢或下溢。归一化是把「方向」这个唯一有意义的信息提出来。</li>
+<li><strong>怎么拿到 $\lambda_1$</strong>：既然 $x^{(k)}\to\hat q_1$（$\infty$-范数为 $1$ 的某个固定特征向量），用 Rayleigh 商 $\lambda^{(k)}=\dfrac{(x^{(k)})^{*}Ax^{(k)}}{(x^{(k)})^{*}x^{(k)}}$ 就收敛到 $\lambda_1$，而且<strong>误差是 $O(\|x^{(k)}-\hat q_1\|^2)$</strong>——平方级小，所以 $\lambda$ 的精度远好于特征向量本身。也可以用更省事的分量比：取模最大的分量 $i$（$\infty$-范数 $=1$ 保证 $|x_i^{(k)}|=1$，不会除以一个小量），令 $\lambda^{(k)}=(Ax^{(k)})_i/x_i^{(k)}\to\lambda_1$。</li>
+</ul>
+
+<div class="box warn">
+<p class="label">两个前提（考试常考）</p>
+<p><strong>① $\lambda_1$ 必须严格占优。</strong>整段推导用到了 $|\lambda_2/\lambda_1|<1$。若出现 $|\lambda_2|=|\lambda_1|$（例如 $\lambda_2=-\lambda_1$，像 $\operatorname{diag}(1,-1)$），那么 $(\lambda_2/\lambda_1)^k=(-1)^k$ <strong>不收敛</strong>，幂法失效。这就是定理里把条件写成严格不等号 $|\lambda_1|>|\lambda_2|$ 的原因。</p>
+<p><strong>② 「$\lambda_1$ 半简单」这个条件的来处。</strong>若 $A$ 不可对角化（存在阶数 $>1$ 的 Jordan 块），$\hat J^k$ 里会多出 $k^m$ 这样的多项式因子，但<strong>指数衰减仍然赢</strong>（$k^m\epsilon^k\to0$），结论不变——只是需要 $\lambda_1$ 自己的 Jordan 块是 $1\times1$ 的，这就是「半简单」的作用。</p>
+</div>
+
+<div class="box key">
+<p class="label">收敛速度</p>
+<p>从证明可以看出，收敛速度由 $\big(\hat J/\lambda_1\big)^k$ 决定，也就是由</p>
+\[
+\left|\frac{\lambda_2}{\lambda_1}\right|
+\]
+<p>决定（该比值总小于 $1$）。它越接近 $1$，收敛越慢，而且算出的特征向量对扰动越敏感。特征向量的敏感性取决于<strong>模第一大与模第二大特征值的分离度</strong>。</p>
+</div>
+
+<h4>加速：位移（shifting）</h4>
+
+<p>要对 $A-\mu I$ 用幂法。$A-\mu I$ 的特征值是 $\lambda_i-\mu$，模最大的仍然是 $\lambda_1-\mu$，但比值变成</p>
+
+\[
+\frac{|\lambda_2-\mu|}{|\lambda_1-\mu|}
+\]
+
+<p>适当选取 $\mu$ 可以让这个比值明显小于原来的 $|\lambda_2/\lambda_1|$，从而加速收敛。</p>
+
+<h4>模最大特征值不唯一时会怎样</h4>
+
+<p>定理里有两条假设：$|\lambda_1|>|\lambda_2|$（严格占优）和 $\lambda_1$ 半简单。这一小节讲的是<strong>第一条假设被破坏</strong>时的情形：$|\lambda_1|=|\lambda_2|>|\lambda_3|$。</p>
+
+<div class="box ok">
+<p class="label">机制：衰减论证断在哪里</p>
+<p>收敛证明的核心是靠 $|\lambda_j/\lambda_1|<1$ 让非主导项<strong>指数衰减</strong>。现在 $|\lambda_2/\lambda_1|=1$，这一项<strong>根本不衰减</strong>，它只是在复平面上沿单位圆旋转：</p>
+\[
+\frac{A^kx^{(0)}}{\lambda_1^k}=c_1q_1+c_2\underbrace{\left(\frac{\lambda_2}{\lambda_1}\right)^{k}}_{\text{模}=1,\ \text{不衰减}}q_2+O(\rho^k),\qquad \rho=\max_{j\ge3}\left|\frac{\lambda_j}{\lambda_1}\right|<1
+\]
+<p>$j\ge3$ 的项照样衰减到 $0$，但 $c_2\omega^kq_2$（记 $\omega=\lambda_2/\lambda_1$）<strong>赖着不走且一直在动</strong>，所以极限不存在——这就是「收敛性分析变复杂」的确切含义。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 242" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>模最大特征值不唯一时比值不再衰减</title>
+<desc>lambda1 与 lambda2 同在单位圆上、模相等，比值 lambda2/lambda1 的模为 1，该项随迭代只在单位圆上旋转而不衰减；lambda3 严格在圆内，其比值模小于 1，指数衰减到零。</desc>
+<circle cx="190" cy="132" r="70" fill="none" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="120" y1="132" x2="260" y2="132" stroke="var(--line)" stroke-width="0.5"/>
+<line x1="190" y1="62" x2="190" y2="202" stroke="var(--line)" stroke-width="0.5"/>
+<line x1="190" y1="132" x2="155" y2="71.4" stroke="var(--accent)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="190" y1="132" x2="165.4" y2="149.2" stroke="var(--warn)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M218 132 A28 28 0 0 0 176 107.75" fill="none" stroke="var(--accent)" stroke-width="0.5"/>
+<circle cx="260" cy="132" r="4.5" fill="var(--accent)"/>
+<circle cx="155" cy="71.4" r="4.5" fill="var(--accent)"/>
+<circle cx="165.4" cy="149.2" r="4.5" fill="var(--warn)"/>
+<text x="272" y="132" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--accent)">λ₁</text>
+<text x="155" y="54" text-anchor="middle" font-size="13" font-weight="500" fill="var(--accent)">λ₂</text>
+<text x="179" y="153" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--warn)">λ₃</text>
+<text x="116" y="132" text-anchor="end" dominant-baseline="central" font-size="12" fill="var(--ink3)">|z| = 1</text>
+<text x="212" y="88" text-anchor="middle" font-size="12" fill="var(--accent)">ω = λ₂/λ₁</text>
+<text x="330" y="84" font-size="12.5" fill="var(--accent)">λ₁、λ₂ 模相等 ⇒ |λ₂/λ₁| = 1</text>
+<text x="330" y="104" font-size="12.5" fill="var(--accent)">该项只在单位圆上转，不衰减</text>
+<text x="330" y="148" font-size="12.5" fill="var(--warn)">λ₃ 严格更小 ⇒ |λ₃/λ₁| &lt; 1</text>
+<text x="330" y="168" font-size="12.5" fill="var(--warn)">指数衰减到 0</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 4 · 模相等 ⇒ 比值不衰减，这一项留在单位圆上打转</figcaption>
+</figure>
+
+<p><strong>什么时候还能抢救：$\omega$ 是单位根。</strong>若 $\omega=e^{2\pi ip/q}$（$\gcd(p,q)=1$），则 $\omega^q=1$，$\omega^k$ 只取 $q$ 个值并以 $q$ 为周期循环。此时整个序列仍不收敛，但<strong>按 $k\bmod q$ 抽子序列</strong>，$\omega^k$ 就退化成常数：</p>
+
+\[
+x^{(kq+r)}\ \longrightarrow\ \text{方向}\left(c_1q_1+c_2\omega^rq_2\right),\qquad r=0,1,\dots,q-1
+\]
+
+<p>$r$ 取 $q$ 个值即得 $q$ 个不同的极限方向——这就是「分裂成若干收敛到不同向量的子序列」的确切含义：子序列是<strong>按 $k\bmod q$ 分类</strong>的。<strong>反直觉的一点</strong>：这些极限方向是 $q_1,q_2$ 的混合，一般<strong>根本不是特征向量</strong>，所以连「收敛到哪个特征向量」都谈不上。（若 $\omega$ 不是单位根，如 $\omega=e^{i\sqrt2}$，则 $\{\omega^k\}$ 在单位圆上稠密，极限点是一整条连续曲线——连子序列收敛都没有。）</p>
+
+<p><strong>经典例子逐项看。</strong>$A=\begin{bmatrix}0&1\\1&0\end{bmatrix}$：</p>
+
+\[
+\det(A-\lambda I)=\lambda^2-1\ \Longrightarrow\ \lambda_1=1,\ \lambda_2=-1;\qquad q_1=\tfrac{1}{\sqrt2}\binom{1}{1},\quad q_2=\tfrac{1}{\sqrt2}\binom{1}{-1}
+\]
+
+\[
+\omega=\frac{\lambda_2}{\lambda_1}=-1=e^{2\pi i\cdot1/2}\ \Longrightarrow\ p=1,\ q=2
+\]
+
+<p>这个 $A$ 作用在向量上就是<strong>交换两个分量</strong>。取 $x^{(0)}=(1,0)^{\mathsf T}$，迭代变得极其简单：</p>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 242" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>交换矩阵上幂法的二周期震荡</title>
+<desc>初始向量 (1,0) 被 A 交换分量变成 (0,1)，再乘 A 又变回 (1,0)，形成周期为 2 的循环；偶数项收敛到方向 (1,0)，奇数项收敛到方向 (0,1)，这两个方向都不是 A 的特征向量。</desc>
+<defs>
+<marker id="arrowFig2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="110" y="60" width="110" height="52" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="165" y="86" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">(1, 0)ᵀ</text>
+<rect x="400" y="60" width="110" height="52" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="455" y="86" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">(0, 1)ᵀ</text>
+<line x1="222" y1="74" x2="396" y2="74" stroke="var(--accent)" stroke-width="1" marker-end="url(#arrowFig2)"/>
+<text x="309" y="62" text-anchor="middle" font-size="12" fill="var(--ink2)">乘 A</text>
+<line x1="398" y1="98" x2="224" y2="98" stroke="var(--accent)" stroke-width="1" marker-end="url(#arrowFig2)"/>
+<text x="309" y="116" text-anchor="middle" font-size="12" fill="var(--ink2)">乘 A</text>
+<text x="165" y="134" text-anchor="middle" font-size="12" fill="var(--accent)">x⁽⁰⁾, x⁽²⁾, x⁽⁴⁾, …</text>
+<text x="455" y="134" text-anchor="middle" font-size="12" fill="var(--accent)">x⁽¹⁾, x⁽³⁾, x⁽⁵⁾, …</text>
+<text x="40" y="178" font-size="12.5" fill="var(--ink2)">严格 2-周期 ⇒ 偶数项收敛到方向 (1,0)ᵀ，奇数项收敛到方向 (0,1)ᵀ</text>
+<text x="40" y="198" font-size="12.5" fill="var(--warn)">这两个方向都不是 A 的特征向量（特征向量是 (1,1)ᵀ 和 (1,−1)ᵀ）</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 5 · 交换矩阵 A 上的二周期震荡（q = 2 ⇒ 两个收敛子序列）</figcaption>
+</figure>
+
+<p>用公式验证：$x^{(0)}=\tfrac{1}{\sqrt2}q_1+\tfrac{1}{\sqrt2}q_2$，故 $c_1=c_2=\tfrac{1}{\sqrt2}$，于是</p>
+
+\[
+r=0:\ c_1q_1+c_2\omega^0q_2=(1,0)^{\mathsf T},\qquad r=1:\ c_1q_1+c_2\omega^1q_2=(0,1)^{\mathsf T}
+\]
+
+<p>与图完全对上。</p>
+
+<div class="box warn">
+<p class="label">陷阱：表现强烈依赖初始向量</p>
+<p>若初值恰好取成特征向量（如 $x^{(0)}=(1,1)^{\mathsf T}$），它是<strong>不动点</strong>，迭代老老实实停住，看起来「收敛得很好」。用随机初值则几乎必然撞上周期震荡——这种<strong>对初值的病态依赖</strong>本身就是失效的信号。</p>
+</div>
+
+<table>
+<thead><tr><th>情形</th><th>$(\lambda_2/\lambda_1)^k$ 的行为</th><th>幂法结果</th></tr></thead>
+<tbody>
+<tr><td>$|\lambda_1|>|\lambda_2|$</td><td>指数衰减到 $0$</td><td>收敛 ✓</td></tr>
+<tr><td>$\omega$ 是 $q$ 次单位根</td><td>以 $q$ 为周期循环</td><td>$q$ 个收敛子序列，方向都不是特征向量</td></tr>
+<tr><td>$\omega$ 非单位根（如 $e^{i\sqrt2}$）</td><td>在单位圆上稠密</td><td>完全不收敛</td></tr>
+</tbody>
+</table>
+
+<p><strong>实际怎么处理。</strong>① <strong>移位（shift）</strong>：取 $\mu$ 把两者分开，对 $(A-\mu I)$ 用幂法／反幂法。② <strong>块幂法（子空间迭代）</strong>：用 $m\ge2$ 列组成块 $X^{(k)}\in\mathbb{R}^{n\times m}$，同时迭代 $X^{(k+1)}=AX^{(k)}$ 并做正交化，收敛的是整个<strong>不变子空间</strong> $\operatorname{span}(q_1,q_2)$——模相等对子空间迭代不构成障碍。这正是 §5.3 QR 方法的思想前身。</p>
+
+<div class="box key">
+<p class="label">一句话总结</p>
+<p>定理里把条件写成<strong>严格</strong>不等号 $|\lambda_1|>|\lambda_2|$，不是数学家的洁癖，而是实打实的必要条件：一旦相等，$(\lambda_2/\lambda_1)^k$ 就不再衰减，整个衰减论证立刻失效。</p>
+</div>
+
+<h3 id="s15">1.5 求次大特征值：降阶（deflation）</h3>
+
+<div class="box key">
+<p class="label">先说要干什么（动机）</p>
+<p>幂法只给你<strong>一个</strong>特征值：模最大的 $\lambda_1$。你还想要 $\lambda_2$。但你<strong>不能</strong>直接再跑一次幂法——$A$ 还是那个 $A$，模最大的还是 $\lambda_1$，跑一百遍还是 $\lambda_1$。</p>
+<p>所以必须<strong>先把 $\lambda_1$ 从问题里拿掉</strong>。这就是「降阶」。难点在于：$\lambda_1$ 不是一个能拧下来的零件，它是矩阵<strong>整体</strong>表现出来的性质，没法在 $A$ 里「删掉」一个数。</p>
+<p>破局的想法是：<strong>$\lambda_1$ 甩不掉，是因为它藏在 $A$ 的坐标系里。换一个坐标系，让它单独待在一个角落，剩下的事就与它无关了。</strong></p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 210" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>降阶流水线：每剥掉一个特征值问题小一维</title>
+<desc>从 n 阶矩阵 A 出发，用幂法求出 lambda1，再用酉变换 H 做降阶得到 n-1 阶矩阵 A hat，对 A hat 用幂法求出 lambda2，如此重复。</desc>
+<defs>
+<marker id="arrowFig8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="40" y="80" width="96" height="56" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="88" y="100" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">A</text>
+<text x="88" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--accent)">λ₁ λ₂ … λₙ</text>
+<text x="163" y="58" text-anchor="middle" font-size="12.5" fill="var(--ink2)">幂法</text>
+<line x1="138" y1="108" x2="188" y2="108" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig8)"/>
+<rect x="190" y="80" width="76" height="56" rx="8" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="0.5"/>
+<text x="228" y="100" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ok)">λ₁</text>
+<text x="228" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ok)">已求得</text>
+<text x="302" y="50" text-anchor="middle" font-size="12.5" fill="var(--ink2)">H 变换</text>
+<text x="302" y="66" text-anchor="middle" font-size="12.5" fill="var(--ink2)">降阶</text>
+<line x1="268" y1="108" x2="336" y2="108" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig8)"/>
+<rect x="338" y="80" width="96" height="56" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="386" y="100" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">Â</text>
+<text x="386" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--accent)">λ₂ λ₃ … λₙ</text>
+<text x="461" y="58" text-anchor="middle" font-size="12.5" fill="var(--ink2)">幂法</text>
+<line x1="436" y1="108" x2="486" y2="108" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig8)"/>
+<rect x="488" y="80" width="76" height="56" rx="8" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="0.5"/>
+<text x="526" y="100" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ok)">λ₂</text>
+<text x="526" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ok)">已求得</text>
+<text x="590" y="108" dominant-baseline="central" font-size="15" fill="var(--ink3)">⋯</text>
+<text x="40" y="172" font-size="12.5" fill="var(--ink3)">每剥掉一层，问题就小一维 —— 重复 n−1 次拿到全部特征值</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 6 · 降阶在整条流水线里的位置</figcaption>
+</figure>
+
+<p>具体做法是正交变换。设 $q_1$ 是已知的单位特征向量（$Aq_1=\lambda_1q_1$），在复数域上取 Householder 变换 $H$ 使得</p>
+
+\[
+Hq_1=e_1
+\]
+
+<div class="box">
+<p class="label">为什么存在这样的 $H$：它是镜面反射</p>
+<p>Householder 变换 $H=I-2uu^{*}$（$\|u\|_2=1$）就是<strong>关于法向为 $u$ 的超平面做镜像</strong>。镜面反射有个基本能力：<strong>能把任意一个单位向量照到任意另一个单位向量</strong>。想让 $q_1$ 照到 $e_1$，只要把镜面放在两者的<strong>角平分面</strong>上：</p>
+\[
+u=\frac{q_1-e_1}{\|q_1-e_1\|_2}
+\]
+<p>所以 $H$ 的存在性不是巧合，是镜面反射的基本几何。<strong>工程细节</strong>：若 $q_1\approx e_1$，$q_1-e_1$ 会相消得厉害，此时改用 $u\propto q_1+e_1$，代价是 $Hq_1=-e_1$——相位不影响结论（见下面「三个补充」的第 ① 条）。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 250" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Householder 变换是角平分面上的镜面反射</title>
+<desc>镜面取在 q1 与 e1 的角平分面上，法向量 u 平行于 q1 减 e1，于是 q1 关于该镜面反射后正好落在 e1 上。</desc>
+<defs>
+<marker id="arrowFig10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<line x1="96" y1="196" x2="281" y2="119" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="5 4"/>
+<line x1="170" y1="165" x2="278" y2="165" stroke="var(--ok)" stroke-width="1.5" marker-end="url(#arrowFig10)"/>
+<line x1="170" y1="165" x2="246" y2="89" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowFig10)"/>
+<line x1="170" y1="165" x2="145" y2="102" stroke="var(--gold)" stroke-width="1.5" marker-end="url(#arrowFig10)"/>
+<path d="M163.9 150.2 L178.7 144.1 L184.8 158.9" fill="none" stroke="var(--gold)" stroke-width="0.5"/>
+<path d="M256 93 Q310 120 286 155" fill="none" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig10)"/>
+<text x="288" y="165" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--ok)">e₁</text>
+<text x="252" y="76" text-anchor="middle" font-size="13" font-weight="500" fill="var(--accent)">q₁</text>
+<text x="136" y="98" text-anchor="end" font-size="13" font-weight="500" fill="var(--gold)">u</text>
+<text x="78" y="212" font-size="12.5" fill="var(--ink3)">镜面（角平分面）</text>
+<text x="310" y="100" font-size="12.5" fill="var(--gold)">u ∥ q₁ − e₁（镜面法向）</text>
+<text x="310" y="122" font-size="12.5" fill="var(--ink3)">镜面 = q₁ 与 e₁ 的角平分面</text>
+<text x="310" y="162" font-size="12.5" fill="var(--accent)">把 q₁ 照过去，正好落在 e₁</text>
+<text x="310" y="184" font-size="12.5" fill="var(--ok)">即 H q₁ = e₁</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 7 · Householder = 角平分面上的镜面反射</figcaption>
+</figure>
+
+<p>于是（$H^{*}$ 表示共轭转置，且 $H^{*}=H^{-1}=H$）</p>
+
+\[
+HAH^{*}=\begin{bmatrix}\lambda_1& *\\ 0&\hat A\end{bmatrix}
+\]
+
+<div class="box warn">
+<p class="label">为什么是「两边夹」$HAH^{*}$，而不是单边 $HA$</p>
+<p>只有 $HAH^{*}$ 才是<strong>相似变换</strong>（因为 $H^{*}=H^{-1}$），而相似变换<strong>保持特征值不变</strong>。单边乘 $HA$ 不是相似——特征值全变，那就白算了。</p>
+<p>这也是必须要求 $H$ 是<strong>酉矩阵</strong>的原因：只有酉矩阵同时满足 $H^{*}=H^{-1}$（相似，保特征值）与 $\|H\|_2=1$（不放大误差，数值稳定）。</p>
+</div>
+
+<div class="box key">
+<p class="label">这个式子在说什么（先看含义，再看推导）</p>
+<p>把向量写成 $\begin{bmatrix}y_1\\y_{2:n}\end{bmatrix}$，乘开就是</p>
+\[
+\begin{bmatrix}\lambda_1&r^{\mathsf T}\\0&\hat A\end{bmatrix}\begin{bmatrix}y_1\\y_{2:n}\end{bmatrix}=\begin{bmatrix}\lambda_1y_1+r^{\mathsf T}y_{2:n}\\ \hat Ay_{2:n}\end{bmatrix}
+\]
+<p>盯住<strong>下半部分</strong>：$\hat Ay_{2:n}$——它<strong>完全不知道 $y_1$ 的存在</strong>。后 $n-1$ 个坐标自己演化，第一个坐标爱怎么动都影响不到它们。所以后 $n-1$ 维是一个<strong>自成一体的子系统</strong>，它的特征值就是 $\lambda_2,\dots,\lambda_n$。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 250" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>块三角结构中的信号流向</title>
+<desc>第一个坐标 y1 由 lambda1 驱动，并且接收来自下方坐标的星号耦合；但下方的 y2 到 yn 只由 A hat 驱动，完全不受 y1 影响，因为左下角的零块挡住了从上往下的通路。</desc>
+<defs>
+<marker id="arrowFig9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="40" y="48" width="84" height="44" rx="8" fill="var(--bg2)" stroke="#b4b2a9" stroke-width="0.5"/>
+<text x="82" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink)">y₁</text>
+<rect x="300" y="48" width="110" height="44" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="355" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">新 y₁</text>
+<line x1="126" y1="70" x2="298" y2="70" stroke="var(--accent)" stroke-width="1" marker-end="url(#arrowFig9)"/>
+<text x="212" y="60" text-anchor="middle" font-size="12.5" fill="var(--accent)">λ₁</text>
+<rect x="40" y="138" width="84" height="44" rx="8" fill="var(--bg2)" stroke="#b4b2a9" stroke-width="0.5"/>
+<text x="82" y="160" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--ink)">y₂…yₙ</text>
+<rect x="300" y="138" width="110" height="44" rx="8" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="0.5"/>
+<text x="355" y="160" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="var(--warn)">新 y₂…yₙ</text>
+<line x1="126" y1="160" x2="298" y2="160" stroke="var(--warn)" stroke-width="1" marker-end="url(#arrowFig9)"/>
+<text x="212" y="150" text-anchor="middle" font-size="12.5" fill="var(--warn)">Â</text>
+<line x1="200" y1="136" x2="200" y2="96" stroke="var(--accent)" stroke-width="1" marker-end="url(#arrowFig9)"/>
+<text x="210" y="116" font-size="13" fill="var(--accent)">*</text>
+<line x1="255" y1="96" x2="255" y2="134" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="249" y1="109" x2="261" y2="121" stroke="#A32D2D" stroke-width="1.5"/>
+<line x1="261" y1="109" x2="249" y2="121" stroke="#A32D2D" stroke-width="1.5"/>
+<text x="267" y="115" dominant-baseline="central" font-size="13" font-weight="500" fill="#A32D2D">0</text>
+<text x="425" y="64" font-size="12.5" fill="var(--accent)">从下往上：有影响（*）</text>
+<text x="425" y="86" font-size="12.5" fill="#A32D2D">从上往下：被 0 挡住</text>
+<text x="425" y="150" font-size="12.5" fill="var(--warn)">⇒ 后 n−1 维自成一体</text>
+<text x="425" y="172" font-size="12.5" fill="var(--ink3)">特征值 = λ₂, …, λₙ</text>
+<text x="40" y="214" font-size="12.5" fill="var(--ink3)">左下角那个 0 就是「上层的信号传不下来」—— 所以下层是一个独立子系统</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 8 · 块三角的「0」= 信号单行道</figcaption>
+</figure>
+
+<div class="box ok">
+<p class="label">这一步为什么不显然：只用了一个观察</p>
+<p>基本事实：<strong>一个矩阵的第 $1$ 列，就是它作用在 $e_1$ 上的结果。</strong>所以只要算出 $HAH^{*}e_1$，第 $1$ 列就出来了。</p>
+<p>而 $H$ 是按 $Hq_1=e_1$ 构造的，两边左乘 $H^{*}$（用 $H^{*}H=I$）立刻得到一把钥匙：</p>
+\[
+H^{*}e_1=q_1
+\]
+<p>剩下的就是一条链，每一步都是已知条件：</p>
+\[
+HAH^{*}e_1=HA\,(\underbrace{H^{*}e_1}_{=\,q_1})=HAq_1=H(\lambda_1q_1)=\lambda_1\underbrace{Hq_1}_{=\,e_1}=\lambda_1e_1
+\]
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 170" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>HAH* 作用在 e1 上的向量链条</title>
+<desc>e1 先被 H* 映到 q1，再被 A 映到 lambda1 倍的 q1，最后被 H 映回 lambda1 倍的 e1。因此 HAH* 的第一列是 lambda1 e1。</desc>
+<defs>
+<marker id="arrowFig4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="204" y="46" text-anchor="middle" font-size="12.5" fill="var(--ink2)">H*</text>
+<text x="340" y="46" text-anchor="middle" font-size="12.5" fill="var(--ink2)">A</text>
+<text x="476" y="46" text-anchor="middle" font-size="12.5" fill="var(--ink2)">H</text>
+<rect x="98" y="56" width="76" height="44" rx="8" fill="var(--bg2)" stroke="#b4b2a9" stroke-width="0.5"/>
+<text x="136" y="78" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink)">e₁</text>
+<rect x="234" y="56" width="76" height="44" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="272" y="78" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">q₁</text>
+<rect x="370" y="56" width="76" height="44" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="408" y="78" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">λ₁q₁</text>
+<rect x="506" y="56" width="76" height="44" rx="8" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="0.5"/>
+<text x="544" y="78" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ok)">λ₁e₁</text>
+<line x1="176" y1="78" x2="232" y2="78" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig4)"/>
+<line x1="312" y1="78" x2="368" y2="78" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig4)"/>
+<line x1="448" y1="78" x2="504" y2="78" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowFig4)"/>
+<text x="98" y="126" font-size="12.5" fill="var(--ink3)">H*e₁ = q₁</text>
+<text x="234" y="126" font-size="12.5" fill="var(--ink3)">Aq₁ = λ₁q₁</text>
+<text x="506" y="126" font-size="12.5" fill="var(--ok)">Hq₁ = e₁</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 9 · 追踪 $e_1$ 走一圈：每一步都是已知条件，没有额外假设</figcaption>
+</figure>
+
+<p>也就是说，$HAH^{*}$ 的<strong>第 1 列被锁死</strong>成 $\lambda_1e_1$——$\lambda_1$ 在顶上、<strong>下面全是 0</strong>。第 1 行没有约束，记作 $*$；右下角那块 $(n-1)\times(n-1)$ 就是 $\hat A$。</p>
+
+<div class="box">
+<p class="label">手算走一遍（2×2，数字全列出来）</p>
+<p>取 $A=\begin{bmatrix}2&1\\0&3\end{bmatrix}$。上三角 ⇒ 特征值就是对角元：$\lambda_1=3,\ \lambda_2=2$，对应 $\lambda_1$ 的单位特征向量 $q_1=\tfrac{1}{\sqrt2}\binom{1}{1}=\binom{0.7071}{0.7071}$。</p>
+<p><strong>① 造 $H$。</strong>$u=\dfrac{q_1-e_1}{\|q_1-e_1\|_2}=\binom{-0.3827}{0.9239}$，于是</p>
+\[
+H=I-2uu^{\mathsf T}=\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}
+\]
+<p><strong>② 验证 $H$ 确实把 $q_1$ 送到 $e_1$：</strong></p>
+\[
+Hq_1=\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}\binom{0.7071}{0.7071}=\binom{1}{0}=e_1\ \checkmark
+\]
+<p><strong>③ 做变换</strong>（这个 $H$ 恰好对称，$H^{*}=H$）：</p>
+\[
+HAH^{*}=\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}\begin{bmatrix}2&1\\0&3\end{bmatrix}\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}=\begin{bmatrix}3&-1\\0&2\end{bmatrix}
+\]
+<p>结果：<strong>左下角是 $0$</strong>，$(1,1)$ 是 $\lambda_1=3$，右下角 $\hat A=[2]=\lambda_2$——完全对上。注意这里 $*=-1\ne0$，说明<strong>右上角那一块一般不为零</strong>（它不影响降阶，因为它不进入 $\hat A$）。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 210" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>HAH* 的块上三角结构</title>
+<desc>HAH* 的第一列被锁死为 lambda1 e1，其下方全为零，右下角是 n-1 阶子矩阵 A hat。由于矩阵块上三角，特征值是 lambda1 与 A hat 特征值之并。</desc>
+<text x="68" y="107" text-anchor="end" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink)">HAH* =</text>
+<path d="M82 50 L76 50 L76 164 L82 164" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<path d="M212 50 L218 50 L218 164 L212 164" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<rect x="90" y="50" width="38" height="114" fill="var(--accent-bg)"/>
+<rect x="90" y="50" width="114" height="114" fill="none" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="128" y1="50" x2="128" y2="164" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="166" y1="50" x2="166" y2="164" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="90" y1="88" x2="204" y2="88" stroke="#b4b2a9" stroke-width="0.5"/>
+<line x1="90" y1="126" x2="204" y2="126" stroke="#b4b2a9" stroke-width="0.5"/>
+<text x="109" y="69" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--accent)">λ₁</text>
+<text x="109" y="107" text-anchor="middle" dominant-baseline="central" font-size="14" fill="var(--accent)">0</text>
+<text x="109" y="145" text-anchor="middle" dominant-baseline="central" font-size="14" fill="var(--accent)">0</text>
+<text x="147" y="69" text-anchor="middle" dominant-baseline="central" font-size="14" fill="var(--ink3)">*</text>
+<text x="185" y="69" text-anchor="middle" dominant-baseline="central" font-size="14" fill="var(--ink3)">*</text>
+<text x="166" y="126" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--warn)">Â</text>
+<text x="242" y="76" font-size="12.5" fill="var(--accent)">第 1 列 = λ₁e₁，下方全是 0</text>
+<text x="242" y="98" font-size="12.5" fill="var(--ink3)">（被 H 锁死，不是碰巧）</text>
+<text x="242" y="136" font-size="12.5" fill="var(--warn)">块上三角 ⇒ 特征值 = 对角块之并</text>
+<text x="242" y="158" font-size="12.5" fill="var(--warn)">σ(A) = {λ₁} ∪ σ(Â)</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 10 · 第 1 列被锁死 ⇒ 块上三角 ⇒ 右下角独立出一个 $(n-1)$ 阶问题</figcaption>
+</figure>
+
+<p><strong>为什么这就完成了降阶。</strong>$HAH^{*}$ 是<strong>块上三角矩阵</strong>，而块三角矩阵的特征值 = 对角块特征值之并：</p>
+
+\[
+\sigma\!\left(\begin{bmatrix}B_{11}&B_{12}\\0&B_{22}\end{bmatrix}\right)=\sigma(B_{11})\cup\sigma(B_{22})
+\]
+
+<div class="box">
+<p class="label">补一行证明：这条规则从哪来</p>
+<p>块三角矩阵的行列式会因式分解（按第一块展开即可）：</p>
+\[
+\det\!\left(\begin{bmatrix}B_{11}&B_{12}\\0&B_{22}\end{bmatrix}-\lambda I\right)=\det(B_{11}-\lambda I)\cdot\det(B_{22}-\lambda I)
+\]
+<p>特征多项式被拆成两个因子之积，根就是两边的根之并——这就是「特征值 = 对角块之并」的全部来源。代进我们的情形：</p>
+\[
+\det(HAH^{*}-\lambda I)=\det\begin{bmatrix}\lambda_1-\lambda&r^{\mathsf T}\\0&\hat A-\lambda I\end{bmatrix}=(\lambda_1-\lambda)\det(\hat A-\lambda I)
+\]
+</div>
+
+<p>所以 $\sigma(HAH^{*})=\{\lambda_1\}\cup\sigma(\hat A)$。又因为 $H$ 是酉矩阵，$HAH^{*}$ 与 $A$ <strong>酉相似</strong>，特征值完全相同。于是</p>
+
+\[
+\sigma(\hat A)=\{\lambda_2,\lambda_3,\dots,\lambda_n\}
+\]
+
+<p>这就是「降阶」的全部内容：<strong>对一个 $n-1$ 阶的小矩阵 $\hat A$ 跑幂法，就拿到 $\lambda_2$。</strong>已知方向 $q_1$ 被「摘掉」了，剩下的问题小一维。重复这个过程就能依次求出 $\lambda_3,\lambda_4,\dots$</p>
+
+<div class="box warn">
+<p class="label">一个已经熟悉的类比</p>
+<p><strong>这和高斯消元是同一件事。</strong>LU 分解把矩阵化成三角阵，而三角阵的特征值就是对角元——这个你早就懂了。降阶做的是同一件事，只不过手段换成<strong>酉变换</strong>（Householder）。必须用酉变换的两个理由：① 相似变换才能让特征值<strong>精确</strong>不变；② 酉矩阵不放大误差，数值稳定。</p>
+<p><strong>再换个说法</strong>：像<strong>剥洋葱</strong>。每做一次降阶剥掉一层（一个特征值），剩下的问题小一维，重复 $n-1$ 次就拿到全部特征值。注意<strong>整个过程中你没动过 $\lambda_1$ 一个指头</strong>——它只是被「挪」到了第一个坐标上。</p>
+</div>
+
+<div class="box warn">
+<p class="label">三个补充（讲义常略，但自己写代码会踩）</p>
+<p><strong>① 相位不影响结论。</strong>实际构造时 $Hq_1$ 可能是 $\sigma e_1$（$|\sigma|=1$）而非恰好 $e_1$。但此时 $H^{*}e_1=\bar\sigma q_1$，代回去得 $\bar\sigma\lambda_1\sigma e_1=\lambda_1e_1$——<strong>结论一模一样</strong>，不用纠结符号。</p>
+<p><strong>② 想要 $q_2$ 的话不能直接照抄。</strong>若 $\hat Ay=\lambda_2y$，则 $HAH^{*}$ 的特征向量是 $v=\begin{bmatrix}\alpha\\y\end{bmatrix}$，其中 $r^{\mathsf T}$ 是 $HAH^{*}$ 第 1 行的后 $n-1$ 个元素，而</p>
+\[
+\alpha=\frac{r^{\mathsf T}y}{\lambda_2-\lambda_1}
+\]
+<p>再回原坐标 $q_2=H^{*}v$。<strong>注意 $\alpha\ne0$ 一般成立</strong>——所以<strong>不是</strong>简单的 $H^{*}\begin{bmatrix}0\\y\end{bmatrix}$。只求 $\lambda_2$ 时 $\hat A$ 单独就够；要特征向量就必须带这个修正。</p>
+<p><strong>③ 为什么偏偏用 Householder。</strong>三个理由缺一不可：必须<strong>相似变换</strong>才能保住特征值；必须<strong>酉变换</strong>才能数值稳定（不放大误差）；Householder 能<strong>精确地</strong>把 $q_1$ 送到坐标轴上，而且 $H^{*}=H^{-1}=H$，$H$ 与 $H^{*}$ 是同一个矩阵，构造只需一次。</p>
+</div>
+
+<div class="box key">
+<p class="label">一句话总结</p>
+<p>整条链只用了两个已知条件：$Aq_1=\lambda_1q_1$（$q_1$ 是特征向量）和 $Hq_1=e_1$（$H$ 的构造方式）。<strong>没有第三个。</strong></p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p2">第二部分 · 反幂法<span class="tag">板书 3、7、11、12、13</span></h2>
+
+<h3 id="s21">2.1 基本想法：对 $A^{-1}$ 用幂法</h3>
+
+<p>幂法求的是 $A$ 的<strong>模最大</strong>特征值。如果改对 $A^{-1}$ 用幂法呢？$A^{-1}$ 的特征值是 $1/\lambda_i$，模最大的是</p>
+
+\[
+\Big|\frac{1}{\lambda_n}\Big|=\frac{1}{|\lambda_n|}
+\]
+
+<p>也就是说，<strong>对 $A^{-1}$ 用幂法求出的，正是 $A$ 的模最小特征值 $\lambda_n$ 及其特征向量</strong>。这就是反幂法（inverse iteration）。</p>
+
+<div class="box">
+<p class="label">迭代格式</p>
+\[
+\begin{aligned}
+&A\,y^{(k)}=x^{(k-1)} &&\text{（解线性方程组，而不是求逆）}\\[2pt]
+&x^{(k)}=\frac{y^{(k)}}{\|y^{(k)}\|_\infty}
+\end{aligned}
+\]
+<p>线性方程组用<strong>部分主元的 Gauss 消去法</strong>求解：先算一次 $PA=LU$，之后每步只是前代 + 回代两个三角方程组。</p>
+<p class="footnote">代价：第一步 $O(n^3)$，后续每步只要 $O(n^2)$，因为 LU 分解可以反复利用。</p>
+</div>
+
+<p>收敛速度由 $A^{-1}$ 的两个模最大特征值之比决定，即</p>
+
+\[
+\left|\frac{\lambda_n}{\lambda_{n-1}}\right|
+\]
+
+<p>（$A^{-1}$ 的模最大、次大特征值是 $1/\lambda_n$ 与 $1/\lambda_{n-1}$，比值就是 $|\lambda_n/\lambda_{n-1}|$。）这是一个固定的常数，所以是<strong>全局线性收敛</strong>。</p>
+
+<h3 id="s22">2.2 带位移的反幂法</h3>
+
+<p>实际应用中反幂法的主要用途不是「找模最小特征值」，而是<strong>求已知特征值对应的特征向量</strong>。假设已经得到某个特征值 $\lambda$ 的近似值 $\mu$，就对 $A-\mu I$ 用反幂法：</p>
+
+<div class="box">
+<p class="label">带位移的反幂法（shift-and-invert）</p>
+\[
+\begin{aligned}
+&(A-\mu I)\,y^{(k)}=x^{(k-1)}\\[2pt]
+&x^{(k)}=\frac{y^{(k)}}{\|y^{(k)}\|_\infty}
+\end{aligned}
+\]
+<p>其中 $A-\mu I$ 的 LU 分解（部分主元）事先算一次，后续每步复用。</p>
+</div>
+
+<p>从收敛速度考虑，$\mu$ 应当尽可能接近 $A$ 的某个特征值。但这会让 $A-\mu I$ 接近奇异，使方程组 $(A-\mu I)y=x$ 非常病态。有意思的是——<strong>病态性并不影响收敛速度</strong>，而且当 $\mu$ 足够接近某个特征值时，往往<strong>一次迭代</strong>就能得到相当好的近似特征向量。下面两节解释这两件事。</p>
+
+<h3 id="why">2.3 为什么 $(A-\mu I)^{-1}$ 会把最近的 eigenvalue「挑出来」</h3>
+
+<div class="box key">
+<p class="label">这是你最想问的那一步</p>
+<p>为什么 $(\lambda_i-\mu)^{-1}\gg(\lambda_j-\mu)^{-1}$ 就意味着反幂法收敛到<strong>离 $\mu$ 最近</strong>的那个特征值？</p>
+</div>
+
+<p><strong>第 1 步：$A-\mu I$ 和 $A$ 有相同的特征向量。</strong></p>
+
+<p>设 $A$ 的特征对为 $(\lambda_j,v_j)$，即 $Av_j=\lambda_jv_j$。则</p>
+
+\[
+(A-\mu I)v_j=Av_j-\mu v_j=(\lambda_j-\mu)v_j
+\]
+
+<p>两边取逆（只要 $\mu$ 不等于任何 $\lambda_j$，$A-\mu I$ 就非奇异）：</p>
+
+\[
+(A-\mu I)^{-1}v_j=\frac{1}{\lambda_j-\mu}\,v_j
+\]
+
+<p>所以 $(A-\mu I)^{-1}$ 的特征值是 $\dfrac{1}{\lambda_j-\mu}$，而<strong>特征向量一个都没变</strong>，还是 $v_j$。</p>
+
+<p><strong>第 2 步：把初始向量展开，反复作用。</strong></p>
+
+<p>设 $\{v_1,\dots,v_n\}$ 线性无关，把 $x^{(0)}$ 展开为</p>
+
+\[
+x^{(0)}=\sum_{j=1}^{n}c_jv_j
+\]
+
+<p>连续作用 $k$ 次 $(A-\mu I)^{-1}$：</p>
+
+\[
+(A-\mu I)^{-k}x^{(0)}
+=\sum_{j=1}^{n}\frac{c_j}{(\lambda_j-\mu)^{k}}\,v_j
+\]
+
+<p><strong>第 3 步：提出主导项。</strong>设下标 $i$ 是使 $|\lambda_i-\mu|$ 最小的那个（即 $\lambda_i$ 是离 $\mu$ 最近的特征值），把 $i$ 项提出来：</p>
+
+\[
+(A-\mu I)^{-k}x^{(0)}
+=\frac{1}{(\lambda_i-\mu)^{k}}
+\Bigg[\;c_i\,v_i+\sum_{j\neq i}c_j\Big(\frac{\lambda_i-\mu}{\lambda_j-\mu}\Big)^{k}v_j\;\Bigg]
+\]
+
+<p><strong>第 4 步：看括号里第二项的极限。</strong></p>
+
+<p>归一化之后，决定方向的正是括号里各项的相对大小。对每个 $j\neq i$：</p>
+
+\[
+\Big|\frac{\lambda_i-\mu}{\lambda_j-\mu}\Big|<1
+\iff
+|\lambda_i-\mu|<|\lambda_j-\mu|
+\]
+
+<p>而 $i$ 的定义正是「使 $|\lambda_j-\mu|$ 最小的下标」，所以对<strong>所有</strong> $j\neq i$ 这个不等式都成立。于是括号里的第二项指数衰减到零：</p>
+
+\[
+\Bigg[\;c_i v_i+\underbrace{\sum_{j\neq i}c_j\Big(\frac{\lambda_i-\mu}{\lambda_j-\mu}\Big)^{k}v_j}_{\to\,0}\;\Bigg]\ \longrightarrow\ c_i v_i
+\]
+
+<div class="box key">
+<p class="label">结论</p>
+<p>$(A-\mu I)^{-k}x^{(0)}$ 的方向收敛到 $v_i$，其中 $i$ 是<strong>使 $|\lambda_i-\mu|$ 最小</strong>的下标——也就是离位移 $\mu$ 最近的那个特征值。</p>
+<p>用一句话概括这条链：</p>
+\[
+\underbrace{|\lambda_i-\mu|\ \text{最小}}_{\text{离 }\mu\text{ 最近}}
+\iff
+\underbrace{\big|(\lambda_i-\mu)^{-1}\big|\ \text{最大}}_{(A-\mu I)^{-1}\text{ 的模最大特征值}}
+\iff
+\underbrace{\text{幂法收敛到 }v_i}_{\text{反幂法输出}}
+\]
+</div>
+
+<p><strong>顺带得到两个结论：</strong></p>
+
+<ul>
+<li>收敛速度是 $\max_{j\neq i}\big|\frac{\lambda_i-\mu}{\lambda_j-\mu}\big|$。$\mu$ 越接近 $\lambda_i$，这个比值越小，收敛越快。极端情形 $\mu=\lambda_i$ 时，理论上一次回代就给出精确的 $v_i$。</li>
+<li>如果 $\mu$ 恰好在两个特征值的中间（$|\lambda_i-\mu|=|\lambda_j-\mu|$），比值等于 $1$，不收敛——这就是「位移不能选在两个特征值正中间」的原因。</li>
+</ul>
+
+<h3 id="s24">2.4 为什么病态性不影响收敛速度</h3>
+
+<p>上一节说 $\mu$ 越接近 $\lambda_i$ 越好，但同时也让 $A-\mu I$ 越病态。直觉上「方程组解不准 → 特征向量也不准」，可实际上讲义指出：<strong>病态性放大的误差，恰好落在我们要的那个方向上。</strong></p>
+
+<p>推导的思路是这样的。</p>
+
+<p><strong>① 计算的 LU 分解等价于扰动后的精确分解。</strong>设 $(A-\mu I)$ 的部分主元 LU 分解为 $\hat L\hat U$。由 Gauss 消去法的向后误差分析，计算解 $\hat y$ 满足</p>
+
+\[
+(A-\mu I+\Delta A)\,\hat y=x,\qquad \|\Delta A\|\le c\,u\,\|A-\mu I\|
+\]
+
+<p>其中 $u$ 是机器精度。这就是「部分主元 Gauss 消去法是数值稳定的」这句话的准确含义：<em>算出来的解，是某个轻微扰动后的方程组的精确解</em>。</p>
+
+<p><strong>② 先把「计算解」和「精确解」的差写出来。</strong>记 $B=A-\mu I$，设 $w=B^{-1}x$ 是未扰动方程组 $Bw=x$ 的<strong>精确解</strong>。由 ① 知计算解 $\hat y$ 满足 $(B+\Delta A)\hat y=x$，于是</p>
+
+\[
+\hat y=(B+\Delta A)^{-1}x=\big(I+B^{-1}\Delta A\big)^{-1}B^{-1}x=\big(I+B^{-1}\Delta A\big)^{-1}w.
+\]
+
+<p>把 $\big(I+B^{-1}\Delta A\big)^{-1}$ 按 Neumann 级数展开（$\|\Delta A\|$ 很小，级数收敛），只保留一阶项：</p>
+
+\[
+\hat y=w-B^{-1}\Delta A\,w+O\big(\|\Delta A\|^2\big).
+\]
+
+<p>于是<strong>误差</strong> $\delta:=\hat y-w$ 的一阶近似是</p>
+
+\[
+\delta\ \approx\ -B^{-1}\Delta A\,w.
+\]
+
+<p><strong>③ 把误差按特征子空间分解。</strong>利用 $B=P(\Lambda-\mu I)P^{-1}$，即</p>
+
+\[
+B^{-1}=P(\Lambda-\mu I)^{-1}P^{-1}=\sum_{j=1}^{n}\frac{v_jz_j^{*}}{\lambda_j-\mu}
+\]
+
+<p>（$z_j^{*}$ 是 $P^{-1}$ 的第 $j$ 行），可以逐项写出 $\delta$ 在 $v_i$ 方向上的分量 $\delta_i$ 和在其余特征子空间上的分量 $\delta_{\perp}$：</p>
+
+\[
+\delta_i=-\frac{z_i^{*}\Delta A\,w}{\lambda_i-\mu},\qquad
+\delta_{\perp}=-\sum_{j\ne i}\frac{z_j^{*}\Delta A\,w}{\lambda_j-\mu}\,v_j.
+\]
+
+<p>现在看两者的量级。当 $\mu$ 很接近 $\lambda_i$ 时，$w$ 本身几乎就是 $v_i$ 方向（系数 $z_i^{*}x/(\lambda_i-\mu)$ 极大），所以 $\|\Delta A\,w\|\approx\|\Delta A\|\,\|w\|$。于是</p>
+
+\[
+|\delta_i|\ \approx\ \frac{1}{|\lambda_i-\mu|}\cdot\big(\text{与 }\Delta A\text{ 同量级的量}\big),
+\qquad
+\|\delta_{\perp}\|\ =\ O(\Delta A)
+\]
+
+<p>（分母里只有 $|\lambda_i-\mu|$ 会趋于 0；$j\ne i$ 的那些 $|\lambda_j-\mu|$ 都是 $O(1)$，所以 $\delta_{\perp}$ 不被放大。）两者的比值是</p>
+
+\[
+\frac{|\delta_i|}{\|\delta_{\perp}\|}\ \approx\ \frac{1}{|\lambda_i-\mu|}\cdot\frac{1}{c_i}
+\]
+
+<p>其中 $c_i$ 是特征向量 $v_i$ 的条件数——它在这里是个<strong>常数因子</strong>，来自「把 $z_i^{*}$ 坐标换算成 $v_i$ 方向的长度」这一步（$z_i$ 与 $v_i$ 不平行时，两个坐标系的换算就要损失一个 $c_i$）。</p>
+
+<div class="box">
+<p class="label">一处容易误读的地方</p>
+<p>讲义原文写的是「记 $\hat y$ 在 $v_i$ 方向上的分量为 $\hat y_i$」，但从上面的推导可以看出：<strong>被 $1/|\lambda_i-\mu|$ 放大的不是解本身，而是误差。</strong>解 $w$ 的分量当然也很大（$z_i^{*}x/(\lambda_i-\mu)$），可那正是我们<em>要</em>的东西；真正的麻烦在于<strong>误差</strong>的分量同样被放大。</p>
+<p>所以正确的读法是：$\hat y_i,\hat y_{\perp}$ 应理解为<strong>误差 $\delta$ 的两个分量</strong>。定性结论完全不变，但这样读就不会觉得「凭什么解的分量跟 $\Delta A$ 同量级」了。</p>
+</div>
+
+<div class="box key">
+<p class="label">关键</p>
+<p>当 $\mu\to\lambda_i$ 时，$|\lambda_i-\mu|\to0$，这个比值<strong>趋于无穷</strong>。也就是说：</p>
+<p><strong>方程组越病态，误差就越大；但误差被放大的方向恰好是 $v_i$ 方向。</strong>而我们最终只取 $\hat y$ 的<em>方向</em>作为特征向量的近似——方向恰好是准的。所以</p>
+\[
+\text{病态性}\ \longrightarrow\ \text{误差大}\ \longrightarrow\ \text{但误差的方向正是我们要的方向}
+\]
+<p>于是<strong>一次反幂法迭代就足以得到很好的特征向量</strong>。</p>
+</div>
+
+<div class="box warn">
+<p class="label">什么时候这个「幸运」会失效</p>
+<p>上面的分析用到了「单位特征向量 $v_i$ 良态」，即它的条件数 $c_i=\dfrac{\|v_i\|_2\,\|z_i\|_2}{|z_i^{*}v_i|}$ 很小（$z_i$ 是左特征向量）。如果 $v_i$ 本身病态（$c_i$ 很大），这套论证就不成立——此时<strong>再做第二次反幂法迭代通常也不会更好</strong>，因为误差已经污染了特征子空间本身。</p>
+</div>
+
+<h3 id="s25">2.5 初始向量的选取：半次迭代法</h3>
+
+<p>两种常用做法：</p>
+
+<ol>
+<li><strong>随机向量</strong>：用随机数生成，再按 $\infty$-范数单位化。</li>
+<li><strong>「半次迭代法」</strong>：利用已有的 LU 分解省掉一半工作。</li>
+</ol>
+
+<p><strong>先说这里的 $P$ 是什么。</strong>带位移反幂法的第一步要解</p>
+
+\[
+(A-\mu I)y^{(1)}=x^{(0)}.
+\]
+
+<p>我们手里有的不是 $A-\mu I$ 的 LU 分解，而是它的<strong>列主元（部分主元）LU 分解</strong>：</p>
+
+\[
+P\,(A-\mu I)=\hat L\hat U
+\]
+
+<p>其中 $\hat L$ 是单位下三角阵，$\hat U$ 是上三角阵，而 $P$ 是<strong>置换矩阵</strong>（permutation matrix）——它记录的是消元过程中做的<strong>行交换</strong>。于是 $A-\mu I=P^{-1}\hat L\hat U=P^{\mathsf T}\hat L\hat U$，代入方程组得</p>
+
+\[
+P^{\mathsf T}\hat L\hat Uy^{(1)}=x^{(0)}
+\quad\Longleftrightarrow\quad
+\hat L\hat Uy^{(1)}=Px^{(0)}
+\]
+
+<p>这就是「$\hat L\hat Uy^{(1)}=Px^{(0)}$」里那个 $P$ 的来处：<strong>它只是在把「换过行的 LU 分解」还原成原方程组时，把换行操作挪到右端去。</strong></p>
+
+<div class="box key">
+<p class="label">$P$ 到底是什么：置换矩阵，管的是「行」不是「列」</p>
+<ul>
+<li>$P$ 的每一行、每一列都<strong>恰好有一个 1</strong>，其余全为 0。</li>
+<li><strong>左乘</strong> $P$（即 $Px$）= <strong>换行</strong>；<strong>右乘</strong> $P$（即 $x^{\mathsf T}P$）= 换列。这里 $P$ 出现在 $Px^{(0)}$ 的位置，所以它<strong>换的是行，不是列</strong>。</li>
+<li>它是正交阵且 $P^{-1}=P^{\mathsf T}$，$P^{\mathsf T}P=I$。</li>
+<li><strong>为什么会出现它</strong>：无主元的 Gauss 消去法在第 $k$ 步要拿 $a_{kk}$ 当除数，若它等于 0（或虽不为 0 但很小）消元就会中断，或把误差放大得离谱。所以每一步都在第 $k$ 列的第 $k$ 行及以下挑<strong>绝对值最大</strong>的元素换到主元位置——每换一次记一个置换矩阵，乘起来就是 $P$。</li>
+<li>如果行、列都换（<strong>全主元</strong>），则写成 $P(A-\mu I)Q=\hat L\hat U$，此时才真的有「列变换」；但全主元要搜索整个子矩阵，代价高，实用中一般只用列主元。</li>
+</ul>
+</div>
+
+<p><strong>半次迭代法的技巧。</strong>有了 $\hat L\hat Uy^{(1)}=Px^{(0)}$，正常流程是「前代一次 + 回代一次」。但如果把初始向量取成 $\hat L$ 的某一列、再按 $P^{-1}$ 换行，即</p>
+
+\[
+x^{(0)}=P^{-1}\hat L e_k\qquad(e_k\text{ 是第 }k\text{ 个单位向量})
+\]
+
+<p>那么 $Px^{(0)}=\hat Le_k$，前代方程变成 $\hat Lz=\hat Le_k$。而 $\hat L$ 是<strong>单位下三角阵</strong>，$\hat Le_k$ 恰好就是 $\hat L$ 的第 $k$ 列，这个方程的解一眼就是 $z=e_k$——<strong>前代不用算</strong>。于是只剩回代</p>
+
+\[
+\hat Uy^{(1)}=e_k.
+\]
+
+<p>也就是说：初始向量不需要显式给出，第一次迭代只解「半次」线性方程组。这就是「半次迭代法」这个名字的来处。</p>
+
+<div class="box key">
+<p class="label">凭什么可以这样挑初始向量？</p>
+<p>这是本节最容易被一眼带过的一步。它其实是三件事拼起来的。</p>
+
+<p><strong>① $x^{(0)}$ 本来就是自由的。</strong>反幂法的迭代 $x^{(k+1)}=(A-\mu I)^{-1}x^{(k)}$ 只用到 $x^{(0)}$ 的<strong>方向</strong>——每一轮都要重新单位化，长度会被洗掉。收敛性只要求 $z_1^{*}x^{(0)}\ne 0$（别恰好落在与 $v_1$ 正交的那个超平面里），除此之外 $x^{(0)}$ 取什么都行。所以「把 $x^{(0)}$ 取成某个特定向量」<em>不是</em>额外假设，而是在动用本来就有的自由度。</p>
+
+<p><strong>② 但这份自由度是有价的：随手取就要付一次前代。</strong>若随手取 $x^{(0)}$（比如 $e_k$ 或随机向量），则 $Px^{(0)}$ 是个任意向量，$\hat Lz=Px^{(0)}$ 必须老老实实做一次前代，代价 $O(n^2)$。既然 $x^{(0)}$ 自由、而前代不自由，那就<strong>反过来问</strong>：有没有哪个 $x^{(0)}$，能让 $Px^{(0)}$ 恰好等于 $\hat L$ 的某一列？有——</p>
+\[
+\hat Lz=\hat Le_k\ \Longrightarrow\ z=e_k\qquad(\hat L\text{ 非奇异，解唯一})
+\]
+<p>把这个方程倒过来解就得到 $Px^{(0)}=\hat Le_k$，也就是 $x^{(0)}=P^{-1}\hat Le_k$。所以这个取法不是灵机一动，而是<strong>为了让前代免费，反推出的 $x^{(0)}$</strong>。一句话概括：<strong>这是拿自由度换计算量，不是拿精度换计算量。</strong></p>
+
+<p><strong>③ 这样取出来的 $x^{(0)}$ 会不会太「有结构」，不像随机向量那样保险？</strong>这是最该担心的点，但三条理由都说不用担心：</p>
+<ul>
+<li><strong>随机向量法同样给不出保证。</strong>随机取也可能（概率为 0、但并非不可能）落在 $z_1^{*}x^{(0)}=0$ 上。两种取法在这一点上地位完全相同——都是「几乎必然没问题」的工程做法，谁都没有证明。</li>
+<li><strong>$P^{-1}\hat Le_k$ 不是 $A-\mu I$ 的特征向量。</strong>它只有一个 1 和若干个乘子 $l_{ij}$，是个普通的有结构向量；$l_{ij}$ 的取值没有理由与 $A$ 的特征子空间对齐。万一某个 $k$ 不好，$n$ 个候选里换一个就行。</li>
+<li><strong>这一步本来就只做一次。</strong>「半次迭代法」用在 $\mu$ 已经相当准、只差把特征向量算准的场合。此时 $A-\mu I$ 极度病态，而 §2.4 刚刚说明过：误差被放大的方向恰好是 $v_i$ 方向，<strong>方向是准的</strong>。起点是不是精确的特征向量，根本不影响结果。</li>
+</ul>
+
+<p>最后把两种取法的开销并排比一下：</p>
+<table>
+<tr><th></th><th>构造 $x^{(0)}$</th><th>第一次迭代要做什么</th></tr>
+<tr><td>随机向量法</td><td>生成随机数 + 按 $\infty$-范数单位化</td><td>前代 $O(n^2)$ + 回代 $O(n^2)$</td></tr>
+<tr><td>半次迭代法</td><td>抄 $\hat L$ 的第 $k$ 列、按 $P^{\mathsf T}$ 换行（<strong>不产生任何浮点运算</strong>）</td><td>只有回代 $O(n^2)$</td></tr>
+</table>
+<p>一次线性方程组求解被砍掉一半——「<strong>半次</strong>迭代法」这个名字就是这么来的。</p>
+</div>
+
+<div class="box">
+<p class="label">手算一遍（3 阶，$k=2$）</p>
+<p>取 $\hat L=\begin{bmatrix}1&&\\ l_{21}&1&\\ l_{31}&l_{32}&1\end{bmatrix}$，则 $\hat Le_2=\begin{bmatrix}0\\1\\l_{32}\end{bmatrix}$。令 $x^{(0)}=P^{-1}\hat Le_2$，于是前代方程是 $\hat Lz=\hat Le_2$。逐行解：</p>
+<ul>
+<li>第 1 行：$z_1=0$；</li>
+<li>第 2 行：$l_{21}z_1+z_2=1\Rightarrow z_2=1$；</li>
+<li>第 3 行：$l_{31}z_1+l_{32}z_2+z_3=l_{32}\Rightarrow z_3=0$。</li>
+</ul>
+<p>所以 $z=e_2$——一步没算就出来了。剩下的只有 $\hat Uy^{(1)}=e_2$ 这一次回代。</p>
+</div>
+
+<div class="box warn">
+<p class="label">提醒：这份笔记里有好几个长得像的字母，别混了</p>
+<table>
+<tr><th>记号</th><th>出现在</th><th>是什么</th></tr>
+<tr><td>$P=[q_1,\dots,q_n]$</td><td>§1.4</td><td>特征向量矩阵（列是右特征向量）</td></tr>
+<tr><td>$P$</td><td>§2.5、板书 6</td><td><strong>置换矩阵</strong>（LU 分解的行交换记录）</td></tr>
+<tr><td>$H$、$H_1,\dots,H_{n-2}$</td><td>§1.5、§5.3.3</td><td><strong>Householder 变换</strong>（对称正交阵，不是置换矩阵）</td></tr>
+<tr><td>$P_0,P_1,\dots$</td><td>§5.3.6</td><td><strong>Householder 变换</strong>（同上，只是换了个字母）</td></tr>
+<tr><td>$Q$</td><td>§5.3</td><td>正交 / 酉矩阵（QR 分解里的那个 $Q$）</td></tr>
+</table>
+<p>判别办法：<strong>置换矩阵每行每列只有一个 1</strong>，作用是把元素「换个位置」；Householder 是 $I-2ww^{\mathsf T}$，一般<strong>稠密</strong>，作用是「做镜像」。两者都会写成「某个字母乘以一个向量」，但一个是重新排队，一个是真正在做线性组合。</p>
+</div>
+
+<h3 id="s26">2.6 Rayleigh 商迭代（RQI）</h3>
+
+<div class="box">
+<p class="label">迭代格式</p>
+\[
+\begin{aligned}
+&(A-\mu^{(k)}I)\,y^{(k+1)}=x^{(k)}\\[2pt]
+&x^{(k+1)}=\frac{y^{(k+1)}}{\|y^{(k+1)}\|_2}\\[4pt]
+&\mu^{(k+1)}=\frac{\big(x^{(k+1)}\big)^{*}A\,x^{(k+1)}}{\big(x^{(k+1)}\big)^{*}x^{(k+1)}}
+\qquad\text{（Rayleigh 商）}
+\end{aligned}
+\]
+<p>即：<strong>位移因子每步都用当前的 Rayleigh 商更新</strong>。它相当于「反幂法 + 自动寻找最优位移」。</p>
+</div>
+
+<h4>收敛阶：为什么对称情形是三次</h4>
+
+<div class="box warn">
+<p class="label">先说清楚这段推导的来源</p>
+<p>讲义 PDF 5 §5.2 对 RQI 只写了<strong>一句结论</strong>——「局部二次收敛（若 $A$ 具有对称性，则有局部三次收敛）」，并注明是 <strong>Homework 07 Problem 04</strong>；今天板书第 3 张也只留下了 <code>INVIT / RQIT</code> 两个名字。所以下面<strong>这一整段推导是我按标准教材补的</strong>（Parlett《The Symmetric Eigenvalue Problem》、Golub &amp; Van Loan 都有），<strong>不是老师课上讲的，也不是讲义原文</strong>。作业要你证的很可能就是它。</p>
+</div>
+
+<p>设当前特征向量近似 $x^{(k)}$ 与真特征向量 $v$ 的夹角为 $\theta_k$。把它按特征基展开：</p>
+
+\[
+x^{(k)}=\cos\theta_k\,v+\sin\theta_k\,w,\qquad w\perp v,\ \|w\|_2=1
+\]
+
+<p>这里 $v$ 是单位特征向量；$w$ 是「错误方向」的单位向量，落在 $v^{\perp}$ 里；$\theta_k$ 就是误差角，$\sin\theta_k$ 度量错误分量的大小。</p>
+
+<h4>第一块拼图：Rayleigh 商的误差为什么是夹角误差的平方</h4>
+
+<p>讲义和板书都没给这一步，但它只有两行。把 $x^{(k)}$ 代进 Rayleigh 商，注意 $x^{*}x=\cos^{2}\theta_k+\sin^{2}\theta_k=1$：</p>
+
+\[
+\mu^{(k)}=(x^{(k)})^{*}Ax^{(k)}
+=\lambda\cos^{2}\theta_k+(w^{*}Aw)\sin^{2}\theta_k
+\]
+
+<p>两边减去 $\lambda$，再用 $\cos^{2}\theta_k=1-\sin^{2}\theta_k$ 消去 $\lambda\cos^2\theta_k$：</p>
+
+\[
+\mu^{(k)}-\lambda=\big(w^{*}Aw-\lambda\big)\sin^{2}\theta_k
+\]
+
+<p>这就是「<strong>平方</strong>」的全部来源——<strong>夹角只以 $\sin^{2}\theta_k$ 的形式出现</strong>，前面那个括号与 $\theta_k$ 无关。再用 $w^{*}Aw\in[\lambda_{\min},\lambda_{\max}]$（它是单位向量的 Rayleigh 商，必落在谱区间内）压一下：</p>
+
+\[
+|\mu^{(k)}-\lambda|\le W\,\sin^{2}\theta_k\le W\,\theta_k^{2},
+\qquad W:=\max\big(|\lambda-\lambda_{\min}|,\ |\lambda_{\max}-\lambda|\big)
+\]
+
+<p>$W$ 是谱的宽度。只要 $W$ 有界，就得到 $|\mu^{(k)}-\lambda|=O(\theta_k^{2})$。</p>
+
+<div class="box key">
+<p class="label">顺带记住：Rayleigh 商为什么总被用来估特征值</p>
+<p>上式其实说明了一件更强的事：<strong>Rayleigh 商的误差量级是 $\theta^2$ 而不是 $\theta$</strong>。所以特征向量只算到 $10^{-8}$ 的精度时，特征值已经准到 $10^{-16}$。这正是幂法（§1.4）和反幂法都用 Rayleigh 商来估计特征值的原因。</p>
+</div>
+
+<h4>第二块拼图：$\mathrm{gap}$ 是什么</h4>
+
+<div class="box">
+<p class="label">定义</p>
+\[
+\mathrm{gap}:=\min_{\substack{1\le j\le n\\ \lambda_j\ne\lambda}}|\lambda_j-\lambda|
+\]
+<p>即<strong>目标特征值 $\lambda$ 到其余特征值的最短距离</strong>（特征值间隔，spectral gap）。对称情形下 $\lambda=\lambda_1$ 单重时，$\mathrm{gap}=|\lambda_2-\lambda_1|$（前提是特征值已按离 $\lambda_1$ 的远近排过）。$\lambda$ 是单特征值时 $\mathrm{gap}>0$。</p>
+<p><strong>它为什么必然出现</strong>：算子 $(A-\mu^{(k)}I)^{-1}$ 作用在 $v^{\perp}$ 上时，把每个特征方向 $u_j$ 按 $1/(\lambda_j-\mu^{(k)})$ 缩放。当 $\mu^{(k)}\to\lambda$ 时，这些缩放因子中最大的那个是</p>
+\[
+\max_{j\ne 1}\frac{1}{|\lambda_j-\mu^{(k)}|}\ \approx\ \frac{1}{\mathrm{gap}}
+\]
+<p>所以 $\|(A-\mu^{(k)}I)^{-1}w\|_2\lesssim 1/\mathrm{gap}$。换句话说，<strong>$\mathrm{gap}$ 就是「错误方向被放大多少倍」的倒数</strong>：gap 越大，$w$ 被放大得越少，收敛越快。</p>
+</div>
+
+<p>而反幂法一步给出</p>
+
+\[
+y^{(k+1)}=(A-\mu^{(k)}I)^{-1}x^{(k)}
+=\frac{\cos\theta_k}{\lambda-\mu^{(k)}}\,v+\sin\theta_k\,(A-\mu^{(k)}I)^{-1}w
+\]
+
+<p>（$v$ 是特征向量，所以 $(A-\mu^{(k)}I)^{-1}v=v/(\lambda-\mu^{(k)})$ 是精确的，没有误差。）于是「错误分量 ÷ 正确分量」的比值是</p>
+
+\[
+\frac{|\sin\theta_k|\cdot\|(A-\mu^{(k)}I)^{-1}w\|}{|\cos\theta_k|\big/|\lambda-\mu^{(k)}|}
+\ \lesssim\
+\theta_k\cdot\frac{|\lambda-\mu^{(k)}|}{\mathrm{gap}}
+\ \lesssim\
+\theta_k\cdot\frac{W\theta_k^{2}}{\mathrm{gap}}
+=O(\theta_k^{3})
+\]
+
+<p>分子的 $|\sin\theta_k|\cdot\|(A-\mu^{(k)}I)^{-1}w\|$ 是错误分量，分母 $|\cos\theta_k|/|\lambda-\mu^{(k)}|$ 是正确分量；中间用了 $|\cos\theta_k|\approx1$、$\|(A-\mu^{(k)}I)^{-1}w\|\lesssim1/\mathrm{gap}$，最后一步用了上一块的 $|\lambda-\mu^{(k)}|=O(\theta_k^2)$。</p>
+
+<p>所以 $\theta_{k+1}=O(\theta_k^3)$ —— <strong>三次收敛</strong>。</p>
+
+<div class="box ok">
+<p class="label">那 $W$ 和 $\mathrm{gap}$ 这两个常数怎么办</p>
+<p>上面的常数是 $W/\mathrm{gap}$，看起来不太干净。但当 $\theta_k$ 很小的时候，$w$ 主要由<strong>离 $\lambda$ 最近的那个特征方向</strong>组成，于是 $|w^{*}Aw-\lambda|\to\mathrm{gap}$、$\|(A-\mu^{(k)}I)^{-1}w\|\to1/\mathrm{gap}$——<strong>两处 $\mathrm{gap}$ 恰好抵消</strong>，得到 $\theta_{k+1}\approx\theta_k^{3}$，连系数都是 1。</p>
+<p>退一步说，即使 $W/\mathrm{gap}$ 不接近 1，它也只是个常数：<strong>收敛的「阶」恒为 3，与 gap 无关</strong>；gap 只影响常数和「三次收敛盆地」的大小。特征值成簇（gap 极小）时仍然是三次收敛，只是前面的系数很大、初值要选得更准。</p>
+</div>
+
+<p>对<strong>非对称矩阵</strong>，Rayleigh 商不再有「误差是平方」这个性质，一般只有 $|\mu^{(k)}-\lambda|=O(\theta_k)$（一阶）。把它代回同一条推导，比值就退化成 $O(\theta_k\cdot\theta_k)=O(\theta_k^{2})$——<strong>二次收敛</strong>。这就是讲义那句「局部二次收敛（若 $A$ 具有对称性，则有局部三次收敛）」的来处。</p>
+
+<div class="box warn">
+<p class="label">RQI 的四个坑</p>
+<ol>
+<li><strong>全局收敛性差</strong>：初值选得不好可能收敛到别的特征值，甚至不收敛。</li>
+<li><strong>每步 $O(n^3)$</strong>：位移每步都变，所以 LU 分解不能复用，必须重算。</li>
+<li><strong>减法相消</strong>：计算 $A-\mu^{(k)}I$ 时，$\mu^{(k)}$ 接近 $\lambda$ 会导致有效数字丢失。</li>
+<li><strong>越来越病态</strong>：$A-\mu^{(k)}I$ 逐次逼近奇异，解越来越不准。</li>
+</ol>
+<p>但第 3、4 条其实是「良性」的：病态性放大的误差方向正是我们要的 $v$ 方向，所以<strong>特征向量的方向仍然准，Rayleigh 商序列的收敛性基本不受影响</strong>——这正是 §2.4 那条分析的直接应用。</p>
+</div>
+
+<h4>补充：用 Schur 分解处理「只求某一个特征向量」</h4>
+
+<p>设已知 $A$ 的 Schur 分解 $A=QTQ^{*}$（$Q$ 酉、$T$ 上三角）。由于 $Q$ 酉，</p>
+
+\[
+(A-\mu I)^{-1}=\big(Q(T-\mu I)Q^{*}\big)^{-1}=Q\,(T-\mu I)^{-1}Q^{*}
+\]
+
+<p>所以只需对<strong>上三角阵</strong> $T$ 做反幂法。若只想要第 $k$ 个对角元位置的特征向量，可以把右端向量取成只有一个非零分量（比如 $e_k$），那么回代过程中前 $k-1$ 个分量恒为零，只需解一个更小阶数的上三角方程组，最后在解的后面补零即可。这就是「利用三角结构只算一个特征向量」的技巧。</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p3">第三部分 · QR 方法<span class="tag a">PDF 5 §5.3–§5.4</span></h2>
+
+<p>幂法和反幂法是「<strong>一次抓一个</strong>」的方法：幂法抓模最大的 $\lambda_1$，反幂法在你已经知道 $\hat\lambda$ 的情况下去抓离 $\hat\lambda$ 最近的那一个。可如果问题是「把 $n$ 个特征值<strong>全部</strong>算出来」，这两个方法都要退化成「降阶 + 重启」的循环，而且反幂法还得先知道每个特征值大致在哪。</p>
+
+<p><strong>QR 方法</strong>就是为「一次算出全部特征值」设计的。它是目前计算一般方阵的全部特征值和特征向量的最有效方法之一：利用正交变换将一个给定方阵逐步约化为上三角阵或拟上三角阵（上 Hessenberg 矩阵）的一种<strong>迭代</strong>方法。其基本收敛速度是<strong>二次</strong>的，当原方阵实对称时，可达到<strong>三次</strong>收敛。</p>
+
+<div class="box key">
+<p class="label">一句话抓住 QR 方法</p>
+<p>反复做两件事：<strong>① 对当前矩阵做 QR 分解；② 把两个因子换个顺序乘回去。</strong></p>
+\[
+A_{k-1}=Q_kR_k \quad\Longrightarrow\quad A_k=R_kQ_k
+\]
+<p>每一步都是<strong>正交相似变换</strong>，所以特征值从头到尾一个都没变；而「换顺序」这个动作会让矩阵<strong>一步步趋向上三角</strong>，对角线上就慢慢露出全部特征值。</p>
+</div>
+
+<div class="box">
+<p class="label">说明</p>
+<p>§5.3 这一节<strong>没有出现在今天的板书里</strong>（板书只覆盖了 §5.1 幂法、§5.2 反幂法，外加一道 PageRank / Markov 的应用）。所以下面是<strong>提前自学</strong>的内容，供你在 §5.1、§5.2 之后接着往下看。</p>
+</div>
+
+<h3 id="s531">5.3.1 显式 QR 迭代格式与收敛性</h3>
+
+<h4>迭代格式</h4>
+
+<p>给定 $A_0=A\in\mathbb{C}^{n\times n}$，显式 QR 算法的迭代格式如下（形式待改进）：</p>
+
+\[
+\begin{aligned}
+A_{k-1} &= Q_kR_k,\\[2pt]
+A_k &= R_kQ_k,
+\end{aligned}\qquad k=1,2,\dots
+\]
+
+<p>其中 $Q_k$ 为酉矩阵（$Q_k^{*}Q_k=I$），$R_k$ 为上三角阵；为方便起见，我们要求 $R_k$ 的对角元均为<strong>非负实数</strong>。</p>
+
+<div class="box">
+<p class="label">第一步：序列里每个矩阵都与 A 相似</p>
+<p>由迭代格式容易推出 $A_k=Q_k^{*}A_{k-1}Q_k$，因此</p>
+\[
+A_k=Q_k^{*}A_{k-1}Q_k=Q_k^{*}Q_{k-1}^{*}A_{k-2}Q_{k-1}Q_k=\cdots=\tilde Q_k^{*}A\tilde Q_k,
+\]
+<p>其中 $\tilde Q_k=Q_1Q_2\cdots Q_k$ 仍是酉矩阵。所以序列 $\{A_k\}$ 中的每个矩阵都与原矩阵 $A$ <strong>相似</strong>——特征值一个都没变，变的只是「长相」。</p>
+</div>
+
+<h4>关键恒等式：$A^k$ 的 QR 分解</h4>
+
+<p>结合 $A_k=Q_{k+1}R_{k+1}$ 可知：</p>
+
+\[
+\begin{aligned}
+A_k=\tilde Q_k^{*}A\tilde Q_k &= Q_{k+1}R_{k+1}\\[4pt]
+\Longleftrightarrow\quad \tilde Q_kQ_{k+1}R_{k+1} &= A\tilde Q_k\\[4pt]
+\Longleftrightarrow\quad \tilde Q_kQ_{k+1}(R_{k+1}R_k\cdots R_1) &= A\tilde Q_k(R_kR_{k-1}\cdots R_1)\\[4pt]
+\Longleftrightarrow\quad \tilde Q_{k+1}\tilde R_{k+1} &= A\tilde Q_k\tilde R_k\\[4pt]
+\Longleftrightarrow\quad A^{k+1} &= \tilde Q_{k+1}\tilde R_{k+1}
+\end{aligned}
+\]
+
+<p>其中记 $\tilde R_k=R_kR_{k-1}\cdots R_1$。倒数第二步到倒数第一步用了一次<strong>归纳</strong>：把 $\tilde Q_k\tilde R_k=A^k$ 代入右边即可。</p>
+
+<p>又因为 $\tilde Q_1\tilde R_1=A^1$ 显然成立，所以对一切 $k$ 都有</p>
+
+\[
+A^k=\tilde Q_k\tilde R_k
+\]
+
+<div class="box key">
+<p class="label">这个恒等式是整个 QR 方法的发动机</p>
+<p>$\tilde Q_k\tilde R_k$ 恰好就是 $A^k$ 的 <strong>QR 分解</strong>（而且 $\tilde R_k$ 的对角元都是正数：它是上三角阵 $R_j$ 的乘积，而每个 $R_j$ 的对角元都要求为正实数）。</p>
+<p>记 $\tilde R_k$ 的元素为 $r_{ij}^{(k)}$，$Q_k$ 的第一列为 $q_1^{(k)}$，则我们有</p>
+\[
+A^ke_1=\tilde Q_k\tilde R_ke_1=\tilde Q_k\big(r_{11}^{(k)}e_1\big)=r_{11}^{(k)}q_1^{(k)}
+\]
+<p>于是 $q_1^{(k)}$ 可以看作<strong>对 $A$ 用 $e_1$ 作为初始向量的幂法进行 $k$ 次迭代得到的向量</strong>（只差一个标量因子 $r_{11}^{(k)}$，而幂法本来就要归一化）。若 $A$ 的模最大特征值 $\lambda_1$ 与其他特征值分离，则 $q_1^{(k)}$ 收敛到 $A$ 关于 $\lambda_1$ 的一个特征向量。</p>
+<p><strong>结论：QR 迭代的第 1 列自动在做幂法。</strong>这就是为什么 $\{A_k\}$ 的 $(1,1)$ 元会趋向 $\lambda_1$、第 1 列下面会趋向 0。第 2 列、第 3 列则在「降阶后」的子问题上做同样的事——这个「降阶」正是 §1.5 讲过的 deflation，只不过在这里是<strong>自动发生</strong>的。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 250" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>QR 迭代的循环，以及它与幂法的接口</title>
+<desc>从 A_{k-1} 出发做 QR 分解得到 Q_k 与 R_k，再交换顺序得到 A_k，如此循环。下方说明 A 的 k 次幂的 QR 分解的第一列就是幂法第 k 步的结果。</desc>
+<defs>
+<marker id="arrowQR1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="30" y="34" width="112" height="54" rx="8" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="86" y="54" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ink)">Aₖ₋₁</text>
+<text x="86" y="72" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink3)">当前矩阵</text>
+<line x1="146" y1="61" x2="196" y2="61" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR1)"/>
+<text x="171" y="46" text-anchor="middle" font-size="11.5" fill="var(--ink2)">QR 分解</text>
+<rect x="200" y="34" width="112" height="54" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="256" y="54" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--accent)">Qₖ , Rₖ</text>
+<text x="256" y="72" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--accent)">酉阵 × 上三角</text>
+<line x1="316" y1="61" x2="366" y2="61" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR1)"/>
+<text x="341" y="46" text-anchor="middle" font-size="11.5" fill="var(--ink2)">交换顺序</text>
+<rect x="370" y="34" width="112" height="54" rx="8" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="0.5"/>
+<text x="426" y="54" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="500" fill="var(--ok)">Aₖ = RₖQₖ</text>
+<text x="426" y="72" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ok)">与 A 相似</text>
+<path d="M426 92 L426 116 L86 116 L86 92" fill="none" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="5 4" marker-end="url(#arrowQR1)"/>
+<text x="256" y="132" text-anchor="middle" font-size="11.5" fill="var(--ink3)">k ← k+1，重复</text>
+<line x1="30" y1="158" x2="650" y2="158" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="30" y="176" width="620" height="52" rx="8" fill="var(--gold-bg)" stroke="transparent"/>
+<text x="46" y="196" font-size="12.5" font-weight="500" fill="var(--gold)">和幂法接上：</text>
+<text x="146" y="196" font-size="12.5" fill="var(--gold)">Aᵏ = Q̃ₖ R̃ₖ（这就是 Aᵏ 的 QR 分解）</text>
+<text x="46" y="216" font-size="12.5" fill="var(--gold)">它的第一列 Aᵏe₁ = r₁₁⁽ᵏ⁾ q₁⁽ᵏ⁾，所以 q₁⁽ᵏ⁾ 就是「以 e₁ 为初值的幂法」第 k 步的归一化结果</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 11 · QR 迭代的循环，以及它与幂法的接口</figcaption>
+</figure>
+
+<h4>收敛性定理</h4>
+
+<div class="box">
+<p class="label">定理（数值线性代数，定理 6.4.1）</p>
+<p>设 $A$ 的 $n$ 个特征值满足 $|\lambda_1|>|\lambda_2|>\cdots>|\lambda_n|>0$，对应的特征向量构成 $X=[x_1,x_2,\dots,x_n]$。记 $Y=X^{-1}$，其第 $i$ 行为 $A$ 关于 $\lambda_i$ 的<strong>左特征向量</strong>。</p>
+<p>若 $Y$ 具有 LU 分解（即 $Y$ 的前 $n-1$ 个顺序主子阵都是非奇异的，数值线性代数 定理 1.1.2），则由 QR 算法产生的矩阵 $A_k=\big(a_{ij}^{(k)}\big)$ 的<strong>严格下三角元都趋于零</strong>，且对角元 $a_{ii}^{(k)}$ <strong>趋向于 $\lambda_i$</strong>（$i=1,\dots,n$）。</p>
+</div>
+
+<h4>证明：把 $A^k$ 拆成「好矩阵 × 对角 × 好矩阵」</h4>
+
+<p class="label">① 把 $A$ 对角化</p>
+<p>记 $\Lambda=\mathrm{diag}(\lambda_1,\dots,\lambda_n)$，则有 $A=X\Lambda X^{-1}=X\Lambda Y$，于是</p>
+\[
+A^k=X\Lambda^kY.
+\]
+
+<p class="label">② 用 $Y$ 的 LU 分解把 $\Lambda^k$ 从中间「挪到外面」</p>
+<p>设 $Y$ 的 LU 分解为 $Y=LU$，其中 $L$ 是单位下三角阵，$U$ 是上三角阵。则</p>
+\[
+\begin{aligned}
+A^k &= X\Lambda^kLU\\
+&= X\big(\Lambda^kL\Lambda^{-k}\big)\Lambda^kU\\
+&= X(I+E_k)\Lambda^kU,
+\end{aligned}
+\]
+<p>其中 $I+E_k:=\Lambda^kL\Lambda^{-k}$。</p>
+
+<div class="box key">
+<p class="label">这一步是全部技巧所在</p>
+<p>$\Lambda^kL\Lambda^{-k}$ 只把 $L$ 的第 $(i,j)$ 个元素（$i>j$，即严格下三角部分）乘以 $\big(\lambda_i/\lambda_j\big)^k$。由于 $|\lambda_i|<|\lambda_j|$（$i>j$），这些因子<strong>全都趋于 0</strong>。</p>
+<p>显然 $I+E_k=\Lambda^kL\Lambda^{-k}$ 是一个单位下三角阵，具有 $n$ 重特征值 1；因此 $E_k$ 具有 $n$ 重特征值 0（$E_k$ 是严格下三角阵，其元素都形如 $O\big((\lambda_i/\lambda_j)^k\big)$），于是 $\rho(E_k)=0$，从而</p>
+\[
+\lim_kE_k=O_{n\times n}.
+\]
+</div>
+
+<p class="label">③ 把 $X$ 也拆开</p>
+<p>现令 $X$ 的 QR 分解为 $X=QR$。由于 $X$ 非奇异，故我们可要求 $R$ 的对角元均为正实数，从而可逆。代入 $A^k=X(I+E_k)\Lambda^kU$ 即有：</p>
+\[
+\begin{aligned}
+A^k &= X(I+E_k)\Lambda^kU\\
+&= QR(I+E_k)\Lambda^kU\\
+&= Q\big(I+RE_kR^{-1}\big)R\Lambda^kU.
+\end{aligned}
+\]
+<p>根据 $\lim_kE_k=O$ 可知，当 $k$ 充分大时，方阵 $I+RE_kR^{-1}$ 非奇异。</p>
+
+<p class="label">④ 对 $I+RE_kR^{-1}$ 再做一次 QR 分解</p>
+<p>设其 QR 分解为 $I+RE_kR^{-1}=\hat Q_k\hat R_k$（其中 $\hat R_k$ 的对角元均为正实数）。根据 $\lim_kE_k=O$ 可知</p>
+\[
+\lim_k\hat Q_k=\lim_k\hat R_k=I_n.
+\]
+<p>代入 $A^k=Q\big(I+RE_kR^{-1}\big)R\Lambda^kU$ 即有：</p>
+\[
+A^k=Q\big(\hat Q_k\hat R_k\big)R\Lambda^kU=\big(Q\hat Q_k\big)\big(\hat R_kR\Lambda^kU\big).
+\]
+<p>这样我们就得到了 $A^k$ 的一个 QR 分解 $A^k=\big(Q\hat Q_k\big)\big(\hat R_kR\Lambda^kU\big)$——只不过上三角因子的对角元<strong>未必是正数</strong>。</p>
+
+<p class="label">⑤ 把对角元的「相位」摆正</p>
+<p>为保证 QR 分解中上三角阵的对角元均为正数，我们定义</p>
+\[
+D_1^{(k)}=\mathrm{diag}\!\left(\left(\frac{\lambda_1}{|\lambda_1|}\right)^{k},\dots,\left(\frac{\lambda_n}{|\lambda_n|}\right)^{k}\right),\qquad
+D_2=\mathrm{diag}\!\left(\frac{u_{11}}{|u_{11}|},\dots,\frac{u_{nn}}{|u_{nn}|}\right),
+\]
+<p>其中 $u_{ii}$ 是 $U$ 的第 $i$ 个对角元。于是我们有：</p>
+\[
+A^k=\big(Q\hat Q_k\big)\big(\hat R_kR\Lambda^kU\big)=\big(Q\hat Q_kD_1^{(k)}D_2\big)\big(D_2^{-1}\big(D_1^{(k)}\big)^{-1}\hat R_kR\Lambda^kU\big).
+\]
+
+<div class="box warn">
+<p class="label">和讲义记号的一处差别（值得留意）</p>
+<p>讲义在这一步写的是 $D_1$，但严格地说应该是 $D_1^{(k)}$：$\hat R_kR\Lambda^kU$ 的第 $i$ 个对角元是 $\hat r_{ii}\cdot r_{ii}\cdot\lambda_i^k\cdot u_{ii}$，其中 $\hat r_{ii},r_{ii}$ 都是正实数，所以<strong>需要修正的相位是 $\lambda_i^k$ 的相位</strong>，也就是 $\big(\lambda_i/|\lambda_i|\big)^k$，而不是 $\big(\lambda_i/|\lambda_i|\big)$。</p>
+<p>这个 $k$ 次方不是小事：它正好解释了后面「为什么 $\{A_k\}$ 的严格上三角元不一定收敛」——因为相位在单位圆上<strong>一直转</strong>，$\{D_1^{(k)}\}$ 的极限一般不存在。</p>
+</div>
+
+<p class="label">⑥ 用 QR 分解的唯一性「对号入座」</p>
+<p>回忆起 QR 算法中 $A^k=\tilde Q_k\tilde R_k$，根据非奇异矩阵的（限制上三角阵的对角元为正实数的）QR 分解的<strong>存在唯一性</strong>可知：</p>
+\[
+\begin{cases}
+\tilde Q_k=Q\hat Q_kD_1^{(k)}D_2,\\[4pt]
+\tilde R_k=D_2^{-1}\big(D_1^{(k)}\big)^{-1}\hat R_kR\Lambda^kU.
+\end{cases}
+\]
+
+<p class="label">⑦ 收网：代入 $A_k=\tilde Q_k^{*}A\tilde Q_k$</p>
+<p>代入 $A_k=\tilde Q_k^{*}A\tilde Q_k$（前文结论）可知：</p>
+\[
+\begin{aligned}
+A_k &= \tilde Q_k^{*}A\tilde Q_k\\
+&= D_2^{*}\big(D_1^{(k)}\big)^{-1}\hat Q_k^{*}\big(R\Lambda R^{-1}\big)\hat Q_kD_1^{(k)}D_2.
+\end{aligned}
+\]
+<p>（中间用到了 $A=X\Lambda X^{-1}=(QR)\Lambda(QR)^{-1}=QR\Lambda R^{-1}Q^{*}$，即 $Q^{*}AQ=R\Lambda R^{-1}$。）</p>
+<p>现在逐块看这个式子：</p>
+<ul>
+<li>$R\Lambda R^{-1}$ 是一个<strong>对角元为 $\lambda_1,\dots,\lambda_n$ 的上三角阵</strong>（因为 $R$ 上三角、$\Lambda$ 对角、$R^{-1}$ 上三角）；</li>
+<li>$\lim_k\hat Q_k=I_n$，所以 $\hat Q_k^{*}\big(R\Lambda R^{-1}\big)\hat Q_k\to R\Lambda R^{-1}$（$k\to\infty$）；</li>
+<li>$D_1^{(k)}$、$D_2$ 都是<strong>对角元模长为 1 的对角阵</strong>，左乘右乘只能旋转上三角部分各元素的相位，改变不了模。</li>
+</ul>
+<p>于是 $A_k=\big(a_{ij}^{(k)}\big)$ 的<strong>严格下三角元都趋于零</strong>，且<strong>对角元 $a_{ii}^{(k)}$ 趋向于 $\lambda_i$</strong>（$i=1,\dots,n$）。命题得证。</p>
+
+<div class="box warn">
+<p class="label">为什么结论里只提「严格下三角」和「对角元」</p>
+<p>$\{A_k\}$ 的<strong>严格上三角元不一定收敛</strong>：它们被 $D_1^{(k)}$ 旋转着，而 $\{D_1^{(k)}\}$ 的极限一般不存在（相位 $\big(\lambda_i/|\lambda_i|\big)^k$ 在单位圆上打转）。</p>
+<p>好在<strong>我们并不需要它收敛</strong>：特征值只由对角元给出，特征向量也只依赖下三角的零结构。这也是为什么 QR 方法最后给出的「上三角阵」里，非对角元是可以任意的。</p>
+</div>
+
+<div class="box key">
+<p class="label">收敛速度：线性，速度取决于特征值分离程度</p>
+<p>上述定理表明：QR 算法是<strong>线性收敛</strong>的（每次迭代的前后误差是成比例的），收敛速度取决于特征值的分离程度。</p>
+<p>具体地说，从 ② 中 $E_k$ 的表达式可以直接读出（<em>这是对定理的定量补充，讲义只给了定性结论</em>）：</p>
+\[
+\big|a_{ij}^{(k)}\big|=O\!\left(\left|\frac{\lambda_i}{\lambda_j}\right|^{k}\right)\qquad(i>j).
+\]
+<p>也就是说：特征值分离得越开，$|\lambda_i/\lambda_j|$ 越小，收敛越快。</p>
+</div>
+
+<div class="box warn">
+<p class="label">三个必须记住的前提</p>
+<ol>
+<li><strong>$|\lambda_n|>0$，即 $A$ 非奇异。</strong>若 $A$ 奇异，$\Lambda^{-1}$ 不存在，整个证明就垮了；而且 $\lambda=0$ 会让某个 $R$ 的对角元为 0，「对角元为正」的 QR 分解唯一性也没了。</li>
+<li><strong>模必须严格分离</strong>：$|\lambda_1|>|\lambda_2|>\cdots>|\lambda_n|$。只要有两个特征值模相等（哪怕都是实数），对应的 $\big(\lambda_i/\lambda_j\big)^k$ 就不衰减，严格下三角元不会趋于零。这正是 §1.4 里「模最大特征值不唯一时会怎样」那一节讲过的现象。</li>
+<li><strong>$Y=X^{-1}$ 要有 LU 分解。</strong>这一条等价于 $Y$ 的前 $n-1$ 个顺序主子阵非奇异。它保证 $A^k$ 的 QR 分解在 $k\to\infty$ 时有「稳定」的对角元。若这条不满足，收敛会被破坏，但通常只是「慢」或「在多个极限之间跳」。</li>
+</ol>
+</div>
+
+<h3 id="s532">5.3.2 实 Schur 标准型</h3>
+
+<p>在实际应用中，大量的特征值问题都是关于<strong>实方阵</strong>的，我们自然希望设计<strong>只涉及实数运算</strong>的 QR 算法。此时 $Q_k\in\mathbb{R}^{n\times n}$ 是正交矩阵（$Q_k^{\mathsf T}Q_k=I$），$R_k$ 是具有非负对角元的上三角阵。</p>
+
+<p>然而，此时由于<strong>复共轭特征值</strong>的存在，我们不再期望序列 $\{A_k\}$ 仍然逼近一个上三角阵——一个实矩阵根本不可能只用实相似变换化成上三角（复特征值无处安放）。那么 $\{A_k\}$ 会趋向于什么呢？</p>
+
+<div class="box">
+<p class="label">定理（实 Schur 分解，Matrix Analysis 定理 2.3.4）</p>
+<p>任意给定一个实方阵 $A\in\mathbb{R}^{n\times n}$：</p>
+<p><strong>①</strong> 存在一个实的<strong>非奇异阵</strong> $S\in\mathbb{R}^{n\times n}$ 使得 $S^{-1}AS$ 是实的<strong>拟上三角阵</strong>（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
+\[
+S^{-1}AS=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
+\]
+<ul>
+<li>它的 $1\times1$ 对角块给出 $A$ 的<strong>实特征值</strong>；</li>
+<li>它的 $2\times2$ 对角块 $\begin{bmatrix}\alpha&\beta\\-\beta&\alpha\end{bmatrix}$ 给出 $A$ 的一对<strong>共轭的复特征值</strong> $\alpha\pm i\beta$；</li>
+<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照<strong>任意预先指定的次序</strong>出现。</li>
+</ul>
+<p><strong>②</strong> 存在一个实<strong>正交阵</strong> $Q\in\mathbb{R}^{n\times n}$ 使得 $Q^{\mathsf T}AQ$ 是实的拟上三角阵（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
+\[
+Q^{\mathsf T}AQ=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
+\]
+<ul>
+<li>它的 $1\times1$ 对角块给出 $A$ 的实特征值；</li>
+<li>它的 $2\times2$ 对角块<strong>不一定有特殊的形式</strong>（但和形如 $\begin{bmatrix}\alpha&-\beta\\\beta&\alpha\end{bmatrix}$ 的矩阵相似），给出 $A$ 的一对共轭的复特征值 $\alpha\pm i\beta$；</li>
+<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照任意预先指定的次序出现。</li>
+</ul>
+</div>
+
+<p>我们不难想到，只涉及实数运算的 QR 算法产生的序列 $\{A_k\}$ 应当逼近实方阵 $A$ 的<strong>实 Schur 标准型</strong>。在下面的讨论中，如无特别说明，我们默认给定的方阵 $A$ 是实方阵。</p>
+
+<div class="box warn">
+<p class="label">为什么这个「显式格式」还不能用</p>
+<p>此外，上述迭代格式对于实际应用是<strong>没有竞争力</strong>的：</p>
+<ol>
+<li><strong>每次迭代的运算量太大</strong>：$A_k=Q_kR_k$ 和 $R_kQ_k$ 各要 $O(n^3)$；</li>
+<li><strong>收敛速度太慢</strong>：只有线性收敛。</li>
+</ol>
+<p>接下来的 §5.3.3 和 §5.3.5 就是针对这两点做的改进，把它变成一个真正高效的方法。</p>
+</div>
+
+<h3 id="s533">5.3.3 上 Hessenberg 分解</h3>
+
+<p>为减少每次迭代的运算量，我们<strong>事先</strong>将实方阵 $A$ 经相似变换约化为拟上三角阵（上 Hessenberg 阵），再对约化后的矩阵进行只涉及实数运算的 QR 迭代。</p>
+
+<div class="box key">
+<p class="label">为什么要先化成上 Hessenberg 阵</p>
+<p>关键在于<strong>上 Hessenberg 性在 QR 迭代下保持不变</strong>：若 $H$ 是上 Hessenberg 阵，则它的 QR 分解中的 $Q$ 可以写成 $n-1$ 个 Givens 变换的乘积，而 $\tilde H=RQ$ 仍是上 Hessenberg 阵。于是每次迭代的运算量从 $O(n^3)$ 掉到 $O(n^2)$（详见 §5.3.4）。</p>
+<p>代价是<strong>一次性</strong>的 $\frac{10}{3}n^3$。这是一笔非常划算的买卖：迭代成百上千次，省下的是成百上千个 $n^3$。</p>
+</div>
+
+<p>设 $A\in\mathbb{R}^{n\times n}$，我们希望得到一个非奇异矩阵 $S$ 使得相似变换后的矩阵 $S^{-1}AS$ 具有某种特殊形式。一个自然的想法是让 $S^{-1}AS$ 的<strong>零元素越多越好</strong>。本节我们考虑用 Householder 变换（形如 $H=I-2ww^{\mathsf T}$ 的对称正交阵）对 $A$ 进行约化。</p>
+
+<h4>第一步：削平第 1 列</h4>
+
+<p>我们自然选取 Householder 变换 $H_1$，使得 $H_1A$ 的第 1 列有尽可能多的零元素（至多 $n-1$ 个）。</p>
+
+<p>为保证对 $A$ 进行（正交）相似变换，我们需对<strong>行、列进行相同的变换</strong>，相似变换后的矩阵为 $H_1AH_1$。为避免 $H_1$ <strong>右乘</strong> $A$ 时第 1 列已构建的零元素被破坏，$H_1$ 应形如</p>
+
+\[
+H_1=\begin{bmatrix}1&\\&\tilde H_1\end{bmatrix}
+\]
+
+<p>因此 $H_1$ 只能保证 $H_1A$ 第 1 列的第 3 个至第 $n$ 个元素为零，相应地，$H_1AH_1$ 的第 1 列的第 3 个至第 $n$ 个元素为零，即形如</p>
+
+\[
+A=\begin{bmatrix}a_{11}&a_2^{\mathsf T}\\ a_1&A_{22}\end{bmatrix},\qquad
+H_1A=\begin{bmatrix}1&\\&\tilde H_1\end{bmatrix}\begin{bmatrix}a_{11}&a_2^{\mathsf T}\\ a_1&A_{22}\end{bmatrix}=\begin{bmatrix}a_{11}&a_2^{\mathsf T}\\ \tilde H_1a_1&\tilde H_1A_{22}\end{bmatrix},
+\]
+\[
+H_1AH_1=(H_1A)H_1=\begin{bmatrix}a_{11}&a_2^{\mathsf T}\\ \tilde H_1a_1&\tilde H_1A_{22}\end{bmatrix}\begin{bmatrix}1&\\&\tilde H_1\end{bmatrix}=\begin{bmatrix}a_{11}&a_2^{\mathsf T}\tilde H_1\\ \tilde H_1a_1&\tilde H_1A_{22}\tilde H_1\end{bmatrix}.
+\]
+
+<div class="box">
+<p class="label">回忆 Householder 变换的构造（数值线性代数，定理 3.2.2）</p>
+<p>若 $x\neq0_n\in\mathbb{R}^n$，则可构造</p>
+\[
+\alpha=\pm\|x\|_2,\qquad w=\frac{x-\alpha e_1}{\|x-\alpha e_1\|_2},\qquad H=I-2ww^{\mathsf T},
+\]
+<p>使得 $Hx=\alpha e_1$（其中 $e_1$ 是 $\mathbb{R}^n$ 的第 1 个标准单位基向量）。</p>
+</div>
+
+<p>于是我们对 $a_1=\begin{bmatrix}a_{21}\\a_{31}\\\vdots\\a_{n1}\end{bmatrix}$ 计算 Householder 变换 $\tilde H_1$，使得 $\tilde H_1a_1=\alpha\begin{bmatrix}1\\0\\\vdots\\0\end{bmatrix}=\alpha e_1$（其中 $e_1$ 是 $\mathbb{R}^{n-1}$ 的第 1 个标准单位基向量）。</p>
+
+<h4>第二步、第三步……：同样的动作往右下角挪</h4>
+
+<p>对 $\tilde A_{22}=\tilde H_1A_{22}\tilde H_1\in\mathbb{R}^{(n-1)\times(n-1)}$ 进行相同的考虑，又可找到 Householder 变换 $\tilde H_2\in\mathbb{R}^{(n-1)\times(n-1)}$ 使得 $\tilde H_2\tilde A_{22}\tilde H_2$ 的第 1 列的第 3 个至第 $n-1$ 个元素为零。</p>
+
+<p>令</p>
+
+\[
+H_2=\begin{bmatrix}I_2&\\&\tilde H_2\end{bmatrix}=\begin{bmatrix}1&&\\&1&\\&&\tilde H_2\end{bmatrix}\in\mathbb{R}^{n\times n},
+\]
+
+<p>则我们有 $H_2(H_1AH_1)H_2$ 形如（第 2 列也被削平了）：</p>
+
+\[
+H_2(H_1AH_1)H_2=\begin{bmatrix}*&*&*&\cdots&*\\ *&*&*&\cdots&*\\ 0&*&*&\cdots&*\\ 0&0&*&\cdots&*\\ \vdots&\vdots&\vdots&\ddots&\vdots\\ 0&0&*&\cdots&*\end{bmatrix}
+\]
+
+<p>如此进行 $n-2$ 步，就可找到 $n-2$ 个 Householder 变换 $H_1,\dots,H_{n-2}\in\mathbb{R}^{n\times n}$ 使得</p>
+
+\[
+Q^{\mathsf T}AQ=(H_{n-2}\cdots H_1)A(H_1\cdots H_{n-2})=
+\begin{bmatrix}
+h_{11}&h_{12}&h_{13}&\cdots&h_{1n}\\
+h_{21}&h_{22}&h_{23}&\cdots&h_{2n}\\
+&h_{32}&h_{33}&\cdots&h_{3n}\\
+&&\ddots&\ddots&\vdots\\
+&&&h_{n,n-1}&h_{nn}
+\end{bmatrix}\triangleq H,
+\]
+
+<p>其中 $Q=H_1\cdots H_{n-2}\in\mathbb{R}^{n\times n}$ 是正交阵。我们称 $Q^{\mathsf T}AQ=H$（即 $A=QHQ^{\mathsf T}$）为实方阵 $A$ 的<strong>上 Hessenberg 分解</strong>。</p>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 240" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>上 Hessenberg 约化：一列一列地往下削</title>
+<desc>稠密矩阵 A 经过第一步把第一列第三行以下清零，再经过第二步把第二列第四行以下清零，最后得到上 Hessenberg 阵 H，只有次对角线以下全为零。</desc>
+<defs>
+<marker id="arrowQR2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-size="12.5" fill="var(--ink2)">
+<text x="34" y="30">A（稠密）</text>
+<text x="196" y="30">第 1 步之后</text>
+<text x="358" y="30">第 2 步之后</text>
+<text x="520" y="30">H（上 Hessenberg）</text>
+</g>
+<g fill="var(--ink3)" font-size="11.5">
+<text x="34" y="48">4×4 示意</text>
+</g>
+<g fill="var(--accent)">
+<rect x="34" y="58" width="14" height="14" fill="var(--accent)"/><rect x="50" y="58" width="14" height="14" fill="var(--accent)"/><rect x="66" y="58" width="14" height="14" fill="var(--accent)"/><rect x="82" y="58" width="14" height="14" fill="var(--accent)"/>
+<rect x="34" y="74" width="14" height="14" fill="var(--accent)"/><rect x="50" y="74" width="14" height="14" fill="var(--accent)"/><rect x="66" y="74" width="14" height="14" fill="var(--accent)"/><rect x="82" y="74" width="14" height="14" fill="var(--accent)"/>
+<rect x="34" y="90" width="14" height="14" fill="var(--accent)"/><rect x="50" y="90" width="14" height="14" fill="var(--accent)"/><rect x="66" y="90" width="14" height="14" fill="var(--accent)"/><rect x="82" y="90" width="14" height="14" fill="var(--accent)"/>
+<rect x="34" y="106" width="14" height="14" fill="var(--accent)"/><rect x="50" y="106" width="14" height="14" fill="var(--accent)"/><rect x="66" y="106" width="14" height="14" fill="var(--accent)"/><rect x="82" y="106" width="14" height="14" fill="var(--accent)"/>
+</g>
+<line x1="112" y1="90" x2="168" y2="90" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR2)"/>
+<text x="140" y="78" text-anchor="middle" font-size="11" fill="var(--ink3)">H₁</text>
+<g>
+<rect x="196" y="58" width="14" height="14" fill="var(--accent)"/><rect x="212" y="58" width="14" height="14" fill="var(--accent)"/><rect x="228" y="58" width="14" height="14" fill="var(--accent)"/><rect x="244" y="58" width="14" height="14" fill="var(--accent)"/>
+<rect x="196" y="74" width="14" height="14" fill="var(--accent)"/><rect x="212" y="74" width="14" height="14" fill="var(--accent)"/><rect x="228" y="74" width="14" height="14" fill="var(--accent)"/><rect x="244" y="74" width="14" height="14" fill="var(--accent)"/>
+<rect x="196" y="90" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="212" y="90" width="14" height="14" fill="var(--accent)"/><rect x="228" y="90" width="14" height="14" fill="var(--accent)"/><rect x="244" y="90" width="14" height="14" fill="var(--accent)"/>
+<rect x="196" y="106" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="212" y="106" width="14" height="14" fill="var(--accent)"/><rect x="228" y="106" width="14" height="14" fill="var(--accent)"/><rect x="244" y="106" width="14" height="14" fill="var(--accent)"/>
+</g>
+<line x1="274" y1="90" x2="330" y2="90" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR2)"/>
+<text x="302" y="78" text-anchor="middle" font-size="11" fill="var(--ink3)">H₂</text>
+<g>
+<rect x="358" y="58" width="14" height="14" fill="var(--accent)"/><rect x="374" y="58" width="14" height="14" fill="var(--accent)"/><rect x="390" y="58" width="14" height="14" fill="var(--accent)"/><rect x="406" y="58" width="14" height="14" fill="var(--accent)"/>
+<rect x="358" y="74" width="14" height="14" fill="var(--accent)"/><rect x="374" y="74" width="14" height="14" fill="var(--accent)"/><rect x="390" y="74" width="14" height="14" fill="var(--accent)"/><rect x="406" y="74" width="14" height="14" fill="var(--accent)"/>
+<rect x="358" y="90" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="374" y="90" width="14" height="14" fill="var(--accent)"/><rect x="390" y="90" width="14" height="14" fill="var(--accent)"/><rect x="406" y="90" width="14" height="14" fill="var(--accent)"/>
+<rect x="358" y="106" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="374" y="106" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="390" y="106" width="14" height="14" fill="var(--accent)"/><rect x="406" y="106" width="14" height="14" fill="var(--accent)"/>
+</g>
+<line x1="436" y1="90" x2="492" y2="90" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR2)"/>
+<text x="464" y="78" text-anchor="middle" font-size="11" fill="var(--ink3)">⋯</text>
+<g>
+<rect x="520" y="58" width="14" height="14" fill="var(--ok)"/><rect x="536" y="58" width="14" height="14" fill="var(--ok)"/><rect x="552" y="58" width="14" height="14" fill="var(--ok)"/><rect x="568" y="58" width="14" height="14" fill="var(--ok)"/>
+<rect x="520" y="74" width="14" height="14" fill="var(--ok)"/><rect x="536" y="74" width="14" height="14" fill="var(--ok)"/><rect x="552" y="74" width="14" height="14" fill="var(--ok)"/><rect x="568" y="74" width="14" height="14" fill="var(--ok)"/>
+<rect x="520" y="90" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="536" y="90" width="14" height="14" fill="var(--ok)"/><rect x="552" y="90" width="14" height="14" fill="var(--ok)"/><rect x="568" y="90" width="14" height="14" fill="var(--ok)"/>
+<rect x="520" y="106" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="536" y="106" width="14" height="14" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="552" y="106" width="14" height="14" fill="var(--ok)"/><rect x="568" y="106" width="14" height="14" fill="var(--ok)"/>
+</g>
+<text x="34" y="152" font-size="12" fill="var(--ink3)">每一格代表一个可能非零的元素；浅色格 = 被削成 0</text>
+<text x="34" y="176" font-size="12.5" fill="var(--accent)">消零数：0 → 1 → 2 → ⋯ → n−2</text>
+<text x="34" y="198" font-size="12.5" fill="var(--gold)">代价：一次性 10/3·n³（要 Q 再加 4/3·n³）</text>
+<text x="34" y="220" font-size="12.5" fill="var(--ok)">收益：之后每次 QR 迭代从 O(n³) 降到 O(n²)</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · 上 Hessenberg 约化：一列一列地往下削</figcaption>
+</figure>
+
+<div class="box ok">
+<p class="label">运算量与误差（算法 6.4.1）</p>
+<ul>
+<li>这一算法计算出的上 Hessenberg 矩阵就存放在 $A$ 所对应的存储单元内，<strong>运算量为 $\dfrac{10}{3}n^3$</strong>。（注意其中将一次矩阵-矩阵乘法替换为一次矩阵-向量乘法和一次向量-向量乘法的技巧。）</li>
+<li>如果需要计算 $Q$，则<strong>还需增加 $\dfrac{4}{3}n^3$</strong> 的运算量。</li>
+<li><strong>误差分析</strong>：上述算法的计算解 $\hat H$ 满足
+\[
+\hat H=Q^{\mathsf T}(A+\Delta A)Q,\qquad \|\Delta A\|_2\le cn^3\|A\|_2\cdot\mathrm{eps},
+\]
+其中 $Q$ 是正交阵，$c$ 是常数，$\mathrm{eps}$ 是机器精度。<strong>计算 Hessenberg 型的算法向前不稳定，但向后稳定。</strong></li>
+</ul>
+</div>
+
+<h4>上 Hessenberg 分解的唯一性（定理 6.4.3）</h4>
+
+<p>一般来说，上 Hessenberg 分解是<strong>不唯一</strong>的，但我们有如下结论：</p>
+
+<div class="box">
+<p class="label">定理（数值线性代数，定理 6.4.3）</p>
+<p>设 $A\in\mathbb{R}^{n\times n}$ 有两个上 Hessenberg 分解</p>
+\[
+\begin{cases}
+\big(Q^{(1)}\big)^{\mathsf T}AQ^{(1)}=H^{(1)}\\[4pt]
+\big(Q^{(2)}\big)^{\mathsf T}AQ^{(2)}=H^{(2)}
+\end{cases}
+\]
+<p>其中 $Q^{(1)}=[q_1^{(1)},\dots,q_n^{(1)}]$ 和 $Q^{(2)}=[q_1^{(2)},\dots,q_n^{(2)}]$ 是 $n$ 阶正交矩阵，而 $H^{(1)}=[h_{ij}^{(1)}]$ 和 $H^{(2)}=[h_{ij}^{(2)}]$ 是上 Hessenberg 矩阵。</p>
+<p>若 $q_1^{(1)}=q_1^{(2)}$ 且 $H^{(1)}$ 是<strong>不可约</strong>的（即其次对角元 $h_{i+1,i}^{(1)}$ 均不为零），则存在对角元均属于 $\{+1,-1\}$ 的对角阵 $D$ 使得</p>
+\[
+\begin{cases}
+Q^{(1)}=Q^{(2)}D\\[4pt]
+H^{(1)}=DH^{(2)}D
+\end{cases}\qquad(\text{即仅在正负号上有区别})
+\]
+</div>
+
+<div class="box key">
+<p class="label">这条定理在说什么：第一列定一切</p>
+<p>若 $Q^{\mathsf T}AQ=H$ 是不可约的上 Hessenberg 矩阵，其中 $Q$ 是正交矩阵，则在<strong>不考虑正负号变动</strong>的意义下，$Q$ 和 $H$ <strong>完全由 $Q$ 的第一列 $q_1$ 确定</strong>。</p>
+<p>这是合理的，因为</p>
+\[
+A\,[q_1,q_2,\dots,q_n]=[q_1,q_2,\dots,q_n]\,H
+\]
+<p>（类似于 Arnoldi 过程，只不过没有秩一项了）。把这个等式<strong>按列</strong>写出来，对 $j=1,\dots,n-1$ 有</p>
+\[
+Aq_j=h_{1j}q_1+h_{2j}q_2+\cdots+h_{jj}q_j+h_{j+1,j}q_{j+1}.
+\]
+<p>于是给定 $q_1$ 之后：</p>
+<ol>
+<li>$Aq_1=h_{11}q_1+h_{21}q_2$，而 $h_{11}=q_1^{\mathsf T}Aq_1$、$h_{21}=\|Aq_1-h_{11}q_1\|_2$，所以 $q_2$ 被定出来了——<strong>只差一个正负号</strong>；</li>
+<li>$q_2$ 定了，$Aq_2=h_{12}q_1+h_{22}q_2+h_{32}q_3$ 就把 $q_3$ 定出来了；</li>
+<li>以此类推，可知 $Q=[q_1,q_2,\dots,q_n]$ 完全由 $q_1$ 确定（除了在正负号上有区别）。</li>
+</ol>
+<p>「<strong>不可约</strong>」这个条件正是为了让每个 $h_{j+1,j}\ne0$，这样每一步都能解出 $q_{j+1}$；若某一步 $h_{j+1,j}=0$，这个过程就断了，$q_{j+1}$ 可以自由取，唯一性也就没了。</p>
+<p><strong>这条定理后面会有大用</strong>：§5.3.6 的「隐式 QR 迭代」全靠它——只要第一列对了，整个变换就是对的，于是我们可以绕开昂贵的 $O(n^3)$ 计算。</p>
+</div>
+
+<p>另外：我们也可以用 <strong>Givens 变换</strong>将 $A$ 约化为上 Hessenberg 阵，运算量通常是 Householder 方法的<strong>两倍</strong>。但如果 $A$ 有较多零元素，则通过适当安排 Givens 变换的次序，可使运算量大为减少。为减少计算量，我们也可以使用 <strong>Gauss 变换</strong>将 $A$ 约化为上 Hessenberg 阵，代价是<strong>数值稳定性降低</strong>。</p>
+
+<h3 id="s534">5.3.4 上 Hessenberg 阵的显式 QR 迭代</h3>
+
+<p>设 $H\in\mathbb{R}^{n\times n}$ 是上 Hessenberg 矩阵，考虑对 $H$ 进行一次 QR 迭代。</p>
+
+<p><strong>第一步</strong>是计算 $H$ 的 QR 分解，这步可由 $n-1$ 个 Givens 变换来完成。为让讨论更加直观，考虑 $n=5$ 的情形：</p>
+
+\[
+H=\begin{bmatrix}*&*&*&*&*\\ *&*&*&*&*\\ 0&*&*&*&*\\ 0&0&*&*&*\\ 0&0&0&*&*\end{bmatrix}
+\]
+
+\[
+G_{1,2}H=\begin{bmatrix}*&*&*&*&*\\ 0&*&*&*&*\\ 0&*&*&*&*\\ 0&0&*&*&*\\ 0&0&0&*&*\end{bmatrix}
+\quad\longrightarrow\quad
+G_{2,3}(G_{1,2}H)=\begin{bmatrix}*&*&*&*&*\\ 0&*&*&*&*\\ 0&0&*&*&*\\ 0&0&*&*&*\\ 0&0&0&*&*\end{bmatrix}
+\]
+
+\[
+G_{3,4}(G_{2,3}G_{1,2}H)=\begin{bmatrix}*&*&*&*&*\\ 0&*&*&*&*\\ 0&0&*&*&*\\ 0&0&0&*&*\\ 0&0&0&*&*\end{bmatrix}
+\quad\longrightarrow\quad
+G_{4,5}(G_{3,4}G_{2,3}G_{1,2}H)=\begin{bmatrix}*&*&*&*&*\\ 0&*&*&*&*\\ 0&0&*&*&*\\ 0&0&0&*&*\\ 0&0&0&0&*\end{bmatrix}\triangleq R
+\]
+
+<p>不难看出，对于一般的 $n$ 阶上 Hessenberg 矩阵 $H$，我们可以确定 $n-1$ 个 Givens 变换 $G_{1,2},\dots,G_{n-1,n}$ 使得</p>
+
+\[
+G_{n-1,n}\cdots G_{1,2}H=R.
+\]
+
+<p>令正交阵 $Q=\big(G_{n-1,n}\cdots G_{1,2}\big)^{-1}=\big(G_{n-1,n}\cdots G_{1,2}\big)^{\mathsf T}=G_{1,2}^{\mathsf T}\cdots G_{n-1,n}^{\mathsf T}$，即得到 $H$ 的 QR 分解 $H=QR$。</p>
+
+<p><strong>第二步</strong>便是计算</p>
+
+\[
+\tilde H=RQ=RQG_{1,2}^{\mathsf T}\cdots G_{n-1,n}^{\mathsf T}
+\]
+
+<p>可以验证 $\tilde H$ 是一个<strong>新的上 Hessenberg 矩阵</strong>。直观地看：$R$ 是上三角阵，右乘 $G_{1,2}^{\mathsf T}$ 会把第 1、2 列混合，于是在 $(2,1)$ 处冒出一个非零元；再右乘 $G_{2,3}^{\mathsf T}$ 把第 2、3 列混合，在 $(3,2)$ 处冒出一个……最后恰好只在次对角线上留下一串非零元，其余全为 0。</p>
+
+<div class="box ok">
+<p class="label">运算量对比：这就是 §5.3.3 那笔投资的回报</p>
+<table>
+<tr><th>矩阵类型</th><th>一次 QR 迭代的运算量</th></tr>
+<tr><td>上 Hessenberg 矩阵 $H$</td><td>$O(n^2)$</td></tr>
+<tr><td>一般方阵 $A$</td><td>$O(n^3)$</td></tr>
+</table>
+<p>注意：这里说的是<strong>一次迭代</strong>的代价。收敛速度仍然是线性的，所以迭代次数还很多——下一节就来解决「迭代太多次」的问题。</p>
+</div>
+
+<h3 id="s535">5.3.5 带位移的 QR 迭代</h3>
+
+<p>QR 算法是<strong>线性收敛</strong>的（每次迭代的前后误差是成比例的），收敛速度取决于特征值的分离程度。为加速收敛（<strong>受反幂法的启发</strong>），我们可引入<strong>位移</strong>。</p>
+
+<p>设第 $k$ 步迭代的位移为 $\mu_k$，则带位移的 QR 迭代格式为：</p>
+
+\[
+\begin{aligned}
+H_k-\mu_kI &= Q_kR_k,\\[2pt]
+H_{k+1} &= R_kQ_k+\mu_kI.
+\end{aligned}
+\]
+
+<p>根据<strong>反幂法</strong>的经验，我们可选取位移 $\mu_k=h_{nn}^{(k)}$（即 $H_k$ 的第 $n$ 个对角元）。可以证明：</p>
+
+<div class="box key">
+<p class="label">二次收敛</p>
+<p>当第 $n-1$ 个次对角元 $h_{n,n-1}^{(k)}$ 很小时，经一次位移 $\mu_k=h_{nn}^{(k)}$ 的 QR 迭代后，有</p>
+\[
+h_{n,n-1}^{(k+1)}=O\!\left(\big(h_{n,n-1}^{(k)}\big)^2\right)
+\]
+<p>成立。也就是说：<strong>次对角元每迭代一次，误差就平方一次</strong>——从「线性收敛」升级为「二次收敛」。</p>
+</div>
+
+<h4>证明：只看右下角那个 $2\times2$ 子块</h4>
+
+<p class="label">① 取位移因子 $\mu_k=h_{nn}^{(k)}$，设想 Givens 变换已经做了 $n-2$ 步</p>
+<p>假定 $H_k-\mu_kI=H_k-h_{nn}^{(k)}I$ 已经过 $n-2$ 次 Givens 变换，还差 1 次 Givens 变换就能约化为上三角阵。考虑此时右下角 $2\times2$ 的子矩阵</p>
+\[
+\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&h_{nn}^{(k)}-h_{nn}^{(k)}\end{bmatrix}=\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&0\end{bmatrix}
+\]
+<p>（注意前 $n-2$ 次 Givens 变换会改变 $H_k-h_{nn}^{(k)}I$ 的第 $n-1$ 行，但<strong>不会影响第 $n$ 行</strong>。）</p>
+
+<p class="label">② 最后这一次 Givens 变换要消去 $h_{n,n-1}^{(k)}$</p>
+<p>即需确定 $c=\cos\theta$ 和 $s=\sin\theta$ 使得</p>
+\[
+\begin{bmatrix}c&s\\-s&c\end{bmatrix}\begin{bmatrix}h_{n-1,n-1}^{(k)}\\ h_{n,n-1}^{(k)}\end{bmatrix}=\begin{bmatrix}\rho\\0\end{bmatrix}
+\]
+<p>解得</p>
+\[
+c=\frac{h_{n-1,n-1}^{(k)}}{\rho},\qquad s=\frac{h_{n,n-1}^{(k)}}{\rho},\qquad \rho=\sqrt{\big(h_{n-1,n-1}^{(k)}\big)^2+\big(h_{n,n-1}^{(k)}\big)^2}.
+\]
+
+<p class="label">③ 新的次对角元就是这个 $2\times2$ 相似变换的 $(2,1)$ 元</p>
+<p>根据 QR 迭代的过程可知：新的上 Hessenberg 矩阵 $H_{k+1}$ 的第 $n-1$ 个次对角元 $h_{n,n-1}^{(k+1)}$ 就是矩阵乘积</p>
+\[
+\begin{bmatrix}c&s\\-s&c\end{bmatrix}\begin{bmatrix}\bar h_{n-1,n-1}^{(k)}&\bar h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&0\end{bmatrix}\begin{bmatrix}c&s\\-s&c\end{bmatrix}^{\mathsf T}
+\]
+<p>的 $(2,1)$ 位置上的元素（这里 $\bar h$ 表示经过前面 $n-2$ 次变换之后的元素），即有</p>
+\[
+\begin{aligned}
+h_{n,n-1}^{(k+1)} &= \big(-s\bar h_{n-1,n-1}^{(k)}+ch_{n,n-1}^{(k)}\big)\cdot c+\big(-s\bar h_{n-1,n}^{(k)}\big)\cdot s\\
+&=0-cs\bar h_{n-1,n}^{(k)}\\
+&=-s^2\bar h_{n-1,n}^{(k)}\\
+&=-\frac{\big(h_{n,n-1}^{(k)}\big)^2}{\big(h_{n-1,n-1}^{(k)}\big)^2+\big(h_{n,n-1}^{(k)}\big)^2}\,\bar h_{n-1,n}^{(k)}\\
+&\approx-\frac{\bar h_{n-1,n}^{(k)}}{\big(\bar h_{n-1,n-1}^{(k)}\big)^2}\big(h_{n,n-1}^{(k)}\big)^2=O\!\left(\big(h_{n,n-1}^{(k)}\big)^2\right).
+\end{aligned}
+\]
+
+<p>逐行说明：</p>
+<ul>
+<li>第一行就是 $(2,1)$ 元的定义式（行 2 与列 1 的内积）；</li>
+<li>第二行用到了 ② 里的条件 $-s\bar h_{n-1,n-1}^{(k)}+ch_{n,n-1}^{(k)}=0$——这正是 $c,s$ 的<strong>定义</strong>，所以这一项整个消失；</li>
+<li>第三行只是把剩下的那一项写整齐；</li>
+<li>第四行代入 $s=h_{n,n-1}^{(k)}/\rho$、$\rho^2=\big(h_{n-1,n-1}^{(k)}\big)^2+\big(h_{n,n-1}^{(k)}\big)^2$；</li>
+<li>最后一行用了「$h_{n,n-1}^{(k)}$ 趋于零，故可假设 $|h_{n,n-1}^{(k)}|$ 远小于 $|\bar h_{n-1,n-1}^{(k)}|$ 和 $|\bar h_{n-1,n}^{(k)}|$」。</li>
+</ul>
+<p>这表明通过取位移因子 $\mu_k=h_{nn}^{(k)}$，可让特征值的渐近收敛速度从<strong>线性收敛加速为二次收敛</strong>。</p>
+
+<div class="box">
+<p class="label">邵老师提供的观点：为什么 $h_{nn}^{(k)}$ 有资格当特征值</p>
+<p>假设对 $H_k-\mu_kI$ 进行 QR 分解得到的上三角阵为</p>
+\[
+H_k-\mu_kI=Q_kR_k,\qquad
+R_k=\begin{bmatrix}*&*&*&*\\ 0&*&*&*\\ &0&*&*\\ &&0&\varepsilon\end{bmatrix}
+\]
+<p>其中 $\varepsilon$ 是一个模很小的小量。最后得到 $H_{k+1}=R_kQ_k+\mu_kI$：</p>
+\[
+H_{k+1}=R_kQ_k+\mu_kI=\begin{bmatrix}*&*&*&*\\ +&*&*&*\\ &+&*&*\\ &&\varepsilon_1&\varepsilon_2+\mu_k\end{bmatrix}
+\]
+<p>其中 $\varepsilon_1,\varepsilon_2$ 都是模很小的小量。根据 <strong>Gershgorin 圆盘定理</strong>可知，会有一个特征值落在以 $\varepsilon_2+\mu_k$ 为中心、以 $|\varepsilon_1|$ 为半径的圆盘中（如果该圆盘不与其他圆盘连通的话）。因此<strong>将 $\varepsilon_2+\mu_k$ 当作特征值是合理的</strong>——这就是「位移取 $h_{nn}^{(k)}$」这件事的正当性来源。</p>
+</div>
+
+<div class="box ok">
+<p class="label">和 Rayleigh 商迭代（§2.6）的联系</p>
+<p>若取 $\mu_k=h_{nn}^{(k)}$，则相当于 <strong>Rayleigh 商迭代</strong>：</p>
+\[
+\mu_k=h_{nn}^{(k)}=[0,\dots,0,1]\,H_k\begin{bmatrix}0\\\vdots\\0\\1\end{bmatrix}=e_n^{\mathsf T}H_ke_n.
+\]
+<p>近似特征向量可以一直视为 $e_n=[0,\dots,0,1]^{\mathsf T}$；它近似 $h_{n,n-1}^{(k)}$ 的特征向量的程度要好于近似 $h_{nn}^{(k)}$ 的特征向量的程度（二次收敛）。下面这个推导说明了「为什么 $e_n$ 越用越准」。</p>
+<p>设 $H$ 是上 Hessenberg 矩阵，位移 $\mu=h_{nn}$。若视 $h_{n,n-1}\approx0$，则</p>
+\[
+(H-\mu I)^{\mathsf T}e_n\approx0,
+\]
+<p>这表示 $e_n$ 是近似特征值 $\mu=h_{nn}$ 的<strong>近似左特征向量</strong>，即 $e_n^{\mathsf T}H\approx\mu e_n^{\mathsf T}$。</p>
+<p>我们现在想要将近似做得更好（对 $H-\mu I$ 做 QR 分解来解线性方程组）：</p>
+\[
+z^{\mathsf T}=e_n^{\mathsf T}(H-\mu I)^{-1}=e_n^{\mathsf T}(QR)^{-1}=e_n^{\mathsf T}R^{-1}Q^{\mathsf T}=\alpha e_n^{\mathsf T}Q^{\mathsf T}
+\]
+<p>（注意 $e_n^{\mathsf T}R^{-1}=\alpha e_n^{\mathsf T}$：$R^{-1}$ 是上三角阵，它的第 $n$ 行只有第 $n$ 个元素非零。）因此 $e_n^{\mathsf T}Q^{\mathsf T}$ 也是 $H$ 的一个近似左特征向量，满足 $e_n^{\mathsf T}Q^{\mathsf T}H\approx\mu e_n^{\mathsf T}Q^{\mathsf T}$。</p>
+<p>现在记 $\tilde H=Q^{\mathsf T}HQ$，则我们有</p>
+\[
+e_n^{\mathsf T}\tilde H=e_n^{\mathsf T}Q^{\mathsf T}HQ\approx\mu e_n^{\mathsf T}Q^{\mathsf T}Q=\mu e_n^{\mathsf T}.
+\]
+<p>这说明 $e_n^{\mathsf T}$ 仍然是（更新后的矩阵的）一个近似左特征向量，而且由于 $h_{n,n-1}$ 会比 $\bar h_{n,n-1}$ 更小，故<strong>近似效果会更好</strong>。这正是「位移 QR」与「反幂法」同源的证据。</p>
+</div>
+
+<h3 id="s536">5.3.6 双位移的隐式 QR 迭代（Francis）</h3>
+
+<p>单位移的 QR 迭代存在严重的缺点：<strong>若 $H$ 具有复共轭特征值，则实位移一般不能起到加速作用。</strong></p>
+
+<p>为克服这一缺点，我们来介绍双位移的 QR 迭代，其基本思想是<strong>将两步单位移的 QR 迭代合并为一步，以避免复数运算</strong>。</p>
+
+<p>考察单位移的 QR 迭代格式：</p>
+
+\[
+\begin{aligned}
+H_k-\mu_kI &= Q_kR_k\\[2pt]
+H_{k+1} &= R_kQ_k+\mu_kI
+\end{aligned}
+\]
+
+<ul>
+<li>假定出现的所有上 Hessenberg 阵都是<strong>不可约</strong>的。若不然，例如 $H_k=\begin{bmatrix}H_k^{(1)}&*\\&H_k^{(2)}\end{bmatrix}$，则我们可以分别对 $H_k^{(1)}$ 和 $H_k^{(2)}$ 进行 QR 迭代。</li>
+<li><strong>实矩阵可以有复特征值。</strong></li>
+</ul>
+
+<p>如果 $H_k$ 的右下角的 $2\times2$ 子矩阵</p>
+
+\[
+\tilde H_k=\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&h_{nn}^{(k)}\end{bmatrix}
+\]
+
+<p>有一对复共轭特征值 $\mu_1^{(k)},\mu_2^{(k)}$，我们就不能期望 $h_{n,n-1}^{(k)}$ 最终收敛到 $A$ 的某个特征值，此时取位移 $\mu_k=h_{nn}^{(k)}$ 就<strong>完全起不到加速收敛的作用</strong>。</p>
+
+<p>我们自然想到取 $\mu_1^{(k)}$ 或 $\mu_2^{(k)}$ 为位移来加速收敛，但这样一来就必须涉及<strong>复数运算</strong>。为规避复数运算，我们用 $\mu_1^{(k)}$ 和 $\mu_2^{(k)}$ <strong>连续作两次位移</strong>，迭代格式为（为简化记号，我们省去标记 $(k)$，记 $H_k$ 为 $H$，记 $\mu_1^{(k)},\mu_2^{(k)}$ 为 $\mu_1,\mu_2$）：</p>
+
+\[
+\begin{aligned}
+H-\mu_1I &= U_1R_1, &\quad H_1 &= R_1U_1+\mu_1I,\\[2pt]
+H_1-\mu_2I &= U_2R_2, &\quad H_2 &= R_2U_2+\mu_2I,
+\end{aligned}
+\]
+
+<p>其中 $U_1,U_2\in\mathbb{C}^{n\times n}$ 均是酉矩阵，并要求 $R_1,R_2$ 的对角元均为正实数。</p>
+
+<h4>把两次位移「打包」成一个 $M$</h4>
+
+<p>我们有：</p>
+
+\[
+\begin{cases}
+H_1=R_1U_1+\mu_1I=U_1^{*}(U_1R_1+\mu_1I)U_1=U_1^{*}HU_1\\[6pt]
+H_2=R_2U_2+\mu_2I=U_2^{*}H_1U_2=(U_1U_2)^{*}H(U_1U_2)
+\end{cases}
+\]
+
+<p>以及</p>
+
+\[
+\begin{aligned}
+(H-\mu_1I)(H-\mu_2I) &= U_1R_1\big(U_1R_1+(\mu_1-\mu_2)I\big)\\
+&=U_1\big(R_1U_1+(\mu_1-\mu_2)I\big)R_1\\
+&=U_1(H_1-\mu_2I)R_1\\
+&=U_1(U_2R_2)R_1\\
+&=(U_1U_2)(R_2R_1).
+\end{aligned}
+\]
+
+<p>我们记</p>
+
+\[
+Q=U_1U_2,\qquad R=R_2R_1,\qquad M=(H-\mu_1I)(H-\mu_2I),
+\]
+
+<p>则有</p>
+
+\[
+H_2=Q^{*}HQ,\qquad M=QR.
+\]
+
+<div class="box key">
+<p class="label">「打包」的结果：只需要对 $M$ 做一次 QR 分解</p>
+<p>上面两式说的是：<strong>$M=QR$ 就是 $M$ 的 QR 分解，而 $H_2=Q^{*}HQ$。</strong></p>
+<p>也就是说，两步单位移 QR 迭代合起来，等价于<strong>对 $M$ 做一次 QR 分解、再把两个因子换个顺序</strong>——形式上跟一次普通 QR 迭代一模一样，只是把 $H$ 换成了 $M$。</p>
+</div>
+
+<h4>为什么这样就能绕开复数运算</h4>
+
+<p>注意到 $\mu_1$ 和 $\mu_2$ 作为 $H_k$ 的右下角的 $2\times2$ 子矩阵 $\tilde H_k$ 的<strong>复共轭特征值</strong>，我们记</p>
+
+\[
+t=\mathrm{tr}(\tilde H_k)=\mathrm{tr}\!\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&h_{nn}^{(k)}\end{bmatrix}=h_{n-1,n-1}^{(k)}+h_{nn}^{(k)}=\mu_1+\mu_2\in\mathbb{R},
+\]
+\[
+s=\det(\tilde H_k)=\det\!\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&h_{nn}^{(k)}\end{bmatrix}=h_{n-1,n-1}^{(k)}h_{nn}^{(k)}-h_{n-1,n}^{(k)}h_{n,n-1}^{(k)}=\mu_1\mu_2\in\mathbb{R},
+\]
+
+<p>于是</p>
+
+\[
+M=(H-\mu_1I)(H-\mu_2I)=H^2-(\mu_1+\mu_2)H+\mu_1\mu_2I=H^2-tH+sI
+\]
+
+<p>是<strong>实方阵</strong>。妙处就在这里：$\mu_1,\mu_2$ 本身是复数，但它们的<strong>和与积都是实数</strong>，所以 $M$ 完全用实数就算得出来，$M=QR$ 也只用实数运算。</p>
+
+<p>由于 $R_1,R_2$ 的对角元均为正实数，故 $R=R_2R_1$ 的对角元也都是正实数。若 $\mu_1,\mu_2$ 不是 $H$ 的特征值（这保证了实方阵 $M$ 非奇异），则由 $M=QR$ 可知 $Q$ 是<strong>实正交阵</strong>。于是根据 $H_2=Q^{\mathsf T}HQ$ 可知 $H_2$ 也是实方阵。</p>
+
+<p>也就是说，在不考虑误差的情况下，用 $\mu_1,\mu_2$ 连续作两次位移进行 QR 迭代得到的 $H_2$ 也是<strong>实的上 Hessenberg 阵</strong>。</p>
+
+<div class="box warn">
+<p class="label">但是：直接这么算是不行的</p>
+<p>但实际计算中，由于舍入误差的影响，这样得到的 $H_2$ <strong>不一定是实的</strong>。为确保计算得到的 $H_2$ 仍是实的，我们自然想到按如下步骤计算 $H_2$：</p>
+\[
+t=\mathrm{tr}(\tilde H_k),\qquad s=\det(\tilde H_k),\qquad M=H^2-tH+sI,\qquad M=QR,\qquad H_2=Q^{\mathsf T}HQ
+\]
+<p>然而<strong>第三步计算 $M$ 的运算量就是 $O(n^3)$</strong>（这是我们不希望看到的），而且 $M$ 也<strong>不再是上 Hessenberg 矩阵</strong>（它比上 Hessenberg 矩阵还要多一条非零的次对角线）。</p>
+</div>
+
+<h4>破局：隐式 Q 定理</h4>
+
+<p>幸运的是，回忆起定理 6.4.3 的结论（<strong>它在这里第二次派上用场</strong>）：</p>
+
+<div class="box">
+<p class="label">回忆：隐式 Q 定理（定理 6.4.3）</p>
+<p>设 $A\in\mathbb{R}^{n\times n}$ 有两个上 Hessenberg 分解</p>
+\[
+\begin{cases}\big(Q^{(1)}\big)^{\mathsf T}AQ^{(1)}=H^{(1)}\\[4pt] \big(Q^{(2)}\big)^{\mathsf T}AQ^{(2)}=H^{(2)}\end{cases}
+\]
+<p>若 $q_1^{(1)}=q_1^{(2)}$ 且 $H^{(1)}$ 是不可约的，则存在对角元均属于 $\{+1,-1\}$ 的对角阵 $D$ 使得</p>
+\[
+\begin{cases}Q^{(1)}=Q^{(2)}D\\[4pt] H^{(1)}=DH^{(2)}D\end{cases}
+\]
+</div>
+
+<p>上述定理表明：若 $Q^{\mathsf T}AQ=H$ 是不可约的上 Hessenberg 矩阵，其中 $Q$ 是正交矩阵，则在不考虑正负号变动的意义下，<strong>$Q$ 和 $H$ 完全由 $Q$ 的第一列 $q_1$ 确定</strong>。</p>
+
+<p>也就是说，无论采用什么方法去求正交矩阵 $\tilde Q$ 使得 $\tilde H_2=\tilde Q^{\mathsf T}HQ$ 为上 Hessenberg 矩阵，只要 $\tilde Q$ 的第一列与 $Q$ 的第一列相同，$\tilde H_2$ 就与 $H_2$ <strong>本质上相同</strong>（所有元素绝对值都对应相等，只是正负号可能不同）。当然，这需要 $H_2$ 是不可约的上 Hessenberg 矩阵。</p>
+
+<p>换言之，只要 $H_2$ 是不可约的上 Hessenberg 矩阵，我们就有<strong>很大的自由度</strong>去寻找更有效的方法来实现由 $H$ 到 $H_2$ 的变换。</p>
+
+<div class="box ok">
+<p class="label">定理 6.4.4：不可约性是可以保住的</p>
+<p>若 $H$ 是不可约的上 Hessenberg 矩阵，且 $\mu_1,\mu_2$ 均不是 $H$ 的特征值，则上述迭代产生的 $H_2$ 也是不可约的上 Hessenberg 矩阵。</p>
+<p>所以上面那条「自由度」是<strong>合法可用的</strong>。</p>
+</div>
+
+<h4>Francis 的做法：只算 $M$ 第一列的前三个数</h4>
+
+<p>我们可以通过其他途径来实现从 $H$ 到 $H_2$ 的变换。</p>
+
+<p><strong>首先</strong>，根据 $M=QR$ 可知 $Q$ 的第一列 $Qe_1$ 就是 $M$ 的第一列 $Me_1$ 单位化得到的。而根据 $M=H^2-tH+sI$ 可知 $M$ 的第一列元素如下（我们<strong>不用计算整个 $M$</strong>，只需计算其第一列的前三个元素 $m_{11},m_{21},m_{31}$ 即可）：</p>
+
+\[
+Me_1=\begin{bmatrix}m_{11}\\m_{21}\\m_{31}\\0\\\vdots\\0\end{bmatrix}=
+\begin{bmatrix}
+h_{11}^2+h_{12}h_{21}-th_{11}+s\\[3pt]
+h_{21}\big(h_{11}+h_{22}-t\big)\\[3pt]
+h_{21}h_{32}\\[3pt]
+0\\\vdots\\0
+\end{bmatrix}
+\]
+
+<p>（这里 $h_{ij}$ 是 $H$ 的元素。「只有前三个非零」直接来自 $H$ 的上 Hessenberg 结构：$(H^2)_{i1}$ 对 $i\ge4$ 必为零。）</p>
+
+<p><strong>其次</strong>，我们计算 Householder 变换 $P_0$，将 $M$ 的第一列 $Me_1$ 的第 2 个和第 3 个分量化为零，即使得</p>
+
+\[
+\tilde P_0=I_3-\beta_0v_0v_0^{\mathsf T},\qquad P_0=\begin{bmatrix}\tilde P_0&\\&I_{n-3}\end{bmatrix},\qquad P_0Me_1=\alpha e_1,
+\]
+\[
+\alpha=\|Me_1\|_2=\sqrt{m_{11}^2+m_{21}^2+m_{31}^2}.
+\]
+
+<p>从而 $P_0$ 的第一行的转置（即第一列 $P_0e_1$）就是 $Me_1$ 单位化得到的向量，因此待求正交矩阵 $Q$ 的第一列即为 $P_0$ 的第一列，即 $Qe_1=P_0e_1$。</p>
+
+<p>现令 $B=P_0HP_0^{\mathsf T}=P_0HP_0$。由于这个正交相似变换只改变了 $H$ 的前三行和前三列，故 $B$ 的形状如下（<strong>在 $(3,1),(4,1),(4,2)$ 处冒出「鼓包」</strong>，用 $+$ 标出）：</p>
+
+\[
+B=P_0HP_0=
+\begin{bmatrix}
+*&*&*&*&\cdots&*\\
+*&*&*&*&\cdots&*\\
++&*&*&*&\cdots&*\\
++&+&*&*&\cdots&*\\
+&&&\ddots&\ddots&\vdots\\
+&&&&\ddots&*
+\end{bmatrix}
+\]
+
+<p>接下来我们只要能够找到第一列为 $e_1$ 的正交矩阵 $\tilde Q$ 使得 $\tilde H_2=\tilde Q^{\mathsf T}B\tilde Q$ 为上 Hessenberg 矩阵，那么 $\tilde H_2$ 就是我们希望得到的 $H_2$。</p>
+
+<p>根据 §5.3.3 节的上 Hessenberg 分解算法可知，这是容易办到的：例如可以确定 $n-2$ 个 Householder 变换 $P_1,\dots,P_{n-2}$ 使得 $P_{n-2}\cdots P_1BP_1\cdots P_{n-2}=\tilde H_2$。则正交矩阵 $\tilde Q=P_1\cdots P_{n-2}$ 的第一行和第一列只有 $(1,1)$ 位置上的元素为 1，其余元素非零（这是因为 $P_1,\dots,P_{n-2}$ 的第一行和第一列都只有 $(1,1)$ 位置上的元素为 1，其余元素非零，参考 §5.3.3 节的内容）。因此 $\tilde Q$ 的第一列自然为 $e_1$，即 $\tilde Qe_1=e_1$。</p>
+
+<p>由于 $B$ 矩阵结构的稀疏性，实现这一上 Hessenberg 分解（也就是「把鼓包一路追下去」）的运算量仅为 $O(n^2)$。</p>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 250" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Francis 双位移：鼓包的产生与追逐</title>
+<desc>先用三阶 Householder 在左上角制造一个鼓包，再用 Householder 变换一行一行地把鼓包往下压，直到压出矩阵底部，重新得到上 Hessenberg 形。</desc>
+<defs>
+<marker id="arrowQR3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g font-size="12" fill="var(--ink2)">
+<text x="26" y="26">H（上 Hessenberg）</text>
+<text x="180" y="26">P₀HP₀：鼓包出现</text>
+<text x="356" y="26">追一步</text>
+<text x="518" y="26">追到底：变回 Hessenberg</text>
+</g>
+<g>
+<rect x="26" y="40" width="13" height="13" fill="var(--ok)"/><rect x="41" y="40" width="13" height="13" fill="var(--ok)"/><rect x="56" y="40" width="13" height="13" fill="var(--ok)"/><rect x="71" y="40" width="13" height="13" fill="var(--ok)"/>
+<rect x="26" y="55" width="13" height="13" fill="var(--ok)"/><rect x="41" y="55" width="13" height="13" fill="var(--ok)"/><rect x="56" y="55" width="13" height="13" fill="var(--ok)"/><rect x="71" y="55" width="13" height="13" fill="var(--ok)"/>
+<rect x="26" y="70" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="41" y="70" width="13" height="13" fill="var(--ok)"/><rect x="56" y="70" width="13" height="13" fill="var(--ok)"/><rect x="71" y="70" width="13" height="13" fill="var(--ok)"/>
+<rect x="26" y="85" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="41" y="85" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="56" y="85" width="13" height="13" fill="var(--ok)"/><rect x="71" y="85" width="13" height="13" fill="var(--ok)"/>
+</g>
+<line x1="100" y1="72" x2="150" y2="72" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR3)"/>
+<text x="125" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink3)">P₀</text>
+<g>
+<rect x="180" y="40" width="13" height="13" fill="var(--ok)"/><rect x="195" y="40" width="13" height="13" fill="var(--ok)"/><rect x="210" y="40" width="13" height="13" fill="var(--ok)"/><rect x="225" y="40" width="13" height="13" fill="var(--ok)"/>
+<rect x="180" y="55" width="13" height="13" fill="var(--ok)"/><rect x="195" y="55" width="13" height="13" fill="var(--ok)"/><rect x="210" y="55" width="13" height="13" fill="var(--ok)"/><rect x="225" y="55" width="13" height="13" fill="var(--ok)"/>
+<rect x="180" y="70" width="13" height="13" fill="var(--warn)"/><rect x="195" y="70" width="13" height="13" fill="var(--ok)"/><rect x="210" y="70" width="13" height="13" fill="var(--ok)"/><rect x="225" y="70" width="13" height="13" fill="var(--ok)"/>
+<rect x="180" y="85" width="13" height="13" fill="var(--warn)"/><rect x="195" y="85" width="13" height="13" fill="var(--warn)"/><rect x="210" y="85" width="13" height="13" fill="var(--ok)"/><rect x="225" y="85" width="13" height="13" fill="var(--ok)"/>
+</g>
+<line x1="254" y1="72" x2="326" y2="72" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR3)"/>
+<text x="290" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink3)">P₁</text>
+<g>
+<rect x="356" y="40" width="13" height="13" fill="var(--ok)"/><rect x="371" y="40" width="13" height="13" fill="var(--ok)"/><rect x="386" y="40" width="13" height="13" fill="var(--ok)"/><rect x="401" y="40" width="13" height="13" fill="var(--ok)"/>
+<rect x="356" y="55" width="13" height="13" fill="var(--ok)"/><rect x="371" y="55" width="13" height="13" fill="var(--ok)"/><rect x="386" y="55" width="13" height="13" fill="var(--ok)"/><rect x="401" y="55" width="13" height="13" fill="var(--ok)"/>
+<rect x="356" y="70" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="371" y="70" width="13" height="13" fill="var(--ok)"/><rect x="386" y="70" width="13" height="13" fill="var(--ok)"/><rect x="401" y="70" width="13" height="13" fill="var(--ok)"/>
+<rect x="356" y="85" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="371" y="85" width="13" height="13" fill="var(--warn)"/><rect x="386" y="85" width="13" height="13" fill="var(--warn)"/><rect x="401" y="85" width="13" height="13" fill="var(--ok)"/>
+</g>
+<line x1="430" y1="72" x2="500" y2="72" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR3)"/>
+<text x="465" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink3)">⋯</text>
+<g>
+<rect x="530" y="40" width="13" height="13" fill="var(--ok)"/><rect x="545" y="40" width="13" height="13" fill="var(--ok)"/><rect x="560" y="40" width="13" height="13" fill="var(--ok)"/><rect x="575" y="40" width="13" height="13" fill="var(--ok)"/>
+<rect x="530" y="55" width="13" height="13" fill="var(--ok)"/><rect x="545" y="55" width="13" height="13" fill="var(--ok)"/><rect x="560" y="55" width="13" height="13" fill="var(--ok)"/><rect x="575" y="55" width="13" height="13" fill="var(--ok)"/>
+<rect x="530" y="70" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="545" y="70" width="13" height="13" fill="var(--ok)"/><rect x="560" y="70" width="13" height="13" fill="var(--ok)"/><rect x="575" y="70" width="13" height="13" fill="var(--ok)"/>
+<rect x="530" y="85" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="545" y="85" width="13" height="13" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/><rect x="560" y="85" width="13" height="13" fill="var(--ok)"/><rect x="575" y="85" width="13" height="13" fill="var(--ok)"/>
+</g>
+<rect x="26" y="126" width="13" height="13" fill="var(--warn)"/>
+<text x="48" y="133" dominant-baseline="central" font-size="12" fill="var(--warn)">鼓包（多出来的非零元）</text>
+<rect x="240" y="126" width="13" height="13" fill="var(--ok)"/>
+<text x="262" y="133" dominant-baseline="central" font-size="12" fill="var(--ok)">允许非零的位置</text>
+<text x="26" y="166" font-size="12.5" fill="var(--ink2)">① 鼓包只在 (3,1)、(4,1)、(4,2) 三处，由 P₀ 这一个 3 阶 Householder 造成</text>
+<text x="26" y="188" font-size="12.5" fill="var(--ink2)">② 之后每用一个 Householder（作用在相邻三行三列上）就把鼓包往下推一格</text>
+<text x="26" y="210" font-size="12.5" fill="var(--ink2)">③ 总共 n−2 步，全部是 O(n²) 的小操作——这就是「隐式」的代价优势</text>
+<text x="26" y="234" font-size="12" fill="var(--ink3)">依据：隐式 Q 定理 —— 只要第一列对了，得到的 Hessenberg 阵本质上唯一（差正负号）</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 13 · Francis 双位移：鼓包的产生与追逐</figcaption>
+</figure>
+
+<p>综上所述，我们得到了著名的 <strong>Francis 双位移的 QR 迭代算法</strong>（双位移的 QR 迭代算法，数值线性代数，算法 6.4.2）。</p>
+
+<div class="box ok">
+<p class="label">运算量</p>
+<p>上述算法的运算量为</p>
+\[
+10n^3,
+\]
+<p>若需要累积正交变换，则还需再增加运算量</p>
+\[
+10n^3.
+\]
+</div>
+
+<h3 id="s537">5.3.7 隐式 QR 算法</h3>
+
+<p>QR 算法作为一种实用的算法，还需给出有效的<strong>收敛判定准则</strong>。当</p>
+
+\[
+\big|h_{i+1,i}^{(k)}\big|\le\left(\big|h_{ii}^{(k)}\big|+\big|h_{i+1,i+1}^{(k)}\big|\right)\cdot\mathrm{eps}
+\]
+
+<p>时，我们就认为上 Hessenberg 矩阵 $H_k$ 的次对角元 $h_{i+1,i}^{(k)}$ 为零（因为在最初对 $A\in\mathbb{R}^{n\times n}$ 进行上 Hessenberg 分解得到 $H_0\in\mathbb{R}^{n\times n}$ 的过程中引入了 $\|A\|_F\cdot\mathrm{eps}$ 量级的误差）。</p>
+
+<p>结合之前的讨论，我们得到<strong>隐式 QR 算法</strong>。该算法用于计算给定实方阵 $A\in\mathbb{R}^{n\times n}$ 的<strong>实 Schur 分解</strong> $Q^{\mathsf T}AQ=T$，其中 $Q\in\mathbb{R}^{n\times n}$ 是正交矩阵，而 $T$ 是拟上三角阵（即上 Hessenberg 矩阵），具体来说是<strong>对角块为 $1\times1$ 或 $2\times2$ 方阵的块上三角阵</strong>，每个 $2\times2$ 的对角块对应一对复共轭特征值。</p>
+
+<h4>（1）将给定方阵 $A$ 上 Hessenberg 化</h4>
+
+<p>用 §5.3.3 的 Householder 方法得到上 Hessenberg 矩阵 $H$，同时累积出正交阵 $Q$，使 $Q^{\mathsf T}AQ=H$。</p>
+
+<h4>（2）收敛性判定</h4>
+
+<ul>
+<li>将所有满足条件 $\big|h_{i+1,i}\big|\le\left(\big|h_{ii}\big|+\big|h_{i+1,i+1}\big|\right)\mathrm{eps}$（$i=1,\dots,n-1$）的次对角元 $h_{i+1,i}$ <strong>置为零</strong>。
+<ul>
+<li>（本来只需将 $\le\|A\|_2\mathrm{eps}$ 的那些次对角元置为零即可，但现实中会提这样严格的要求，而且效果相当不错。）</li>
+<li>（这样操作是<strong>向后稳定</strong>的，因为在正交变换下，对 $H$ 的扰动向后传递时 2-范数不变。）</li>
+</ul></li>
+<li>将 $H$ 划分为
+\[
+H=\begin{bmatrix}H_{11}&H_{12}&H_{13}\\ &H_{22}&H_{23}\\ &&H_{33}\end{bmatrix},\qquad
+\left(\text{其中 }\begin{array}{l}H_{11}\in\mathbb{R}^{l\times l}\\ H_{22}\in\mathbb{R}^{(u-l)\times(u-l)}\\ H_{33}\in\mathbb{R}^{(n-u)\times(n-u)}\end{array}\right)
+\]</li>
+<li>最小化 $u$ 使得 $H_{33}\in\mathbb{R}^{(n-u)\times(n-u)}$ 为对角块为 $1\times1$ 或 $2\times2$ 方阵的块上三角阵；</li>
+<li>最小化 $l$ 使得 $H_{22}\in\mathbb{R}^{(u-l)\times(u-l)}$ 为不可约的上 Hessenberg 矩阵；</li>
+<li>若 $u=0$，则迭代终止；否则进行下一步。</li>
+</ul>
+
+<div class="box">
+<p class="label">这三个分块分别是什么（直白版）</p>
+<ul>
+<li>$H_{33}$：<strong>底部已经收敛的部分</strong>——它已经是块上三角阵，对角上的 $1\times1$ / $2\times2$ 小块里就装着已经算出来的特征值（实特征值给 $1\times1$，复共轭对给 $2\times2$）。</li>
+<li>$H_{22}$：<strong>当前还要继续迭代的「活动块」</strong>——它是不可约的上 Hessenberg 阵，也就是「还没收敛、还得接着打」的那一块。</li>
+<li>$H_{11}$：<strong>顶部已经分离出去的部分</strong>。</li>
+</ul>
+<p>所以「若 $u=0$，则迭代终止」这句话的意思是：<strong>活动块缩空了，整个矩阵已经是拟上三角阵，收工。</strong></p>
+</div>
+
+<h4>（3）双位移的隐式 QR 迭代</h4>
+
+<p>对 $H$ 的 $H_{22}$ 分块进行双位移的隐式 QR 迭代（但对 $H_{22}$ 的正交变换<strong>应用于整个矩阵 $H$</strong>，即 $H$ 应享受到与 $H_{22}$ 同样的行变换和列变换；并且这些变换要一并累积进 $Q$）。</p>
+
+<p>注意到 $H_{22}$ 分块由 $H$ 的第 $l+1$ 至 $u$ 行和第 $l+1$ 至 $u$ 列的元素构成，即</p>
+
+\[
+H_{22}=H(l+1:u,\,l+1:u).
+\]
+
+<p>然后转到第（2）步，如此循环。</p>
+
+<div class="box ok">
+<p class="label">运算量（这是 QR 方法的总账单）</p>
+<p>实际计算的经验表明：隐式 QR 算法每分离出一个 $1\times1$ 或 $2\times2$ 子矩阵平均需要 <strong>2 次</strong>迭代，因此总运算量约为</p>
+\[
+25n^3.
+\]
+<p>若只计算特征值（即不累积正交矩阵 $Q$），则总运算量约为</p>
+\[
+10n^3.
+\]
+</div>
+
+<div class="box">
+<p class="label">最后我们需要验证</p>
+<ol>
+<li>正交性损失 $\|Q^{\mathsf T}Q-I\|_F$ 是<strong>机器精度级别</strong>；</li>
+<li>误差 $\dfrac{\|QTQ^{\mathsf T}-A\|_F}{\|A\|_F}$ 是<strong>机器精度级别</strong>；</li>
+<li>矩阵 $T$ 是<strong>实 Schur 型的形式</strong>（即分块上三角阵，对角分块要么是 $1\times1$ 的，要么是 $2\times2$ 的）。</li>
+</ol>
+</div>
+
+<h4>整章运算量汇总</h4>
+
+<table>
+<tr><th>阶段</th><th>运算量</th><th>备注</th></tr>
+<tr><td>上 Hessenberg 化（Householder）</td><td>$\dfrac{10}{3}n^3$</td><td>要 $Q$ 再加 $\dfrac{4}{3}n^3$</td></tr>
+<tr><td>一次显式 QR 迭代（一般方阵）</td><td>$O(n^3)$</td><td>——</td></tr>
+<tr><td>一次显式 QR 迭代（上 Hessenberg 阵）</td><td>$O(n^2)$</td><td>这就是 Hessenberg 化的收益</td></tr>
+<tr><td>Francis 双位移迭代</td><td>$10n^3$</td><td>要累积正交变换再加 $10n^3$</td></tr>
+<tr><td><strong>隐式 QR 算法总计</strong></td><td><strong>$25n^3$</strong></td><td>只算特征值则约 $10n^3$</td></tr>
+</table>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 236" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>QR 方法的三层加速</title>
+<desc>第一层是显式 QR 迭代，线性收敛且每次 O(n^3)；第二层先做 Hessenberg 化把每次迭代降到 O(n^2)；第三层加位移把收敛速度提到二次，并用双位移隐式技巧避免复数运算。</desc>
+<defs>
+<marker id="arrowQR4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="26" y="34" width="186" height="76" rx="10" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="119" y="56" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink)">① 显式 QR 迭代</text>
+<text x="119" y="78" text-anchor="middle" font-size="11.5" fill="var(--ink2)">收敛：线性</text>
+<text x="119" y="96" text-anchor="middle" font-size="11.5" fill="var(--ink2)">每次迭代 O(n³)</text>
+<line x1="220" y1="72" x2="256" y2="72" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR4)"/>
+<text x="238" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink3)">§5.3.3</text>
+<rect x="264" y="34" width="176" height="76" rx="10" fill="var(--accent-bg)" stroke="transparent"/>
+<text x="352" y="56" text-anchor="middle" font-size="13" font-weight="500" fill="var(--accent)">② 先化 Hessenberg</text>
+<text x="352" y="78" text-anchor="middle" font-size="11.5" fill="var(--accent)">收敛：仍线性</text>
+<text x="352" y="96" text-anchor="middle" font-size="11.5" fill="var(--accent)">每次迭代降到 O(n²)</text>
+<line x1="448" y1="72" x2="484" y2="72" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR4)"/>
+<text x="466" y="62" text-anchor="middle" font-size="10.5" fill="var(--ink3)">§5.3.5</text>
+<rect x="492" y="34" width="162" height="76" rx="10" fill="var(--ok-bg)" stroke="transparent"/>
+<text x="573" y="56" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ok)">③ 带位移</text>
+<text x="573" y="78" text-anchor="middle" font-size="11.5" fill="var(--ok)">收敛：二次</text>
+<text x="573" y="96" text-anchor="middle" font-size="11.5" fill="var(--ok)">再 + 双位移隐式</text>
+<rect x="26" y="136" width="628" height="76" rx="10" fill="var(--gold-bg)" stroke="transparent"/>
+<text x="44" y="158" font-size="12.5" font-weight="500" fill="var(--gold)">为什么必须「隐式」（§5.3.6）</text>
+<text x="44" y="180" font-size="12.5" fill="var(--gold)">直接算 M = H² − tH + sI 要 O(n³)，且 M 已不是 Hessenberg 阵；</text>
+<text x="44" y="200" font-size="12.5" fill="var(--gold)">靠隐式 Q 定理：只要 Q 的第一列对，结果就唯一 —— 于是只算 M 的第一列前三个数，用鼓包追逐 O(n²) 搞定</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 14 · QR 方法的三层加速：Hessenberg 化省「每次迭代」，位移省「迭代次数」</figcaption>
+</figure>
+
+<h3 id="s54">5.4 实 Schur 型的后处理<span class="tag a">PDF 5 §5.4</span></h3>
+
+<p>隐式 QR 算法交给我们的是 $Q^{\mathsf T}AQ=T$，其中 $T$ 是实 Schur 型（拟上三角）。但这只是个「毛坯」：</p>
+
+<ul>
+<li>特征值散落在对角线上，顺序是算法收敛的先后，<strong>不是我们想要的顺序</strong>；</li>
+<li>对角块之间的右上角还堆着一堆 $T_{ij}$。</li>
+</ul>
+
+<p>§5.4 就是干这两件事的：<strong>§5.4.1 排序</strong>（把想要的块挪到前面）、<strong>§5.4.2 解 Sylvester 方程</strong>（工具）、<strong>§5.4.3 块对角化</strong>（把右上角清成 0）。</p>
+
+<h4 id="s541">5.4.1 对角块排序：冒泡排序</h4>
+
+<p>用<strong>冒泡排序</strong>调整特征值的收敛次序。先考虑 $2\times2$ 上三角阵的换序（Homework 08 Problem 04）：</p>
+
+\[
+Q^{\mathsf T}\begin{bmatrix}a&d\\ &b\end{bmatrix}Q=\begin{bmatrix}b&\pm d\\ &a\end{bmatrix}
+\]
+
+<p>其中变换后的矩阵的 $(1,2)$ 元素之所以是 $\pm d$ 是<strong>显然</strong>的：酉相似变换不改变矩阵的 Frobenius 范数。我们设 $Q$ 的形式为</p>
+
+\[
+\begin{bmatrix}c&-s\\s&c\end{bmatrix}^{\mathsf T}\begin{bmatrix}a&d\\ &b\end{bmatrix}\begin{bmatrix}c&-s\\s&c\end{bmatrix}=\begin{bmatrix}b&d\\ &a\end{bmatrix}\qquad(c^2+s^2=1)
+\]
+
+<p>可以证明这个变换向前向后都是稳定的。但是把「交换相邻两块」这件事推广到 $2\times2$ 块需要解 <strong>Sylvester 方程</strong>（为解得准需要进行全主元 Gauss 消去法），其<strong>舍入误差分析至今都没有解决</strong>——所以这一块理论上还留着口子。</p>
+
+<h4 id="s542">5.4.2 求解 Sylvester 方程：Bartels–Stewart 算法</h4>
+
+<p><strong>Sylvester 方程</strong>是形如</p>
+
+\[
+AX-XB=C
+\]
+
+<p>的矩阵方程，其中 $A\in\mathbb{C}^{m\times m}$，$B\in\mathbb{C}^{n\times n}$，$C\in\mathbb{C}^{m\times n}$。</p>
+
+<div class="box key">
+<p class="label">第一步：把矩阵方程「拉直」成线性方程组</p>
+<p>利用 $\mathrm{vec}(AXB)=(B^{\mathsf T}\otimes A)\,\mathrm{vec}(X)$，可以把 Sylvester 方程等价地写成</p>
+\[
+AX-XB=C\quad\Longleftrightarrow\quad \big(I_n\otimes A-B^{\mathsf T}\otimes I_m\big)\,\mathrm{vec}(X)=\mathrm{vec}(C).
+\]
+<p>于是「解矩阵方程」就变成了「解一个 $mn$ 阶的普通线性方程组」。</p>
+</div>
+
+<div class="box">
+<p class="label">Sylvester 定理（Matrix Analysis 定理 2.4.4.1）</p>
+<p>Sylvester 方程有唯一解，当且仅当系数矩阵 $\big(I_n\otimes A-B^{\mathsf T}\otimes I_m\big)$ 非奇异，<strong>即当且仅当 $A,B$ 没有公共特征值</strong>。</p>
+</div>
+
+<p><strong>但直接解这个 $mn$ 阶方程组太贵</strong>：代价是 $O(m^3n^3)$，难以接受。改进思路是先用 Schur 分解把 $A$ 或 $B$ 变成上三角阵，让方程组带上三角结构，再回代求解。</p>
+
+<p>假设 $A\in\mathbb{C}^{m\times m}$ 和 $B\in\mathbb{C}^{n\times n}$ 没有公共特征值。对 $A$ 做 Schur 分解 $A=U_1T_1U_1^{*}$（代价为 $O(m^3)$），得到</p>
+
+\[
+\begin{aligned}
+AX-XB=U_1T_1U_1^{*}X-XB &= C\\
+\Longleftrightarrow\quad T_1(U_1^{*}X)-(U_1^{*}X)B &= U_1^{*}C\\
+\Longleftrightarrow\quad T_1Y-YB &= \tilde C,
+\end{aligned}
+\]
+
+<p>其中 $Y=U_1^{*}X\in\mathbb{C}^{m\times n}$，$\tilde C=U_1^{*}C\in\mathbb{C}^{m\times n}$。</p>
+
+<p>我们也可以对 $B$ 做 Schur 分解 $B=U_2T_2U_2^{*}$（代价为 $O(n^3)$），得到</p>
+
+\[
+\begin{aligned}
+AX-XB=AX-XU_2T_2U_2^{*} &= C\\
+\Longleftrightarrow\quad A(XU_2)-(XU_2)T_2 &= CU_2\\
+\Longleftrightarrow\quad AY-YT_2 &= \tilde C,
+\end{aligned}
+\]
+
+<p>其中 $Y=XU_2\in\mathbb{C}^{m\times n}$，$\tilde C=CU_2\in\mathbb{C}^{m\times n}$。</p>
+
+<p>因此 Schur 分解预处理的代价是 $O(\min\{m^3,n^3\})$。<strong>我们可以比较 $A,B$ 的阶数，哪个阶数小就对哪个做 Schur 分解。</strong></p>
+
+<p>不失一般性，假设 $m>n$，对 $B\in\mathbb{C}^{n\times n}$ 做 Schur 分解 $B=UTU^{*}$，方程化为</p>
+
+\[
+AY-YT=\tilde C,\qquad \text{其中 }Y=XU\in\mathbb{C}^{m\times n},\ \ \tilde C=CU\in\mathbb{C}^{m\times n}.
+\]
+
+<p><strong>怎么解？逐列来。</strong>首先解出 $Y$ 的第 1 列 $Ye_1$（记 $T=[t_{ij}]_{i,j=1}^{n}$，则 $Te_1=t_{11}e_1$）：</p>
+
+\[
+AYe_1-YTe_1=\tilde Ce_1\quad\Longleftrightarrow\quad A(Ye_1)-t_{11}Ye_1=\tilde Ce_1.
+\]
+
+<p>这相当于求解一个线性方程组 $(A-t_{11}I_m)y=\tilde Ce_1$，得到 $Y$ 的第 1 列。然后利用<strong>回代法的思想</strong>逐列求解 $Y$ 的剩余各列即可。这就是 <strong>Bartels–Stewart 算法</strong>。</p>
+
+<div class="box">
+<p class="label">Bartels–Stewart 算法（Matrix Computation 算法 7.6.2）</p>
+<p>给定矩阵 $A\in\mathbb{C}^{m\times m}$、$C\in\mathbb{C}^{m\times n}$ 和上三角矩阵 $T\in\mathbb{C}^{n\times n}$（其中 $m\lt n$，且 $A,T$ 没有公共特征值）。本算法用方程 $AY-YT=C$ 的解覆盖 $C$：</p>
+<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 18px; overflow-x:auto; margin:14px 0">function: Y = Bartels-Stewart(A, T, C)
+    for k = 1 : n
+        C(1:m, k) = C(1:m, k) + C(1:m, 1:k-1) * T(1:k-1, k)
+        solve (A - T(k,k)*I_m) y = C(1:m, k) to get y
+        C(1:m, k) = y
+    end
+    Y = C
+end</pre>
+<p>此算法需要 $mn(m+n)$ 的计算量。</p>
+</div>
+
+<div class="box warn">
+<p class="label">和讲义原文的两处差别</p>
+<ol>
+<li>讲义印的是 $C(1:p,1:k-1)$，但 $p$ 在前面没有定义过，应为 $C(1:m,1:k-1)$。</li>
+<li>讲义在这一段写「其中 $m\lt n$」，而前面推导时的假设是 $m\gt n$（对阶数较小的 $B$ 做 Schur 分解）。两者不一致，不过算法本身对两种情形都成立，代价都是 $mn(m+n)$。</li>
+</ol>
+</div>
+
+<h4 id="s543">5.4.3 块对角化：把右上角清成 0</h4>
+
+<p>设 Schur 分解 $A=UTU^{*}$ 的划分如下：</p>
+
+\[
+T=\begin{bmatrix}T_{11}&T_{12}&\cdots&T_{1d}\\ &T_{22}&\cdots&T_{2d}\\ & &\ddots&\vdots\\ & & &T_{dd}\end{bmatrix},
+\]
+
+<p>设 $T_{ii}\in\mathbb{C}^{n_i\times n_i}$（$i=1,\dots,d$）的特征值互不相交。</p>
+
+<div class="box">
+<p class="label">定理（Matrix Analysis 定理 2.4.6.1）</p>
+<p>设 $A\in\mathbb{C}^{n\times n}$ 的不同特征值 $\lambda_1,\dots,\lambda_d$ 的代数重数分别为 $n_1,\dots,n_d$。Schur 分解定理保证了 $A$ 相似于一个 $d\times d$ 分块上三角阵 $T=[T_{ij}]_{i,j=1}^{d}$，其中 $T_{ii}\in\mathbb{C}^{n_i\times n_i}$，并且每个对角分块 $T_{ii}$ 分别是对角元全为 $\lambda_i$ 的上三角阵。</p>
+<p>因此 $A$ 就相似于 $T_{11}\oplus\cdots\oplus T_{dd}$（因为二者具有完全一致的特征值）。</p>
+<p>总之，存在酉矩阵 $U\in\mathbb{C}^{n\times n}$ 和非奇异矩阵 $S\in\mathbb{C}^{n\times n}$ 使得</p>
+\[
+S^{-1}(U^{*}AU)S=S^{-1}TS=\begin{bmatrix}T_{11}&&\\ &\ddots&\\ &&T_{dd}\end{bmatrix}.
+\]
+</div>
+
+<div class="box key">
+<p class="label">证明（邵老师提供的证明）：先做 $2\times2$ 分块</p>
+<p>考虑 $2\times2$ 分块的情况。我们假设存在 $X$ 使得</p>
+\[
+\begin{bmatrix}T_{11}&T_{12}\\ &T_{22}\end{bmatrix}\begin{bmatrix}I&X\\ &I\end{bmatrix}=\begin{bmatrix}T_{11}&T_{11}X+T_{12}\\ &T_{22}\end{bmatrix},
+\]
+<p>再左乘 $\begin{bmatrix}I&X\\ &I\end{bmatrix}^{-1}=\begin{bmatrix}I&-X\\ &I\end{bmatrix}$，得</p>
+\[
+\begin{bmatrix}I&-X\\ &I\end{bmatrix}\begin{bmatrix}T_{11}&T_{11}X+T_{12}\\ &T_{22}\end{bmatrix}=\begin{bmatrix}T_{11}&T_{11}X+T_{12}-XT_{22}\\ &T_{22}\end{bmatrix}.
+\]
+<p>要使上式成立，就等价于 $X$ 是 Sylvester 方程 $T_{11}X-XT_{22}=-T_{12}$ 的解。由于 $T_{11},T_{22}$ 没有公共特征值，故根据 Sylvester 定理可知上述 Sylvester 方程具有<strong>唯一解</strong>。</p>
+<p>根据数学归纳法容易将上述结论推广到 $d\times d$ 分块的情况，我们只需递归地对其 $2\times2$ 划分即可。命题得证。</p>
+</div>
+
+<p class="label">具体算法</p>
+
+<p>将 $I_n$ 与 $T$ 共形地分块为</p>
+
+\[
+I_n=[E_1,E_2,\dots,E_d]=\begin{bmatrix}E_{11}&E_{12}&\cdots&E_{1d}\\ E_{21}&E_{22}&\cdots&E_{2d}\\ \vdots&\vdots&&\vdots\\ E_{d1}&E_{d2}&\cdots&E_{dd}\end{bmatrix}.
+\]
+
+<p>定义 $X_{ij}=I_n+E_iY_{ij}E_j^{\mathsf T}\in\mathbb{C}^{n\times n}$（$i\lt j$，其中 $Y_{ij}\in\mathbb{C}^{n_i\times n_j}$）。换言之，在单位矩阵 $I_n$ 的 $(i,j)$ 分块处填入 $Y_{ij}$ 就得到了 $X_{ij}$。注意到</p>
+
+\[
+X_{ij}^{-1}=I_n-E_iY_{ij}E_j^{\mathsf T}.
+\]
+
+<p>若记 $\tilde T=X_{ij}^{-1}TX_{ij}$，则 $\tilde T$ 只有以下分块不同：</p>
+
+\[
+\begin{aligned}
+\tilde T_{ij} &= T_{ii}Y_{ij}-Y_{ij}T_{jj}+T_{ij}\\
+\tilde T_{ik} &= T_{ik}-Y_{ij}T_{jk}\qquad(k=j+1:d)\\
+\tilde T_{kj} &= T_{kj}+T_{ki}Y_{ij}\qquad(k=1:i-1)
+\end{aligned}
+\]
+
+<p>我们希望找到 $Y_{ij}$ 使得</p>
+
+\[
+\tilde T_{ij}=T_{ii}Y_{ij}-Y_{ij}T_{jj}+T_{ij}=0_{n_i\times n_j},
+\]
+
+<p>也就只需使用 Bartels–Stewart 算法求解 Sylvester 方程 $T_{ii}Y-YT_{jj}=-T_{ij}$ 即可。于是我们得到如下算法：</p>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 254" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>块对角化：用相似变换把 Schur 型右上角的分块清成 0</title>
+<desc>左边的实 Schur 型 T 在对角线上有三个分块，右上角的分块都非零；经过相似变换 X 的逆乘以 T 再乘以 X 之后，右上角所有分块都变成零，得到块对角阵。</desc>
+<defs>
+<marker id="arrowQR5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<text x="90" y="46" font-size="13" font-weight="500" fill="var(--ink)" dominant-baseline="central">T（实 Schur 型）</text>
+<text x="432" y="46" font-size="13" font-weight="500" fill="var(--ink)" dominant-baseline="central">T̃（块对角）</text>
+<rect x="90" y="70" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="130" y="70" width="40" height="30" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="170" y="70" width="40" height="30" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="90" y="100" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="130" y="100" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="170" y="100" width="40" height="30" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="90" y="130" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="130" y="130" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="170" y="130" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="150" y="84" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink2)">T₁₂</text>
+<text x="190" y="84" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink2)">T₁₃</text>
+<text x="190" y="114" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink2)">T₂₃</text>
+<text x="110" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₁₁</text>
+<text x="150" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₂₂</text>
+<text x="190" y="145" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₃₃</text>
+<line x1="238" y1="115" x2="392" y2="115" stroke="var(--ink2)" stroke-width="1" marker-end="url(#arrowQR5)"/>
+<text x="315" y="96" text-anchor="middle" font-size="12" fill="var(--ink2)">相似变换</text>
+<text x="315" y="136" text-anchor="middle" font-size="12" fill="var(--accent)">Xᵢⱼ⁻¹ ( · ) Xᵢⱼ</text>
+<rect x="432" y="70" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="472" y="70" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="512" y="70" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="432" y="100" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="472" y="100" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="512" y="100" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="432" y="130" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="472" y="130" width="40" height="30" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="512" y="130" width="40" height="30" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="492" y="84" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink3)">0</text>
+<text x="532" y="84" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink3)">0</text>
+<text x="532" y="114" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink3)">0</text>
+<text x="452" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₁₁</text>
+<text x="492" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₂₂</text>
+<text x="532" y="145" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">T₃₃</text>
+<text x="90" y="186" font-size="12.5" fill="var(--ink2)">只要 T₁₁ 与 T₂₂ 没有公共特征值，Sylvester 方程 T₁₁X − XT₂₂ = −T₁₂ 就有唯一解，</text>
+<text x="90" y="208" font-size="12.5" fill="var(--ink2)">于是 (1,2) 块可以被「清成 0」而不改变任何特征值。</text>
+<text x="90" y="234" font-size="12" fill="var(--ink3)">对 i &lt; j 逐块做一遍（j 从 2 到 d，i 从 1 到 j−1），右上角就全部清零 —— 这就是算法 7.6.3。</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 15 · 块对角化：用相似变换把 Schur 型右上角的分块清成 0</figcaption>
+</figure>
+
+<div class="box">
+<p class="label">上三角矩阵的块对角化（Matrix Computation 算法 7.6.3）</p>
+<p>给定酉矩阵 $U\in\mathbb{C}^{n\times n}$ 和一个上三角矩阵 $T=U^{*}AU$，且 $T$ 具有上面的分块形式，其中 $T_{ii}\in\mathbb{C}^{n_i\times n_i}$（$i=1,\dots,d$）的特征值互不相交。下面的算法用 $U$ 覆盖 $U$（假设 $U$ 与 $T$ 共形地划分），其中非奇异 $S$ 使得 $S^{-1}TS=T_{11}\oplus\cdots\oplus T_{dd}$：</p>
+<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 18px; overflow-x:auto; margin:14px 0">function: U = Block_Diagonalization(T, U)
+    for j = 2 : d
+        for i = 1 : j - 1
+            Y = Bartels-Stewart(T_ii, T_jj, -T_ij)      (Solve T_ii*Y - Y*T_jj = -T_ij)
+            for k = j + 1 : d
+                T_ik = T_ik - Y * T_jk
+            end
+            for k = 1 : d
+                U_kj = U_kj + U_ki * Y
+            end
+        end
+    end
+end</pre>
+</div>
+
+<div class="box warn">
+<p class="label">讲义此处有一处下标笔误</p>
+<p>讲义在推出 $Y_{ij}$ 所满足的方程时印作 $T_{jj}Y-YT_{ii}=-T_{ij}$，但由 $\tilde T_{ij}=T_{ii}Y_{ij}-Y_{ij}T_{jj}+T_{ij}=0$ 反推，应为</p>
+\[
+T_{ii}Y-YT_{jj}=-T_{ij};
+\]
+<p>第 24 页的算法里写的也正是 <code>Bartels-Stewart(T_ii, T_jj, -T_ij)</code>。<strong>以算法为准。</strong></p>
+</div>
+
+
+<div class="box ok">
+<p class="label">第 5 章在这门课里的位置</p>
+<p>到这里，非对称特征值问题的「一条主线」就走完了：</p>
+<p><strong>幂法 / 反幂法</strong>（§5.1、§5.2，一次抓一个，是「向量迭代」）→ <strong>QR 方法</strong>（§5.3，一次抓全部，是「矩阵迭代」）→ <strong>实 Schur 型的后处理</strong>（§5.4）。</p>
+<p>两者其实是同一个东西的两面：§5.3.1 里已经证明了「QR 迭代的第 1 列就是在做幂法」。理解了这一点，这一章就不再是两堆互不相关的算法，而是<strong>同一台发动机的两种用法</strong>。</p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p4">第四部分 · 第 3 章引言<span class="tag a">PDF 3 §3.0</span></h2>
+
+<p class="lede">PDF 3 §3.0 Introduction。今天课堂上真正开头的就是这一节，但<strong>只讲了开头一小部分</strong>——下面标「板书」的小节是课上讲过的，标「讲义」的是<strong>课上没讲</strong>、我按 PDF 3 补的。</p>
+
+<div class="box warn">
+<p class="label">这一部分哪些是课上讲的、哪些不是</p>
+<table>
+<tr><th>小节</th><th>来源</th><th>说明</th></tr>
+<tr><td><a href="#s31">3.1 为什么要迭代法</a></td><td><strong>板书 5（右半张）</strong></td><td>课上<strong>只写了两行</strong>：direct methods 的代价，以及「iterative methods：$x^{(1)},x^{(2)},\dots,x^{(k)},\dots$，$\lim x^{(k)}=x_*$」。<strong>「迭代法要回答的四个问题」是讲义 §3.0 原文，课上没写</strong></td></tr>
+<tr><td><a href="#s32">3.2 存储：COO 与 CSC</a></td><td>讲义 §3.0.1</td><td><strong>课上没讲</strong></td></tr>
+<tr><td><a href="#s33">3.3 为什么矩阵-向量乘法是核心</a></td><td>讲义 §3.0.1</td><td><strong>课上没讲</strong>（Cayley–Hamilton 那段论证）</td></tr>
+<tr><td><a href="#s34">3.4 一维 Poisson 方程</a></td><td>讲义 §3.0.2</td><td><strong>课上没讲</strong></td></tr>
+<tr><td><a href="#s35">3.5 二维 Poisson 方程</a></td><td>讲义 §3.0.3</td><td><strong>课上没讲</strong></td></tr>
+<tr><td><a href="#s36">3.6 迭代法总论：单步线性定常迭代法</a></td><td>讲义 §3.1</td><td><strong>课上没讲</strong></td></tr>
+<tr><td><a href="#s37">3.7 Jacobi 迭代法</a></td><td>讲义 §3.1.1</td><td><strong>课上没讲</strong>（含二维 Poisson 的 Jacobi 单步，讲义放在 §3.0 末尾）</td></tr>
+<tr><td><a href="#s38">3.8 Gauss-Seidel 迭代法</a></td><td>讲义 §3.1.2</td><td><strong>课上没讲</strong>（含红黑序与两个反例）</td></tr>
+<tr><td><a href="#s39">3.9 收敛的充要条件 ρ(B) &lt; 1</a></td><td>讲义 §3.2.1</td><td><strong>课上没讲</strong></td></tr>
+<tr><td><a href="#refine">3.10 迭代精化</a></td><td><strong>板书 6</strong></td><td>课上讲了</td></tr>
+</table>
+<p>判据：13 张板书里只有第 5 张右半张和第 6 张属于第 3 章。也就是说，<strong>存储格式、Poisson 方程，以及第 3 章正文的迭代法（总论 / Jacobi / Gauss-Seidel / 收敛性 / SOR）都没有出现在板书里</strong>——这一部分里只有 §3.1 和 §3.10 是课上讲过的，其余都是我按讲义 PDF 3 补的，老师还没讲到。</p>
+</div>
+
+<h3 id="s31">3.1 为什么要迭代法：直接法的致命弱点<span class="tag">板书 5（右）</span></h3>
+
+<p>板书第 5 张右半张写的正是这个对比。它<strong>一共只有两行</strong>，原文是：</p>
+
+<div class="box">
+<p class="label">板书 5（右半张）原文</p>
+<pre style="margin:8px 0 4px; padding:12px 14px; background:var(--bg2); border:1px solid var(--line); border-radius:8px; overflow-x:auto; font-size:12.5px; line-height:1.75"><code>PA = LU        O(n^3)          direct methods
+A  = QR        O(mn^2)
+
+iterative methods
+x^(1),  x^(2),  ...,  x^(k),  ...
+lim   x^(k)  =  x_*
+k→∞</code></pre>
+<p>就这些。<strong>老师只写了「迭代法」这个名字和它的形状</strong>（构造一个序列，极限是解），没有给任何具体算法、也没有提收敛条件。<strong>下面这张对比表和「四个问题」是讲义 §3.0 的原文，课上没有写</strong>。</p>
+</div>
+
+<p>把这两行展开成对比表就是：</p>
+
+<table>
+<tr><th>方法</th><th>典型代价</th><th>问题</th></tr>
+<tr><td>直接法：$PA=LU$</td><td>$O(n^3)$</td><td rowspan="2">都需要对 $A$ 做<strong>分解</strong>，因而一般<strong>不能保持 $A$ 的稀疏性</strong></td></tr>
+<tr><td>直接法：$A=QR$</td><td>$O(mn^2)$</td></tr>
+<tr><td>迭代法：$x^{(1)},x^{(2)},\dots,x^{(k)},\dots$</td><td>每步 $O(\mathrm{nnz})$</td><td>需要讨论收敛性</td></tr>
+</table>
+
+<p>稀疏性被破坏是致命的：一个稀疏矩阵做一步 Gauss 消元就可能变成稠密矩阵。虽然可以通过<strong>行列重排</strong>（例如把矩阵重排成带状或分块结构）来保住稀疏性，但这不是万能的。</p>
+
+<p>于是求解稀疏线性方程组的方法分成两类：</p>
+
+<ul>
+<li><strong>稀疏直接法</strong>：直接法 + 稀疏矩阵技巧。充分利用零元素的分布（即矩阵的<em>结构</em>），采用灵活的主元选取策略，让分解出的因子尽可能保持原有的稀疏性。<strong>本课程不涉及</strong>。</li>
+<li><strong>迭代法</strong>：按某种规则构造向量序列 $x^{(k)}$，使极限 $x^{*}$ 是 $Ax=b$ 的精确解。</li>
+</ul>
+
+<div class="box key">
+<p class="label">迭代法要回答的四个问题</p>
+<ol>
+<li>如何构造迭代序列 $\{x^{(k)}\}$？</li>
+<li>构造的序列是否收敛？<strong>在什么条件下</strong>收敛？</li>
+<li>若收敛，<strong>收敛速度</strong>如何？</li>
+<li>实际计算总是有限次的，所以还要讨论<strong>近似解的误差估计</strong>与<strong>迭代过程的中断处理</strong>。</li>
+</ol>
+<p>这四个问题正好对应后面 §3.1（构造）、§3.2（收敛性）、§3.3（收敛速度）、以及 §3.4 的实用细节。</p>
+</div>
+
+<h3 id="s32">3.2 存储：COO 与 CSC<span class="tag a">讲义 §3.0.1</span></h3>
+
+<p>维度超过<strong>百万级别</strong>的矩阵称为大型矩阵。稀疏矩阵一般按坐标方式存储。</p>
+
+<h4>COO（Coordinate format）</h4>
+
+<p>存 (行, 列, 值) 三元组，并且<strong>按列存储</strong>——因为列向量比行向量更常用。存储复杂度 $O(\mathrm{nnz})$，其中 $\mathrm{nnz}$ 是 number of non-zero elements。</p>
+
+<p class="footnote">实际应用中是可以存储零元素的：因为要完全不存零元素也有代价——你得先把零元素识别出来。</p>
+
+<h4>CSC（Compressed Sparse Column）</h4>
+
+<p>从 COO 衍生出来，包含三个数组：</p>
+
+<table>
+<tr><th>数组</th><th>长度</th><th>内容</th></tr>
+<tr><td><code>values[]</code></td><td>$\mathrm{nnz}$</td><td>所有非零元素的值</td></tr>
+<tr><td><code>row_indices[]</code></td><td>$\mathrm{nnz}$</td><td>与 <code>values[]</code> 一一对应的行索引</td></tr>
+<tr><td><code>col_ptr[]</code></td><td>$n+1$</td><td>每列的<strong>起始下标</strong>（指针数组）；<code>col_ptr[n]</code> 是个哨兵，恒等于 $\mathrm{nnz}$</td></tr>
+</table>
+
+<p><code>values[]</code> 和 <code>row_indices[]</code> 是两根等长的「平铺长条」——把所有非零元<strong>按列优先</strong>一个接一个排下去。可光看这两根长条，你怎么知道第 $j$ 列的元素是从第几个开始的？<code>col_ptr[]</code> 就是回答这个问题的那个数组。</p>
+
+<div class="box key">
+<p class="label">col_ptr[] 到底是什么：values[] 上的「切点」</p>
+<p>把 <code>values[]</code> 想成一根长条，<code>col_ptr[]</code> 记录的就是<strong>每一刀切在哪里</strong>：第 $j$ 刀切在第 $j$ 列的起始位置。$n$ 列需要 $n+1$ 个切点——因为 $n$ 个切点只能切出 $n-1$ 段，想切出 $n$ 段就必须多一个「收尾」的切点。</p>
+<p>于是第 $j$ 列在 <code>values[]</code> 里占据的是一个<strong>左闭右开区间</strong>：</p>
+\[
+\text{第 }j\text{ 列}\ =\ \texttt{values}\big[\ \texttt{col\_ptr}[j]\ ,\ \texttt{col\_ptr}[j+1]\ \big)
+\]
+<p>这就是「最后一个元素指向最后一个非零元素的<strong>后一个位置</strong>」的含义：下标从 0 开始，最后一个非零元的下标是 $\mathrm{nnz}-1$，所以「后一个位置」就是 $\mathrm{nnz}$。它<strong>不是数据，是个哨兵（sentinel）</strong>，专门给最后一列当右墙用。</p>
+</div>
+
+<figure style="margin:26px 0 10px">
+<svg viewBox="0 0 680 320" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>稀疏矩阵 CSC 格式三个数组的对应关系</title>
+<desc>values 按列存放 6 个非零元，row_indices 存放对应行号；col_ptr 的五个元素正好落在列的切分处，记录每列在 values 中的起始下标。</desc>
+
+<line x1="120" y1="146" x2="120" y2="244" stroke="var(--line)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="276" y1="146" x2="276" y2="244" stroke="var(--line)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="354" y1="146" x2="354" y2="244" stroke="var(--line)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="510" y1="146" x2="510" y2="244" stroke="var(--line)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="588" y1="146" x2="588" y2="244" stroke="var(--line)" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+<text x="86" y="84" text-anchor="end" font-size="12" fill="var(--ink2)">values[]</text>
+<rect x="120" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="198" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="276" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="354" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="432" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<rect x="510" y="64" width="78" height="40" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="159" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">1</text>
+<text x="237" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">4</text>
+<text x="315" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">3</text>
+<text x="393" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">2</text>
+<text x="471" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">5</text>
+<text x="549" y="84" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--accent)">6</text>
+
+<text x="86" y="124" text-anchor="end" font-size="12" fill="var(--ink2)">row_indices[]</text>
+<rect x="120" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="198" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="276" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="354" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="432" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="510" y="104" width="78" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="159" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">0</text>
+<text x="237" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">2</text>
+<text x="315" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">1</text>
+<text x="393" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">0</text>
+<text x="471" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">2</text>
+<text x="549" y="124" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink2)">3</text>
+
+<line x1="120" y1="180" x2="276" y2="180" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="120" y1="174" x2="120" y2="186" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="276" y1="174" x2="276" y2="186" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="276" y1="180" x2="354" y2="180" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="354" y1="174" x2="354" y2="186" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="354" y1="180" x2="510" y2="180" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="510" y1="174" x2="510" y2="186" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="510" y1="180" x2="588" y2="180" stroke="var(--ink3)" stroke-width="0.5"/>
+<line x1="588" y1="174" x2="588" y2="186" stroke="var(--ink3)" stroke-width="0.5"/>
+<text x="198" y="202" text-anchor="middle" font-size="12" fill="var(--ink2)">j = 0</text>
+<text x="315" y="202" text-anchor="middle" font-size="12" fill="var(--ink2)">j = 1</text>
+<text x="432" y="202" text-anchor="middle" font-size="12" fill="var(--ink2)">j = 2</text>
+<text x="549" y="202" text-anchor="middle" font-size="12" fill="var(--ink2)">j = 3</text>
+
+<text x="86" y="264" text-anchor="end" font-size="12" fill="var(--ink2)">col_ptr[]</text>
+<rect x="90" y="248" width="60" height="32" rx="4" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<rect x="246" y="248" width="60" height="32" rx="4" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<rect x="324" y="248" width="60" height="32" rx="4" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<rect x="480" y="248" width="60" height="32" rx="4" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<rect x="558" y="248" width="60" height="32" rx="4" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<text x="120" y="264" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--gold)">0</text>
+<text x="276" y="264" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--gold)">2</text>
+<text x="354" y="264" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--gold)">3</text>
+<text x="510" y="264" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--gold)">5</text>
+<text x="588" y="264" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--gold)">6</text>
+
+<text x="340" y="304" text-anchor="middle" font-size="12" fill="var(--ink3)">每个 col_ptr 元素都指着一个「列与列的切分处」</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 16 · <code>col_ptr[]</code> 是 <code>values[]</code> 上的切点：它正好落在列与列的交界处，而不在元素上</figcaption>
+</figure>
+
+<div class="box">
+<p class="label">手算一遍（4 阶，$\mathrm{nnz}=6$）</p>
+<p>取</p>
+\[
+A=\begin{bmatrix}
+1&&2&\\
+&3&&\\
+4&&5&\\
+&&&6
+\end{bmatrix}
+\]
+<p>按列优先（先第 0 列从上往下、再第 1 列……）数一遍非零元：</p>
+<table>
+<tr><th>$j$（列）</th><th>该列的非零元（行号 : 值）</th><th>在 <code>values[]</code> 中的下标</th></tr>
+<tr><td>0</td><td>$0{:}1$、$2{:}4$</td><td>0, 1</td></tr>
+<tr><td>1</td><td>$1{:}3$</td><td>2</td></tr>
+<tr><td>2</td><td>$0{:}2$、$2{:}5$</td><td>3, 4</td></tr>
+<tr><td>3</td><td>$3{:}6$</td><td>5</td></tr>
+</table>
+<p>把每一列「第一个元素的下标」抄下来，再在末尾补一个 $\mathrm{nnz}$，就是三个数组：</p>
+\[
+\begin{aligned}
+\texttt{values}      &= [\,1,\ 4,\ 3,\ 2,\ 5,\ 6\,]\\
+\texttt{row\_indices} &= [\,0,\ 2,\ 1,\ 0,\ 2,\ 3\,]\\
+\texttt{col\_ptr}    &= [\,0,\ 2,\ 3,\ 5,\ 6\,]\qquad(\text{长度 } n+1=5)
+\end{aligned}
+\]
+<p><strong>核对一遍</strong>：第 2 列的元素在 <code>values[col_ptr[2] : col_ptr[3]]</code> $=$ <code>values[3:5]</code> $=[2,5]$，对应的行号是 <code>row_indices[3:5]</code> $=[0,2]$ —— 正是 $(0,2)$ 处的 $2$ 和 $(2,2)$ 处的 $5$。✓</p>
+<p>每一列的<strong>非零元个数</strong>也不用另存，两个相邻切点相减就是：第 2 列有 <code>col_ptr[3] − col_ptr[2]</code> $=5-3=2$ 个。这正是「多存一个元素」换来的便利。</p>
+</div>
+
+<div class="box ok">
+<p class="label">一句话记住它：col_ptr = 逐列非零元个数的前缀和</p>
+<p>设 $\mathrm{cc}_j$ 为第 $j$ 列的非零元个数，则</p>
+\[
+\texttt{col\_ptr}[0]=0,\qquad
+\texttt{col\_ptr}[j]=\sum_{t<j}\mathrm{cc}_t,\qquad
+\texttt{col\_ptr}[n]=\mathrm{nnz}
+\]
+<p>上例中逐列个数是 $[2,1,2,1]$，前缀和正好是 $[0,2,3,5,6]$。由此得到两条<strong>恒定成立</strong>的性质，也是最好的自检条件：</p>
+<ul>
+<li><code>col_ptr[]</code> <strong>单调不减</strong>，且首项恒为 0；</li>
+<li>末项恒为 $\mathrm{nnz}$。</li>
+</ul>
+<p>同样的结构在别处叫别的名字：按<strong>行</strong>压缩时叫 <code>row_ptr[]</code>（这就是 CSR 格式）；SciPy 的 <code>sparse.csc_matrix</code> 把它叫 <code>indptr</code>。名字不同，东西一样。</p>
+</div>
+
+<div class="box">
+<p class="label">它为什么非要 $n+1$ 个：看 $y=Ax$ 的循环</p>
+<p>用 CSC 做矩阵-向量乘法，内层循环的上界正好是 <code>col_ptr[j+1]</code>：</p>
+\[
+\begin{aligned}
+&\text{for } j=0:n-1\\
+&\qquad \text{for } p=\texttt{col\_ptr}[j]\ :\ \texttt{col\_ptr}[j+1]-1\\
+&\qquad\qquad y[\texttt{row\_indices}[p]] \mathrel{+}= \texttt{values}[p]\cdot x[j]
+\end{aligned}
+\]
+<p>如果 <code>col_ptr[]</code> 只有 $n$ 个元素，那最后一列就没有 <code>col_ptr[n]</code> 当上界，必须单独写成「一直到 $\mathrm{nnz}-1$」——凭空多出一个特例分支。把哨兵 $\texttt{col\_ptr}[n]=\mathrm{nnz}$ 存进去，<strong>所有列走同一套代码</strong>。这是数值软件里极常见的「用哨兵换掉边界判断」的写法。</p>
+</div>
+
+<p>按 CSC 存储时，$y=Ax$ 和 $y=A^{*}x$ 都很容易写出来，但效率糟糕——因为间接寻址是低效的。其中 <strong>$y=Ax$ 是最重要的操作</strong>。</p>
+
+<h3 id="s33">3.3 为什么「矩阵-向量乘法」是核心<span class="tag a">讲义 §3.0.1</span></h3>
+
+<p>这里有个漂亮的理论依据。由 <strong>Cayley–Hamilton 定理</strong>（任意复方阵都满足其特征方程）：</p>
+
+<div class="box">
+<p class="label">Cayley–Hamilton 定理</p>
+<p>设 $p(\lambda)=\det(\lambda I-A)$ 是 $A$ 的特征多项式，则 $p(A)=0$。</p>
+<p><strong>推论</strong>：若 $A$ 非奇异，记 $p(\lambda)=\lambda^{n}+a_{n-1}\lambda^{n-1}+\cdots+a_0$（$a_0=(-1)^n\det A\neq0$），由 $p(A)=0$ 可解出</p>
+\[
+A^{-1}=-\frac{1}{a_0}\big(A^{n-1}+a_{n-1}A^{n-2}+\cdots+a_1I\big)
+\]
+</div>
+
+<p>也就是说，<strong>$A^{-1}$ 可以写成 $A$ 的 $n-1$ 次多项式</strong>。于是解 $Ax=b$ 只需要把 $A$ 的幂次作用在向量上——也就是<strong>一连串矩阵-向量乘法</strong>，完全不需要显式形成 $A^{-1}$。</p>
+
+<p>这一点对稀疏矩阵尤其关键：讲义举了一个稀疏矩阵的例子，它的谱分解 $A=\sum_i\lambda_i v_iv_i^{*}$ 中的特征矩阵 $V$ 是<strong>稠密</strong>的，所以直接求谱分解不可行；但我们可以用<strong>幂法迭代</strong>收敛出前几个特征值和特征向量——<em>Google 计算 PageRank 用的正是这个方法</em>。</p>
+
+<div class="box ok">
+<p class="label">这就是两部分内容的接口</p>
+<p>第一部分讲的幂法 / 反幂法，每一步只需要一次矩阵-向量乘法（反幂法多一个三角方程组回代）。而稀疏矩阵最擅长的事情恰恰就是「矩阵-向量乘法」。所以：<strong>幂法 / 反幂法是稀疏特征值计算的起点，也是 PageRank 这类大规模问题的实际算法。</strong></p>
+</div>
+
+<h3 id="s34">3.4 一维 Poisson 方程<span class="tag a">讲义 §3.0.2</span></h3>
+
+<p class="footnote">这一小节<strong>没有出现在今天的板书里</strong>，是 PDF 3 §3.0.2 的原文。它是第 3 章后面所有迭代法（Jacobi / Gauss-Seidel / SOR）的<em>标准试验矩阵</em>来源，所以值得先看一遍。</p>
+
+<p>考虑</p>
+
+\[
+-u''(x)=f(x),\quad x\in(0,1),\qquad u(0)=u(1)=0\ \ (\text{Dirichlet 边界条件})
+\]
+
+<p>用中心差分逼近二阶导数（两个差分式相减再除以 $h$）：</p>
+
+\[
+u''(x_i)\approx\frac{u_{i-1}-2u_i+u_{i+1}}{h^{2}}
+\]
+
+<p>丢掉截断误差，改写成方程组：</p>
+
+\[
+-u_{i-1}+2u_i-u_{i+1}=h^{2}f_i,\qquad i=1,\dots,n
+\]
+
+<p>即三对角方程组 $Tx=b$，其中</p>
+
+\[
+T=\operatorname{tridiag}(-1,\,2,\,-1)\in\mathbb{R}^{n\times n}
+\]
+
+<div class="box">
+<p class="label">$T$ 的谱</p>
+\[
+\lambda_k=4\sin^{2}\!\frac{k\pi}{2(n+1)}=2-2\cos\frac{k\pi}{n+1},\qquad k=1,\dots,n
+\]
+\[
+v_k=\sqrt{\frac{2}{n+1}}\,\Big(\sin\frac{jk\pi}{n+1}\Big)_{j=1}^{n}
+\]
+<p>（$v_k$ 的第 $j$ 个分量是 $\sqrt{2/(n+1)}\sin(jk\pi/(n+1))$。）</p>
+</div>
+
+<p>由于 $T$ 是三对角且对称正定，它的分解有非常简洁的形式：</p>
+
+<ul>
+<li><strong>Cholesky 分解</strong> $T=LL^{*}$：$L$ 是<strong>下双对角阵</strong>；</li>
+<li><strong>LU 分解</strong>：$L$ 是单位下双对角阵，$U$ 是上双对角阵。</li>
+</ul>
+
+<p>这个结构在后面分析 Jacobi / Gauss-Seidel / SOR 的收敛速度时会被反复用到。</p>
+
+<h3 id="s35">3.5 二维 Poisson 方程<span class="tag a">讲义 §3.0.3</span></h3>
+
+<p class="footnote">同样<strong>没出现在板书里</strong>，是 PDF 3 §3.0.3 的原文。</p>
+
+<p>转向二维情形：</p>
+
+\[
+-\Delta u= -\Big(\frac{\partial^{2}u}{\partial x^{2}}+\frac{\partial^{2}u}{\partial y^{2}}\Big)=f(x,y),\qquad u|_{\partial\Omega}=0
+\]
+
+<p>在 $n\times n$ 的网格上把两个方向的中心差分<strong>相加</strong>，得到五点差分格式（Poisson 方程的 stencil 是一个「十字」）：</p>
+
+\[
+-u_{i-1,j}-u_{i,j-1}+4u_{i,j}-u_{i+1,j}-u_{i,j+1}=h^{2}f_{i,j}
+\]
+
+<p>截断误差仍然是 $O(h^{2})$ 级别。这给出一个含 $n^{2}$ 个未知量、$n^{2}$ 阶的线性方程组，紧凑形式是</p>
+
+\[
+(T\otimes I+I\otimes T)\,u=b
+\]
+
+<p>其中 $\otimes$ 是 Kronecker 积。</p>
+
+<div class="box">
+<p class="label">系数矩阵 $A=T\otimes I+I\otimes T$ 的性质</p>
+<ul>
+<li>与网格顶点的<strong>排列次序</strong>有关：改变次序会改变 $A$ 的形状，但可以证明<strong>特征值不变</strong>。</li>
+<li><strong>块三对角阵</strong>；不看分块的话共有<strong>五条对角线</strong>上有非零元素，所以是稀疏的。</li>
+<li><strong>不可约对角占优</strong>。</li>
+<li><strong>对称正定</strong>。</li>
+</ul>
+</div>
+
+<p>利用一维的结论，二维问题的特征值可以直接写出来：</p>
+
+\[
+\lambda_{k,l}=\Big(2-2\cos\frac{k\pi}{n+1}\Big)+\Big(2-2\cos\frac{l\pi}{n+1}\Big),\qquad k,l=1,\dots,n
+\]
+
+<p>对应的特征向量是 $v_k\otimes v_l$，即把 $u_{k,l}$ 按列「拉直」得到的 $n^{2}$ 维向量。</p>
+
+<p>如果边界条件不是 Dirichlet 条件，只需在右端引入一个边界条件矩阵即可。</p>
+
+<h3 id="s36">3.6 迭代法总论：单步线性定常迭代法<span class="tag a">讲义 §3.1</span></h3>
+
+<p>前面几节都在铺垫（存储、Poisson 方程），到这里才真正进入第 3 章的正题。好消息是：<strong>所有经典迭代法（Jacobi、Gauss-Seidel、SOR）都只是同一个模板的特例</strong>，而这个模板只有一行。</p>
+
+<div class="box key">
+<p class="label">迭代法的通用格式</p>
+\[
+x^{(k)}=Bx^{(k-1)}+c,\qquad k=1,2,\dots
+\]
+<p>其中 $B$ 叫<strong>迭代矩阵</strong>，$c$ 叫<strong>常数项</strong>。给定 $x^{(0)}$，反复代入就得到序列 $x^{(0)},x^{(1)},x^{(2)},\dots$。全部理论都围绕一个问题：<strong>这个序列收敛吗？</strong></p>
+</div>
+
+<h4>第一步：把 $A$ 拆成 $A=M-N$</h4>
+
+<p>给定 $A\in\mathbb{C}^{n\times n}$，把它拆成</p>
+
+\[
+A=M-N
+\]
+
+<p>对 $M$ 的要求是<strong>两条互相拉扯的条件</strong>：</p>
+
+<ul>
+<li>$M$ <strong>非奇异且容易求逆</strong>（每步迭代都要解一个以 $M$ 为系数的方程组，$M$ 越简单越好）；</li>
+<li>$M\approx A$，也就是 $N=M-A$ 尽量小（$N$ 越小，迭代矩阵 $B=M^{-1}N$ 越小，收敛越快）。</li>
+</ul>
+
+<p>这两条是矛盾的——取 $M=A$ 时 $N=0$、一步收敛，可那等于直接解方程；取 $M=I$ 时求逆最便宜，但 $N=I-A$ 可能很大。<strong>所有迭代法的差别，就是在这两条之间选的折中点不同。</strong></p>
+
+<div class="box">
+<p class="label">讲义给的例子：Toeplitz（Hermite）分解</p>
+<p>把 $A$ 分成 Hermite 部分与反 Hermite 部分：</p>
+\[
+A=H+K,\qquad H:=\frac{A+A^{\mathsf H}}{2},\qquad K:=\frac{A-A^{\mathsf H}}{2}
+\]
+<p>再取</p>
+\[
+M:=H+\alpha I,\qquad N:=-K+\alpha I\qquad(\alpha>0)
+\]
+<p>$\alpha>0$ 是为了保证 $M=H+\alpha I$ 可逆（$H$ 是 Hermite 阵，加 $\alpha I$ 把谱整体右移）。验算一下：</p>
+\[
+M-N=(H+\alpha I)-(-K+\alpha I)=H+K=A\quad\checkmark
+\]
+<p>这个拆法在实际中不常用，但它是「$M$ 取成 $A$ 的一个易求逆的近似」这个思路最干净的示范。</p>
+</div>
+
+<h4>第二步：从 $Ax=b$ 推出迭代格式</h4>
+
+\[
+Ax=(M-N)x=b
+\ \Longleftrightarrow\
+Mx=b+Nx
+\ \Longleftrightarrow\
+x=M^{-1}Nx+M^{-1}b
+\]
+
+<p>把这个<strong>恒等式</strong>改写成<strong>迭代式</strong>（把右边的 $x$ 换成上一轮的 $x^{(k-1)}$）：</p>
+
+\[
+x^{(k)}=M^{-1}N\,x^{(k-1)}+M^{-1}b
+\]
+
+<p>对照通用格式，就得到</p>
+
+\[
+\boxed{\,B=M^{-1}N,\qquad c=M^{-1}b\,}
+\]
+
+<div class="box ok">
+<p class="label">为什么极限一定是解：自动成立，不需要额外条件</p>
+<p>设 $x^{(k)}\to x^{*}$，在 $x^{(k)}=Bx^{(k-1)}+c$ 两边取极限：</p>
+\[
+x^{*}=Bx^{*}+c
+\]
+<p>而 $c=M^{-1}b$、$B=M^{-1}N$，两边左乘 $M$：</p>
+\[
+Mx^{*}=Nx^{*}+b\ \Longleftrightarrow\ (M-N)x^{*}=b\ \Longleftrightarrow\ Ax^{*}=b
+\]
+<p>所以只要极限存在，<strong>它必然是 $Ax=b$ 的解</strong>。唯一要讨论的只是「极限存不存在」。</p>
+<p>讲义把这个性质写成：若存在非奇异阵 $G$ 使 $A=G(I-B)$、$b=Gc$，则称<strong>迭代法与 $Ax=b$ 相容</strong>（等价于 $Ax=b$ 与 $x=Bx+c$ 同解）。从实用角度讲，<strong>我们只对相容且收敛的迭代法感兴趣</strong>。显然，只要 $A$ 的对角元均非零，Jacobi 和 Gauss-Seidel 都与 $Ax=b$ 相容。</p>
+</div>
+
+<div class="box warn">
+<p class="label">符号约定：讲义的 $L$、$U$ 带负号</p>
+<p>讲义写的是</p>
+\[
+A=D-L-U
+\]
+<p>其中 $L$ 的元素是 $-a_{ij}\ (i>j)$、$U$ 的元素是 $-a_{ij}\ (i\lt j)$，即</p>
+\[
+L=\begin{bmatrix}0&&&\\ -a_{21}&0&&\\ \vdots&\ddots&\ddots&\\ -a_{n1}&\cdots&-a_{n,n-1}&0\end{bmatrix},\qquad
+U=\begin{bmatrix}0&-a_{12}&\cdots&-a_{1n}\\ &0&\ddots&\vdots\\ &&\ddots&-a_{n-1,n}\\ &&&0\end{bmatrix}
+\]
+<p>而很多教材写 $A=D+L+U$，那里的 $L$、$U$ 是<strong>真正的</strong>严格下三角与严格上三角部分。两套记号里的 $L$、$U$ <strong>差一个负号</strong>，于是同一个迭代矩阵在两本书里长相不同（例如 $B_J$ 在这里是 $D^{-1}(L+U)=I-D^{-1}A$，在那套记号里是 $D^{-1}(A-D)$）。<strong>内容完全一致，只是符号</strong>。本文全程跟讲义。</p>
+</div>
+
+<h3 id="s37">3.7 Jacobi 迭代法<span class="tag a">讲义 §3.1.1</span></h3>
+
+<h4>拆法：只保留对角</h4>
+
+<p>取</p>
+
+\[
+D=\operatorname{diag}(a_{11},a_{22},\dots,a_{nn}),\qquad M=D,\qquad N=L+U
+\]
+
+<p>也就是 $A=D-(L+U)$，即 $M=D$、$N=L+U$。$D$ 是<strong>对角阵，求逆就是取倒数</strong>——这是所有拆法里最省的一种。前提是 $a_{ii}\ne0\ (i=1,\dots,n)$，也就是「$A$ 的对角元均非零」。</p>
+
+\[
+Ax=(D-L-U)x=b
+\ \Longleftrightarrow\
+Dx=(L+U)x+b
+\ \Longleftrightarrow\
+x=D^{-1}(L+U)x+D^{-1}b
+\]
+
+<p>于是</p>
+
+\[
+\boxed{\ B_{\mathrm{J}}=D^{-1}(L+U),\qquad c_{\mathrm{J}}=D^{-1}b\ }
+\]
+
+<h4>分量形式（实际写代码时用的就是这个）</h4>
+
+<p>看 $Ax=b$ 的第 $i$ 行：</p>
+
+\[
+\sum_{j=1}^{n}a_{ij}x_j=b_i
+\quad\Longrightarrow\quad
+a_{ii}x_i=b_i-\sum_{j\ne i}a_{ij}x_j
+\]
+
+<p>把右边的 $x_j$ 全换成上一轮的 $x_j^{(k-1)}$，就得到 Jacobi 迭代法的分量形式：</p>
+
+\[
+x_i^{(k)}=\frac{1}{a_{ii}}\Big(b_i-\sum_{j\ne i}a_{ij}x_j^{(k-1)}\Big),
+\qquad i=1,2,\dots,n
+\]
+
+<div class="box key">
+<p class="label">Jacobi 的招牌性质：所有分量互相独立</p>
+<p>注意上式右边只出现 $x^{(k-1)}$，<strong>一个 $x^{(k)}$ 都没有</strong>。所以 $x^{(k)}$ 的 $n$ 个分量可以<strong>同时、彼此独立地</strong>算出来——先算哪个都一样。这在现代硬件上意味着<strong>天然可并行</strong>（GPU 上一个线程算一个分量）。</p>
+</div>
+
+<h4>例：二维 Poisson 方程的 Jacobi 单步</h4>
+
+<p>讲义在 §3.0 末尾就用二维 Poisson 方程演示了这一步（应用数值线性代数, 算法 6.2）。由五点型板</p>
+
+\[
+u_{i,j}^{(k+1)}=\frac{1}{4}\Big(u_{i-1,j}^{(k)}+u_{i+1,j}^{(k)}+u_{i,j-1}^{(k)}+u_{i,j+1}^{(k)}+h^{2}f_{i,j}\Big),
+\qquad h=\frac{1}{n+1}
+\]
+
+<p>（$i,j=1,\dots,n$；$u_{0,\cdot},u_{n+1,\cdot},u_{\cdot,0},u_{\cdot,n+1}$ 是边界值，已知。）写成循环就是</p>
+
+\[
+\begin{aligned}
+&\text{for } i=1:n\\
+&\qquad \text{for } j=1:n\\
+&\qquad\qquad u_{i,j}^{(k+1)}=\tfrac14\big(u_{i-1,j}^{(k)}+u_{i+1,j}^{(k)}+u_{i,j-1}^{(k)}+u_{i,j+1}^{(k)}+h^{2}f_{i,j}\big)\\
+&\qquad \text{end}\\
+&\text{end}
+\end{aligned}
+\]
+
+<div class="box ok">
+<p class="label">这就是「矩阵-向量乘法是核心」的兑现</p>
+<p>把 $u^{(k)}$ 存成一个补了边界的 $(n+2)\times(n+2)$ 矩阵 $U$，把 $f_{i,j}$ 存成 $n$ 阶矩阵 $F$，则<strong>整个 Jacobi 单步就是一条 Matlab 语句</strong>：</p>
+<pre style="margin:10px 0 4px; padding:10px 12px; background:var(--bg2); border:1px solid var(--line); border-radius:8px; overflow-x:auto; font-size:12.5px"><code>U(2:n+1, 2:n+1) = 0.25 * (U(1:n, 2:n+1) + U(3:n+2, 2:n+1) + U(2:n+1, 1:n) + U(2:n+1, 3:n+2) + h^2 * F);</code></pre>
+<p>四个移位相加 = 四个邻居，再除 4、加 $h^2F$。这正是 §3.3 里 Cayley–Hamilton 论证想说明的事：<strong>只要 $y=Ax$ 写得快，迭代法就写得快</strong>。而这里连「矩阵」都没有显式出现——$A$ 只活在五个下标偏移里。</p>
+</div>
+
+<h3 id="s38">3.8 Gauss-Seidel 迭代法<span class="tag a">讲义 §3.1.2</span></h3>
+
+<h4>唯一的改动：用新值代替旧值</h4>
+
+<p>回到 Jacobi 的分量形式。算第 $i$ 个分量时，$x_1^{(k)},\dots,x_{i-1}^{(k)}$ <strong>已经算出来了</strong>，为什么还要用旧的 $x_1^{(k-1)},\dots,x_{i-1}^{(k-1)}$？</p>
+
+<p>把它们换掉，就得到 Gauss-Seidel 迭代法：</p>
+
+\[
+x_i^{(k)}=\frac{1}{a_{ii}}\Big(b_i-\sum_{j\lt i}a_{ij}x_j^{(k)}-\sum_{j\gt i}a_{ij}x_j^{(k-1)}\Big),
+\qquad i=1,2,\dots,n
+\]
+
+<p>即：<strong>已更新过的分量用新值，还没轮到的用旧值</strong>。</p>
+
+<h4>矩阵形式</h4>
+
+<p>把上式的「新值部分」和「旧值部分」分开写，就是</p>
+
+\[
+x^{(k)}=D^{-1}\big(Lx^{(k)}+Ux^{(k-1)}\big)+D^{-1}b
+\]
+
+<p>两边左乘 $D$：</p>
+
+\[
+Dx^{(k)}=Lx^{(k)}+Ux^{(k-1)}+b
+\ \Longleftrightarrow\
+(D-L)x^{(k)}=Ux^{(k-1)}+b
+\]
+
+<p>由于 $D-L$ 是<strong>下三角阵</strong>（对角元非零，故非奇异），可以求逆：</p>
+
+\[
+\boxed{\ x^{(k)}=(D-L)^{-1}U\,x^{(k-1)}+(D-L)^{-1}b\ }
+\]
+
+<p>即</p>
+
+\[
+B_{\mathrm{GS}}=(D-L)^{-1}U,\qquad c_{\mathrm{GS}}=(D-L)^{-1}b
+\]
+
+<div class="box">
+<p class="label">$(D-L)^{-1}$ 为什么便宜</p>
+<p>$D-L$ 是下三角，解 $(D-L)x^{(k)}=\text{右端}$ 就是<strong>一次前代</strong>，$O(n^{2})$（稀疏情形 $O(\mathrm{nnz})$）。所以 GS 每一步的代价和 Jacobi 同阶——<strong>不是「多花代价换加速」，而是「白捡的加速」</strong>。这正是它值得用的原因。</p>
+</div>
+
+<figure style="margin:26px 0 10px">
+<svg viewBox="0 0 680 250" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Jacobi 与 Gauss-Seidel 的数据依赖对比</title>
+<desc>在 3×3 网格上计算中心点 (2,2) 时，Jacobi 的四个邻居全部取上一轮的旧值；Gauss-Seidel 中已经算过的 (1,2) 与 (2,1) 取本轮新值，尚未算到的 (2,3) 与 (3,2) 仍取旧值。</desc>
+
+<text x="140" y="52" text-anchor="middle" font-size="12.5" fill="var(--ink)">Jacobi：邻居全用旧值</text>
+<rect x="80" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="120" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="160" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="80" y="110" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="120" y="110" width="40" height="40" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1"/>
+<rect x="160" y="110" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="80" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="120" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="160" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="140" y="90" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="100" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="140" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--gold)">(i,j)</text>
+<text x="180" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="140" y="170" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="140" y="212" text-anchor="middle" font-size="12" fill="var(--ink3)">分量之间互不依赖 → 可并行</text>
+
+<text x="460" y="52" text-anchor="middle" font-size="12.5" fill="var(--ink)">Gauss-Seidel：已算过的用新值</text>
+<rect x="400" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="440" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="480" y="70" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="400" y="110" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="440" y="110" width="40" height="40" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1"/>
+<rect x="480" y="110" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="400" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="440" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<rect x="480" y="150" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="460" y="90" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">k</text>
+<text x="420" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--accent)">k</text>
+<text x="460" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--gold)">(i,j)</text>
+<text x="500" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="460" y="170" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink3)">k−1</text>
+<text x="460" y="212" text-anchor="middle" font-size="12" fill="var(--ink3)">必须按 i,j 顺序算 → 串行</text>
+
+<rect x="60" y="228" width="14" height="12" rx="2" fill="var(--bg2)" stroke="var(--line)" stroke-width="0.5"/>
+<text x="80" y="234" font-size="11.5" fill="var(--ink2)">旧值 x⁽ᵏ⁻¹⁾</text>
+<rect x="270" y="228" width="14" height="12" rx="2" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="0.5"/>
+<text x="290" y="234" font-size="11.5" fill="var(--ink2)">新值 x⁽ᵏ⁾</text>
+<rect x="450" y="228" width="14" height="12" rx="2" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
+<text x="470" y="234" font-size="11.5" fill="var(--ink2)">正在算的分量</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 17 · 算 $(i,j)=(2,2)$ 时两者的取数差别：Jacobi 全取旧值（可并行），Gauss-Seidel 左边和上面的邻居已更新（必须串行）</figcaption>
+</figure>
+
+<h4>例：红黑序 Gauss-Seidel</h4>
+
+<p>GS 更快，但把并行性丢了。讲义给了补回来的办法（应用数值线性代数, 算法 6.4）——<strong>红黑序</strong>：</p>
+
+<ul>
+<li>把网格节点按坐标和的奇偶染色：<strong>红节点</strong> $i+j$ 为偶，<strong>黑节点</strong> $i+j$ 为奇。</li>
+<li><strong>同色节点互不相邻</strong>，所以同一色的节点之间没有任何依赖，可以同时更新。</li>
+<li>于是：先用<strong>黑节点的旧数据</strong>更新所有红节点，再用<strong>红节点的新数据</strong>更新所有黑节点。</li>
+</ul>
+
+\[
+\begin{aligned}
+&\text{for all red } (i,j)\ (i+j\text{ even}):\\
+&\qquad u_{i,j}^{(k+1)}=\tfrac14\big(u_{i-1,j}^{(k)}+u_{i+1,j}^{(k)}+u_{i,j-1}^{(k)}+u_{i,j+1}^{(k)}+h^{2}f_{i,j}\big)\\
+&\text{for all black } (i,j)\ (i+j\text{ odd}):\\
+&\qquad u_{i,j}^{(k+1)}=\tfrac14\big(u_{i-1,j}^{(k+1)}+u_{i+1,j}^{(k+1)}+u_{i,j-1}^{(k+1)}+u_{i,j+1}^{(k+1)}+h^{2}f_{i,j}\big)
+\end{aligned}
+\]
+
+<p>两个循环内部都可并行，两个循环之间必须串行。<strong>既保留了 GS 的加速，又恢复了并行性</strong>——这是现代 GPU 上解 Poisson 类问题的标准做法。</p>
+
+<div class="box key">
+<p class="label">GS 比 Jacobi 快多少：二维 Poisson 的定量结论</p>
+<p>讲义给的是：求解二维 Poisson 问题 <strong>Gauss-Seidel 迭代更快，其每步迭代的效果相当于 Jacobi 迭代的两步</strong>；对大多数经典问题都是 GS 更快。（§3.3.2 会把这件事量化成「渐近收敛速度正好是两倍」。）</p>
+</div>
+
+<h4>但「GS 一定比 Jacobi 好」是错的</h4>
+
+<p>讲义明确指出：$B_{\mathrm{J}}=D^{-1}(L+U)$ 与 $B_{\mathrm{GS}}=(D-L)^{-1}U$ 的<strong>谱半径之间没有任何必然联系</strong>。四种情形都可能出现：Jacobi 收敛而 GS 发散、GS 收敛而 Jacobi 发散、两者都收敛、两者都发散。讲义给了两个反例。</p>
+
+<div class="box warn">
+<p class="label">反例 1：Jacobi 收敛，Gauss-Seidel 发散</p>
+\[
+A=\begin{bmatrix}1&2&-2\\1&1&1\\2&2&1\end{bmatrix},\qquad
+D=\begin{bmatrix}1&&\\&1&\\&&1\end{bmatrix},\quad
+L=\begin{bmatrix}0&&\\-1&0&\\-2&-2&0\end{bmatrix},\quad
+U=\begin{bmatrix}0&-2&2\\&0&-1\\&&0\end{bmatrix}
+\]
+\[
+B_{\mathrm{J}}=D^{-1}(L+U)=\begin{bmatrix}0&-2&2\\-1&0&-1\\-2&-2&0\end{bmatrix}
+\]
+<p>特征多项式 $\lambda^{3}$，特征值 $0,0,0$，谱半径 $\rho(B_{\mathrm{J}})=0\lt 1$ —— <strong>Jacobi 收敛</strong>。</p>
+\[
+B_{\mathrm{GS}}=(D-L)^{-1}U=\begin{bmatrix}0&-2&2\\0&2&-3\\0&0&2\end{bmatrix}
+\]
+<p>特征多项式 $\lambda(\lambda-2)^{2}$，特征值 $0,2,2$，谱半径 $\rho(B_{\mathrm{GS}})=2\ge 1$ —— <strong>Gauss-Seidel 发散</strong>。</p>
+</div>
+
+<div class="box warn">
+<p class="label">反例 2：Gauss-Seidel 收敛，Jacobi 发散</p>
+\[
+A=\begin{bmatrix}2&-1&1\\1&1&1\\1&1&-2\end{bmatrix},\qquad
+D=\begin{bmatrix}2&&\\&1&\\&&-2\end{bmatrix},\quad
+L=\begin{bmatrix}0&&\\-1&0&\\-1&-1&0\end{bmatrix},\quad
+U=\begin{bmatrix}0&1&-1\\&0&-1\\&&0\end{bmatrix}
+\]
+\[
+B_{\mathrm{J}}=D^{-1}(L+U)=\begin{bmatrix}0&\frac12&-\frac12\\-1&0&-1\\\frac12&\frac12&0\end{bmatrix}
+\]
+<p>特征多项式 $\lambda\big(\lambda^{2}+\frac54\big)$，特征值 $0,\pm\frac{\sqrt5}{2}i$，谱半径 $\rho(B_{\mathrm{J}})=\frac{\sqrt5}{2}\ge1$ —— <strong>Jacobi 发散</strong>。</p>
+\[
+B_{\mathrm{GS}}=(D-L)^{-1}U=\begin{bmatrix}0&\frac12&-\frac12\\0&-\frac12&-\frac12\\0&\frac12&0\end{bmatrix}
+\]
+<p>特征多项式 $\lambda\big(\lambda+\frac12\big)^{2}$，特征值 $0,-\frac12,-\frac12$，谱半径 $\rho(B_{\mathrm{GS}})=\frac12\lt 1$ —— <strong>Gauss-Seidel 收敛</strong>。</p>
+</div>
+
+<p>所以「哪个更好」<strong>没有普适答案，必须逐个问题算谱半径</strong>。而下一节要做的，正是把「算谱半径」这件事变成可操作的判据。</p>
+
+<h3 id="s39">3.9 收敛的充要条件：$\rho(B)\lt 1$<span class="tag a">讲义 §3.2.1</span></h3>
+
+<h4>误差方程：把「收敛」化成一个矩阵幂</h4>
+
+<p>设 $x^{*}$ 是 $Ax=b$ 的精确解。由相容性，$x^{*}$ 也满足 $x^{*}=Bx^{*}+c$。把两式相减：</p>
+
+\[
+\begin{aligned}
+x^{(k)}&=Bx^{(k-1)}+c\\
+x^{*}&=Bx^{*}+c
+\end{aligned}
+\qquad\Longrightarrow\qquad
+\underbrace{x^{(k)}-x^{*}}_{=:\,e^{(k)}}=B\big(x^{(k-1)}-x^{*}\big)
+\]
+
+<p>定义<strong>误差向量</strong> $e^{(k)}:=x^{(k)}-x^{*}$，就得到极简的递推</p>
+
+\[
+\boxed{\ e^{(k)}=Be^{(k-1)}\ \Longrightarrow\ e^{(k)}=B^{k}e^{(0)}\ }
+\]
+
+<p>也就是说：<strong>迭代法的全部行为，都被 $B$ 的幂次刻画完了</strong>。</p>
+
+<h4>两个定理拼起来</h4>
+
+<div class="box">
+<p class="label">（数值线性代数, 引理 4.2.1）</p>
+<p>单步线性定常迭代法 $x^{(k)}=Bx^{(k-1)}+c$ 收敛的充要条件是</p>
+\[
+\lim_{k\to\infty}B^{k}=0_{n\times n}
+\]
+<p>（因为 $\lim x^{(k)}=x^{*}\iff\lim e^{(k)}=0\iff\lim B^{k}e^{(0)}=0$，对任意 $e^{(0)}$ 成立。）</p>
+</div>
+
+<div class="box">
+<p class="label">（数值线性代数, 定理 2.1.7）</p>
+<p>定义 $A\in\mathbb{C}^{n\times n}$ 的<strong>谱半径</strong></p>
+\[
+\rho(A):=\max_{1\le i\le n}|\lambda_i(A)|
+\]
+<p>则对任意 $A\in\mathbb{C}^{n\times n}$，<strong>当且仅当 $\rho(A)\lt 1$ 时 $\lim_{k\to\infty}A^{k}=0_{n\times n}$</strong>；这也等价于 Neumann 级数 $\sum_{k\ge0}A^{k}$ 收敛（且收敛到 $(I-A)^{-1}$）。</p>
+</div>
+
+<div class="box key">
+<p class="label">（数值线性代数, 定理 4.2.1）合起来</p>
+\[
+\text{单步线性定常迭代法 } x^{(k)}=Bx^{(k-1)}+c\ \text{收敛}
+\ \Longleftrightarrow\ \rho(B)\lt 1
+\]
+<p>这是整章最重要的一个式子。<strong>充要条件</strong>，不是充分条件。</p>
+</div>
+
+<div class="box ok">
+<p class="label">三条推论</p>
+<ol>
+<li><strong>收敛性只取决于迭代矩阵 $B$</strong>，与初始向量 $x^{(0)}$、常数项 $c$ 都无关。$x^{(0)}$ 只影响「要迭代多少步」，不影响「收不收敛」。</li>
+<li><strong>$\rho(B)$ 越小收敛越快</strong>——这是 §3.3 定义「收敛速度」的出发点。</li>
+<li>$\rho(B)=1$ 时定理失效：序列可能收敛也可能发散（取决于初值），<strong>工程上不敢用</strong>，所以实际判据就是严格不等式。</li>
+</ol>
+</div>
+
+<h4>顺带把 $x^{(k)}$ 显式写出来</h4>
+
+<p>由 $e^{(k)}=B^{k}e^{(0)}$ 与 $x^{*}=(I-B)^{-1}c$（当 $\rho(B)\lt 1$ 时 $(I-B)^{-1}=\sum_{j\ge0}B^{j}$ 存在），可以直接展开：</p>
+
+\[
+x^{(k)}=B^{k}x^{(0)}+\Big(\sum_{j=0}^{k-1}B^{j}\Big)c
+\]
+
+<p>这个式子把两件事一次说清：<strong>第一项 $B^{k}x^{(0)}$ 是「初值残留」，它按 $B$ 的幂衰减；第二项是「迭代累积」，当 $k\to\infty$ 时趋于 $(I-B)^{-1}c=x^{*}$</strong>。收敛速度完全由 $B^{k}\to0$ 的速度决定。</p>
+
+<div class="box">
+<p class="label">还没讲的（下一节）</p>
+<p>有了 $\rho(B)\lt1$ 这个充要条件，接下来的问题是：</p>
+<ul>
+<li><strong>怎么在不算特征值的前提下判断 $\rho(B)\lt1$</strong>？—— 讲义 §3.2.3 会给充分条件（如严格对角占优、不可约对角占优、对称正定等），这比算谱半径实用得多。</li>
+<li><strong>收敛「多快」</strong>？—— 讲义 §3.3 定义渐近收敛速度 $R(B)=-\ln\rho(B)$，并在二维 Poisson 上算出 Jacobi 与 GS 的定量估计（GS 恰好快一倍）。</li>
+<li><strong>能不能再快一点</strong>？—— 讲义 §3.4 的超松弛迭代法（SOR），用松弛因子 $\omega$ 把 GS 再推一档，并给出最佳 $\omega_{\mathrm{opt}}$。</li>
+</ul>
+<p>这三块今天课上都没讲到，等下次上课后再补。</p>
+</div>
+
+<h3 id="refine">3.10 迭代精化<span class="tag a">板书 6</span></h3>
+
+<p>这一节<strong>不在任何一份讲义里</strong>（我把 8 份 PDF 全文检索过「精化」，零命中），但板书第 6 张出现了，而且它正好是「直接法 → 迭代法」之间最自然的桥。</p>
+
+<div class="box">
+<p class="label">板书 6 原文</p>
+<pre style="margin:8px 0 4px; padding:12px 14px; background:var(--bg2); border:1px solid var(--line); border-radius:8px; overflow-x:auto; font-size:12.5px; line-height:1.75"><code>A x = b
+P(A+δA) = L̂ Û
+
+┌─ Loop: ──────────────────────┐
+│  r = b - A x     ← in higher precision
+│  solve:  A Δx = r
+│  x ← x + Δx
+└──────────────────────────────┘
+
+|fl(r) - r|  ≤  O(u) (|b| + |A| |x|)</code></pre>
+<p>注意右边那行误差界——它是整个方法能work的唯一理由，见下面「为什么有效」。</p>
+</div>
+
+<div class="box">
+<p class="label">迭代精化（iterative refinement）</p>
+<p>设已用<strong>部分主元 Gauss 消去法</strong>（可能是在较低精度下）得到 $PA\approx\hat L\hat U$。然后循环：</p>
+\[
+\begin{aligned}
+&\textbf{Loop:}\\[2pt]
+&\quad r=b-Ax &&\text{用\bf 更高精度\rm 计算残差}\\[2pt]
+&\quad \text{solve } \hat L\hat U\,\Delta x=P r &&\text{用已有的低精度分解求解修正量}\\[2pt]
+&\quad x\leftarrow x+\Delta x
+\end{aligned}
+\]
+</div>
+
+<h4>为什么有效</h4>
+
+<p>关键在误差分析。计算残差 $\mathrm{fl}(r)$ 的误差满足</p>
+
+\[
+|\mathrm{fl}(r)-r|\le O(u)\big(|b|+|A||x|\big)
+\]
+
+<div class="box key">
+<p class="label">注意右边是「逐元素」的</p>
+<p>右边是 $|b|+|A||x|$ —— <strong>分量绝对值</strong>的形式，而不是 $\|b\|+\|A\|\|x\|$ 这种范数形式。</p>
+<p>当 $A$ 病态时，$x$ 的各个分量会发生大量相消，于是 $\|A\|\|x\|$ 可以远大于 $|A||x|$ 的实际量级。换句话说：</p>
+\[
+\underbrace{O(u)\big(|b|+|A||x|\big)}_{\text{计算残差的误差}}\ \ll\ \underbrace{O(u)\big(\|b\|+\|A\|\|x\|\big)}_{\text{解 }x\text{ 本身的误差}}
+\]
+<p>所以<strong>计算出来的残差比 $x$ 本身精确得多</strong>，修正量 $\Delta x$ 里仍然携带有效信息，迭代就能真正把精度提上去。</p>
+</div>
+
+<h4>代价</h4>
+
+<p>每一步只有「算残差 + 前代 + 回代」，即 $O(\mathrm{nnz})$ 或 $O(n^{2})$，远小于一次分解的 $O(n^{3})$。所以：</p>
+
+<ul>
+<li>用<strong>低精度</strong>（如单精度）做分解，用<strong>高精度</strong>（如双精度）算残差，就能以接近低精度的代价拿到接近高精度的结果；</li>
+<li>这是现代混合精度求解器（例如 GPU 上的稀疏直接法）的核心技术。</li>
+</ul>
+
+<div class="box ok">
+<p class="label">和第 3 章的接口</p>
+<p>迭代精化已经具备了迭代法的外形：<em>构造一个序列 $x^{(0)},x^{(1)},\dots$，每一步用「残差 + 修正」的方式逼近精确解</em>。区别在于它是<strong>有限步</strong>收敛（几步就到位），而第 3 章的 Jacobi / Gauss-Seidel / SOR 是<strong>无穷步渐近</strong>收敛。理解了精化，再学 §3.1 会很自然。</p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p5">附录 · 板书逐张对照</h2>
+
+<table>
+<tr><th>板书</th><th>内容（原文）</th><th>对应位置</th></tr>
+<tr><td>1</td><td>$\min\|b-Ax\|_2$ 带等式约束 $Bx=d$ 的消元法：$[B;A]=[R\ \ 0]Q$，$[R\ \ 0]Qx=d$，$y_1=R^{-1}d$；以及 $\|b-Ax\|_2=\|b-AQ^{*}y\|_2=\|(b-\tilde A_1y_1)-\tilde A_2y_2\|_2$</td><td>PDF 2 收尾，本笔记未收录</td></tr>
+<tr><td>2</td><td>PageRank / Markov：$A_0$ 列随机（稀疏）、$A_1=\frac1nee^{\mathsf T}$、$A=\alpha A_0+(1-\alpha)A_1$，$\alpha\approx0.85$</td><td>PDF 2 应用案例，本笔记未收录</td></tr>
+<tr><td>3</td><td>$Ax=x\lambda$；$\hat x\approx x$；$(A-\hat\lambda I)x^{(k)}=x^{(k-1)}$；$B=(A-\hat\lambda I)^{-1}$ shift-and-invert；$(\lambda_i-\hat\lambda)^{-1}\gg(\lambda_j-\hat\lambda)^{-1}$；<code>INVIT</code>、<code>RQIT</code>（<strong>只有名字，没有收敛阶推导</strong>）</td><td>本文 <a href="#s22">§2.2</a>、<a href="#why">§2.3</a>、<a href="#s26">§2.6</a>（§2.6 的收敛阶推导为教材补充）</td></tr>
+<tr><td>4</td><td>$\min\|b-Ax\|_2$，$A\in\mathbb C^{m\times n}$，$\operatorname{rank}(A)\lt n\lt m$；$x=A^{+}b$；$AP=QR=Q\begin{bmatrix}R_{11}&R_{12}\\&0\end{bmatrix}$，rank-revealing QR</td><td>PDF 2 收尾，本笔记未收录</td></tr>
+<tr><td>5（左）</td><td>$Ax=b$；$\min_x\|b-Ax\|_2$；$A^{*}Ax=A^{*}b$；$\begin{bmatrix}I&A\\A^{*}&0\end{bmatrix}\begin{bmatrix}r\\x\end{bmatrix}=\begin{bmatrix}b\\0\end{bmatrix}$</td><td>PDF 2 收尾，本笔记未收录</td></tr>
+<tr><td>5（右）</td><td>direct methods：$PA=LU$ $O(n^3)$、$A=QR$ $O(mn^2)$；<strong>iterative methods</strong>：$x^{(1)},x^{(2)},\dots,x^{(k)},\dots$，$\lim_{k\to\infty}x^{(k)}=x_*$</td><td>本文 <a href="#s31">§3.1</a>（<strong>板书原文仅此两行</strong>）</td></tr>
+<tr><td>6</td><td>$P(A+\delta A)=\hat L\hat U$；Loop：$r=b-Ax$（in higher precision）、解 $A\Delta x=r$、$x\leftarrow x+\Delta x$；$|\mathrm{fl}(r)-r|\le O(u)(|b|+|A||x|)$</td><td>本文 <a href="#refine">§3.10</a> 迭代精化（<strong>板书原文；讲义里没有这一节</strong>）</td></tr>
+<tr><td>7</td><td>$Ax=x\lambda$；$1^\circ$ $x$ 已知求 $\lambda$：$\hat\lambda=\frac{x^{*}Ax}{x^{*}x}$（Rayleigh 商）；$2^\circ$ $\lambda$ 已知求 $x$：$(A-\lambda I)x=0$</td><td>本文 <a href="#s11">§1.1</a></td></tr>
+<tr><td>8</td><td>Markov 稳态：$A\gt0$、$Ae=e$；$\lim_{k\to\infty}A^{k}=ex^{\mathsf T}$（$e^{\mathsf T}x=1$）；$A=P\operatorname{diag}(1,0)P^{-1}$，$A^{k}\to P\operatorname{diag}(1,0)P^{-1}$；$I-A=LU$，$(I-A)e=0$，$x^{\mathsf T}\hat L=0$</td><td>PDF 2 应用案例；<strong>与 §1.4 的极限矩阵论证同源</strong></td></tr>
+<tr><td>9</td><td>$[x_1\ x_2\ x_3]\hat L=0$；$[x_1\ x_2\ x_3]\hat U=[+\ +\ +]$；归一化 $x\leftarrow x/(e^{\mathsf T}x)$</td><td>PDF 2 应用案例，本笔记未收录</td></tr>
+<tr><td>11</td><td>幂法迭代格式；$A[q_1,\dots,q_n]=[q_1,\dots,q_n]\operatorname{diag}(\lambda_1,\dots,\lambda_n)$；$|\lambda_1|\gt|\lambda_2|\ge\cdots\ge|\lambda_n|$；$\tilde x^{(k+1)}=Ax^{(k)}$、$x^{(k+1)}=\tilde x^{(k+1)}/\|\tilde x^{(k+1)}\|$；$x^{(k)}=\lambda_1^{k}\big(q_1\alpha_1+q_2\alpha_2(\lambda_2/\lambda_1)^{k}+\cdots\big)$</td><td>本文 <a href="#s12">§1.2</a>、<a href="#s13">§1.3</a></td></tr>
+<tr><td>12</td><td>幂法收敛性展开式，非主导项指数衰减</td><td>本文 <a href="#s14">§1.4</a></td></tr>
+<tr><td>13</td><td>幂法循环体（归一化、$y=Ax$、$\lambda=x^{*}y$、$r=x\lambda-y$）；收敛判据 $\|r\|\le\tau(\|A\|\|x\|+|\lambda|\|x\|)$；向后误差 $(A+rx^{*})x=Ax+r=x\lambda$</td><td>本文 <a href="#s13">§1.3</a></td></tr>
+<tr><td>（无）</td><td>第 3 章引言其余部分：存储格式（COO / CSC）、Cayley–Hamilton 论证 $y=Ax$ 是核心、一维 / 二维 Poisson 方程</td><td>本文 <a href="#s32">§3.2</a>–<a href="#s35">§3.5</a>（<strong>讲义有、课上没讲</strong>）</td></tr>
+<tr><td>（无）</td><td>第 3 章正文前半：<a href="#s36">单步线性定常迭代法总论</a>（$A=M-N$）、<a href="#s37">Jacobi</a>、<a href="#s38">Gauss-Seidel</a>（含红黑序、两个反例）、<a href="#s39">收敛的充要条件 $\rho(B)\lt 1$</a></td><td>本文 <a href="#s36">§3.6</a>–<a href="#s39">§3.9</a>（<strong>讲义有、课上没讲</strong>）</td></tr>
+<tr><td>（无）</td><td>QR 方法：<a href="#s531">显式 QR 迭代</a>、<a href="#s532">实 Schur 标准型</a>、<a href="#s533">上 Hessenberg 分解与唯一性</a>、<a href="#s534">Hessenberg 阵的 QR 迭代</a>、<a href="#s535">带位移</a> / <a href="#s536">双位移隐式 QR（Francis）</a>、<a href="#s537">隐式 QR 算法与运算量</a>；实 Schur 型后处理：<a href="#s541">对角块排序</a>、<a href="#s542">Sylvester 方程（Bartels–Stewart）</a>、<a href="#s543">块对角化</a></td><td>本文 <a href="#p3">§5.3–§5.4</a>（提前自学）</td></tr>
+</table>
+
+<div class="box">
+<p class="label">关于「板书 10」</p>
+<p>上传的 13 张照片里，<strong>第 10 张与第 1 张是同一个文件</strong>（字节完全相同），所以实际上是 12 张不同的板书；「板书 10」这一张没有留下可核对的内容。上表因此只列到 1–9、11–13。另外，板书里出现的迭代法名字 <code>INVIT</code> / <code>RQIT</code> 是<strong>特征值</strong>的迭代法（第 5 章），不是第 3 章解线性方程组的迭代法。</p>
+</div>
+
+<div class="box">
+<p class="label">还没讲的</p>
+<p><strong>第 3 章正文</strong>今天完全没开始。本文已经把前半（<a href="#s36">§3.6</a> 迭代法总论、<a href="#s37">§3.7</a> Jacobi、<a href="#s38">§3.8</a> Gauss-Seidel、<a href="#s39">§3.9</a> 收敛充要条件）按讲义补全，但以下三块还没写：<strong>§3.2.2 误差估计</strong>（$\|e^{(k)}\|$ 的两条上界，用于构造停止准则）、<strong>§3.2.3 Jacobi / GS 的实用收敛判据</strong>（严格对角占优、不可约对角占优、对称正定）、<strong>§3.3 收敛速度</strong>（渐近收敛速度 $R(B)=-\ln\rho(B)$、二维 Poisson 的定量估计）与 <strong>§3.4 超松弛迭代法 SOR</strong>（迭代格式、$0\lt\omega\lt2$、最佳松弛因子 $\omega_{\mathrm{opt}}$）。</p>
+<p><strong>第 5 章的 §5.3（QR 方法）与 §5.4（实 Schur 型的后处理）</strong>都没出现在今天的板书里——本文第三部分是我按讲义 PDF 5 提前整理的，你可以先看，也可以等老师讲到再回来对照。</p>
+</div>
+
+<p class="footnote" style="margin-top:40px">整理自：FDU 数值算法讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0，以及 2026-10-13 课堂板书。§5.3、§5.4 未出现在板书里，属提前自学；第 3 章的 §3.2–§3.5（存储、Poisson 方程）与 §3.6–§3.9（迭代法总论、Jacobi、Gauss-Seidel、收敛充要条件）同样是讲义内容、课上未讲；§2.6 的收敛阶推导（Rayleigh 商误差 $=O(\theta^2)$、$\mathrm{gap}$ 的定义与三次收敛）讲义只给结论、未给证明，属教材补充。公式排版：KaTeX 0.16.11（本地）。</p>
+
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
