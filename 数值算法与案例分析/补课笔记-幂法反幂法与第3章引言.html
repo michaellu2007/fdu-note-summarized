@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>补课笔记 · 幂法 / 反幂法 / QR 方法 + 第 3 章引言</title>
+<title>补课笔记 · 幂法 / 反幂法 / QR 方法 + 第 2、3 章补充</title>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
 <style>
 :root{
@@ -82,8 +82,8 @@ th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
 <div class="wrap">
 
 <p class="eyebrow">数值算法与案例分析 Ⅰ · 补课笔记</p>
-<h1>幂法 / 反幂法 / QR 方法<br>与第 3 章引言</h1>
-<p class="lede">对照讲义 PDF 5 §5.1–§5.4 与 PDF 3 §3.0，按课堂板书（第 3、7、11、12、13 张 + 第 5、6 张）的顺序整理；§5.3 为提前自学内容。所有公式用 KaTeX 排版。</p>
+<h1>幂法 / 反幂法 / QR 方法<br>与第 2、3 章补充</h1>
+<p class="lede">对照讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0–§3.4 与 PDF 2 §2.4，按课堂板书（第 1、3、5、6、7、11、12、13 张）的顺序整理；§5.3–§5.4、§3.2–§3.13 与 §2.4 属讲义内容、课上未讲。所有公式用 KaTeX 排版。</p>
 
 <div class="toc">
 <strong>目录</strong>
@@ -137,7 +137,15 @@ th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
       <li><a href="#refine">3.14 迭代精化</a></li>
     </ol>
   </li>
-  <li><a href="#p5">附录 · 板书逐张对照</a></li>
+  <li><a href="#p5">第五部分 · 第 2 章补充：最小二乘的变体与 Krylov 子空间</a><span class="tag a">PDF 2 §2.4</span>
+    <ol>
+      <li><a href="#s241">§2.4.1 最小二乘问题的三种变体</a></li>
+      <li><a href="#s242">§2.4.2 GTH 算法</a></li>
+      <li><a href="#s243">§2.4.3 Arnoldi 过程</a></li>
+      <li><a href="#s244">§2.4.4 Lanczos 过程</a></li>
+    </ol>
+  </li>
+  <li><a href="#p6">附录 · 板书逐张对照</a></li>
 </ol>
 </div>
 
@@ -1231,6 +1239,11 @@ x^{(0)}=P^{-1}\hat L e_k\qquad(e_k\text{ 是第 }k\text{ 个单位向量})
 <tr><td>$H$、$H_1,\dots,H_{n-2}$</td><td>§1.5、§5.3.3</td><td><strong>Householder 变换</strong>（对称正交阵，不是置换矩阵）</td></tr>
 <tr><td>$P_0,P_1,\dots$</td><td>§5.3.6</td><td><strong>Householder 变换</strong>（同上，只是换了个字母）</td></tr>
 <tr><td>$Q$</td><td>§5.3</td><td>正交 / 酉矩阵（QR 分解里的那个 $Q$）</td></tr>
+<tr><td>$H$</td><td>§2.4.3</td><td><strong>上 Hessenberg 阵</strong>（$H=Q^{*}AQ$）——和上面的 Householder $H$ 是两个完全不同的东西</td></tr>
+<tr><td>$q_1,\dots,q_r$</td><td>§2.4.3</td><td>Krylov 子空间的<strong>标准正交基</strong>——和 §1.2 的右特征向量 $q_i$ 也是两个东西</td></tr>
+<tr><td>$C$</td><td>§2.4.1 / §2.4.3</td><td>§2.4.1 是<strong>约束矩阵</strong>；§2.4.3 是<strong>伴随矩阵</strong></td></tr>
+<tr><td>$Y$</td><td>§2.4.3</td><td>Krylov 幂序列堆成的矩阵（极度病态，只用来说明问题）</td></tr>
+<tr><td>$T_k$、$\tilde T_k$</td><td>§2.4.4</td><td>Lanczos 的<strong>对称三对角阵</strong>（上标 $^{\mathsf T}$ 是转置，不是这个 $T$）</td></tr>
 </table>
 <p>判别办法：<strong>置换矩阵每行每列只有一个 1</strong>，作用是把元素「换个位置」；Householder 是 $I-2ww^{\mathsf T}$，一般<strong>稠密</strong>，作用是「做镜像」。两者都会写成「某个字母乘以一个向量」，但一个是重新排队，一个是真正在做线性组合。</p>
 </div>
@@ -4542,15 +4555,670 @@ P(A+δA) = L̂ Û
 <hr>
 
 <!-- ============================================================ -->
-<h2 id="p5">附录 · 板书逐张对照</h2>
+<h2 id="p5">第五部分 · 第 2 章补充（§2.4）：最小二乘的变体与 Krylov 子空间<span class="tag a">PDF 2 §2.4</span></h2>
+
+<p>讲义 PDF 2 的最后一节标题就叫「<strong>补充</strong>」（p21–p27，末页写着 The End，第 2 章到此结束）。它其实是<strong>两条完全不同的支线</strong>拼在一起：<a href="#s241">§2.4.1</a> 是第 2 章主线的收尾（最小二乘的三种变形，最后都归约回标准最小二乘）；<a href="#s242">§2.4.2</a>–<a href="#s244">§2.4.4</a> 则是给后面三章埋的伏笔——GTH 是第 4 章 Krylov 方法的入口，Arnoldi 通向第 4、5 章，Lanczos 通向第 4 章的共轭梯度与第 6 章的对称特征值问题。</p>
+
+<div class="box warn">
+<p class="label">来源：这一部分哪些是课上讲的</p>
+<table>
+<tr><th>小节</th><th>来源</th><th>说明</th></tr>
+<tr><td>§2.4.1 变体 ① 标准型的三种等价表述</td><td><span class="tag">板书 5（左）</span></td><td>板书上只有 4 个式子，没有任何文字说明</td></tr>
+<tr><td>§2.4.1 变体 ③ 线性等式约束的消元法</td><td><span class="tag">板书 1</span></td><td>板书有完整式子；板书把约束矩阵记作 $B$，讲义记作 $C$</td></tr>
+<tr><td>§2.4.1 变体 ② 带 $l_2$ 惩罚项</td><td><span class="tag a">讲义 §2.4.1</span></td><td>课上没讲；下面的推导与数值例子是我按教材补的</td></tr>
+<tr><td>§2.4.2 GTH 算法</td><td><span class="tag a">讲义 §2.4.2</span></td><td><strong>讲义本身只有标题 + 一行「参见 Homework 06 Problem 07」，没有正文</strong></td></tr>
+<tr><td>§2.4.3 Arnoldi 过程</td><td><span class="tag a">讲义 §2.4.3</span></td><td>课上没讲；对应本学年作业第 2 题</td></tr>
+<tr><td>§2.4.4 Lanczos 过程</td><td><span class="tag a">讲义 §2.4.4</span></td><td>课上没讲；本学年作业未涉及</td></tr>
+</table>
+<p><strong>编号说明：</strong>本部分的小节号沿用讲义 PDF 2 的 §2.4.x，与<a href="#p2">第二部分</a>的 §2.1–§2.6 是<strong>两套独立编号</strong>（后者对应讲义 PDF 5 §5.2 的反幂法，编号是本笔记自己排的）。</p>
+</div>
+
+<div class="box warn">
+<p class="label">记号撞车预警：这一段新引入的符号</p>
+<table>
+<tr><th>记号</th><th>在本部分是什么</th><th>和哪里的旧记号撞车</th></tr>
+<tr><td>$Y$、$y_k$</td><td>Krylov 幂序列堆成的矩阵（$Y$）与它的列（$y_k$）</td><td>无，是新记号</td></tr>
+<tr><td>$C$</td><td><strong>伴随矩阵</strong>（<a href="#s243">§2.4.3</a>）／<strong>约束矩阵</strong>（<a href="#s241">§2.4.1</a> 变体 ③）</td><td>同一个部分里就有两个含义；另注意 $\mathbb{C}$ 是复数域</td></tr>
+<tr><td>$Q=[q_1,\dots,q_r]$</td><td>Krylov 子空间的<strong>标准正交基</strong>，$q_i$ 是它的列</td><td>$q_i$ 在 <a href="#s12">§1.2</a> 是<strong>右特征向量</strong>；$Q$ 在 <a href="#s533">§5.3.3</a> 是 QR 分解的正交阵</td></tr>
+<tr><td>$H$</td><td><strong>上 Hessenberg 阵</strong>（$H=Q^{*}AQ$）</td><td>$H$ 在 <a href="#s15">§1.5</a>、<a href="#s533">§5.3.3</a> 是 <strong>Householder 变换</strong>！两个完全不同的东西</td></tr>
+<tr><td>$T_k$、$\tilde T_k$</td><td>Lanczos 得到的<strong>对称三对角阵</strong></td><td>上标 $^{\mathsf T}$ 是转置符号，别和矩阵名 $T$ 混</td></tr>
+<tr><td>$r$</td><td>Arnoldi 实际算出的<strong>列数</strong>（$r\le\operatorname{rank}(Y)$）</td><td>残差 $r=b-Ax$（<a href="#s310">§3.10</a>）也是 $r$；Lanczos 伪代码里的 $r_k$ 又是残差<strong>向量</strong></td></tr>
+</table>
+</div>
+
+<h3 id="s241">§2.4.1 最小二乘问题的三种变体<span class="tag">板书 1、5（左）</span><span class="tag a">讲义 §2.4.1</span></h3>
+
+<p><strong>一句话结论：</strong>这一节没有引入任何新方法，只是把第 2 章的「标准最小二乘」往三个方向各推一步——而<strong>每一个变体最终都被归约回标准最小二乘</strong>。所以第 2 章到这里其实只用了一个算法（QR 分解），换了三种包装。</p>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 274" width="100%" role="img" aria-labelledby="fig20t fig20d">
+<title id="fig20t">最小二乘三种变体都归约回标准最小二乘</title>
+<desc id="fig20d">标准型、带 l₂ 惩罚项的变体、带线性等式约束的变体，分别通过原样保留、堆叠增广、消元法降维三种方式归约到同一个标准最小二乘问题。</desc>
+<defs>
+<marker id="arrowFig20" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="60" y="60" width="270" height="54" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="195" y="82" font-size="13.5" fill="var(--ink)" text-anchor="middle">① 标准型</text>
+<text x="195" y="100" font-size="12" fill="var(--ink3)" text-anchor="middle">min ‖b − Ax‖₂²</text>
+<rect x="60" y="130" width="270" height="54" rx="10" fill="var(--bg3)" stroke="var(--gold)" stroke-width="1"/>
+<text x="195" y="152" font-size="13.5" fill="var(--ink)" text-anchor="middle">② l₂ 惩罚</text>
+<text x="195" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">+ μ‖x‖₂²（岭回归）</text>
+<rect x="60" y="200" width="270" height="54" rx="10" fill="var(--bg3)" stroke="var(--warn)" stroke-width="1"/>
+<text x="195" y="222" font-size="13.5" fill="var(--ink)" text-anchor="middle">③ 等式约束</text>
+<text x="195" y="240" font-size="12" fill="var(--ink3)" text-anchor="middle">min，约束 Cx = d</text>
+<rect x="420" y="130" width="200" height="54" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
+<text x="520" y="152" font-size="13.5" fill="var(--ink)" text-anchor="middle">标准最小二乘</text>
+<text x="520" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">正规方程 / QR 分解</text>
+<path d="M332 87L414 143" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig20)"/>
+<path d="M332 157H414" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig20)"/>
+<path d="M332 227L414 171" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig20)"/>
+<text x="373" y="98" font-size="12" fill="var(--ink3)" text-anchor="middle">原样</text>
+<text x="373" y="147" font-size="12" fill="var(--ink3)" text-anchor="middle">堆 [A; √μI]</text>
+<text x="373" y="224" font-size="12" fill="var(--ink3)" text-anchor="middle">消元降维</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 20 · §2.4.1 的三种变体最终都归约到同一个标准最小二乘——第 2 章自始至终只用了一个算法（QR 分解），换了三种包装</figcaption>
+</figure>
+
+<h4>变体 ① 标准型的三种等价表述</h4>
+
+<div class="box">
+<p class="label">板书 5（左）原文</p>
+<p>$Ax=b$；$\min_x\|b-Ax\|_2$；$A^{*}Ax=A^{*}b$；$\begin{bmatrix}I&A\\ A^{*}&0\end{bmatrix}\begin{bmatrix}r\\x\end{bmatrix}=\begin{bmatrix}b\\0\end{bmatrix}$</p>
+</div>
+
+<p>这四个式子其实是同一个问题的四种说法：</p>
+
+<ol>
+<li><strong>原问题</strong>：$Ax=b$。当 $A\in\mathbb{C}^{m\times n}$ 且 $m\gt n$ 时一般无解。</li>
+<li><strong>改成极小化</strong>：$\min_x\|b-Ax\|_2$——把「解不出来」换成「差得最少」。</li>
+<li><strong>正规方程</strong>：$A^{*}Ax=A^{*}b$。推导就是「梯度为零」：$\|b-Ax\|_2^2$ 对 $x$ 求梯度得 $-2A^{*}(b-Ax)$，令其为零即得。几何上它说的是<strong>残差 $b-Ax$ 与 $\operatorname{Ran}(A)$ 正交</strong>（$A^{*}(b-Ax)=0$）。</li>
+<li><strong>增广系统</strong>：把残差 $r=b-Ax$ 也当成未知量。由 $r+Ax=b$ 和 $A^{*}r=0$ 拼起来就是那个分块系统。</li>
+</ol>
+
+<div class="box warn">
+<p class="label">易错点：增广系统的对角块是 $I$ 和 $0$，不是 $A$ 和 $A^{*}$</p>
+<p>把 $\begin{bmatrix}I&A\\ A^{*}&0\end{bmatrix}\begin{bmatrix}r\\x\end{bmatrix}=\begin{bmatrix}b\\0\end{bmatrix}$ 展开：第一行是 $r+Ax=b$（就是残差的定义），第二行是 $A^{*}r=0$（就是正交条件）。这个矩阵是<strong>对称不定</strong>的（鞍点结构），不是正定阵。</p>
+<p><strong>为什么这个形式有用：</strong>它把一个最小二乘问题写成了一个<strong>方阵方程组</strong>，可以直接用 LU（带主元）或迭代法求解，而不必显式算出 $A^{*}A$——算 $A^{*}A$ 会把条件数<strong>平方</strong>，这是第 2 章反复强调的坑。</p>
+</div>
+
+<h4>变体 ② 带 $l_2$ 惩罚项的最小二乘</h4>
+
+<p>讲义原文一句话带过：「带 $l_2$ 惩罚项的最小二乘问题本质上是标准的最小二乘问题」。它的定义是</p>
+
+\[ \min_x\ \|b-Ax\|_2^2+\mu\|x\|_2^2 \]
+
+<p>两项各管一件事：$\|b-Ax\|_2^2$ 管「<strong>拟合得好不好</strong>」，$\mu\|x\|_2^2$ 管「<strong>解别太大</strong>」，$\mu$ 是两者之间的权重。它在不同领域有三个名字，说的都是同一件事：<strong>岭回归</strong>（ridge regression，统计）、<strong>Tikhonov 正则化</strong>（反问题）、<strong>阻尼最小二乘</strong>（Levenberg–Marquardt 里那个阻尼项）。</p>
+
+<p><strong>为什么说「本质上是标准最小二乘」。</strong>只要把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面：</p>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 262" width="100%" role="img" aria-labelledby="fig21t fig21d">
+<title id="fig21t">带 l₂ 惩罚项的最小二乘等价于堆叠后的标准最小二乘</title>
+<desc id="fig21d">把 √μ Iₙ 堆到 A 下面、把 0ₙ 堆到 b 下面，带惩罚的问题就变成了标准最小二乘问题。</desc>
+<defs>
+<marker id="arrowFig21" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<path d="M205 46H197V174H205" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+<path d="M295 46H303V174H295" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+<path d="M385 46H377V174H385" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+<path d="M475 46H483V174H475" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+<rect x="205" y="50" width="90" height="76" rx="8" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="250" y="88" font-size="13.5" fill="var(--ink)" text-anchor="middle">A</text>
+<rect x="205" y="130" width="90" height="40" rx="8" fill="var(--bg3)" stroke="var(--ok)" stroke-width="1"/>
+<text x="250" y="150" font-size="13" fill="var(--ink)" text-anchor="middle">√μ I<tspan baseline-shift="sub" font-size="9">n</tspan></text>
+<text x="330" y="110" font-size="13.5" fill="var(--ink)" text-anchor="middle">x</text>
+<text x="358" y="110" font-size="13.5" fill="var(--ink)" text-anchor="middle">≈</text>
+<rect x="385" y="50" width="90" height="76" rx="8" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="430" y="88" font-size="13.5" fill="var(--ink)" text-anchor="middle">b</text>
+<rect x="385" y="130" width="90" height="40" rx="8" fill="var(--bg3)" stroke="var(--ok)" stroke-width="1"/>
+<text x="430" y="150" font-size="13" fill="var(--ink)" text-anchor="middle">0<tspan baseline-shift="sub" font-size="9">n</tspan></text>
+<path d="M340 178V196" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig21)"/>
+<rect x="190" y="200" width="300" height="42" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
+<text x="340" y="221" font-size="13.5" fill="var(--ink)" text-anchor="middle">化成了标准最小二乘问题</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 21 · 「本质上是标准最小二乘」的全部内容：把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面</figcaption>
+</figure>
+
+<p>展开验证一下，看它是不是真的一样：</p>
+
+\[ \left\|\begin{bmatrix}A\\ \sqrt{\mu}I_n\end{bmatrix}x-\begin{bmatrix}b\\0_n\end{bmatrix}\right\|_2^2=\|Ax-b\|_2^2+\|\sqrt{\mu}\,x-0\|_2^2=\|b-Ax\|_2^2+\mu\|x\|_2^2 \]
+
+<div class="box warn">
+<p class="label">易错点：堆的是 $\sqrt{\mu}$ 不是 $\mu$</p>
+<p>因为范数要<strong>平方</strong>，只有 $(\sqrt{\mu})^2=\mu$ 才能对上原式的系数。这也解释了为什么惩罚项写的是 $\|x\|_2^2$ 而不是 $\|x\|_2$：<strong>只有平方项才能配成范数</strong>，整个问题才还是一个最小二乘问题，而不是一般的最优化问题。</p>
+</div>
+
+<p>写成标准最小二乘之后，法方程就是把 $A^{*}A$ 换成 $A^{*}A+\mu I$：</p>
+
+\[ (A^{*}A+\mu I_n)\,x=A^{*}b \]
+
+<p>用谱的语言说：<strong>这相当于把 $A^{*}A$ 的所有特征值整体抬高 $\mu$</strong>。大特征值几乎不动（相对变化 $\mu/\lambda$ 很小），小特征值相对变化 $\mu/\lambda$ 巨大——所以病态问题被救活了。讲义的原话是「一般我们取 $\mu\gt0$ 为一个较小的正实数，这样 $A^{*}A$ 会变得更加良态：大特征值几乎不变，而小特征值在相对程度上增大很多倍」。</p>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 276" width="100%" role="img" aria-labelledby="fig22t fig22d">
+<title id="fig22t">l₂ 惩罚项 μ 对 A*A 特征值谱的影响</title>
+<desc id="fig22d">对数坐标下五个特征值加上 μ=0.01 之后的位移：大特征值几乎不动，最小的特征值相对增大五倍。</desc>
+<defs>
+<marker id="arrowFig22" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<circle cx="424" cy="50" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="436" y="50" font-size="12.5" fill="var(--ink2)" dominant-baseline="central">原始 σᵢ²</text>
+<circle cx="530" cy="50" r="4" fill="var(--ok)"/>
+<text x="542" y="50" font-size="12.5" fill="var(--ink2)" dominant-baseline="central">σᵢ² + μ</text>
+<path d="M70 238H620" fill="none" stroke="var(--ink3)" stroke-width="1.2"/>
+<path d="M70 234V242 M227 234V242 M384 234V242 M541 234V242" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+<text x="70" y="258" font-size="11.5" fill="var(--ink3)" text-anchor="middle">10<tspan baseline-shift="super" font-size="9">−3</tspan></text>
+<text x="227" y="258" font-size="11.5" fill="var(--ink3)" text-anchor="middle">10<tspan baseline-shift="super" font-size="9">−2</tspan></text>
+<text x="384" y="258" font-size="11.5" fill="var(--ink3)" text-anchor="middle">10<tspan baseline-shift="super" font-size="9">−1</tspan></text>
+<text x="541" y="258" font-size="11.5" fill="var(--ink3)" text-anchor="middle">10<tspan baseline-shift="super" font-size="9">0</tspan></text>
+<text x="40" y="80" font-size="12.5" fill="var(--ink2)">σ₁²</text>
+<text x="40" y="112" font-size="12.5" fill="var(--ink2)">σ₂²</text>
+<text x="40" y="144" font-size="12.5" fill="var(--ink2)">σ₃²</text>
+<text x="40" y="176" font-size="12.5" fill="var(--ink2)">σ₄²</text>
+<text x="40" y="208" font-size="12.5" fill="var(--ink2)">σ₅²</text>
+<circle cx="541" cy="80" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="542" cy="80" r="2.5" fill="var(--ok)"/>
+<text x="628" y="80" font-size="12" fill="var(--ink3)" text-anchor="end">×1.01</text>
+<circle cx="447" cy="112" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="450" cy="112" r="2.5" fill="var(--ok)"/>
+<text x="628" y="112" font-size="12" fill="var(--ink3)" text-anchor="end">×1.04</text>
+<path d="M327 144H331" fill="none" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arrowFig22)"/>
+<circle cx="322" cy="144" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="337" cy="144" r="2.5" fill="var(--ok)"/>
+<text x="628" y="144" font-size="12" fill="var(--ink3)" text-anchor="end">×1.25</text>
+<path d="M232 176H268" fill="none" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arrowFig22)"/>
+<circle cx="227" cy="176" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="274" cy="176" r="2.5" fill="var(--ok)"/>
+<text x="628" y="176" font-size="12" fill="var(--ink3)" text-anchor="end">×2.0</text>
+<path d="M138 208H236" fill="none" stroke="var(--ink3)" stroke-width="1.5" marker-end="url(#arrowFig22)"/>
+<circle cx="133" cy="208" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<circle cx="242" cy="208" r="2.5" fill="var(--ok)"/>
+<text x="628" y="208" font-size="12" fill="var(--ink3)" text-anchor="end">×5.0</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 22 · 位移是<strong>绝对量</strong> $\mu$，所以对大特征值几乎无影响（涨 1%），对最小的那个却相当于涨了 5 倍——条件数从 $400$ 降到 $80$ 左右</figcaption>
+</figure>
+
+<p><strong>$\mu$ 到底在干什么。</strong>两个极限能说清一切：$\mu\to0$ 时退回标准最小二乘；$\mu\to\infty$ 时 $x\to0$（罚款太贵，索性什么都不要）。中间是一根旋钮。拿一个具体例子看这根旋钮的行程——取</p>
+
+\[ A=\begin{bmatrix}1&0\\0&10^{-3}\end{bmatrix},\qquad b=\begin{bmatrix}1\\1\end{bmatrix} \]
+
+<p>标准最小二乘（$\mu=0$）给出的解是 $x=[1;\ 10^3]$：第二个分量被放大了 1000 倍，因为那一维的方程是 $10^{-3}x_2=1$。这就是病态——$b$ 稍微抖一下，$x_2$ 就抖 $\partial x_2/\partial b_2=10^6$ 倍。加罚项后解变成</p>
+
+\[ x(\mu)=\begin{bmatrix}\dfrac{1}{1+\mu} \\ \dfrac{10^{-3}}{10^{-6}+\mu}\end{bmatrix} \]
+
+<table>
+<tr><th>$\mu$</th><th>$x_1$</th><th>$x_2$</th><th>$\|x\|_2$</th><th>残差 $\|b-Ax\|_2$</th><th>敏感度 $\partial x_2/\partial b_2$</th></tr>
+<tr><td>$0$（标准最小二乘）</td><td>1</td><td><strong>1000</strong></td><td>1000</td><td>0</td><td>$10^{6}$</td></tr>
+<tr><td>$10^{-6}$</td><td>1.000</td><td>500</td><td>500</td><td>0.500</td><td>$5.0\times10^{5}$</td></tr>
+<tr><td>$10^{-5}$</td><td>1.000</td><td>90.9</td><td>90.9</td><td>0.909</td><td>$9.1\times10^{4}$</td></tr>
+<tr><td>$10^{-4}$</td><td>0.9999</td><td>9.90</td><td>9.95</td><td>0.990</td><td>$9.9\times10^{3}$</td></tr>
+<tr><td>$10^{-3}$</td><td>0.999</td><td>0.999</td><td>1.41</td><td>0.999</td><td>999</td></tr>
+<tr><td>$10^{-2}$</td><td>0.990</td><td>0.0990</td><td>0.995</td><td>1.000</td><td>99.0</td></tr>
+<tr><td>$10^{-1}$</td><td>0.909</td><td>0.0100</td><td>0.909</td><td>1.004</td><td>10.0</td></tr>
+</table>
+
+<p>三件事值得注意：</p>
+
+<ol>
+<li><strong>病态方向被压下去了</strong>：$x_2$ 从 $1000$ 掉到 $0.999$（$\mu=10^{-3}$），而 $x_1$ 从 $1$ 变成 $0.999$——<strong>几乎没动</strong>。惩罚项专治「测不准」的方向，对「测得很准」的方向几乎不碰。</li>
+<li><strong>代价是残差</strong>：从 $0$ 涨到约 $1$。但这个代价划算——$A$ 的第二行本来就是 $10^{-3}$ 缩过的，那一维信噪比极差，硬去匹配它只会把噪声放大 1000 倍。</li>
+<li><strong>敏感度降了三个数量级</strong>：$\partial x_2/\partial b_2$ 从 $10^6$ 降到 $999$。原本 $b$ 抖动 $10^{-6}$ 就能让解抖动 $1$，现在要抖动 $10^{-3}$ 才行。</li>
+</ol>
+
+<p>用统计的话说，这叫<strong>用偏差（bias）换方差（variance）</strong>：解不再无偏，但波动小得多，可复现。讲义那句「取 $\mu$ 为一个<strong>较小</strong>的正实数」正是在说 $\mu$ 不能大——上表最后一列可以看出，$\mu$ 一超过 $10^{-3}$，$x$ 就被整体压得明显偏小，偏差开始盖过拟合。</p>
+
+<div class="box ok">
+<p class="label">一句话记住它 + 什么时候用它</p>
+<p><strong>给最小二乘拴一根橡皮筋，$\mu$ 是橡皮筋的劲度系数，把 $x$ 往原点拉。</strong>它拉掉了病态方向上的巨大分量，代价是拟合稍微变差一点点。</p>
+<p>实际用它的五类场合：数据<strong>共线</strong>（列近似线性相关）；问题<strong>欠定</strong>（$m\lt n$，本来有无穷多解，$l_2$ 惩罚帮你挑出范数最小的那个）；<strong>反问题 / 图像去噪</strong>（Tikhonov 的看家本领）；机器学习里的 <strong>weight decay</strong>；Levenberg–Marquardt 里的<strong>阻尼项</strong>。</p>
+</div>
+
+<h4>变体 ③ 线性等式约束的最小二乘（消元法）</h4>
+
+<p>问题：</p>
+
+\[ \min_{Cx=d}\|Ax-b\|_2^2,\qquad A\in\mathbb{C}^{m\times n},\ \operatorname{rank}(A)=n\le m;\quad C\in\mathbb{C}^{p\times n},\ \operatorname{rank}(C)=p\lt n;\quad d\in\mathbb{C}^p \]
+
+<div class="box">
+<p class="label">板书 1 原文</p>
+<p>$\min\|b-Ax\|_2$ 带等式约束 $Bx=d$ 的消元法：$[B;A]=[R\ \ 0]Q$，$[R\ \ 0]Qx=d$，$y_1=R^{-1}d$；以及 $\|b-Ax\|_2=\|b-AQ^{*}y\|_2=\|(b-\tilde A_1y_1)-\tilde A_2y_2\|_2$</p>
+</div>
+
+<p>注意板书把约束矩阵记作 $B$，讲义记作 $C$——同一个东西。（顺带一提，$B$ 在本笔记 <a href="#s39">§3.9</a> 之后是<strong>迭代矩阵</strong>，两个 $B$ 毫无关系。）</p>
+
+<p>讲义说「Lagrange 乘子法自然是一般解法，可参考 Homework 6 Problem 2」，然后介绍了<strong>消元法</strong>。设 $C$ 的 QR 分解为</p>
+
+\[ [\,R\ \ 0_{p\times(n-p)}]\begin{bmatrix}Q_1\\Q_2\end{bmatrix}=C,\qquad R\in\mathbb{C}^{p\times p},\ Q_1\in\mathbb{C}^{p\times n},\ Q_2\in\mathbb{C}^{(n-p)\times n} \]
+
+<p>其中 $Q_1$ 是<strong>行标准正交</strong>的（$Q_1Q_1^{*}=I_p$）。记</p>
+
+\[ y:=Qx=\begin{bmatrix}Q_1\\Q_2\end{bmatrix}x=\begin{bmatrix}Q_1x\\Q_2x\end{bmatrix}=\begin{bmatrix}y_1\\y_2\end{bmatrix},\qquad x=\begin{bmatrix}Q_1\\Q_2\end{bmatrix}^{*}y=Q_1^{*}y_1+Q_2^{*}y_2 \]
+
+\[ \tilde A:=AQ^{*}=A\begin{bmatrix}Q_1\\Q_2\end{bmatrix}^{*}=[\,AQ_1^{*}\ \ AQ_2^{*}]=[\,\tilde A_1\ \ \tilde A_2]\in\mathbb{C}^{m\times n},\qquad \tilde b:=b-\tilde A_1y_1 \]
+
+<p>关键是讲义原话：「当 $R$ 固定时，$Q_1$ 也是固定的，而 $Q_2$ 是自由变动的（甚至不用保证 $Q=\begin{bmatrix}Q_1\\Q_2\end{bmatrix}$ 为酉矩阵）」。所以 $y_1:=Q_1x$、$\tilde A_1:=AQ_1^{*}$、$\tilde b:=b-\tilde A_1y_1$ 都是<strong>固定的</strong>；只有 $y_2:=Q_2x$、$\tilde A_2:=AQ_2^{*}$ 依赖 $Q_2$、可以自由变动。</p>
+
+<p>约束在这个坐标系里变得极其简单：</p>
+
+\[ Cx=[\,R\ \ 0]\begin{bmatrix}Q_1\\Q_2\end{bmatrix}x=RQ_1x=Ry_1=d\quad\Longrightarrow\quad y_1=R^{-1}d\ \text{（完全确定）} \]
+
+<p>剩下就是把目标函数往下化简：</p>
+
+\[ \|b-Ax\|_2^2=\|b-AQ^{*}y\|_2^2=\|b-\tilde Ay\|_2^2=\left\|b-[\,\tilde A_1\ \tilde A_2]\begin{bmatrix}y_1\\y_2\end{bmatrix}\right\|_2^2=\|(b-\tilde A_1y_1)-\tilde A_2y_2\|_2^2=\|\tilde b-\tilde A_2y_2\|_2^2 \]
+
+<div class="box key">
+<p class="label">结论：约束被彻底消掉</p>
+\[ \min_x\|b-Ax\|_2^2\ \Longleftrightarrow\ \min_{y_2}\|\tilde b-\tilde A_2y_2\|_2^2 \]
+<p>原来带 $p$ 个等式约束的问题，变成了一个对 $y_2\in\mathbb{C}^{n-p}$ 的<strong>无约束</strong>标准最小二乘。这就是「消元法」三个字的含义：<strong>用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$</strong>。解出 $y_2$ 后回代 $x=Q_1^{*}(R^{-1}d)+Q_2^{*}y_2$ 即得原问题的解。</p>
+</div>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 334" width="100%" role="img" aria-labelledby="fig23t fig23d">
+<title id="fig23t">线性等式约束最小二乘的消元法归约流程</title>
+<desc id="fig23d">从带等式约束的最小二乘出发，取约束矩阵的 QR 分解并换坐标，使约束确定 y₁，目标函数随之降成只对 y₂ 的无约束标准最小二乘。</desc>
+<defs>
+<marker id="arrowFig23" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="110" y="50" width="460" height="54" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="340" y="72" font-size="13.5" fill="var(--ink)" text-anchor="middle">原问题：min ‖Ax − b‖₂²</text>
+<text x="340" y="90" font-size="12" fill="var(--ink3)" text-anchor="middle">带 p 个线性等式约束 Cx = d</text>
+<path d="M340 104V118" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig23)"/>
+<rect x="110" y="120" width="460" height="54" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="340" y="142" font-size="13.5" fill="var(--ink)" text-anchor="middle">取 C 的 QR 分解，换坐标 y = Qx</text>
+<text x="340" y="160" font-size="12" fill="var(--ink3)" text-anchor="middle">y₁ = Q₁x 固定，y₂ = Q₂x 自由（Q₂ 可以随便选）</text>
+<path d="M340 174V188" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig23)"/>
+<rect x="110" y="190" width="460" height="54" rx="10" fill="var(--bg3)" stroke="var(--gold)" stroke-width="1"/>
+<text x="340" y="212" font-size="13.5" fill="var(--ink)" text-anchor="middle">约束 ⇒ y₁ = R⁻¹d 完全确定</text>
+<text x="340" y="230" font-size="12" fill="var(--ink3)" text-anchor="middle">目标 ⇒ ‖b̃ − Ã₂y₂‖₂²（b̃ = b − Ã₁y₁ 是常数）</text>
+<path d="M340 244V258" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig23)"/>
+<rect x="110" y="260" width="460" height="54" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
+<text x="340" y="282" font-size="13.5" fill="var(--ink)" text-anchor="middle">无约束标准最小二乘（只对 y₂）</text>
+<text x="340" y="300" font-size="12" fill="var(--ink3)" text-anchor="middle">解出 y₂ 后回代 x = Q₁*(R⁻¹d) + Q₂*y₂</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 23 · 消元法：用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$——带约束的 $n$ 维问题降成无约束的 $n-p$ 维问题</figcaption>
+</figure>
+
+<h3 id="s242">§2.4.2 GTH 算法<span class="tag a">讲义 §2.4.2</span></h3>
+
+<div class="box warn">
+<p class="label">讲义这一小节是空的</p>
+<p>讲义 p23 上，「§2.4.2 GTH 算法」这个标题下面<strong>只有一行字：「参见 Homework 06 Problem 07」</strong>，紧接着就是 §2.4.3 的标题。也就是说<strong>讲义没有给出 GTH 算法的任何正文</strong>，要学它只能回去看书或做作业。</p>
+<p>本学年对应的是<strong>作业第 9 题</strong>（讲义引的「Homework 06 Problem 07」是<strong>往年</strong>的编号，与本学年不一致）。</p>
+</div>
+
+<h3 id="s243">§2.4.3 Arnoldi 过程<span class="tag a">讲义 §2.4.3</span></h3>
+
+<p><strong>这一节要干什么：</strong>把 $A$ 通过<strong>相似变换</strong>化成尽可能简单的形式，从而求特征值或解 $Ax=b$。整个过程只用<strong>矩阵-向量乘法</strong>，不需要对 $A$ 做任何分解。下面按「为什么需要 → 怎么来的 → 为什么成立」走一遍。</p>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 420" width="100%" role="img" aria-labelledby="fig24t fig24d">
+<title id="fig24t">Arnoldi 过程的推导主线</title>
+<desc id="fig24d">从 Krylov 幂序列出发，经伴随矩阵得到相似变换，发现病态性后换到酉基，最终得到上 Hessenberg 矩阵与 Arnoldi 过程的五步流程。</desc>
+<defs>
+<marker id="arrowFig24" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="110" y="46" width="460" height="50" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="340" y="66" font-size="13.5" fill="var(--ink)" text-anchor="middle">① 幂序列 y₁ = b, y₂ = Ab, …, yₙ = Aⁿ⁻¹b</text>
+<text x="340" y="84" font-size="12" fill="var(--ink3)" text-anchor="middle">Cayley–Hamilton ⇒ 到 yₙ 就够，再往上没有新信息</text>
+<path d="M340 96V118" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig24)"/>
+<rect x="110" y="122" width="460" height="50" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="340" y="142" font-size="13.5" fill="var(--ink)" text-anchor="middle">② 堆成 Y，配一个伴随矩阵：AY = YC</text>
+<text x="340" y="160" font-size="12" fill="var(--ink3)" text-anchor="middle">Y⁻¹AY = C ⇒ A 与 C 相似，特征多项式极易写出</text>
+<path d="M340 172V194" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig24)"/>
+<rect x="110" y="198" width="460" height="50" rx="10" fill="var(--bg3)" stroke="var(--warn)" stroke-width="1"/>
+<text x="340" y="218" font-size="13.5" fill="var(--ink)" text-anchor="middle">③ 但 Y 根本用不了（两个致命问题）</text>
+<text x="340" y="236" font-size="12" fill="var(--ink3)" text-anchor="middle">A 稀疏 ⇒ Y 稠密；列塌向主特征向量 ⇒ Y 病态</text>
+<path d="M340 248V270" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig24)"/>
+<rect x="110" y="274" width="460" height="50" rx="10" fill="var(--bg3)" stroke="var(--ok)" stroke-width="1"/>
+<text x="340" y="294" font-size="13.5" fill="var(--ink)" text-anchor="middle">④ 子空间不换，只换一组正交基 Q</text>
+<text x="340" y="312" font-size="12" fill="var(--ink3)" text-anchor="middle">span(q₁,…,q_k) = K(A,b,k)，酉阵 ‖Q‖₂ = 1 必然良态</text>
+<path d="M340 324V346" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig24)"/>
+<rect x="110" y="350" width="460" height="50" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
+<text x="340" y="370" font-size="13.5" fill="var(--ink)" text-anchor="middle">⑤ H = Q*AQ 是上 Hessenberg ⇒ Arnoldi 过程</text>
+<text x="340" y="388" font-size="12" fill="var(--ink3)" text-anchor="middle">A 对称 ⇒ 三对角（Lanczos）；Gram–Schmidt 递推即可算出</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 24 · §2.4.3 的推导主线：一个「天真想法 → 撞墙 → 补救」的故事，撞墙的那一步靠的正是<a href="#p1">第一部分</a>的幂法</figcaption>
+</figure>
+
+<h4>第一步：Krylov 幂序列，以及为什么算到 $y_n$ 就停</h4>
+
+<p>给定 $A\in\mathbb{C}^{n\times n}$、$b\in\mathbb{C}^n$，最自然的想法是造一串向量：</p>
+
+\[ y_1=b,\quad y_2=Ay_1=Ab,\quad y_3=Ay_2=A^2b,\quad\ldots,\quad y_n=Ay_{n-1}=A^{n-1}b \]
+
+<p>讲义说「我们只需计算至 $y_n=A^{n-1}b$ 即可」，理由是 <strong>Cayley–Hamilton 定理</strong>（讲义引 <em>Matrix Analysis</em> 定理 2.4.3.2）：设 $p_A(t)=\det(tI_n-A)$ 是 $A$ 的特征多项式，则</p>
+
+\[ p_A(A)=0_{n\times n} \]
+
+<p>即<strong>任意复方阵都满足自己的特征方程</strong>。把 $p_A(A)=0$ 展开，$A^n$ 就被写成 $I_n,A,\ldots,A^{n-1}$ 的线性组合；再往上同理递推。所以 $A^nb,A^{n+1}b,\ldots$ 全都落在这个 span 里，<strong>多算没有新信息</strong>。这个 span 就是 Krylov 子空间的定义来源：</p>
+
+<div class="box key">
+<p class="label">Krylov 子空间</p>
+\[ K(A,b,k):=\operatorname{span}\{b,\ Ab,\ \ldots,\ A^{k-1}b\} \]
+</div>
+
+<h4>第二步：堆成矩阵 $Y$，再配一个伴随矩阵 $C$</h4>
+
+\[ Y:=[\,y_1,y_2,\ldots,y_{n-1},y_n]\in\mathbb{C}^{n\times n},\qquad c:=-Y^{-1}A^ny_1,\qquad C:=[\,e_2,e_3,\ldots,e_n,-c] \]
+
+<p>（讲义注：「其中我们暂且假定 $Y\in\mathbb{C}^{n\times n}$ 非奇异」。）$C$ 的形状就是<strong>伴随矩阵</strong>：第一列 $e_2$、第二列 $e_3$、……、第 $n-1$ 列 $e_n$，最后一列 $-c$。</p>
+
+<p>然后是核心恒等式，逐列拆开看：</p>
+
+\[ AY=[\,Ay_1,Ay_2,\ldots,Ay_{n-1},Ay_n]=[\,y_2,y_3,\ldots,y_n,\ A^ny_1]=[\,Ye_2,Ye_3,\ldots,Ye_n,\ Y\cdot(-Y^{-1}A^ny_1)]=YC \]
+
+<p>中间那步是题眼：<strong>$Ye_j$ 恰好就是 $Y$ 的第 $j$ 列</strong>，所以把 $e_j$ 换成 $y_{j+1}$ 完全合法。于是</p>
+
+\[ AY=YC\quad\Longrightarrow\quad Y^{-1}AY=C \]
+
+<p><strong>这意味着什么：</strong>$A$ 与 $C$ 相似，所以特征多项式相同；而伴随矩阵的特征多项式几乎不用算，</p>
+
+\[ p_C(t)=t^n+c_1t^{n-1}+c_2t^{n-2}+\cdots+c_n \]
+
+<p>直接读出来。所以<strong>原则上</strong>，解 $p_C(t)=0$ 就拿到了 $A$ 的全部特征值；解 $Ax=b$ 也等价于解 $C(Y^{-1}x)=Y^{-1}b$。而整个构造只用了矩阵-向量乘法——讲义原话：「整个过程中我们只需使用矩阵-向量乘法就能把 $A$ 化为一个非常简单的形式」。</p>
+
+<h4>第三步：为什么实际不能用——两个致命问题</h4>
+
+<p>① <strong>稀疏性被毁</strong>：即使 $A$ 是稀疏矩阵，$Y$ 也可能是稠密的，故没有利用期望变换后的问题比原问题求解起来更容易。</p>
+
+<p>② <strong>$Y$ 极度病态</strong>，导致 $c=Y^{-1}(A^nb)$ 算不准。讲义写了一句非常关键的话：</p>
+
+<div class="box warn">
+<p class="label">讲义原文（p23）</p>
+<p>「可以预见（<strong>参见幂法</strong>），序列 $y_k=A^{k-1}b$ 收敛到对应于 $A$ 的模最大特征值的一个特征向量，因而 $Y$ 的列 $y_1,y_2,\ldots,y_n$ 可能会趋于线性相关，信息丢失会非常严重。」</p>
+</div>
+
+<p>翻译过来：$y_k=A^{k-1}b$ <strong>正是幂法的迭代序列</strong>。幂法（<a href="#s12">§1.2</a>）告诉我们 $y_k/\|y_k\|\to q_1$（主特征向量），所以 $Y$ 的各列会一个接一个地倒向同一个方向、几乎平行，条件数爆炸，$Y^{-1}$ 算出来全是噪声。</p>
+
+<div class="box ok">
+<p class="label">这一节最漂亮的一处呼应</p>
+<p><strong>幂法在这里以「反派」的身份登场。</strong><a href="#p1">第一部分</a>我们用它求主特征值，这里它反过来证明了「拿 $\{A^{k-1}b\}$ 当基去求特征值」是自杀行为。同一件事，正着用是算法，反着看是警告。</p>
+</div>
+
+<h4>第四步：补救——换基，不换子空间</h4>
+
+<p>问题的根源是<strong>基选得不好</strong>，不是<strong>子空间不好</strong>。所以保留各列张成的子空间，只把基换成正交基。讲义要求 $Q\in\mathbb{C}^{n\times n}$ 的前 $k=1,\ldots,n$ 列也张成 $K(A,b,k)$，好处有两条：</p>
+
+<ul>
+<li>酉矩阵 $Q$ 一定是良态的（$\|Q\|_2=1$），且容易求逆（$Q^{-1}=Q^{*}$）；</li>
+<li>为得到 $Ax=b$ 的精确解，我们<strong>仅仅需要计算 $Q$ 的前几列</strong>，远少于矩阵维数 $n$。</li>
+</ul>
+
+<p>第二条就是后来所有 Krylov 方法（第 4 章）的动机：<strong>降维</strong>。</p>
+
+<h4>第五步：相似变换换到 $Q$ 上，Hessenberg 结构自己掉出来</h4>
+
+<p>记 $Y$ 的 QR 分解为 $Y=QR$（$Q$ 酉、$R$ 上三角），仍暂设 $Y$ 非奇异：</p>
+
+\[ Y^{-1}AY=(R^{-1}Q^{*})A(QR)=R^{-1}(Q^{*}AQ)R=C\quad\Longleftrightarrow\quad H:=Q^{*}AQ=RCR^{-1} \]
+
+<p>因为 $R,R^{-1}$ 都是上三角、$C$ 是上 Hessenberg，而「上三角 × 上 Hessenberg × 上三角」仍是上 Hessenberg，所以 <strong>$H$ 是上 Hessenberg 矩阵</strong>。特殊地，若 $A$ 是 Hermite 矩阵，则 $T:=Q^{*}AQ=RCR^{-1}$ 是 Hermite <strong>三对角</strong>阵。</p>
+
+<p>这就是全部收益所在：原本想靠相似变换把 $A$ 变简单，失败了；换成酉基之后，相似变换<strong>自动</strong>给出 Hessenberg 结构——而 Hessenberg 是「几乎上三角」，正是 <a href="#s533">§5.3.3</a> 里 QR 迭代求特征值最理想的起点。</p>
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 190" width="100%" role="img" aria-labelledby="fig25t fig25d">
+<title id="fig25t">伴随矩阵 C、上 Hessenberg 矩阵 H 与对称三对角矩阵 T 的零元结构对照</title>
+<desc id="fig25d">三个 6×6 矩阵的零元与非零元分布对照：C 只在次对角线和最后一列非零，H 在次对角线及以上非零，T 只在三条对角线上非零。</desc>
+<text x="113" y="42" font-size="13.5" fill="var(--ink)" text-anchor="middle">伴随矩阵 C</text>
+<text x="340" y="42" font-size="13.5" fill="var(--ink)" text-anchor="middle">上 Hessenberg H</text>
+<text x="567" y="42" font-size="13.5" fill="var(--ink)" text-anchor="middle">对称三对角 T</text>
+<rect x="68" y="60" width="90" height="90" fill="var(--bg2)" stroke="var(--line)" stroke-width="1"/>
+<path d="M83 60V150 M98 60V150 M113 60V150 M128 60V150 M143 60V150 M68 75H158 M68 90H158 M68 105H158 M68 120H158 M68 135H158" fill="none" stroke="var(--line)" stroke-width="1"/>
+<g fill="var(--accent)">
+<rect x="68" y="75" width="15" height="15"/><rect x="83" y="90" width="15" height="15"/><rect x="98" y="105" width="15" height="15"/><rect x="113" y="120" width="15" height="15"/><rect x="128" y="135" width="15" height="15"/>
+<rect x="143" y="60" width="15" height="15"/><rect x="143" y="75" width="15" height="15"/><rect x="143" y="90" width="15" height="15"/><rect x="143" y="105" width="15" height="15"/><rect x="143" y="120" width="15" height="15"/><rect x="143" y="135" width="15" height="15"/>
+</g>
+<rect x="295" y="60" width="90" height="90" fill="var(--bg2)" stroke="var(--line)" stroke-width="1"/>
+<path d="M310 60V150 M325 60V150 M340 60V150 M355 60V150 M370 60V150 M295 75H385 M295 90H385 M295 105H385 M295 120H385 M295 135H385" fill="none" stroke="var(--line)" stroke-width="1"/>
+<g fill="var(--ok)">
+<rect x="295" y="60" width="15" height="15"/><rect x="310" y="60" width="15" height="15"/>
+<rect x="295" y="75" width="15" height="15"/><rect x="310" y="75" width="15" height="15"/><rect x="325" y="75" width="15" height="15"/>
+<rect x="295" y="90" width="15" height="15"/><rect x="310" y="90" width="15" height="15"/><rect x="325" y="90" width="15" height="15"/><rect x="340" y="90" width="15" height="15"/>
+<rect x="295" y="105" width="15" height="15"/><rect x="310" y="105" width="15" height="15"/><rect x="325" y="105" width="15" height="15"/><rect x="340" y="105" width="15" height="15"/><rect x="355" y="105" width="15" height="15"/>
+<rect x="295" y="120" width="15" height="15"/><rect x="310" y="120" width="15" height="15"/><rect x="325" y="120" width="15" height="15"/><rect x="340" y="120" width="15" height="15"/><rect x="355" y="120" width="15" height="15"/><rect x="370" y="120" width="15" height="15"/>
+<rect x="295" y="135" width="15" height="15"/><rect x="310" y="135" width="15" height="15"/><rect x="325" y="135" width="15" height="15"/><rect x="340" y="135" width="15" height="15"/><rect x="355" y="135" width="15" height="15"/><rect x="370" y="135" width="15" height="15"/>
+</g>
+<rect x="522" y="60" width="90" height="90" fill="var(--bg2)" stroke="var(--line)" stroke-width="1"/>
+<path d="M537 60V150 M552 60V150 M567 60V150 M582 60V150 M597 60V150 M522 75H612 M522 90H612 M522 105H612 M522 120H612 M522 135H612" fill="none" stroke="var(--line)" stroke-width="1"/>
+<g fill="var(--ok)">
+<rect x="522" y="60" width="15" height="15"/><rect x="537" y="60" width="15" height="15"/>
+<rect x="522" y="75" width="15" height="15"/><rect x="537" y="75" width="15" height="15"/><rect x="552" y="75" width="15" height="15"/>
+<rect x="537" y="90" width="15" height="15"/><rect x="552" y="90" width="15" height="15"/><rect x="567" y="90" width="15" height="15"/>
+<rect x="552" y="105" width="15" height="15"/><rect x="567" y="105" width="15" height="15"/><rect x="582" y="105" width="15" height="15"/>
+<rect x="567" y="120" width="15" height="15"/><rect x="582" y="120" width="15" height="15"/><rect x="597" y="120" width="15" height="15"/>
+<rect x="582" y="135" width="15" height="15"/><rect x="597" y="135" width="15" height="15"/>
+</g>
+<text x="113" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">AY = YC</text>
+<text x="340" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">i ≤ j + 1 处非零</text>
+<text x="567" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">|i − j| ≤ 1 处非零</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 25 · 实心格 = 可能非零，空格 = 恒为 0。从 $C$ 到 $H$ 到 $T$，「非零元素」一步步被限制到更窄的带状区域——这就是相似变换换来的全部好处</figcaption>
+</figure>
+
+<h4>第六步：实际计算——$AQ=QH+\text{rank-one}$</h4>
+
+<p>这是讲义 p24 最后一段，也是作业里最容易卡住的地方。$Y$ 可能不满秩，所以不能真去求 $Y^{-1}$。讲义改为记 $Q:=[q_1,\ldots,q_r]$，其中 $1\le r\le\operatorname{rank}(Y)$。</p>
+
+<p>根据 $AQ=QH$（其中 $H\in\mathbb{C}^{r\times r}$ 为上 Hessenberg 阵），因而有</p>
+
+\[ Aq_j=\sum_{i=1}^{j+1}h_{i,j}q_i \]
+
+<div class="box warn">
+<p class="label">这一步为什么成立：它就是「上 Hessenberg」的定义</p>
+<p>$H$ 的第 $j$ 列只有前 $j+1$ 个元素可能非零（$h_{j+2,j}=h_{j+3,j}=\cdots=0$）。把 $AQ=QH$ 按第 $j$ 列写出来：左边是 $Aq_j$，右边是 $Q$ 乘以 $H$ 的第 $j$ 列，即 $\sum_{i=1}^{j+1}h_{i,j}q_i$。所以「$Aq_j$ 只用到前 $j+1$ 个基向量」这句话，<strong>等价于</strong>「$H$ 是上 Hessenberg」。</p>
+</div>
+
+<p>由于 $Q$ 列标准正交（$q_k^{*}q_i=\delta_{ki}$），故我们有</p>
+
+\[ q_k^{*}Aq_j=\sum_{i=1}^{j+1}h_{i,j}\,q_k^{*}q_i=0+h_{k,j}\cdot1=h_{k,j}\qquad(1\le k\le j) \]
+
+<p>也就是说：<strong>$H$ 的第 $(k,j)$ 个元素可以直接从 $q_k^{*}Aq_j$ 读出来</strong>，不需要真的做矩阵乘法。最后有</p>
+
+\[ h_{j+1,j}q_{j+1}=Aq_j-\sum_{i=1}^{j}h_{i,j}q_i \]
+
+<p>把它整理成矩阵形式，就得到讲义那句话：</p>
+
+<div class="box key">
+<p class="label">核心恒等式</p>
+\[ AQ=QH+\text{rank-one} \]
+<p>其中 rank-one 代表遗留的秩一矩阵，<strong>仅在最后一列有非零元素</strong>。</p>
+</div>
+
+<p><strong>那个 rank-one 到底是什么、为什么会有它？</strong>讲义的解释是：它的存在是因为 $Aq_r$ 不一定能完全表示为 $q_1,\ldots,q_r$ 的线性组合。换句话说，把 $AQ$ 的第 $j$ 列（$j\lt r$）写成 $\sum_{i=1}^{j+1}h_{i,j}q_i$ 是<strong>精确</strong>的；但第 $r$ 列——$Aq_r$——可能还有一个<strong>垂直于 $\operatorname{span}(q_1,\ldots,q_r)$ 的分量</strong>，这个分量落不进去，只能作为「余项」留在最后一列。</p>
+
+<div class="box ok">
+<p class="label">读法：这个 rank-one 是「信号」不是「误差」</p>
+<p>它的长度 $\big\|Aq_r-\sum_{i=1}^{r}h_{i,r}q_i\big\|_2=h_{r+1,r}$ 就是 Hessenberg 的<strong>次对角元</strong>，也是算法里唯一的信息来源——下一小节的伪代码里，<code>H(k+1,k)=norm(Q(:,k+1))</code> 算的就是它。<strong>它不为零，说明 Krylov 子空间还能继续长；它趋于零，说明子空间已经饱和了。</strong></p>
+</div>
+
+<h4>第七步：Gram–Schmidt 型 Arnoldi 过程</h4>
+
+<p>讲义给的伪代码（Matlab 版本见 Homework 6 Problem 4 Algorithm 1，Householder 版本是 Algorithm 2）：</p>
+
+<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 18px; overflow-x:auto; margin:14px 0">function: [Q, H] = Gram-Schmidt_Arnoldi(A, b, tolerance, modified, reorthogonalized)
+    n = dim(A);  Q = zeros(n,n);  H = zeros(n,n);  delta = zeros(n,1);
+    Q(1:n, 1) = b / norm(b);
+    if reorthogonalized, max_iter = 2; else, max_iter = 1; end
+    for k = 1 : r-1
+        Q(1:n, k+1) = A * Q(1:n, k);
+        if modified == TRUE                       % MGS：一个一个减
+            for iter = 1:max_iter
+                for i = 1 : k
+                    delta(i)   = Q(1:n,i)' * Q(1:n,k+1);
+                    H(i,k)     = H(i,k) + delta(i);
+                    Q(1:n,k+1) = Q(1:n,k+1) - delta(i) * Q(1:n,i);
+                end
+            end
+        else                                      % CGS：一次减完
+            for iter = 1:max_iter
+                delta(1:k)   = Q(1:n,1:k)' * Q(1:n,k+1);
+                H(1:k,k)     = H(1:k,k) + delta(1:k);
+                Q(1:n,k+1)   = Q(1:n,k+1) - Q(1:n,1:k) * delta(1:k);
+            end
+        end
+        H(k+1,k) = norm(Q(1:n,k+1));
+        if H(k+1,k) &lt; tolerance                   % indicates linear dependence
+            r = k;  break
+        else
+            Q(1:n,k+1) = Q(1:n,k+1) / H(k+1,k);
+        end
+    end
+    H(1:r, r) = Q(1:n,1:r)' * (A * Q(1:n,r));     % fill the last column
+    Q = Q(1:n, 1:r);  H = H(1:r, 1:r);
+end</pre>
+
+<p>四个必须看懂的地方：</p>
+
+<ul>
+<li><code>H(k+1,k) = norm(Q(:,k+1))</code> 是 <strong>Hessenberg 的次对角元</strong>，同时它的大小正好等于「$Aq_k$ 中垂直于 $q_1,\ldots,q_k$ 的那部分有多长」。</li>
+<li><code>if H(k+1,k) &lt; tolerance</code> ⇒ <strong>$Aq_k$ 落在 $\operatorname{span}(q_1,\ldots,q_k)$ 里了</strong> ⇒ Krylov 子空间停止增长 ⇒ 令 $r=k$ 提前退出。这就是 <code>indicates linear dependence</code>，也是 $r\le\operatorname{rank}(Y)$ 的来源。（所以循环写的是 <code>1:r-1</code> 但 $r$ 得先跑出来——实现上就是「跑到 breakdown 为止」。）</li>
+<li>最后一行 <code>H(1:r,r) = Q'*(A*Q(:,r))</code> 是<strong>补最后一列</strong>：前面各列靠递推得到，第 $r$ 列已经跳出循环，只能单独算一次。</li>
+<li><code>reorthogonalized</code> 打开时正交化做两遍（<code>max_iter = 2</code>），这是 Gram–Schmidt 的经典数值补救——病态时一遍正交化会丢正交性。基于 Householder 变换的版本（Algorithm 2）数值上更稳。</li>
+</ul>
+
+<h3 id="s244">§2.4.4 Lanczos 过程<span class="tag a">讲义 §2.4.4</span></h3>
+
+<div class="box warn">
+<p class="label">先纠一个印刷错误</p>
+<p>讲义（含目录）把 Lanczos 拼成了 <strong>「Lanzcos」</strong>。正确拼写是 <strong>Lanczos</strong>（匈牙利数学家 Cornelius Lanczos）。这是我在讲义里找到的<strong>第 5 处</strong>印刷问题。</p>
+</div>
+
+<p>当 $A$ 是对称阵时，Arnoldi 过程得到的 $T:=Q^{\mathsf T}AQ$ 是一个对称三对角阵。理论上，我们可将 Arnoldi 过程简化为 Lanczos 过程（考虑到 $T$ 的很多上三角元为零）：给定对称阵 $A\in\mathbb{R}^{n\times n}$ 和单位向量 $q_1\in\mathbb{R}^n$……</p>
+
+<p>记 $Q_k:=[q_1,\ldots,q_k]$（其中 $1\le k\le\operatorname{rank}(K(A,q_1,n))$，而 $K(A,q_1,n)=\operatorname{span}\{q_1,Aq_1,\ldots,A^{n-1}q_1\}$）。根据 $AQ_k=Q_{k+1}\tilde T_k$ 可知</p>
+
+\[ Aq_k=\beta_{k-1}q_{k-1}+\alpha_kq_k+\beta_kq_{k+1} \]
+
+<figure style="margin:26px 0">
+<svg viewBox="0 0 680 286" width="100%" role="img" aria-labelledby="fig26t fig26d">
+<title id="fig26t">Lanczos 过程的三项递推与对称三对角矩阵</title>
+<desc id="fig26d">Aq_k 只能由 q_{k-1}、q_k、q_{k+1} 三个向量线性组合得到，系数分别是 β_{k-1}、α_k、β_k；右侧是 T̃ 的对称三对角结构。</desc>
+<defs>
+<marker id="arrowFig26" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="60" y="120" width="100" height="44" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="110" y="142" font-size="13.5" fill="var(--ink)" text-anchor="middle">Aq<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+<path d="M162 138L294 66" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig26)"/>
+<path d="M162 142H294" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig26)"/>
+<path d="M162 146L294 218" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowFig26)"/>
+<text x="205" y="92" font-size="12.5" fill="var(--ink2)">β<tspan baseline-shift="sub" font-size="9">k−1</tspan></text>
+<text x="224" y="126" font-size="12.5" fill="var(--ink2)">α<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+<text x="205" y="196" font-size="12.5" fill="var(--ink2)">β<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+<rect x="300" y="40" width="110" height="44" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="355" y="62" font-size="13.5" fill="var(--ink)" text-anchor="middle">q<tspan baseline-shift="sub" font-size="9">k−1</tspan></text>
+<rect x="300" y="120" width="110" height="44" rx="10" fill="var(--bg3)" stroke="var(--accent)" stroke-width="1"/>
+<text x="355" y="142" font-size="13.5" fill="var(--ink)" text-anchor="middle">q<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+<rect x="300" y="200" width="110" height="44" rx="10" fill="var(--bg3)" stroke="var(--ok)" stroke-width="1"/>
+<text x="355" y="222" font-size="13.5" fill="var(--ink)" text-anchor="middle">q<tspan baseline-shift="sub" font-size="9">k+1</tspan></text>
+<text x="355" y="266" font-size="12" fill="var(--ink3)" text-anchor="middle">新方向（唯一需要正交化的）</text>
+<rect x="470" y="70" width="90" height="90" fill="var(--bg2)" stroke="var(--line)" stroke-width="1"/>
+<path d="M488 70V160 M506 70V160 M524 70V160 M542 70V160 M470 88H560 M470 106H560 M470 124H560 M470 142H560" fill="none" stroke="var(--line)" stroke-width="1"/>
+<g fill="var(--ok)">
+<rect x="470" y="70" width="18" height="18"/><rect x="488" y="70" width="18" height="18"/>
+<rect x="470" y="88" width="18" height="18"/><rect x="488" y="88" width="18" height="18"/><rect x="506" y="88" width="18" height="18"/>
+<rect x="488" y="106" width="18" height="18"/><rect x="506" y="106" width="18" height="18"/><rect x="524" y="106" width="18" height="18"/>
+<rect x="506" y="124" width="18" height="18"/><rect x="524" y="124" width="18" height="18"/><rect x="542" y="124" width="18" height="18"/>
+<rect x="524" y="142" width="18" height="18"/><rect x="542" y="142" width="18" height="18"/>
+</g>
+<text x="515" y="54" font-size="13.5" fill="var(--ink)" text-anchor="middle">T̃<tspan baseline-shift="sub" font-size="9">k</tspan></text>
+<text x="515" y="180" font-size="12" fill="var(--ink3)" text-anchor="middle">对称三对角</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 26 · Lanczos 的三项递推：算 $Aq_k$ 只用得到 $q_{k-1},q_k,q_{k+1}$ 三个向量，不需要保存全部历史——这是三对角结构带来的全部好处</figcaption>
+</figure>
+
+<p>也就是说 $Aq_k$ <strong>只由三个相邻向量拼出来</strong>。由于 $q_1,\ldots,q_{k+1}$ 标准正交，两边左乘 $q_k^{\mathsf T}$ 得</p>
+
+\[ \alpha_k=q_k^{\mathsf T}Aq_k\quad(\text{就是 Rayleigh 商}),\qquad \beta_kq_{k+1}=Aq_k-\alpha_kq_k-\beta_{k-1}q_{k-1} \]
+
+<p>于是得到 Lanczos 过程（讲义引 <em>Matrix Computation</em> 9.1.2 节）：</p>
+
+<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 18px; overflow-x:auto; margin:14px 0">Given symmetric matrix A in R^(n x n) and q1 in R^n such that norm(q1, 2) = 1
+k = 0;  beta_0 = 1;  q_0 = 0_n;  r_0 = q_1
+while beta_k ~= 0
+    q_{k+1} = r_k / beta_k
+    k = k + 1
+    alpha_k = q_k' * A * q_k
+    r_k = A * q_k - alpha_k * q_k - beta_{k-1} * q_{k-1}
+    beta_k = norm(r_k, 2)
+end</pre>
+
+<p>以及讲义给的 Matlab 实现（引 Homework 6 Problem 6）：</p>
+
+<pre style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; background:var(--bg2); border:1px solid var(--line); border-radius:8px; padding:14px 18px; overflow-x:auto; margin:14px 0">function: [Q, T] = Lanczos(A, b, r, tolerance)
+    n = size(A, 1);
+    Q = zeros(n, r);  T = zeros(r, r);
+    Q(:, 1) = b / norm(b);
+    for j = 1:r
+        z = A * Q(:, j);
+        T(j, j) = Q(:, j)' * z;                                  % 对角元 = Rayleigh 商
+        if j == 1
+            z = z - T(j, j) * Q(:, j);                           % 第一步只减一项
+        else
+            z = z - T(j, j) * Q(:, j) - T(j-1, j) * Q(:, j-1);   % 之后只减两项
+        end
+        T(j, j+1) = norm(z, 2);
+        T(j+1, j) = T(j, j+1);                                   % T 对称
+        if norm(z, 2) &lt; tolerance
+            r = j - 1;  break                                    % 提前退出（breakdown）
+        else
+            Q(:, j+1) = z / T(j, j+1);
+        end
+    end
+    Q = Q(:, 1:r);  T = T(1:r, 1:r);
+end</pre>
+
+<p>把它和 §2.4.3 的 Arnoldi 伪代码对照着看，<strong>两处差异最能说明三对角结构省了什么</strong>：</p>
+
+<table>
+<tr><th></th><th>Arnoldi</th><th>Lanczos</th></tr>
+<tr><td>正交化</td><td>内层 <code>for i = 1:k</code>，减遍<strong>全部</strong>历史向量</td><td>只减 <code>Q(:,j)</code> 和 <code>Q(:,j-1)</code> <strong>两项</strong></td></tr>
+<tr><td>breakdown 判据</td><td><code>H(k+1,k) &lt; tolerance</code></td><td><code>norm(z,2) &lt; tolerance</code></td></tr>
+<tr><td>存储</td><td>需要保存所有 $q_1,\ldots,q_k$</td><td>只需保存前两个向量</td></tr>
+<tr><td>系数矩阵</td><td>$H$ 上 Hessenberg</td><td>$T$ 对称三对角，$\alpha_j$ 就是 Rayleigh 商</td></tr>
+</table>
+
+<p>breakdown 的含义完全一样：Krylov 子空间不再增长（$Aq_k$ 落在已张成的空间里了）。</p>
+
+<div class="box warn">
+<p class="label">§2.4 部分的讲义问题（2 处）</p>
+<table>
+<tr><th>位置</th><th>讲义写的</th><th>应为</th></tr>
+<tr><td>§2.4.3 p24</td><td>$q_i^{*}Aq_j=\sum_{i'=1}^{j+1}h_{i',j}q_i^{*}q_{i'}=0+h_{k,j}\cdot1=h_{k,j}$——左边用 $i$、右边用 $k$，下标混用</td><td>$q_k^{*}Aq_j=h_{k,j}$（讲义自己也注了「原书中有记号错误」）</td></tr>
+<tr><td>§2.4.4 标题（含目录）</td><td>Lanzcos</td><td>Lanczos</td></tr>
+</table>
+</div>
+
+<div class="box ok">
+<p class="label">整条逻辑链（一句话）</p>
+<p>幂法（<a href="#p1">第一部分</a>）证明 $\{A^{k-1}b\}$ 必然塌向主特征向量 → 所以直接堆成 $Y$ 求特征值是自杀 → 但塌掉的只是「基」，子空间 $K(A,b,k)$ 本身没问题 → 换成酉基 $Q$，相似变换 $H=Q^{*}AQ$ 保住，并且<strong>自动</strong>获得 Hessenberg 结构（对称时三对角）→ 用 Gram–Schmidt 递推地算出 $Q$ 和 $H$，就是 <strong>Arnoldi 过程</strong>。</p>
+<p><strong>向后看：</strong>GTH 是第 4 章 Krylov 方法的入口；Arnoldi 通向第 4 章与第 5 章；Lanczos 通向第 4 章的共轭梯度与第 6 章的对称特征值问题。这三节合起来，就是第 4 章的预告片。</p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p6">附录 · 板书逐张对照</h2>
 
 <table>
 <tr><th>板书</th><th>内容（原文）</th><th>对应位置</th></tr>
-<tr><td>1</td><td>$\min\|b-Ax\|_2$ 带等式约束 $Bx=d$ 的消元法：$[B;A]=[R\ \ 0]Q$，$[R\ \ 0]Qx=d$，$y_1=R^{-1}d$；以及 $\|b-Ax\|_2=\|b-AQ^{*}y\|_2=\|(b-\tilde A_1y_1)-\tilde A_2y_2\|_2$</td><td>PDF 2 收尾，本笔记未收录</td></tr>
+<tr><td>1</td><td>$\min\|b-Ax\|_2$ 带等式约束 $Bx=d$ 的消元法：$[B;A]=[R\ \ 0]Q$，$[R\ \ 0]Qx=d$，$y_1=R^{-1}d$；以及 $\|b-Ax\|_2=\|b-AQ^{*}y\|_2=\|(b-\tilde A_1y_1)-\tilde A_2y_2\|_2$</td><td>本文 <a href="#s241">§2.4.1</a> 变体 ③（<strong>板书原文</strong>）</td></tr>
 <tr><td>2</td><td>PageRank / Markov：$A_0$ 列随机（稀疏）、$A_1=\frac1nee^{\mathsf T}$、$A=\alpha A_0+(1-\alpha)A_1$，$\alpha\approx0.85$</td><td>PDF 2 应用案例，本笔记未收录</td></tr>
 <tr><td>3</td><td>$Ax=x\lambda$；$\hat x\approx x$；$(A-\hat\lambda I)x^{(k)}=x^{(k-1)}$；$B=(A-\hat\lambda I)^{-1}$ shift-and-invert；$(\lambda_i-\hat\lambda)^{-1}\gg(\lambda_j-\hat\lambda)^{-1}$；<code>INVIT</code>、<code>RQIT</code>（<strong>只有名字，没有收敛阶推导</strong>）</td><td>本文 <a href="#s22">§2.2</a>、<a href="#why">§2.3</a>、<a href="#s26">§2.6</a>（§2.6 的收敛阶推导为教材补充）</td></tr>
 <tr><td>4</td><td>$\min\|b-Ax\|_2$，$A\in\mathbb C^{m\times n}$，$\operatorname{rank}(A)\lt n\lt m$；$x=A^{+}b$；$AP=QR=Q\begin{bmatrix}R_{11}&R_{12}\\&0\end{bmatrix}$，rank-revealing QR</td><td>PDF 2 收尾，本笔记未收录</td></tr>
-<tr><td>5（左）</td><td>$Ax=b$；$\min_x\|b-Ax\|_2$；$A^{*}Ax=A^{*}b$；$\begin{bmatrix}I&A\\A^{*}&0\end{bmatrix}\begin{bmatrix}r\\x\end{bmatrix}=\begin{bmatrix}b\\0\end{bmatrix}$</td><td>PDF 2 收尾，本笔记未收录</td></tr>
+<tr><td>5（左）</td><td>$Ax=b$；$\min_x\|b-Ax\|_2$；$A^{*}Ax=A^{*}b$；$\begin{bmatrix}I&A\\A^{*}&0\end{bmatrix}\begin{bmatrix}r\\x\end{bmatrix}=\begin{bmatrix}b\\0\end{bmatrix}$</td><td>本文 <a href="#s241">§2.4.1</a> 变体 ①（<strong>板书原文</strong>）</td></tr>
 <tr><td>5（右）</td><td>direct methods：$PA=LU$ $O(n^3)$、$A=QR$ $O(mn^2)$；<strong>iterative methods</strong>：$x^{(1)},x^{(2)},\dots,x^{(k)},\dots$，$\lim_{k\to\infty}x^{(k)}=x_*$</td><td>本文 <a href="#s31">§3.1</a>（<strong>板书原文仅此两行</strong>）</td></tr>
 <tr><td>6</td><td>$P(A+\delta A)=\hat L\hat U$；Loop：$r=b-Ax$（in higher precision）、解 $A\Delta x=r$、$x\leftarrow x+\Delta x$；$|\mathrm{fl}(r)-r|\le O(u)(|b|+|A||x|)$</td><td>本文 <a href="#refine">§3.10</a> 迭代精化（<strong>板书原文；讲义里没有这一节</strong>）</td></tr>
 <tr><td>7</td><td>$Ax=x\lambda$；$1^\circ$ $x$ 已知求 $\lambda$：$\hat\lambda=\frac{x^{*}Ax}{x^{*}x}$（Rayleigh 商）；$2^\circ$ $\lambda$ 已知求 $x$：$(A-\lambda I)x=0$</td><td>本文 <a href="#s11">§1.1</a></td></tr>
@@ -4563,6 +5231,7 @@ P(A+δA) = L̂ Û
 <tr><td>（无）</td><td>第 3 章正文前半：<a href="#s36">单步线性定常迭代法总论</a>（$A=M-N$）、<a href="#s37">Jacobi</a>、<a href="#s38">Gauss-Seidel</a>（含红黑序、两个反例）、<a href="#s39">收敛的充要条件 $\rho(B)\lt 1$</a></td><td>本文 <a href="#s36">§3.6</a>–<a href="#s39">§3.9</a>（<strong>讲义有、课上没讲</strong>）</td></tr>
 <tr><td>（无）</td><td>第 3 章正文后半：<a href="#s310">误差估计</a>（两条误差上界、构造停止准则）、<a href="#s311">Jacobi / Gauss-Seidel 的收敛性</a>（范数 / 对称正定 / 严格对角占优三层判据）、<a href="#s312">收敛速度</a>（$R_\infty(B)=-\log\rho(B)$；二维 Poisson 上 Jacobi $=\frac12\pi^2h^2$、GS $=\pi^2h^2$）、<a href="#s313">超松弛迭代法 SOR</a>（$0\lt\omega\lt2$、最佳松弛因子、$R_\infty\sim2\pi h$、相容次序）</td><td>本文 <a href="#s310">§3.10</a>–<a href="#s313">§3.13</a>（<strong>讲义有、课上没讲</strong>）</td></tr>
 <tr><td>（无）</td><td>QR 方法：<a href="#s531">显式 QR 迭代</a>、<a href="#s532">实 Schur 标准型</a>、<a href="#s533">上 Hessenberg 分解与唯一性</a>、<a href="#s534">Hessenberg 阵的 QR 迭代</a>、<a href="#s535">带位移</a> / <a href="#s536">双位移隐式 QR（Francis）</a>、<a href="#s537">隐式 QR 算法与运算量</a>；实 Schur 型后处理：<a href="#s541">对角块排序</a>、<a href="#s542">Sylvester 方程（Bartels–Stewart）</a>、<a href="#s543">块对角化</a></td><td>本文 <a href="#p3">§5.3–§5.4</a>（提前自学）</td></tr>
+<tr><td>（无）</td><td>第 2 章收尾（讲义 §2.4 补充）：<a href="#s241">最小二乘的三种变体</a>（$l_2$ 惩罚项、线性等式约束的消元法）、<a href="#s242">GTH 算法</a>、<a href="#s243">Arnoldi 过程</a>（Krylov 子空间、伴随矩阵、$AQ=QH+\text{rank-one}$、Gram–Schmidt 伪代码）、<a href="#s244">Lanczos 过程</a>（三项递推）</td><td>本文 <a href="#p5">§2.4</a>（<strong>讲义有、课上没讲</strong>；其中变体 ① 与变体 ③ 的式子出现在板书 5（左）与板书 1 上）</td></tr>
 </table>
 
 <div class="box">
@@ -4575,9 +5244,10 @@ P(A+δA) = L̂ Û
 <p><strong>第 3 章（讲义 PDF 3）已经整章补完</strong>：引言（<a href="#s31">§3.1</a> 为什么要迭代法、<a href="#s32">§3.2</a> 存储、<a href="#s33">§3.3</a> 矩阵-向量乘法、<a href="#s34">§3.4</a>–<a href="#s35">§3.5</a> Poisson 方程）＋ 迭代法总论与两种基本方法（<a href="#s36">§3.6</a>–<a href="#s38">§3.8</a>）＋ 收敛性理论（<a href="#s39">§3.9</a> 充要条件、<a href="#s310">§3.10</a> 误差估计、<a href="#s311">§3.11</a> 三层判据）＋ 收敛速度（<a href="#s312">§3.12</a>）＋ SOR（<a href="#s313">§3.13</a>）。再加上板书独有的 <a href="#refine">§3.14 迭代精化</a>，PDF 3 的内容到这里<strong>全部收录</strong>。</p>
 <p><strong>提醒：这些内容课上都没有讲。</strong>今天第 3 章只出现在板书 5（右半张，两行定义式）和板书 6（迭代精化）。所以 §3.1–§3.13 属于「按讲义提前自学」，复习时不要误当成课堂内容。</p>
 <p><strong>第 5 章的 §5.3（QR 方法）与 §5.4（实 Schur 型的后处理）</strong>同样没出现在板书里——本文第三部分是按讲义 PDF 5 提前整理的。</p>
+<p><strong>第 2 章的收尾（讲义 PDF 2 §2.4）</strong>也没在课上讲过，本文第五部分是按讲义提前整理的。其中「标准型的三种等价表述」与「等式约束的消元法」在板书 5（左）和板书 1 上出现过，其余（$l_2$ 惩罚项、GTH、Arnoldi、Lanczos）都是讲义独有。§2.4.2 GTH 算法在讲义上<strong>只有标题和一行「参见 Homework 06 Problem 07」，没有正文</strong>。</p>
 </div>
 
-<p class="footnote" style="margin-top:40px">整理自：FDU 数值算法讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0–§3.4，以及 2026-10-13 课堂板书。§5.3、§5.4 未出现在板书里，属提前自学；第 3 章的 §3.2–§3.5（存储、Poisson 方程）与 §3.6–§3.13（迭代法总论、Jacobi、Gauss-Seidel、收敛充要条件、误差估计、收敛性判据、收敛速度、SOR）同样是讲义内容、课上未讲；§2.6 的收敛阶推导（Rayleigh 商误差 $=O(\theta^2)$、$\mathrm{gap}$ 的定义与三次收敛）讲义只给结论、未给证明，属教材补充。<strong>另更正讲义四处问题</strong>：§3.11 的「$2I-A$ 应为 $2D-A$」、§3.11 的「假设 $A$ 非奇异应为奇异」、§3.12 的「收敛速度慢应为快」，以及 §3.13 的 <code>Negative Value</code> 占位符（未完成推导，已补全）。公式排版：KaTeX 0.16.11（本地）。</p>
+<p class="footnote" style="margin-top:40px">整理自：FDU 数值算法讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0–§3.4、PDF 2 §2.4，以及 2026-10-13 课堂板书。§5.3、§5.4 未出现在板书里，属提前自学；第 3 章的 §3.2–§3.5（存储、Poisson 方程）与 §3.6–§3.13（迭代法总论、Jacobi、Gauss-Seidel、收敛充要条件、误差估计、收敛性判据、收敛速度、SOR）同样是讲义内容、课上未讲；§2.6 的收敛阶推导（Rayleigh 商误差 $=O(\theta^2)$、$\mathrm{gap}$ 的定义与三次收敛）讲义只给结论、未给证明，属教材补充；讲义 PDF 2 §2.4（第 2 章补充：$l_2$ 惩罚项、GTH、Arnoldi、Lanczos）同样是讲义内容、课上未讲（其中变体 ① 与 ③ 的式子出现在板书 5（左）与板书 1）。<strong>另更正讲义五处问题</strong>：§3.11 的「$2I-A$ 应为 $2D-A$」、§3.11 的「假设 $A$ 非奇异应为奇异」、§3.12 的「收敛速度慢应为快」，§3.13 的 <code>Negative Value</code> 占位符（未完成推导，已补全），以及 §2.4.4 标题的「Lanzcos 应为 Lanczos」。公式排版：KaTeX 0.16.11（本地）。</p>
 
 </div>
 
