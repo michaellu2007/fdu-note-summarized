@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 01 · 绪论 — 学习笔记</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>数据结构（与算法）· 第一讲 绪论</h1>
+    <div class="sub">复旦大学 数据科学学院 · Zengfeng Huang &nbsp;|&nbsp; 学习笔记整理</div>
+    <div class="meta">
+      <span class="pill">教材：CLRS《算法导论》(3rd)</span>
+      <span class="pill">语言：Python</span>
+      <span class="pill">成绩：期末 55% · 期中 30% · 作业 15%</span>
+      <span class="pill">来源：01Introduction.pdf（166 页）</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">三个基本概念</a></li>
+      <li><a href="#s2">数组与链表</a></li>
+      <li><a href="#s3">栈与队列</a></li>
+      <li><a href="#s4">经典应用</a></li>
+      <li><a href="#s5">插入排序</a></li>
+      <li><a href="#s6">算法分析</a></li>
+      <li><a href="#s7">渐进记号</a></li>
+      <li><a href="#s8">复杂度速查</a></li>
+      <li><a href="#s9">数学工具</a></li>
+      <li><a href="#s10">附：归并排序</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <div class="note" style="margin-top:0">
+      <strong>来源标注：</strong>§1–§9 全部整理自第一讲讲义 <code>01Introduction.pdf</code>（166 页）；
+      §10「附 · 归并排序」第一讲只在「插入排序 vs 归并排序」的对比中出现一句
+      <code>2n lg n</code>，未展开讲，该节为<strong>按 CLRS 补全</strong>的扩展内容。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 三个基本概念</h2>
+      <p>这门课是<strong>设计与分析</strong>的理论课，不是编程课，会涉及大量证明。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 240" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>数据结构、算法与程序的关系</title>
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <rect x="100" y="40" width="200" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <text x="200" y="62" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#0C447C">数据结构</text>
+          <text x="200" y="82" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#185FA5">组织数据以解决问题</text>
+          <rect x="380" y="40" width="200" height="60" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <text x="480" y="62" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#085041">算法</text>
+          <text x="480" y="82" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#0F6E56">一步步的计算过程</text>
+          <line x1="200" y1="100" x2="300" y2="168" stroke="#888780" stroke-width="1.5" marker-end="url(#a1)"/>
+          <line x1="480" y1="100" x2="380" y2="168" stroke="#888780" stroke-width="1.5" marker-end="url(#a1)"/>
+          <rect x="240" y="170" width="200" height="60" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="1"/>
+          <text x="340" y="192" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" fill="#633806">程序</text>
+          <text x="340" y="212" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#854F0B">用编程语言实现</text>
+        </svg>
+      </div>
+
+      <table>
+        <thead><tr><th style="width:130px">概念</th><th>定义</th></tr></thead>
+        <tbody>
+          <tr><td><strong>数据结构</strong></td><td>存储和组织数据的一种方式，目的是让数据<strong>便于访问和修改</strong>。</td></tr>
+          <tr><td><strong>算法</strong></td><td>计算过程的<strong>精髓与大纲</strong>，是一步步的指令，独立于编程语言。</td></tr>
+          <tr><td><strong>程序</strong></td><td>用某种编程语言把数据结构和算法<strong>实现</strong>出来。</td></tr>
+        </tbody>
+      </table>
+
+      <h3>课程目标</h3>
+      <ul>
+        <li><strong>永远正确</strong>（或以高概率正确）</li>
+        <li><strong>永远终止</strong></li>
+        <li><strong>性能</strong> —— 本课的重点</li>
+      </ul>
+      <p>两条主线：<strong>设计</strong>（让代价最小）与<strong>分析</strong>（预测消耗多少资源）。</p>
+
+      <h3>课程路线图</h3>
+      <p><span class="tag t-blue">1 基础数据结构</span><span class="tag t-blue">2 排序与查找</span><span class="tag t-teal">3 分治</span><span class="tag t-teal">4 哈希表</span><span class="tag t-amber">5 动态规划</span><span class="tag t-amber">6 贪心</span><span class="tag t-coral">7 图算法</span><span class="tag t-purple">8 其他</span></p>
+
+      <div class="note">
+        <strong>主线例子 · Range Sum：</strong>给数组 <code>2 3 5 9 6 1 8 2</code>，查询 <code>(i, j)</code> 返回 <code>A[i]+…+A[j]</code>。若还要支持<strong>更新</strong>，就成了「动态数据结构」问题 —— 不同的数据组织方式（数组？前缀和？树？）决定每次操作的代价。这正是数据结构存在的意义。
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · 数组与链表</h2>
+
+      <div class="warn">
+        <strong>地基假设：</strong>本课只考虑<strong>主存（Main Memory）</strong>，主存允许<strong>随机访问</strong> —— 访问任意内存单元都算「单位时间」。所有复杂度分析都建立在这个前提上。
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 220" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>数组与链表的内存布局对比</title>
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <text x="40" y="26" font-size="13" font-weight="600" fill="#0C447C">数组 Array　连续存储 · 大小固定 · 随机访问 O(1)</text>
+          <rect x="70" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <rect x="160" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <rect x="250" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <rect x="340" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <rect x="430" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <rect x="520" y="40" width="90" height="44" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+          <g font-family="ui-monospace,monospace" font-size="15" fill="#0C447C" text-anchor="middle" dominant-baseline="central">
+            <text x="115" y="62">2</text><text x="205" y="62">3</text><text x="295" y="62">5</text>
+            <text x="385" y="62">9</text><text x="475" y="62">6</text><text x="565" y="62">1</text>
+          </g>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="#888780" text-anchor="middle" dominant-baseline="central">
+            <text x="115" y="97">0</text><text x="205" y="97">1</text><text x="295" y="97">2</text>
+            <text x="385" y="97">3</text><text x="475" y="97">4</text><text x="565" y="97">5</text>
+          </g>
+          <text x="40" y="140" font-size="13" font-weight="600" fill="#085041">链表 Linked List　分散存储 · 指针相连 · 插入/删除 O(1)</text>
+          <text x="45" y="180" font-family="ui-monospace,monospace" font-size="12" fill="#5F5E5A" dominant-baseline="central">head</text>
+          <line x1="80" y1="180" x2="106" y2="180" stroke="#888780" stroke-width="1.5" marker-end="url(#a2)"/>
+          <rect x="110" y="158" width="80" height="44" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="240" y="158" width="80" height="44" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="370" y="158" width="80" height="44" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="500" y="158" width="80" height="44" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <g font-family="ui-monospace,monospace" font-size="15" fill="#085041" text-anchor="middle" dominant-baseline="central">
+            <text x="150" y="180">25</text><text x="280" y="180">9</text><text x="410" y="180">16</text><text x="540" y="180">1</text>
+          </g>
+          <line x1="190" y1="180" x2="236" y2="180" stroke="#888780" stroke-width="1.5" marker-end="url(#a2)"/>
+          <line x1="320" y1="180" x2="366" y2="180" stroke="#888780" stroke-width="1.5" marker-end="url(#a2)"/>
+          <line x1="450" y1="180" x2="496" y2="180" stroke="#888780" stroke-width="1.5" marker-end="url(#a2)"/>
+          <text x="592" y="180" font-family="ui-monospace,monospace" font-size="12" fill="#5F5E5A" dominant-baseline="central">NIL</text>
+        </svg>
+      </div>
+
+      <h3>数组的三条性质</h3>
+      <ul>
+        <li>同类型元素、<strong>大小固定</strong> —— 必须提前知道元素个数上限</li>
+        <li>元素在内存中<strong>连续存放</strong></li>
+        <li>因此支持<strong>随机访问</strong>：$A[i]$ 的地址 $=$ 基址 $+\ i \times$ 元素大小，$O(1)$ 直达</li>
+      </ul>
+      <p>代价：因为连续，<strong>插入/删除昂贵</strong>。在数组最前面插入一个元素，后面所有元素都得后移一位，$O(n)$。</p>
+
+      <h3>链表的操作代价</h3>
+      <table>
+        <thead><tr><th>操作</th><th>单链表</th><th>双链表</th></tr></thead>
+        <tbody>
+          <tr><td>头部插入</td><td>$O(1)$</td><td>$O(1)$</td></tr>
+          <tr><td>头部删除</td><td>$O(1)$</td><td>$O(1)$</td></tr>
+          <tr><td>尾部插入</td><td>$O(1)$（维护 tail 指针）</td><td>$O(1)$</td></tr>
+          <tr><td>尾部删除</td><td><strong>不高效</strong>（无法常数时间找到前驱）</td><td>$O(1)$</td></tr>
+          <tr><td>按值查找</td><td>$O(n)$</td><td>$O(n)$</td></tr>
+        </tbody>
+      </table>
+      <p>双链表节点结构：<code>[prev | key | next]</code>，头节点的 <code>prev</code> 为 <code>NIL</code>。</p>
+
+      <h4>核心操作伪代码</h4>
+<pre>LIST-INSERT-HEAD(L, x)
+1. x.next ← L.head
+2. if L.head ≠ NIL
+3.   then L.head.prev ← x
+4. L.head ← x
+5. x.prev ← NIL
+
+LIST-DELETE(L, x)
+1. if x.prev ≠ NIL
+2.   then x.prev.next ← x.next
+3.   else L.head ← x.next
+4. if x.next ≠ NIL
+5.   then x.next.prev ← x.prev
+
+LIST-SEARCH(L, k)
+1. x ← L.head
+2. while x ≠ NIL and x.key ≠ k
+3.   do x ← x.next
+4. return x        <span class="c">⊳ O(n)：链表不能随机访问</span></pre>
+
+      <div class="ok"><strong>本质权衡：</strong>连续 → 换来随机访问；指针 → 换来 $O(1)$ 插入删除。没有免费的午餐。</div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 栈与队列</h2>
+
+      <h3>栈 Stack —— 后进先出 LIFO</h3>
+      <p>所有操作只发生在<strong>栈顶</strong>这一端，因此每个操作都是 <strong>$O(1)$</strong>。</p>
+<pre>IS-EMPTY(S)
+1. if S.top = 0
+2.   then return TRUE
+3.   else return FALSE
+
+PUSH(S, x)
+1. if S.top >= n − 1
+2.   then error "overflow"
+3. S.top ← S.top + 1
+4. S[S.top] ← x
+
+POP(S)
+1. if IS-EMPTY(S)
+2.   then error "underflow"
+3.   else S.top ← S.top − 1
+4. return S[S.top + 1]</pre>
+      <p><strong>溢出 overflow</strong>：栈满仍 PUSH。&nbsp;&nbsp;<strong>下溢 underflow</strong>：空栈仍 POP。</p>
+
+      <h3>队列 Queue —— 先进先出 FIFO</h3>
+      <p>队尾（tail）入队，队头（head）出队。为了不让指针撞到数组边界，使用<strong>循环队列</strong>：指针走到末尾就绕回开头。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 200" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>循环队列结构</title>
+          <defs>
+            <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+            <marker id="a3b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#0F6E56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <text x="40" y="22" font-size="13" font-weight="600" fill="#085041">队列 Queue　先进先出 FIFO</text>
+          <rect x="40" y="56" width="54" height="44" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1"/>
+          <rect x="94" y="56" width="54" height="44" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1"/>
+          <rect x="148" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="202" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="256" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="310" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="364" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="418" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="472" y="56" width="54" height="44" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+          <rect x="526" y="56" width="54" height="44" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1"/>
+          <g font-family="ui-monospace,monospace" font-size="15" fill="#085041" text-anchor="middle" dominant-baseline="central">
+            <text x="175" y="78">1</text><text x="229" y="78">8</text><text x="283" y="78">2</text>
+            <text x="337" y="78">9</text><text x="391" y="78">3</text><text x="445" y="78">5</text><text x="499" y="78">7</text>
+          </g>
+          <text x="175" y="36" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#0F6E56">Q.head</text>
+          <line x1="175" y1="42" x2="175" y2="54" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#a3b)"/>
+          <text x="553" y="36" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#BA7517">Q.tail</text>
+          <line x1="553" y1="42" x2="553" y2="54" stroke="#BA7517" stroke-width="1.5" marker-end="url(#a3)"/>
+          <path d="M553 142 Q310 182 67 142" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+          <text x="310" y="184" text-anchor="middle" font-size="12" fill="#BA7517">tail 走到末尾后回绕到 1 —— 循环队列</text>
+        </svg>
+      </div>
+
+<pre>ENQUEUE(Q, x)
+1. Q[Q.tail] ← x
+2. if Q.tail == Q.length
+3.   then Q.tail ← 1        <span class="c">⊳ 回绕</span>
+4.   else Q.tail ← Q.tail + 1
+
+DEQUEUE(Q)
+1. x ← Q[Q.head]
+2. if Q.head == Q.length
+3.   then Q.head ← 1        <span class="c">⊳ 回绕</span>
+4.   else Q.head ← Q.head + 1
+5. return x</pre>
+
+      <div class="note">
+        <strong>判空判满技巧：</strong><code>Q.head = Q.tail</code> 表示<strong>空</strong>；<code>Q.head = Q.tail + 1</code> 表示<strong>满</strong> —— 故意留一个空槽，否则「空」和「满」会撞成同一个状态。
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 栈的经典应用</h2>
+
+      <h3>① 括号匹配</h3>
+      <p>规则：每个 <code>(</code>、<code>{</code>、<code>[</code> 必须与正确的右括号配对。做法：遇左括号入栈；遇右括号则弹出栈顶检查是否匹配。</p>
+      <ul>
+        <li><span class="tag t-green">正确</span><code>( )(( )){([( )])}</code></li>
+        <li><span class="tag t-green">正确</span><code>((( )(( )){([( )])}</code></li>
+        <li><span class="tag t-coral">错误</span><code>)(( )){([( )])}</code> &nbsp;— 右括号多余</li>
+        <li><span class="tag t-coral">错误</span><code>({[ ])}</code> &nbsp;— 括号交叉</li>
+        <li><span class="tag t-coral">错误</span><code>(</code> &nbsp;— 左括号未闭合</li>
+      </ul>
+
+      <h3>② 表达式的转换与求值</h3>
+      <p><code>9 + 3 * 7 + (4 * 5 + 6) * 2</code> &nbsp;⟶&nbsp; <code>9 3 7 * + 4 5 * 6 + 2 * +</code> &nbsp;⟶&nbsp; <code>82</code></p>
+
+      <div class="note">
+        <strong>关键区分：同一个栈，在两个算法里装的东西完全不同。</strong>
+        <ul style="margin-bottom:0">
+          <li><strong>算法一 · 转换</strong>（中缀 → 后缀）：栈里装<strong>运算符</strong>，靠优先级和括号决定何时弹出。</li>
+          <li><strong>算法二 · 求值</strong>（后缀 → 数值）：栈里装<strong>操作数</strong>（中间结果），规则只有两条。</li>
+        </ul>
+      </div>
+
+      <h4>算法二 · 后缀求值规则</h4>
+      <p>遇到<strong>数字</strong>就压栈；遇到<strong>运算符</strong>就弹出两个数、算完把结果压回去。最终栈里剩下的唯一一个数就是答案（本例为 <strong>82</strong>）。</p>
+
+      <table>
+        <thead><tr><th style="width:70px">读入</th><th>操作</th><th>操作数栈（底→顶）</th></tr></thead>
+        <tbody>
+          <tr><td>9</td><td>操作数 → 压栈</td><td>[9]</td></tr>
+          <tr><td>3</td><td>操作数 → 压栈</td><td>[9, 3]</td></tr>
+          <tr><td>7</td><td>操作数 → 压栈</td><td>[9, 3, 7]</td></tr>
+          <tr><td>*</td><td>弹出 3、7 → 21 压栈</td><td>[9, 21]</td></tr>
+          <tr><td>+</td><td>弹出 9、21 → 30 压栈</td><td>[30]</td></tr>
+          <tr><td>4</td><td>操作数 → 压栈</td><td>[30, 4]</td></tr>
+          <tr><td>5</td><td>操作数 → 压栈</td><td>[30, 4, 5]</td></tr>
+          <tr><td>*</td><td>弹出 4、5 → 20 压栈</td><td>[30, 20]</td></tr>
+          <tr><td>6</td><td>操作数 → 压栈</td><td>[30, 20, 6]</td></tr>
+          <tr><td>+</td><td>弹出 20、6 → 26 压栈</td><td>[30, 26]</td></tr>
+          <tr><td>2</td><td>操作数 → 压栈</td><td>[30, 26, 2]</td></tr>
+          <tr><td>*</td><td>弹出 26、2 → 52 压栈</td><td>[30, 52]</td></tr>
+          <tr><td>+</td><td>弹出 30、52 → <strong>82</strong> 压栈</td><td><strong>[82]</strong></td></tr>
+        </tbody>
+      </table>
+
+      <h4>算法一 · 中缀转后缀的规则（栈里装运算符）</h4>
+      <ol>
+        <li><strong>操作数</strong>立即输出，<strong>运算符</strong>压入栈；</li>
+        <li>若栈顶运算符<strong>优先级高于</strong>当前输入运算符，则弹出栈顶并输出；</li>
+        <li>遇<strong>右括号</strong>，不断弹栈输出，直到遇见左括号；</li>
+        <li>读到<strong>输入结束</strong>，把栈弹空、全部输出。</li>
+      </ol>
+      <div class="ok">栈把「优先级」和「括号嵌套」这类<strong>层级关系</strong>，变成了一次线性扫描 —— 这就是数据结构的力量。</div>
+
+      <h4>补充 · 不转换，直接用两个栈求中缀</h4>
+      <p>其实也可以跳过「转后缀」这一步，用<strong>两个栈</strong>（操作数栈 + 运算符栈）一边扫描中缀一边求值（Dijkstra 双栈算法）：</p>
+      <ul>
+        <li>遇<strong>数字</strong> → 压操作数栈；</li>
+        <li>遇<strong>左括号</strong> → 压运算符栈；</li>
+        <li>遇<strong>右括号</strong> → 不断「弹运算符 + 弹两个操作数 + 计算 + 压回」，直到遇见左括号；</li>
+        <li>遇<strong>运算符</strong> → 先把运算符栈里所有优先级 ≥ 它的运算执行完，再压入当前运算符；</li>
+        <li>扫描结束 → 把运算符栈弹空，最终操作数栈顶即答案。</li>
+      </ul>
+      <p>三种做法（转后缀再求值 / 双栈直接求值 / 递归下降）本质等价，都依赖栈来暂存「还没轮到处理的东西」。</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 插入排序</h2>
+
+      <h3>排序问题</h3>
+      <p><strong>输入</strong>：序列 $a_1, a_2, \dots, a_n$。&nbsp;<strong>输出</strong>：重排后的 $a'_1, a'_2, \dots, a'_n$，满足 $a'_1 \le a'_2 \le \dots \le a'_n$。</p>
+      <p>例：<code>8 2 4 9 3 6</code> → <code>2 3 4 6 8 9</code></p>
+
+      <h3>思路</h3>
+      <p>像打扑克理牌：左手是「已排好序」的一叠牌，每次从右边摸一张新牌（key），从右往左比较、把比它大的牌依次后移，再插到正确位置。</p>
+
+      <div class="note">
+        <strong>循环不变量（理解本算法的钥匙）：</strong>第 i 轮开始时，$A[1\,..\,i-1]$ 是原来那 $i-1$ 个元素、但已按升序排好；$A[i\,..\,n]$ 保持原样、一个都没动。<br>
+        正确性由三件事保证：<strong>初始化</strong>（i=2 时左边只有 1 个元素，天然有序）、<strong>保持</strong>（每轮插完左边仍然有序）、<strong>终止</strong>（i=n+1 时整个数组有序）。
+      </div>
+
+      <div class="warn">
+        <strong>常见误解：插入排序不做「交换」，而是「腾位置」。</strong>做法是：① 先把 $A[i]$ 存进变量 key（<strong>必须先存</strong>，否则后面的挪动会覆盖掉它）；② 从 $A[i-1]$ 起<strong>从右往左</strong>扫，凡是比 key 大的都<strong>右移一格</strong>，腾出的「空位」不断左移；③ 遇到一个 ≤ key 的元素（或走到数组开头）就停，把 key 放进这个空位。
+      </div>
+
+<pre>INSERTION-SORT(A, n)
+for i ← 2 to n
+  do key ← A[i]
+     j ← i − 1
+     while j > 0 and A[j] > key
+       do A[j+1] ← A[j]
+          j ← j − 1
+     A[j+1] = key</pre>
+
+      <h4>逐步演示（输入 8 2 4 9 3 6）</h4>
+      <table>
+        <thead><tr><th style="width:60px">轮次</th><th style="width:70px">key</th><th>数组状态</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>初始</td><td>—</td><td><code>[8] | 2 4 9 3 6</code></td><td>第 1 个元素单独看作已排序</td></tr>
+          <tr><td>i=2</td><td>2</td><td><code>[2 8] | 4 9 3 6</code></td><td>8 &gt; 2，8 后移，2 插到最前</td></tr>
+          <tr><td>i=3</td><td>4</td><td><code>[2 4 8] | 9 3 6</code></td><td>8 &gt; 4，8 后移，4 插到 2 后面</td></tr>
+          <tr><td>i=4</td><td>9</td><td><code>[2 4 8 9] | 3 6</code></td><td>9 &gt; 8，本就在正确位置</td></tr>
+          <tr><td>i=5</td><td>3</td><td><code>[2 3 4 8 9] | 6</code></td><td>8、4 依次后移，3 插到 2 后面</td></tr>
+          <tr><td>i=6</td><td>6</td><td><code>[2 3 4 6 8 9]</code></td><td>8、9 后移，6 插到 4 后面 —— 完成</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 算法分析</h2>
+
+      <h3>实验研究 vs 理论分析</h3>
+      <table>
+        <thead><tr><th style="width:90px"></th><th>实验研究</th><th>理论分析</th></tr></thead>
+        <tbody>
+          <tr><td><strong>做法</strong></td><td>写程序、跑不同规模的输入、记录时间、画曲线</td><td>用算法的高层描述，把运行时间写成输入规模 n 的函数</td></tr>
+          <tr><td><strong>优点</strong></td><td>直观、真实</td><td>考虑<strong>所有</strong>可能输入，与软硬件环境无关</td></tr>
+          <tr><td><strong>缺点</strong></td><td>必须先实现；结论不能推广到未测的输入；比较两算法必须同软硬件</td><td>需要数学抽象</td></tr>
+        </tbody>
+      </table>
+
+      <h3>RAM 模型（Random Access Machine）</h3>
+      <ul>
+        <li>一台 CPU + 一排内存单元</li>
+        <li>每个单元可存一个数或字符</li>
+        <li>内存单元有编号，<strong>访问任意单元都花单位时间</strong></li>
+      </ul>
+
+      <h3>运行时间 T(n)</h3>
+      <ul>
+        <li>取决于输入（已排好序的序列当然更好排）</li>
+        <li>用输入规模 $n$ 参数化：$T_A(n) =$ 长度为 $n$ 的输入上算法 $A$ 的耗时</li>
+        <li>通常<strong>求上界</strong> —— 要的是一个性能保证</li>
+      </ul>
+
+      <h3>三类分析</h3>
+      <table>
+        <thead><tr><th style="width:130px">类型</th><th>定义</th><th style="width:90px">用不用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>最坏情况</strong></td><td>任何规模为 n 的输入上的最大时间</td><td><strong>通常用</strong></td></tr>
+          <tr><td><strong>平均情况</strong></td><td>所有规模 n 输入上的期望时间，需假设输入统计分布</td><td>有时用</td></tr>
+          <tr><td><strong>最好情况</strong></td><td>某个特定输入上的最快时间</td><td><strong>永远别用</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="warn">为什么不用最好情况？因为一个慢算法总能在<strong>某些</strong>输入上很快 —— 用它等于作弊。</div>
+
+      <h3>插入排序的复杂度</h3>
+      <ul>
+        <li><strong>最坏情况</strong>（输入完全逆序）：$T(n) = \sum_{j=2}^{n} \Theta(j) = \Theta(n^2)$（等差数列求和，比较次数恰为 $n(n-1)/2$）</li>
+        <li><strong>平均情况</strong>（所有排列等概率）：同样是 $\Theta(n^2)$</li>
+        <li><strong>最好情况</strong>（输入已经有序）：每轮只比较 1 次就停，共 $n-1$ 次 → $\Theta(n)$</li>
+        <li>结论：<strong>对小 n 尚可，对大 n 完全不行</strong></li>
+      </ul>
+      <div class="ok">
+        <strong>「适应性」：</strong>插入排序是少数最好情况能到 $\Theta(n)$ 的排序算法 —— 数据越接近有序，它越快。这也是为什么很多标准库在<strong>小数组</strong>上会退化成插入排序（常数因子极小）。
+      </div>
+
+      <h3>插入排序 vs 归并排序（排序一百万个元素）</h3>
+      <div class="grid3">
+        <div class="metric"><div class="k">插入排序 $\approx n^2/4$</div><div class="v">约 70 小时</div></div>
+        <div class="metric"><div class="k">归并排序 $\approx 2n\lg n$</div><div class="v">约 40 秒</div></div>
+        <div class="metric"><div class="k">机器快 100 倍后</div><div class="v">40 分钟 vs &lt;0.5 秒</div></div>
+      </div>
+      <p>注意：即使硬件快 100 倍，增长阶的差距依然无法弥补。</p>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 渐进记号</h2>
+
+      <h3>大 O 的定义</h3>
+      <p>$f(n) = O(g(n))$ 当且仅当存在正常数 $c$ 和 $n_0$，使得对<strong>所有 $n \ge n_0$</strong> 都有 $f(n) \le c\,g(n)$。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 290" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>大 O 记号的几何含义</title>
+          <defs>
+            <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <rect x="355" y="40" width="245" height="215" fill="#E6F1FB" opacity="0.5"/>
+          <line x1="70" y1="255" x2="620" y2="255" stroke="#888780" stroke-width="1" marker-end="url(#a4)"/>
+          <line x1="70" y1="255" x2="70" y2="40" stroke="#888780" stroke-width="1" marker-end="url(#a4)"/>
+          <line x1="355" y1="255" x2="355" y2="147" stroke="#5F5E5A" stroke-width="1" stroke-dasharray="4 3"/>
+          <line x1="80" y1="232" x2="600" y2="70" stroke="#185FA5" stroke-width="2"/>
+          <line x1="80" y1="253" x2="600" y2="51" stroke="#D85A30" stroke-width="2"/>
+          <circle cx="355" cy="147" r="4" fill="#185FA5"/>
+          <text x="556" y="98" text-anchor="middle" font-size="12" fill="#0C447C">f(n)</text>
+          <text x="550" y="44" text-anchor="middle" font-size="12" fill="#712B13">c·g(n)</text>
+          <text x="355" y="274" text-anchor="middle" font-size="12" fill="#5F5E5A">n₀</text>
+          <text x="600" y="274" text-anchor="middle" font-size="12" fill="#888780">n</text>
+          <text x="500" y="218" text-anchor="middle" font-size="12" fill="#185FA5">n ≥ n₀ 时 f(n) ≤ c·g(n)</text>
+        </svg>
+        <div class="cap">过了 n₀ 之后，c·g(n) 这条线永远压在 f(n) 上面</div>
+      </div>
+
+      <h3>基本操作</h3>
+      <ul>
+        <li>若 $f(n)$ 是 $d$ 次多项式，则 $f(n) = O(n^d)$</li>
+        <li>步骤：<strong>丢掉低阶项、丢掉常数系数</strong></li>
+        <li>例：$3n^3 + 90n^2 - 5n + 6046 = O(n^3)$</li>
+        <li>用<strong>最小</strong>的类：说「$2n$ 是 $O(n)$」而不是「$2n$ 是 $O(n^2)$」</li>
+        <li>用<strong>最简</strong>的写法：说「$3n+5$ 是 $O(n)$」而不是「$3n+5$ 是 $O(3n)$」</li>
+      </ul>
+
+      <h3>其他记号</h3>
+      <table>
+        <thead><tr><th style="width:150px">记号</th><th style="width:80px">类比</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td>$f(n) = O(g(n))$</td><td>$f \le g$</td><td>渐进上界：存在 $c > 0$、$n_0$，使 $n \ge n_0$ 时 $f(n) \le c\,g(n)$</td></tr>
+          <tr><td>$f(n) = \Omega(g(n))$</td><td>$f \ge g$</td><td>渐进下界：存在 $c > 0$、$n_0$，使 $n \ge n_0$ 时 $f(n) \ge c\,g(n)$</td></tr>
+          <tr><td>$f(n) = \Theta(g(n))$</td><td>$f = g$</td><td>渐进紧界：存在 $c', c'' > 0$、$n_0$，使 $n \ge n_0$ 时 $c'g(n) \le f(n) \le c''g(n)$</td></tr>
+          <tr><td>$f(n) = o(g(n))$</td><td>$f < g$</td><td>严格小于：对任意正常数 $c$，都存在 $n_0$ 使 $n \ge n_0$ 时 $f(n) < c\,g(n)$</td></tr>
+          <tr><td>$f(n) = \omega(g(n))$</td><td>$f > g$</td><td>严格大于：对任意正常数 $c$，都存在 $n_0$ 使 $n \ge n_0$ 时 $c\,g(n) < f(n)$</td></tr>
+        </tbody>
+      </table>
+
+      <h3>渐进性能的直觉</h3>
+      <p>$n$ 足够大时，$O(n^2)$ 的算法<strong>永远</strong>打败 $O(n^3)$ 的算法 —— 这是关心增长阶而非具体常数的原因。但也不要因此忽视渐近更慢的算法：真实工程里常需在常数因子和增长阶之间权衡。</p>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2>8 · 复杂度速查</h2>
+
+      <h3>七种重要函数</h3>
+      <table>
+        <thead><tr><th style="width:110px">函数</th><th style="width:130px">名称</th><th>直觉</th></tr></thead>
+        <tbody>
+          <tr><td>$1$</td><td>常数 Constant</td><td>与规模无关</td></tr>
+          <tr><td>$\log n$</td><td>对数 Logarithmic</td><td>每次砍一半，快到飞起</td></tr>
+          <tr><td>$n$</td><td>线性 Linear</td><td>看一遍</td></tr>
+          <tr><td>$n\log n$</td><td>N-Log-N</td><td>好的排序算法的水平</td></tr>
+          <tr><td>$n^2$</td><td>平方 Quadratic</td><td>两两配对</td></tr>
+          <tr><td>$n^3$</td><td>立方 Cubic</td><td>三重循环</td></tr>
+          <tr><td>$2^n$</td><td>指数 Exponential</td><td>规模一大就爆炸</td></tr>
+        </tbody>
+      </table>
+
+      <h3>本讲涉及结构的操作代价汇总</h3>
+      <table>
+        <thead><tr><th style="width:130px">结构</th><th>访问</th><th>插入</th><th>删除</th><th>查找</th></tr></thead>
+        <tbody>
+          <tr><td>数组 Array</td><td>$O(1)$</td><td>$O(n)$</td><td>$O(n)$</td><td>$O(n)$ 顺序 / $O(\log n)$ 有序二分</td></tr>
+          <tr><td>单链表</td><td>$O(n)$</td><td>$O(1)$ 头/尾</td><td>$O(1)$ 头 / $O(n)$ 尾</td><td>$O(n)$</td></tr>
+          <tr><td>双链表</td><td>$O(n)$</td><td>$O(1)$ 头/尾</td><td>$O(1)$ 头/尾</td><td>$O(n)$</td></tr>
+          <tr><td>栈 Stack</td><td>$O(1)$ 栈顶</td><td>$O(1)$ PUSH</td><td>$O(1)$ POP</td><td>—</td></tr>
+          <tr><td>队列 Queue</td><td>$O(1)$ 队头</td><td>$O(1)$ ENQUEUE</td><td>$O(1)$ DEQUEUE</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2>9 · 需要复习的数学工具</h2>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>对数的性质</h4>
+          <ul>
+            <li>$\log_b(xy) = \log_b x + \log_b y$</li>
+            <li>$\log_b(x/y) = \log_b x - \log_b y$</li>
+            <li>$\log_b x^a = a\log_b x$</li>
+            <li>$\log_b a = \dfrac{\log_x a}{\log_x b}$</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>指数的性质</h4>
+          <ul>
+            <li>$a^{b+c} = a^b \cdot a^c$</li>
+            <li>$a^{bc} = (a^b)^c$</li>
+            <li>$\dfrac{a^b}{a^c} = a^{b-c}$</li>
+            <li>$b = a^{\log_a b}$</li>
+            <li>$a^{bc} = a^{c\log_a b}$</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>其他必备</h3>
+      <ul>
+        <li><strong>求和公式</strong>（等差数列、等比数列）</li>
+        <li><strong>证明技巧</strong>（归纳法、反证法、交换论证等）</li>
+        <li><strong>基础概率</strong>（期望、指示器随机变量）</li>
+      </ul>
+      <div class="note">这门课「期待大量证明」，上面这些是常用工具。</div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2>附 · 归并排序 Merge Sort</h2>
+      <div class="note">
+        <strong>说明：</strong>第一讲只在「插入排序 vs 归并排序」的对比里提到归并排序是 $2n\lg n$，没有展开讲。以下内容按 CLRS 标准补全，便于和插入排序对照理解。
+      </div>
+
+      <h3>核心思想：分治（Divide and Conquer）</h3>
+      <p>一句话概括：<strong>合并两个「已经排好序」的数组只需要 O(n)</strong>。所以先把数组拆到不能再拆（每个块只剩 1 个元素，天然有序），再一路合并回来。</p>
+
+      <table>
+        <thead><tr><th style="width:150px">步骤</th><th>做什么</th></tr></thead>
+        <tbody>
+          <tr><td><strong>① Divide 分</strong></td><td>把当前数组从中间劈成两半：$\lceil n/2 \rceil$ 和 $\lfloor n/2 \rfloor$</td></tr>
+          <tr><td><strong>② Conquer 治</strong></td><td>对两半<strong>递归</strong>排序。终止条件（base case）：只剩 1 个元素</td></tr>
+          <tr><td><strong>③ Combine 合</strong></td><td>把两个已排序子数组合并成一个有序数组 —— <strong>这一步是全部价值所在</strong></td></tr>
+        </tbody>
+      </table>
+
+      <h3>合并（MERGE）的机制</h3>
+      <ol>
+        <li>两个指针 <code>i</code>、<code>j</code> 分别指向两半的第一个元素，<strong>比较两者，取小的那个</strong>放进结果，对应指针前移；</li>
+        <li>某个子数组先空了，就把另一个<strong>剩下的直接搬过来</strong>。</li>
+      </ol>
+      <p>因为每一步都只前进一格，合并 $n$ 个元素总共只做 $n$ 次操作 → <strong>$O(n)$</strong>。</p>
+
+      <h4>伪代码（CLRS 版，用 ∞ 作哨兵）</h4>
+<pre>MERGE(A, p, q, r)              <span class="c">⊳ 合并 A[p..q] 与 A[q+1..r]</span>
+ 1. n1 ← q − p + 1 ;  n2 ← r − q
+ 2. 令 L[1..n1+1] 和 R[1..n2+1] 为新数组
+ 3. for i ← 1 to n1:  L[i] ← A[p + i − 1]
+ 4. for j ← 1 to n2:  R[j] ← A[q + j]
+ 5. L[n1+1] ← ∞ ;  R[n2+1] ← ∞      <span class="c">⊳ 哨兵，省去越界判断</span>
+ 6. i ← 1 ;  j ← 1
+ 7. for k ← p to r
+ 8.     if L[i] ≤ R[j]
+ 9.       then A[k] ← L[i] ;  i ← i + 1
+10.       else A[k] ← R[j] ;  j ← j + 1</pre>
+      <p>注意第 8 行的 <code>≤</code>：用「小于等于」而不是「小于」，才能保证<strong>稳定性</strong>（相等元素保持原有相对顺序）。</p>
+
+      <h4>Python 实现</h4>
+<pre>def merge(left, right):
+    out, i, j = [], 0, 0
+    while i &lt; len(left) and j &lt; len(right):
+        if left[i] &lt;= right[j]:
+            out.append(left[i]); i += 1
+        else:
+            out.append(right[j]); j += 1
+    out.extend(left[i:])       <span class="c">⊳ 剩下的一股脑搬过来</span>
+    out.extend(right[j:])
+    return out
+
+def merge_sort(a):
+    if len(a) &lt;= 1:            <span class="c">⊳ base case：天然有序</span>
+        return a[:]
+    mid = len(a) // 2
+    left  = merge_sort(a[:mid])     <span class="c">⊳ ① Divide ② Conquer</span>
+    right = merge_sort(a[mid:])
+    return merge(left, right)       <span class="c">⊳ ③ Combine</span></pre>
+
+      <h3>复杂度：为什么是 Θ(n log n)</h3>
+      <p>把递归过程画成树，会发现<strong>每一层的元素总数都是 n</strong>：</p>
+      <ul>
+        <li>第 0 层：1 个子问题，规模 $n$ → 合并工作量 $O(n)$</li>
+        <li>第 1 层：2 个子问题，各 $n/2$ → 合计 $O(n)$</li>
+        <li>第 2 层：4 个子问题，各 $n/4$ → 合计 $O(n)$</li>
+      </ul>
+      <p>从 $n$ 二分到 1 一共 <strong>$\log_2 n + 1$ 层</strong>，所以总时间：</p>
+      <p style="text-align:center">\[ T(n) = O(n) \times (\log_2 n + 1) = \Theta(n\log n) \]</p>
+      <p>写成递归式：$T(n) = 2T(n/2) + \Theta(n)$，用主定理（Master Theorem）直接得 <strong>$\Theta(n\log n)$</strong>。</p>
+
+      <h3>与插入排序对比</h3>
+      <table>
+        <thead><tr><th style="width:150px"></th><th>插入排序</th><th>归并排序</th></tr></thead>
+        <tbody>
+          <tr><td>最坏时间</td><td>$\Theta(n^2)$</td><td><strong>$\Theta(n\log n)$</strong></td></tr>
+          <tr><td>平均时间</td><td>$\Theta(n^2)$</td><td>$\Theta(n\log n)$</td></tr>
+          <tr><td>最好时间</td><td>$\Theta(n)$（已有序）</td><td>$\Theta(n\log n)$</td></tr>
+          <tr><td>额外空间</td><td><strong>$O(1)$</strong>（原地）</td><td>$O(n)$（需要辅助数组）</td></tr>
+          <tr><td>稳定性</td><td>稳定</td><td>稳定</td></tr>
+          <tr><td>对小数组</td><td>很快（常数因子小）</td><td>递归开销大</td></tr>
+        </tbody>
+      </table>
+
+      <div class="ok">
+        <strong>一句话记忆：</strong>插入排序是「一个一个安置」，归并排序是「两个有序块一次吃掉」。前者最好情况能到 $\Theta(n)$ 但最坏 $\Theta(n^2)$；后者不管什么输入都稳在 $\Theta(n\log n)$，代价是要多花 $O(n)$ 空间。
+      </div>
+    </section>
+
+    <footer>
+      整理自 01Introduction.pdf · 复旦大学《数据结构（与算法）》第一讲 绪论 · 共 166 页<br>
+      正文覆盖第一讲内容；附录「归并排序」为按 CLRS 补全的扩展内容（第一讲仅在对比中提及，未展开）
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
