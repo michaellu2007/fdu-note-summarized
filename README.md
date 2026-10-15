@@ -13,6 +13,10 @@
 
 这样缺课时能立刻判断「哪块现在必须看、哪块可以等老师讲到再回来」。
 
+> 《NLP and LLMs》那两讲的原始材料是公开课件（每张幻灯片都带一段讲者备注），
+> 所以用的是另一套标记：**课件** / **讲者备注** / **补充**，含义一一对应。
+> 详见 [LLM与NLP/README.md](./LLM与NLP/README.md)。
+
 ## 在线预览（渲染版）
 
 > **在 GitHub 上点开 `.html` 只会看到源码** —— github.com 的文件页只渲染 Markdown，HTML 一律当纯文本显示（安全考虑：渲染任意 HTML/JS 等于开放 XSS）。这是 GitHub 的既定行为，不是笔记的问题。
@@ -30,6 +34,7 @@
 | 数值算法与案例分析 | 幂法 / 反幂法 / QR 方法 / 第 2 章补充（Krylov 子空间、Arnoldi、Lanczos）/ 第 3 章（迭代法：Jacobi、Gauss-Seidel、收敛性判据、SOR） | [进入](./数值算法与案例分析/) |
 | 计算理论 | 有限自动机（Ch.2）/ 上下文无关语言（Ch.3） | [进入](./计算理论/) |
 | 数据结构（与算法） | 绪论：数组 / 链表 / 栈 / 队列、括号匹配与表达式求值、算法分析、渐进记号、插入排序（附归并排序） | [进入](./数据结构/) |
+| NLP and LLMs（CS40008.01） | Lecture 04 神经语言模型与循环注意力（前馈 LM、循环状态与 BPTT、LSTM、Bahdanau 注意力）；Lecture 05 注意力与 Transformer（自注意力、Q/K/V、正弦位置编码与 RoPE、多头、残差 / LayerNorm / FFN、原始论文证据） | [进入](./LLM与NLP/) |
 
 ## 原始资料
 
@@ -39,6 +44,8 @@
   —— 讲义 PDF 来源（`数值算法与案例分析Ⅰ` 目录下共 8 份）
 - [Snivallus/Fudan-Courses](https://github.com/Snivallus/Fudan-Courses)
   —— 同一门课的 Python Notebook 笔记（`数值算法与案例分析` 目录）
+- [baojian.github.io/llm-26-fall](https://baojian.github.io/llm-26-fall/)
+  —— 《NLP and LLMs》(CS40008.01) 课件（Lecture 04 / 05 的笔记据此整理）
 
 课程内容版权归**复旦大学**及授课教师所有，本仓库仅收录自己整理的笔记与补充推导。
 

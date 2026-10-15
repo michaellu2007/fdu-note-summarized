@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 05 · 注意力与 Transformer — CS40008.01 课程笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+  --purple:#5b3a8e; --purple-bg:#efe8f8;
+  --teal:#0d6b6b;  --teal-bg:#e0f2f2;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+  --purple:#b49ae0; --purple-bg:#2a1f3d;
+  --teal:#5cc9c9;  --teal-bg:#0d3030;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.85}
+.wrap{max-width:920px;margin:0 auto;padding:52px 30px 100px}
+
+h1{font-size:29px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.4;margin:56px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:17.5px;line-height:1.5;margin:34px 0 10px}
+h4{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:11px 0}
+ul,ol{padding-left:24px;margin:11px 0}
+li{margin:5px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;overflow-x:auto;margin:16px 0;line-height:1.65}
+pre code{background:none;border:none;padding:0;font-size:13.5px}
+
+.lede{font-size:16.5px;color:var(--ink2);margin:0 0 8px}
+.sub{color:var(--ink3);font-size:14px;margin:0 0 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin:0 0 6px;display:block}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;background:var(--bg2);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;
+  background:var(--gold-bg);color:var(--gold);white-space:nowrap;vertical-align:middle;font-weight:600}
+.tag.a{background:var(--purple-bg);color:var(--purple)}
+.tag.n{background:var(--ok-bg);color:var(--ok)}
+.tag.s{background:var(--accent-bg);color:var(--accent)}
+
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px}
+figcaption{font-size:13.5px;color:var(--ink3);margin-top:9px;line-height:1.7;text-align:left}
+svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+.toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
+.toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.toc ol{margin:0;padding-left:20px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc li{font-size:14.5px}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.katex{font-size:1.04em}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{font-size:13.5px;color:var(--ink3);line-height:1.85;margin-top:44px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+@media (max-width:680px){.cols{grid-template-columns:1fr}}
+.steps{counter-reset:st;list-style:none;padding-left:0}
+.steps li{counter-increment:st;position:relative;padding-left:38px;margin:10px 0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:2px;width:24px;height:24px;
+  border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.qa{border-left:3px solid var(--ok);padding-left:16px;margin:14px 0;color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">CS40008.01 · NLP and LLMs · Lecture 05</p>
+<h1>注意力与 Transformer</h1>
+<p class="sub">Attention and the Transformer · 复旦大学数据科学学院 · Baojian Zhou · 2026-10-10</p>
+
+<p class="lede">这节课回答一个问题：<strong>注意力如何选择上下文，又是如何搭成整个 Transformer 的？</strong>
+从自注意力、Q/K/V 投影、位置编码（正弦与 RoPE），到多头注意力、残差、LayerNorm、FFN，
+最后组装出一个能跑的模型，并逐条读懂 2017 年那篇原始论文的实验证据。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源标注</span>
+<p>这份笔记整理自课程公开课件（<code>baojian.github.io/llm-26-fall/slides/lecture-05/</code>）。
+每节标题后的标签含义：</p>
+<ul>
+<li><span class="tag s">课件</span> — 幻灯片正文里的内容（含公式、表格、示例数值）。</li>
+<li><span class="tag a">讲者备注</span> — 幻灯片 <code>Note:</code> 里的讲者备注，相当于老师课堂上的口头讲解与提醒。</li>
+<li><span class="tag n">补充</span> — 课件只有图或只有结论、没有展开的地方，我补的推导、验算与几何直觉。</li>
+</ul>
+<p>这节课的幻灯片里有大量<strong>交互式示意图</strong>（网页上靠 JavaScript 现场绘制）。
+本笔记把它们<strong>重画成静态 SVG</strong>，并在每张图下面补齐课件没有写出来的公式推导和数字验算。
+老师特别提醒的易错点，用橙色框单独标出。</p>
+</div>
+
+<div class="box key">
+<span class="label">这节课的一条主线（先看这个，再看细节）</span>
+<p>贯穿全讲的例子是一个编造的句子：</p>
+<p style="text-align:center;font-size:16px"><strong>Noa can be annoying but she is a great cat.</strong></p>
+<p>位置 <strong>0–5</strong> 是 <code>Noa, can, be, annoying, but, she</code>，这是「前缀」；
+位置 <strong>6</strong> 的 <code>is</code> 是下一个目标词。
+所有注意力示例都围绕「<code>she</code> 这个位置能看谁」展开——
+这正好把<strong>回指（she → Noa）</strong>和<strong>因果掩码（不能看 is）</strong>两件事放在同一个例子里讲清楚。</p>
+</div>
+
+<div class="toc">
+<h3 id="toc">目录</h3>
+<ol>
+<li><a href="#p1">第一部分 · 自注意力与位置信息</a>
+  <ol>
+    <li><a href="#s11">1.1 回顾循环编码器–解码器注意力</a></li>
+    <li><a href="#s12">1.2 一个 token 的上下文</a></li>
+    <li><a href="#s13">1.3 自注意力的八步</a></li>
+    <li><a href="#s14">1.4 一个输入，三个角色</a></li>
+    <li><a href="#s15">1.5 可学习的 Q/K/V 投影</a></li>
+    <li><a href="#s16">1.6 GPT 式因果 Transformer 架构</a></li>
+    <li><a href="#s17">1.7 token 身份与位置</a></li>
+    <li><a href="#s18">1.8 正弦编码：很多时钟</a></li>
+    <li><a href="#s19">1.9 构造一个位置向量（E01）</a></li>
+    <li><a href="#s110">1.10 输出会随 token 移动吗</a></li>
+    <li><a href="#s111">1.11 RoPE：旋转每个 query/key 对</a></li>
+    <li><a href="#s112">1.12 两个坐标，一个复数</a></li>
+    <li><a href="#s113">1.13 一个 head，多种转速</a></li>
+    <li><a href="#s114">1.14 RoPE：分数中的相对偏移（E02）</a></li>
+    <li><a href="#s115">1.15 两种方法，两个插入点</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 多头注意力与 Transformer 块</a>
+  <ol>
+    <li><a href="#s21">2.1 单头：缩放点积注意力</a></li>
+    <li><a href="#s22">2.2 数值化的因果注意力</a></li>
+    <li><a href="#s23">2.3 掩码加权和（P01）</a></li>
+    <li><a href="#s24">2.4 为什么要用多头</a></li>
+    <li><a href="#s25">2.5 多头注意力：投影、注意力、合并</a></li>
+    <li><a href="#s26">2.6 多头注意力用在哪里</a></li>
+    <li><a href="#s27">2.7 残差加法保留直接通路</a></li>
+    <li><a href="#s28">2.8 LayerNorm 归一化单个 token 的特征</a></li>
+    <li><a href="#s29">2.9 归一化放在哪里</a></li>
+    <li><a href="#s210">2.10 先归一化，再加更新（E04）</a></li>
+    <li><a href="#s211">2.11 前馈网络：逐 token 变换</a></li>
+    <li><a href="#s212">2.12 为什么 FFN 重要</a></li>
+    <li><a href="#s213">2.13 对单个 token 应用 FFN（E05）</a></li>
+    <li><a href="#s214">2.14 多头下的形状</a></li>
+    <li><a href="#s215">2.15 拆分、注意力、合并（代码）</a></li>
+    <li><a href="#s216">2.16 一个完整的 pre-LN 块</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 一个可运行的模型与论文证据</a>
+  <ol>
+    <li><a href="#s31">3.1 从原始文本到模型输入</a></li>
+    <li><a href="#s32">3.2 小到能看清的模型</a></li>
+    <li><a href="#s33">3.3 可学习的绝对位置</a></li>
+    <li><a href="#s34">3.4 数一个块的参数</a></li>
+    <li><a href="#s35">3.5 组装语言模型</a></li>
+    <li><a href="#s36">3.6 数整个语言模型（E04）</a></li>
+    <li><a href="#s37">3.7 对角线是允许的</a></li>
+    <li><a href="#s38">3.8 从 logits 算 next-token 损失</a></li>
+    <li><a href="#s39">3.9 未来能改变前缀吗（E05）</a></li>
+    <li><a href="#s310">3.10 玩具批次无法到达零损失</a></li>
+    <li><a href="#s311">3.11 拟合检查过的模型</a></li>
+    <li><a href="#s312">3.12 比较归一化顺序</a></li>
+    <li><a href="#s313">3.13 注意力矩阵按平方增长</a></li>
+    <li><a href="#s314">3.14 三种配置要分开</a></li>
+    <li><a href="#s315">3.15 Attention Is All You Need · 2017</a></li>
+    <li><a href="#s316">3.16 翻译数据与模型配置</a></li>
+    <li><a href="#s317">3.17 编码器参数计数（E06）</a></li>
+    <li><a href="#s318">3.18 翻译质量与训练成本</a></li>
+    <li><a href="#s319">3.19 论文里哪些选择重要</a></li>
+    <li><a href="#s320">3.20 翻译之外：成分句法分析</a></li>
+    <li><a href="#s321">3.21 长序列代价的后续工作</a></li>
+  </ol>
+</li>
+<li><a href="#ap">附录</a>
+  <ol>
+    <li><a href="#apA">A · 课堂练习与实现练习全解</a></li>
+    <li><a href="#apB">B · 符号对照表</a></li>
+    <li><a href="#apC">C · 参考文献</a></li>
+  </ol>
+</li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="p1">第一部分 · 自注意力与位置信息</h2>
+
+<p>第一节课 45 分钟：先把「注意力」从循环模型的语境里抽出来，
+让它作用在<strong>同一条序列内部</strong>；然后解决一个新问题——
+自注意力本身<strong>对顺序完全不敏感</strong>，位置信息必须另外注入。</p>
+
+<h3 id="s11">1.1 回顾循环编码器–解码器注意力 <span class="tag s">课件</span></h3>
+
+<p>$$e_{t,j}=a(s_{t-1},h_j),\qquad \alpha_t=\operatorname{softmax}_{\text{all source}}(e_t),\qquad c_t=\sum_j\alpha_{t,j}h_j$$</p>
+
+<figure>
+<img src="assets/img/L04-rnn-attention.png" alt="循环编码器状态按上一个解码器状态得到 0.4、0.3、0.1、0.2 的注意力权重，加权求和构成上下文向量，送入循环解码器。">
+<figcaption><strong>图 1 · 循环注意力（Lecture 04 的收尾，本讲起点）。</strong>
+$h^d_{i-1}\equiv s_{t-1}$，$h^e_j\equiv h_j$。图里画的是点积打分；
+Lecture 04 的 Bahdanau 模型用的是<strong>加性</strong>打分。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 从「跨序列」到「同序列」的一步之差</span>
+<p>循环注意力里，<strong>查询来自解码器</strong>（$s_{t-1}$），
+<strong>键和值来自编码器</strong>（$h_j$）——两个不同的序列。</p>
+<p>自注意力只改了一件事：<strong>查询、键、值全部来自同一条序列的当前状态</strong>。
+这就是「self」的含义。</p>
+<table>
+<thead><tr><th></th><th>循环注意力</th><th>自注意力</th></tr></thead>
+<tbody>
+<tr><td>查询来源</td><td>上一个解码器状态</td><td>本序列的某个位置</td></tr>
+<tr><td>键/值来源</td><td>编码器全部状态</td><td>本序列的全部位置</td></tr>
+<tr><td>打分函数</td><td>加性网络</td><td>缩放点积</td></tr>
+<tr><td>共同点</td><td colspan="2">都沿「被查询的那条轴」做 softmax，都构成加权和</td></tr>
+</tbody>
+</table>
+<p>另外还有第三种：<strong>交叉注意力</strong>（cross-attention），
+查询来自解码器、键值来自编码器——就是 2017 年原版 Transformer 解码器里的第二个注意力子层
+（见 <a href="#s26">§2.6</a>）。</p>
+</div>
+
+<h3 id="s12">1.2 一个 token 的上下文 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 240" width="100%" role="img" aria-labelledby="figCtxT figCtxD">
+<title id="figCtxT">she 指代 Noa，以及 she 位置的因果边界</title>
+<desc id="figCtxD">句子 Noa can be annoying but she is a great cat 中，she 通过回指指向 Noa；she 位置只能看到自己及之前的词，后面的词被因果掩码遮住。</desc>
+<!-- 词块 -->
+<g font-family="system-ui,sans-serif" font-size="13">
+<rect x="18"  y="60" width="62" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="49"  y="82" text-anchor="middle" fill="var(--ink)">Noa</text>
+<rect x="88"  y="60" width="62" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="119" y="82" text-anchor="middle" fill="var(--ink)">can</text>
+<rect x="158" y="60" width="62" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="189" y="82" text-anchor="middle" fill="var(--ink)">be</text>
+<rect x="228" y="60" width="86" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="271" y="82" text-anchor="middle" fill="var(--ink)">annoying</text>
+<rect x="322" y="60" width="62" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="353" y="82" text-anchor="middle" fill="var(--ink)">but</text>
+<rect x="392" y="60" width="62" height="34" rx="7" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+<text x="423" y="82" text-anchor="middle" fill="var(--ink)" font-weight="700">she</text>
+<rect x="462" y="60" width="62" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="493" y="82" text-anchor="middle" fill="var(--ink3)">is</text>
+<rect x="532" y="60" width="52" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="558" y="82" text-anchor="middle" fill="var(--ink3)">a</text>
+<rect x="592" y="60" width="76" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="630" y="82" text-anchor="middle" fill="var(--ink3)">great…</text>
+<!-- 位置号 -->
+<text x="49"  y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">0</text>
+<text x="119" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">1</text>
+<text x="189" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">2</text>
+<text x="271" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">3</text>
+<text x="353" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">4</text>
+<text x="423" y="112" text-anchor="middle" fill="var(--purple)" font-size="11.5" font-weight="700">5</text>
+<text x="493" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">6</text>
+<text x="558" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">7</text>
+<text x="630" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11.5">8</text>
+<!-- 回指箭头 -->
+<path d="M 420 56 C 400 26, 90 26, 52 56" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M 52 56 l 9 -5 l 0 10 z" fill="var(--warn)"/>
+<text x="236" y="26" text-anchor="middle" fill="var(--warn)" font-size="12" font-weight="600">回指：she 指的是 Noa</text>
+<!-- 因果边界 -->
+<line x1="438" y1="46" x2="438" y2="126" stroke="var(--ink3)" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="446" y="140" fill="var(--ink3)" font-size="12">因果边界：右侧被掩码</text>
+<!-- 可用区间 -->
+<line x1="18" y1="150" x2="438" y2="150" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+<text x="18" y="172" fill="var(--accent)" font-size="12" font-weight="600">可用前缀（位置 0–5，含 she 自己）</text>
+<line x1="446" y1="150" x2="668" y2="150" stroke="var(--line)" stroke-width="4" stroke-linecap="round"/>
+<text x="446" y="172" fill="var(--ink3)" font-size="12">训练时存在，但此位置不可见</text>
+<!-- 上下文方程 -->
+<text x="18" y="206" fill="var(--ink2)" font-size="13">位置 5 的上下文 = 对可用前缀的加权和：</text>
+<text x="18" y="228" fill="var(--ink)" font-size="14" font-weight="600" font-family="ui-monospace,Menlo,Consolas,monospace">c&#8325; = &#931;&#8342;&#8320;&#8325; &#945;&#8325;&#8342; v&#8342; &#8195;(&#945; &#8805; 0, &#931;&#945; = 1)</text>
+</g>
+</svg>
+<figcaption><strong>图 2 · 一个 token 的上下文。</strong>句子共 10 个词。
+<strong>回指</strong>（红虚线）：<code>she</code> 指的是位置 0 的 <code>Noa</code>，中间隔着几个词并不妨碍建立关系。
+<strong>因果边界</strong>（竖虚线）：在 <code>she</code> 这个位置，GPT 只能用「含 she 在内」的前缀；
+右边的 <code>is a great cat</code> 即使训练时就在句子里，也被掩码遮住。
+下方是上下文方程：$t$ 是 <code>she</code> 的位置，$v_j$ 是可用位置 $j$ 的值向量，$\alpha_{t,j}$ 是它的注意力权重。</figcaption>
+</figure>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这张图不能读出什么</span>
+<ul>
+<li>红虚线表示的是<strong>人类阅读时</strong>建立的联系，它<strong>不</strong>规定模型的注意力权重，
+也<strong>不</strong>声称某个 head 一定学出了共指解释。</li>
+<li>这 10 个词是<strong>玩具 token</strong>，一个显示词算一个 token。
+真实分词器可能把 <code>annoying</code> 切成好几段。</li>
+<li>标准 softmax 注意力里，权重非负且<strong>在可用位置上求和为 1</strong>。</li>
+<li>模型是通过训练学到打分算法的，权重由<strong>当前表示</strong>算出来，不是预先写死的。</li>
+</ul>
+</div>
+
+<h3 id="s13">1.3 自注意力的八步 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="figSaT figSaD">
+<title id="figSaT">自注意力：she 作为查询，对六个前缀位置做点积打分、softmax 归一化、加权求和</title>
+<desc id="figSaD">位置 5 的 she 作为查询向量，与位置 0 到 5 的六个键做点积得到分数，softmax 得到六个权重，再对六个值加权求和得到 she 处的上下文。</desc>
+<g font-family="system-ui,sans-serif">
+<!-- 输入行 -->
+<text x="14" y="30" fill="var(--ink3)" font-size="12" font-weight="600">输入（同时充当键和值）</text>
+<g font-size="12">
+<rect x="14"  y="40" width="66" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="47"  y="60" text-anchor="middle" fill="var(--ink)">Noa</text>
+<rect x="88"  y="40" width="66" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="121" y="60" text-anchor="middle" fill="var(--ink)">can</text>
+<rect x="162" y="40" width="66" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="195" y="60" text-anchor="middle" fill="var(--ink)">be</text>
+<rect x="236" y="40" width="82" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="277" y="60" text-anchor="middle" fill="var(--ink)">annoying</text>
+<rect x="326" y="40" width="66" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="359" y="60" text-anchor="middle" fill="var(--ink)">but</text>
+<rect x="400" y="40" width="66" height="30" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+<text x="433" y="60" text-anchor="middle" fill="var(--ink)" font-weight="700">she</text>
+</g>
+<!-- 查询 -->
+<text x="433" y="90" text-anchor="middle" fill="var(--purple)" font-size="12" font-weight="700">查询 q&#8325;</text>
+<line x1="433" y1="72" x2="433" y2="94" stroke="var(--purple)" stroke-width="1.6"/>
+<!-- 分数 -->
+<text x="14" y="126" fill="var(--ink3)" font-size="12" font-weight="600">① 点积打分 &#8195; e&#8325;&#8342; = x&#8325; &#183; x&#8342;</text>
+<g font-size="11.5">
+<rect x="14"  y="134" width="66" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="47"  y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8320;</text>
+<rect x="88"  y="134" width="66" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="121" y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8321;</text>
+<rect x="162" y="134" width="66" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="195" y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8322;</text>
+<rect x="236" y="134" width="82" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="277" y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8323;</text>
+<rect x="326" y="134" width="66" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="359" y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8324;</text>
+<rect x="400" y="134" width="66" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="433" y="153" text-anchor="middle" fill="var(--ink2)">e&#8325;&#8325;</text>
+</g>
+<line x1="433" y1="94" x2="433" y2="130" stroke="var(--ink3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<!-- softmax -->
+<text x="14" y="192" fill="var(--ink3)" font-size="12" font-weight="600">② softmax 归一化 &#8195; &#945;&#8325;&#8342; = exp(e&#8325;&#8342;) / &#931;&#8342; exp(e&#8325;&#8342;)</text>
+<g font-size="11.5">
+<rect x="14"  y="200" width="66" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="47"  y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8320;</text>
+<rect x="88"  y="200" width="66" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="121" y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8321;</text>
+<rect x="162" y="200" width="66" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="195" y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8322;</text>
+<rect x="236" y="200" width="82" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="277" y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8323;</text>
+<rect x="326" y="200" width="66" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="359" y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8324;</text>
+<rect x="400" y="200" width="66" height="28" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="433" y="219" text-anchor="middle" fill="var(--ink)">&#945;&#8325;&#8325;</text>
+</g>
+<text x="480" y="219" fill="var(--ink3)" font-size="12">六个非负权重，和为 1</text>
+<!-- 加权求和 -->
+<text x="14" y="258" fill="var(--ink3)" font-size="12" font-weight="600">③ 加权求和（这一版里 value 就是输入本身）</text>
+<text x="14" y="288" fill="var(--ink)" font-size="14" font-weight="600" font-family="ui-monospace,Menlo,Consolas,monospace">c&#8325; = &#931;&#8342;&#8320;&#8325; &#945;&#8325;&#8342; x&#8342;</text>
+<text x="300" y="288" fill="var(--ink3)" font-size="12">→ 位置 5 的上下文向量</text>
+<line x1="47" y1="232" x2="47" y2="252" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 3"/>
+<line x1="433" y1="232" x2="433" y2="252" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 3"/>
+</g>
+</svg>
+<figcaption><strong>图 3 · 自注意力的八步（简化版：还没有 Q/K/V 投影）。</strong>
+把 <code>she</code>（位置 5）选作查询，六个前缀嵌入 <code>Noa, can, be, annoying, but, she</code> 同时充当键和值。
+打分 → softmax → 加权求和，得到位置 5 的上下文。紫色是查询，青色是权重与上下文。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 为什么「查询能和它自己比较」</span>
+<p>位置 5 的查询可以访问<strong>全部六个</strong>显示出来的词，因为每一个都在它的前缀里（$j\le5$）。
+这里面<strong>包含位置 5 自己</strong>——第 6 项 $\alpha_{5,5}x_5$ 是把 <code>she</code> 自己的信息也混进来。
+这在因果语言模型里是必须的，原因见 <a href="#s37">§3.7</a>。</p>
+<p>更早的查询位置必须排除后面的词。比如位置 2 的 <code>be</code> 只能用 $j\le2$，
+即只有 <code>Noa, can, be</code> 三个位置可加权——这就是「因果掩码」，
+<a href="#s21">§2.1</a> 会把它写成显式的矩阵形式。</p>
+<p>下一个目标 <code>is</code> 在位置 6，<strong>不在这六个键/值里</strong>。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这一版的简化之处</span>
+<p>「还没有 Q/K/V 投影矩阵」的意思是：这个简化操作里<strong>没有可学习的投影参数</strong>。
+但嵌入表和上游层仍然可以是可训练的。彩条是示意向量，不是实测编码。
+注意一个概念区分：<strong>注意力权重是由当前输入算出来的</strong>，
+它和「可学习的投影矩阵」是两回事——前者是激活值，后者是参数。</p>
+</div>
+
+<h3 id="s14">1.4 一个输入，三个角色 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="figRoleT figRoleD">
+<title id="figRoleT">同一个输入向量在注意力里扮演查询、键、值三种角色</title>
+<desc id="figRoleD">在位置 5 的输出计算中，x5 是查询；每个 xj 在行向量点积里是键，在加权和里是值。</desc>
+<g font-family="system-ui,sans-serif">
+<!-- 输入列 -->
+<text x="14" y="26" fill="var(--ink3)" font-size="12" font-weight="600">同一个输入向量 x&#8342;，三种用法</text>
+<g font-size="12">
+<rect x="14"  y="40" width="72" height="32" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+<text x="50"  y="61" text-anchor="middle" fill="var(--ink)" font-weight="700">x&#8320; 查询</text>
+<rect x="14"  y="84" width="72" height="32" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="50"  y="105" text-anchor="middle" fill="var(--ink)">x&#8320; 键</text>
+<rect x="14"  y="128" width="72" height="32" rx="6" fill="var(--teal-bg)" stroke="var(--teal)"/>
+<text x="50"  y="149" text-anchor="middle" fill="var(--ink)">x&#8320; 值</text>
+</g>
+<!-- 说明 -->
+<text x="120" y="61" fill="var(--ink2)" font-size="12.5">查询：输出在位置 5 时，只有 x&#8325; 充当查询</text>
+<text x="120" y="105" fill="var(--ink2)" font-size="12.5">键：每个 x&#8342; 都在行向量点积 x&#8325;x&#8342;&#7488; 里充当键</text>
+<text x="120" y="149" fill="var(--ink2)" font-size="12.5">值：每个 x&#8342; 都在加权和里充当被加权的向量</text>
+<!-- 公式区 -->
+<line x1="14" y1="176" x2="666" y2="176" stroke="var(--line)" stroke-width="1"/>
+<text x="14" y="202" fill="var(--ink)" font-size="13.5" font-family="ui-monospace,Menlo,Consolas,monospace">e&#8325;&#8342; = x&#8325; &#183; x&#8342; &#8195;&#8195; c&#8325; = &#931;&#8342; &#945;&#8325;&#8342; x&#8342;</text>
+<text x="14" y="228" fill="var(--ink3)" font-size="12">角色由「出现在哪个位置」决定，而不是由向量本身决定 —— 颜色只是标注角色。</text>
+</g>
+</svg>
+<figcaption><strong>图 4 · 一个输入，三个角色。</strong>
+对位置 5 的输出来说：$x_5$ 是<strong>查询</strong>；每个 $x_j\ (j=0,\dots,5)$ 在点积里是<strong>键</strong>、
+在加权和里是<strong>值</strong>。此时还没有施加任何投影。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 为什么需要「分开的可学习表示」</span>
+<p>在简化版里，同一个向量要同时干三件互相矛盾的事：</p>
+<ul>
+<li>作为<strong>查询</strong>，它要表达「我想找什么样的信息」；</li>
+<li>作为<strong>键</strong>，它要表达「我提供什么类型的信息，方便别人匹配我」；</li>
+<li>作为<strong>值</strong>，它要表达「如果被选中，我实际贡献什么内容」。</li>
+</ul>
+<p>如果三者强行共用一个向量，就相当于要求「检索关键词」和「文档正文」必须是同一个东西——
+这在信息检索里显然不合理。所以下一节引入三个<strong>独立的可学习投影</strong>，
+让同一个输入能派生出三种不同用途的表示。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 措辞要小心</span>
+<p>原始讲义有一句「模型没有可训练的权重」，要限定为：
+<strong>这个简化操作里没有可学习的 Q/K/V 投影参数</strong>。
+嵌入和上游层早就可以训练了。另外，注意力权重是从当前输入<strong>算</strong>出来的，
+和可学习的投影矩阵不是一回事。</p>
+</div>
+
+<h3 id="s15">1.5 可学习的 Q/K/V 投影 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figQkvT figQkvD">
+<title id="figQkvT">从输入矩阵 X 经三个投影矩阵得到 Q、K、V 及各自的形状</title>
+<desc id="figQkvD">六个 token 的输入矩阵 X 为 6 乘 d_model，分别右乘 W_Q、W_K、W_V 得到 Q、K、V，宽度分别为 d_k、d_k、d_v。</desc>
+<g font-family="system-ui,sans-serif" font-size="12.5">
+<!-- X -->
+<rect x="20" y="70" width="86" height="140" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="63" y="134" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="15">X</text>
+<text x="63" y="156" text-anchor="middle" fill="var(--ink2)" font-size="11.5">6 &#215; d_model</text>
+<text x="63" y="52" text-anchor="middle" fill="var(--ink3)" font-size="11.5">六个 token 状态作为行</text>
+<!-- 三个投影 -->
+<g>
+<rect x="176" y="34" width="86" height="52" rx="7" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="219" y="56" text-anchor="middle" fill="var(--ink)" font-weight="700">W_Q</text>
+<text x="219" y="74" text-anchor="middle" fill="var(--ink2)" font-size="11">d_model &#215; d_k</text>
+<rect x="176" y="114" width="86" height="52" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="219" y="136" text-anchor="middle" fill="var(--ink)" font-weight="700">W_K</text>
+<text x="219" y="154" text-anchor="middle" fill="var(--ink2)" font-size="11">d_model &#215; d_k</text>
+<rect x="176" y="194" width="86" height="52" rx="7" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.6"/>
+<text x="219" y="216" text-anchor="middle" fill="var(--ink)" font-weight="700">W_V</text>
+<text x="219" y="234" text-anchor="middle" fill="var(--ink2)" font-size="11">d_model &#215; d_v</text>
+</g>
+<!-- 箭头 -->
+<line x1="106" y1="140" x2="172" y2="60"  stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<line x1="106" y1="140" x2="172" y2="140" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<line x1="106" y1="140" x2="172" y2="220" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<!-- 输出 -->
+<g>
+<rect x="330" y="34" width="90" height="52" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="375" y="56" text-anchor="middle" fill="var(--ink)" font-weight="700">Q = X W_Q</text>
+<text x="375" y="74" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; d_k</text>
+<rect x="330" y="114" width="90" height="52" rx="7" fill="var(--bg2)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="375" y="136" text-anchor="middle" fill="var(--ink)" font-weight="700">K = X W_K</text>
+<text x="375" y="154" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; d_k</text>
+<rect x="330" y="194" width="90" height="52" rx="7" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.6"/>
+<text x="375" y="216" text-anchor="middle" fill="var(--ink)" font-weight="700">V = X W_V</text>
+<text x="375" y="234" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; d_v</text>
+</g>
+<line x1="262" y1="60"  x2="326" y2="60"  stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<line x1="262" y1="140" x2="326" y2="140" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<line x1="262" y1="220" x2="326" y2="220" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arQkv)"/>
+<!-- 下游 -->
+<text x="452" y="60"  fill="var(--ink2)">&#8594; 点积得分 QK&#7488; 是 6 &#215; 6</text>
+<text x="452" y="140" fill="var(--ink2)">&#8594; 查询与键宽度必须一致</text>
+<text x="452" y="220" fill="var(--ink2)">&#8594; 加权输出 AV 是 6 &#215; d_v</text>
+<!-- 共享说明 -->
+<text x="20" y="276" fill="var(--ink3)" font-size="12">W_Q、W_K、W_V 在六个位置上共享（同一套参数），但三者之间参数各自独立。</text>
+<defs>
+<marker id="arQkv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 5 · 可学习的 Q/K/V 投影。</strong>
+把六个 token 的状态堆成 $X$ 的行，于是 $Q=XW_Q$、$K=XW_K$、$V=XW_V$。
+$W_Q$ 和 $W_K$ 把 $d_{\text{model}}$ 投到 $d_k$，$W_V$ 投到 $d_v$。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 把形状账算一遍（这是最容易出错的地方）</span>
+<p>取六个 token 的前缀，$n=6$，输入 $X\in\mathbb{R}^{6\times d_{\text{model}}}$：</p>
+<table>
+<thead><tr><th>量</th><th>形状</th><th>怎么来的</th></tr></thead>
+<tbody>
+<tr><td>$Q$</td><td>$6\times d_k$</td><td>$(6\times d_{\text{model}})(d_{\text{model}}\times d_k)$</td></tr>
+<tr><td>$K$</td><td>$6\times d_k$</td><td>同上</td></tr>
+<tr><td>$V$</td><td>$6\times d_v$</td><td>$(6\times d_{\text{model}})(d_{\text{model}}\times d_v)$</td></tr>
+<tr><td>$QK^{\mathsf T}$</td><td>$6\times 6$</td><td>$(6\times d_k)(d_k\times 6)$ —— 内维 $d_k$ 必须相等</td></tr>
+<tr><td>$AV$</td><td>$6\times d_v$</td><td>$(6\times 6)(6\times d_v)$ —— 内维是<strong>位置数</strong></td></tr>
+</tbody>
+</table>
+<p>两条硬约束：<strong>查询和键的宽度必须相同</strong>（否则点积做不了）；
+<strong>值宽 $d_v$ 可以自由取</strong>，它只决定输出的宽度。</p>
+<p>注意 $n=6$ 数的是<strong>token 行数</strong>，和嵌入宽度、head 数都无关。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 记法约定</span>
+<p>自注意力这几张图统一用<strong>行向量</strong>。后面 <a href="#s112">§1.12</a> 的
+双坐标 RoPE 插图会显式写<strong>列向量</strong>的旋转；它对应的行向量实现是把旋转矩阵转置后<strong>右乘</strong>。
+两种约定描述的是同一个点积。</p>
+<p>另外，下一个目标 <code>is</code> 在位置 6，<strong>不是</strong>这个前缀矩阵的一行。</p>
+</div>
+
+<h3 id="s16">1.6 GPT 式因果 Transformer 架构 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 470" width="100%" role="img" aria-labelledby="figGptT figGptD">
+<title id="figGptT">GPT 式因果 Transformer 的数据流</title>
+<desc id="figGptD">从底部的 token 嵌入与位置嵌入相加开始，经过 L 个重复块（各自包含归一化、因果多头自注意力、残差加法、归一化、MLP、残差加法），最后是最终 LayerNorm 与词表投影。</desc>
+<g font-family="system-ui,sans-serif" font-size="12.5">
+<!-- token 输入 -->
+<rect x="150" y="418" width="130" height="34" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="215" y="440" text-anchor="middle" fill="var(--ink)">token ID（0–5）</text>
+<rect x="400" y="418" width="130" height="34" rx="7" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.6"/>
+<text x="465" y="440" text-anchor="middle" fill="var(--ink)">位置 0–5</text>
+<line x1="215" y1="418" x2="215" y2="394" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<line x1="465" y1="418" x2="465" y2="394" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<!-- 嵌入 -->
+<rect x="150" y="358" width="130" height="34" rx="7" fill="var(--bg2)" stroke="var(--accent)" stroke-width="1.4"/>
+<text x="215" y="380" text-anchor="middle" fill="var(--ink)">token 嵌入表</text>
+<rect x="400" y="358" width="130" height="34" rx="7" fill="var(--bg2)" stroke="var(--gold)" stroke-width="1.4"/>
+<text x="465" y="380" text-anchor="middle" fill="var(--ink)">位置嵌入表</text>
+<line x1="215" y1="358" x2="215" y2="330" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="465" y1="358" x2="465" y2="330" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="215" y1="330" x2="465" y2="330" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="340" y1="330" x2="340" y2="314" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<circle cx="340" cy="330" r="8" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="340" y="334" text-anchor="middle" fill="var(--ink2)" font-size="13">+</text>
+<text x="352" y="352" fill="var(--ink3)" font-size="11.5">H: 6 &#215; d_model</text>
+<!-- 块框 -->
+<rect x="140" y="60" width="400" height="250" rx="11" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="540" y="76" fill="var(--ink3)" font-size="12" font-weight="600">重复 L 次</text>
+<!-- 块内 -->
+<rect x="196" y="272" width="180" height="32" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="286" y="293" text-anchor="middle" fill="var(--ink)">LayerNorm</text>
+<line x1="286" y1="272" x2="286" y2="256" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<rect x="196" y="222" width="180" height="34" rx="7" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="286" y="244" text-anchor="middle" fill="var(--ink)" font-weight="600">因果多头自注意力</text>
+<line x1="286" y1="222" x2="286" y2="206" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<circle cx="286" cy="196" r="8" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="286" y="200" text-anchor="middle" fill="var(--ink2)" font-size="13">+</text>
+<line x1="286" y1="188" x2="286" y2="172" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<rect x="196" y="138" width="180" height="34" rx="7" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.4"/>
+<text x="286" y="160" text-anchor="middle" fill="var(--ink)">LayerNorm</text>
+<line x1="286" y1="138" x2="286" y2="122" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<rect x="196" y="88" width="180" height="34" rx="7" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.6"/>
+<text x="286" y="110" text-anchor="middle" fill="var(--ink)" font-weight="600">MLP（逐位置）</text>
+<line x1="286" y1="88" x2="286" y2="72" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<circle cx="286" cy="62" r="8" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="286" y="66" text-anchor="middle" fill="var(--ink2)" font-size="13">+</text>
+<!-- 残差旁路 -->
+<path d="M 180 306 L 160 306 L 160 196 L 274 196" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M 180 172 L 160 172 L 160 62 L 274 62" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="88" y="120" fill="var(--gold)" font-size="11.5" transform="rotate(-90 88 120)">残差连接</text>
+<!-- 顶部 -->
+<line x1="286" y1="54" x2="286" y2="40" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arGpt)"/>
+<rect x="196" y="14" width="180" height="30" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="286" y="34" text-anchor="middle" fill="var(--ink)">最终 LayerNorm &#8594; LM head</text>
+<text x="390" y="34" fill="var(--ink2)">&#8594; 词表 softmax &#8594; 下一个 token</text>
+<defs>
+<marker id="arGpt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 6 · GPT 式因果 Transformer 的数据流（从下往上读）。</strong>
+底部两条嵌入分支相加，中间是重复 $L$ 次的块，顶部是最终归一化与词表投影。
+金色虚线是残差连接。每个块内部的两处加法都保持 $d_{\text{model}}$ 不变。</figcaption>
+</figure>
+
+<p>把这个块写成公式，只有两行：</p>
+
+$$U=H+\operatorname{CausalMHA}\big(\operatorname{LN}_1(H)\big),\qquad H_{\text{next}}=U+\operatorname{MLP}\big(\operatorname{LN}_2(U)\big)$$
+
+<div class="box key">
+<span class="label">补充 · 五步走完一次前向</span>
+<ol class="steps">
+<li><strong>嵌入相加。</strong>token ID 查表得到嵌入，位置 $0$–$5$ 查位置表得到位置向量，两者<strong>相加</strong>（不是拼接）。
+隐藏状态形状 $6\times d_{\text{model}}$。</li>
+<li><strong>归一化 + 因果自注意力 + 残差。</strong>位置 $i$ 可以关注 $j\le i$（含自身）。
+未来位置的注意力 logits 在 softmax 之前置为 $-\infty$，于是权重恰好为 0。</li>
+<li><strong>再归一化 + MLP + 残差。</strong>MLP 在<strong>每个位置独立</strong>地施加。
+两处加法都保持 $d_{\text{model}}$ 不变。</li>
+<li><strong>重复 L 次。</strong>不同块有各自的参数；同一个块在所有 token 位置上共享参数。
+旁路箭头和加号就是残差连接。</li>
+<li><strong>输出。</strong>最终 LayerNorm → 线性词表投影（LM head）→ softmax。
+生成时取<strong>最后一个输入位置</strong>的分布，选一个 token，接到前缀后面，再重复。</li>
+</ol>
+<p>注意 <code>is</code> 只是「<code>she</code> 后面一个说得通的词」，<strong>不是</strong>某个模型的实测预测。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 训练与生成的区别</span>
+<p>训练时<strong>每个位置</strong>都产生一个词表分布，与右移一位的目标并行比对；
+采样和追加是<strong>生成</strong>阶段的动作。因果掩码保证每个位置拿不到它自己的目标 token。
+生成时可以用 KV 缓存复用之前的键和值，这里省略。
+来源：<a href="https://github.com/openai/gpt-2/blob/master/src/model.py">OpenAI GPT-2 实现</a>的
+<code>attention_mask</code>、<code>block</code>、<code>model</code> 三个函数。</p>
+</div>
+
+<h3 id="s17">1.7 token 身份与位置 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 280" width="100%" role="img" aria-labelledby="figPosT figPosD">
+<title id="figPosT">token 嵌入与位置向量相加构成模型输入</title>
+<desc id="figPosD">同一个 she 的 token 嵌入不变，但位置 5 与假想位置 2 给出不同位置向量，相加后得到不同的模型输入。</desc>
+<g font-family="system-ui,sans-serif" font-size="12.5">
+<!-- 左：位置 5 -->
+<text x="150" y="24" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="600">真实位置 p = 5</text>
+<rect x="60" y="38" width="180" height="30" rx="7" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="150" y="58" text-anchor="middle" fill="var(--ink)">token 查表 E[she]</text>
+<rect x="60" y="76" width="180" height="30" rx="7" fill="var(--gold-bg)" stroke="var(--gold)"/>
+<text x="150" y="96" text-anchor="middle" fill="var(--ink)">位置向量 PE(5)</text>
+<line x1="150" y1="106" x2="150" y2="126" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arPos)"/>
+<circle cx="150" cy="136" r="8" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="150" y="140" text-anchor="middle" fill="var(--ink2)" font-size="13">+</text>
+<line x1="150" y1="146" x2="150" y2="166" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arPos)"/>
+<rect x="60" y="172" width="180" height="34" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="150" y="194" text-anchor="middle" fill="var(--ink)" font-weight="600">模型输入 x&#8325;</text>
+<text x="150" y="226" text-anchor="middle" fill="var(--ink3)" font-size="11.5">宽度都是 d_model</text>
+<!-- 右：位置 2 -->
+<text x="500" y="24" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="600">假想位置 p = 2</text>
+<rect x="410" y="38" width="180" height="30" rx="7" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="500" y="58" text-anchor="middle" fill="var(--ink)">token 查表 E[she]（相同）</text>
+<rect x="410" y="76" width="180" height="30" rx="7" fill="var(--gold-bg)" stroke="var(--gold)"/>
+<text x="500" y="96" text-anchor="middle" fill="var(--ink)">位置向量 PE(2)（不同）</text>
+<line x1="500" y1="106" x2="500" y2="126" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arPos)"/>
+<circle cx="500" cy="136" r="8" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="500" y="140" text-anchor="middle" fill="var(--ink2)" font-size="13">+</text>
+<line x1="500" y1="146" x2="500" y2="166" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arPos)"/>
+<rect x="410" y="172" width="180" height="34" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="500" y="194" text-anchor="middle" fill="var(--ink)" font-weight="600">模型输入 x&#8322;（不同）</text>
+<text x="500" y="226" text-anchor="middle" fill="var(--ink3)" font-size="11.5">同一个 token，不同输入</text>
+<!-- 公式 -->
+<text x="340" y="262" text-anchor="middle" fill="var(--ink)" font-size="13" font-family="ui-monospace,Menlo,Consolas,monospace">x_p = sqrt(d_model) &#183; E[t_p] + PE(p)</text>
+<defs>
+<marker id="arPos" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 7 · token 身份与位置是两个独立分支。</strong>
+同一个 <code>she</code>，token 查表结果相同，但位置向量不同，于是模型输入不同。
+「$p=2$」是假想位置，用来对照，<strong>不是</strong>说这句话里出现了两次 <code>she</code>。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 为什么输入里要乘 $\sqrt{d_{\text{model}}}$</span>
+<p>2017 年论文的输入是 $x_p=\sqrt{d_{\text{model}}}\,E[t_p]+\operatorname{PE}(p)$。
+那个缩放因子的作用是：让<strong>词嵌入和位置编码的方差量级相当</strong>，
+这样相加时两者都不会被对方淹没。位置向量的宽度与 token 嵌入相同，都是 $d_{\text{model}}$。</p>
+<p>加法发生在<strong>整个堆栈的入口处</strong>，只做一次。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 一个常见的错误说法</span>
+<p>不要说「没有位置编码的因果 Transformer 就完全没有位置信息」——
+<strong>因果掩码本身就引入了不对称性</strong>（位置 0 只能看自己，位置 5 能看 6 个）。
+这里要引入的是<strong>显式的</strong>位置表示。</p>
+<p>严格地说：<strong>无掩码</strong>的注意力在没有任何位置机制时是<strong>置换等变</strong>的
+（见 <a href="#s110">§1.10</a>）。Haviv 等人的 NoPos 论文是这里的一个有用提醒，
+但不是本节要讲的第三种方法。</p>
+</div>
+
+<h3 id="s18">1.8 正弦编码：很多时钟 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<p>$$\omega_i=10000^{-2i/d}$$</p>
+</div>
+<div>
+<p>$$\operatorname{PE}(p,2i)=\sin(p\,\omega_i),\qquad \operatorname{PE}(p,2i+1)=\cos(p\,\omega_i)$$</p>
+</div>
+</div>
+
+<figure>
+<svg viewBox="0 0 680 320" width="100%" role="img" aria-labelledby="figSinT figSinD">
+<title id="figSinT">嵌入宽度为 8 时三个正弦通道随位置变化</title>
+<desc id="figSinD">维度 0 振荡最快，维度 2 次之，维度 4 最慢，三条正弦曲线在位置 0 到 64 上的取值。</desc>
+<rect x="0" y="0" width="680" height="320" fill="none"/>
+<line x1="70" y1="240" x2="646" y2="240" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="70" y1="34" x2="70" y2="240" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="62" y="244" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">&#8722;1</text>
+<text x="62" y="141" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="62" y="42" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">1</text>
+<line x1="66" y1="137" x2="70" y2="137" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="70" y="260" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="214" y="260" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">16</text>
+<text x="358" y="260" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">32</text>
+<text x="502" y="260" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">48</text>
+<text x="646" y="260" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">64</text>
+<text x="358" y="286" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">token 位置 p</text>
+<text x="22" y="140" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif" transform="rotate(-90 22 140)">PE 坐标值</text>
+<!-- i=0: sin(p*1) -->
+<polyline fill="none" stroke="#20578c" stroke-width="2.4" points="70.0,137.0 77.2,63.1 84.4,34.0 91.6,67.4 98.8,143.0 106.0,215.0 113.2,239.6 120.4,202.0 127.6,125.0 134.8,55.3 142.0,35.1 149.2,76.8 156.4,155.0 163.6,222.3 170.8,237.9 178.0,192.3 185.2,113.2 192.4,48.5 199.6,37.5 206.8,86.9 214.0,166.7 221.2,228.4 228.4,234.7 235.6,181.8 242.8,101.6 250.0,43.0 257.2,41.3 264.4,97.7 271.6,177.9 278.8,233.3 286.0,230.3 293.2,170.6 300.4,90.6 307.6,38.7 314.8,46.4 322.0,109.1 329.2,188.7 336.4,236.9 343.6,224.5 350.8,159.1 358.0,80.2 365.2,35.8 372.4,52.8 379.6,120.8 386.8,198.7 394.0,239.2 401.2,217.6 408.4,147.2 415.6,70.6 422.8,34.3 430.0,60.3 437.2,132.8 444.4,207.9 451.6,240.0 458.8,209.6 466.0,135.2 473.2,61.9 480.4,34.1 487.6,68.8 494.8,144.8 502.0,216.1 509.2,239.4 516.4,200.6 523.6,123.2 530.8,54.2 538.0,35.4 545.2,78.2 552.4,156.7 559.6,223.3 566.8,237.5 574.0,190.7 581.2,111.4 588.4,47.6 595.6,38.0 602.8,88.5 610.0,168.4 617.2,229.2 624.4,234.1 631.6,180.1 638.8,99.9 646.0,42.2"/>
+<!-- i=1: sin(p*0.1) -->
+<polyline fill="none" stroke="#0d6b6b" stroke-width="2.4" points="70.0,137.0 77.2,128.8 84.4,120.6 91.6,112.5 98.8,104.6 106.0,96.9 113.2,89.4 120.4,82.3 127.6,75.5 134.8,69.1 142.0,63.1 149.2,57.6 156.4,52.6 163.6,48.2 170.8,44.3 178.0,41.0 185.2,38.3 192.4,36.3 199.6,34.9 206.8,34.1 214.0,34.0 221.2,34.6 228.4,35.8 235.6,37.7 242.8,40.2 250.0,43.3 257.2,47.1 264.4,51.4 271.6,56.2 278.8,61.6 286.0,67.4 293.2,73.7 300.4,80.4 307.6,87.5 314.8,94.9 322.0,102.5 329.2,110.4 336.4,118.4 343.6,126.6 350.8,134.8 358.0,143.0 365.2,151.2 372.4,159.3 379.6,167.3 386.8,175.1 394.0,182.6 401.2,189.8 408.4,196.7 415.6,203.2 422.8,209.3 430.0,215.0 437.2,220.1 444.4,224.7 451.6,228.7 458.8,232.2 466.0,235.0 473.2,237.2 480.4,238.8 487.6,239.7 494.8,240.0 502.0,239.6 509.2,238.6 516.4,236.9 523.6,234.5 530.8,231.6 538.0,228.0 545.2,223.8 552.4,219.1 559.6,213.9 566.8,208.2 574.0,202.0 581.2,195.4 588.4,188.5 595.6,181.2 602.8,173.6 610.0,165.8 617.2,157.8 624.4,149.7 631.6,141.4 638.8,133.2 646.0,125.0"/>
+<!-- i=2: sin(p*0.01) -->
+<polyline fill="none" stroke="#a85a29" stroke-width="2.4" points="70.0,137.0 77.2,136.2 84.4,135.4 91.6,134.5 98.8,133.7 106.0,132.9 113.2,132.1 120.4,131.2 127.6,130.4 134.8,129.6 142.0,128.8 149.2,127.9 156.4,127.1 163.6,126.3 170.8,125.5 178.0,124.7 185.2,123.9 192.4,123.0 199.6,122.2 206.8,121.4 214.0,120.6 221.2,119.8 228.4,119.0 235.6,118.2 242.8,117.3 250.0,116.5 257.2,115.7 264.4,114.9 271.6,114.1 278.8,113.3 286.0,112.5 293.2,111.7 300.4,110.9 307.6,110.1 314.8,109.3 322.0,108.5 329.2,107.7 336.4,107.0 343.6,106.2 350.8,105.4 358.0,104.6 365.2,103.8 372.4,103.0 379.6,102.3 386.8,101.5 394.0,100.7 401.2,99.9 408.4,99.2 415.6,98.4 422.8,97.7 430.0,96.9 437.2,96.1 444.4,95.4 451.6,94.6 458.8,93.9 466.0,93.1 473.2,92.4 480.4,91.6 487.6,90.9 494.8,90.2 502.0,89.4 509.2,88.7 516.4,88.0 523.6,87.3 530.8,86.5 538.0,85.8 545.2,85.1 552.4,84.4 559.6,83.7 566.8,83.0 574.0,82.3 581.2,81.6 588.4,80.9 595.6,80.2 602.8,79.5 610.0,78.8 617.2,78.2 624.4,77.5 631.6,76.8 638.8,76.2 646.0,75.5"/>
+<!-- 图例 -->
+<line x1="440" y1="46" x2="468" y2="46" stroke="#20578c" stroke-width="2.4"/>
+<text x="476" y="50" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">维度 0：&#969; = 1</text>
+<line x1="440" y1="66" x2="468" y2="66" stroke="#0d6b6b" stroke-width="2.4"/>
+<text x="476" y="70" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">维度 2：&#969; = 0.1</text>
+<line x1="440" y1="86" x2="468" y2="86" stroke="#a85a29" stroke-width="2.4"/>
+<text x="476" y="90" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">维度 4：&#969; = 0.01</text>
+</svg>
+<figcaption><strong>图 8 · 正弦编码的三个通道（嵌入宽度 $d=8$）。</strong>
+横轴是 token 位置 $p$，纵轴是一个位置编码坐标的取值。
+维度 0 振荡最快（周期 $2\pi\approx6.28$ 个 token），维度 4 最慢。
+每一对 $i$ 共用一个频率，正弦与余弦只是相差四分之一周期的相位。
+维度 6 及其余弦伙伴 7 为保持图面清晰省略。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 把频率算清楚</span>
+<p>取 $d=8$，配对下标 $i=0,1,2,3$ 对应坐标 $(0,1),(2,3),(4,5),(6,7)$。角频率是</p>
+\[\omega_i=10000^{-2i/8}=10000^{-i/4}\]
+<table>
+<thead><tr><th>$i$</th><th>$\omega_i$</th><th>每 token 弧度</th><th>周期（token）</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>$10000^{0}=1$</td><td>1</td><td>$\approx6.28$</td></tr>
+<tr><td>1</td><td>$10000^{-0.25}=0.1$</td><td>0.1</td><td>$\approx62.8$</td></tr>
+<tr><td>2</td><td>$10000^{-0.5}=0.01$</td><td>0.01</td><td>$\approx628$</td></tr>
+<tr><td>3</td><td>$10000^{-0.75}=0.001$</td><td>0.001</td><td>$\approx6283$</td></tr>
+</tbody>
+</table>
+<p>八个坐标合起来构成<strong>一个位置</strong>的向量。</p>
+<p><strong>两个边界值：</strong>在 $p=0$ 处，所有正弦项都是 $\sin 0=0$，所有余弦项都是 $\cos 0=1$。
+所以 $\operatorname{PE}(0)=[0,1,0,1,0,1,0,1]$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别把类比当事实</span>
+<p>课件用「二进制计数器」来启发「快慢变化组合起来能编码位置」这个直觉，
+但这些是<strong>光滑的旋转</strong>，不是二进制位——不要说它给出了精确的二进制表示。</p>
+<p>另外：某个位置有定义，<strong>不等于</strong>训练过的模型在那个位置（超出训练长度）就能准确外推。</p>
+</div>
+
+<h3 id="s19">1.9 构造一个位置向量（E01） <span class="tag s">课件</span></h3>
+
+<p><strong>练习 E01 · 2 分钟 · 先预测 $\operatorname{PE}(0)$，再把 $\operatorname{PE}(1)$ 加到嵌入上。</strong></p>
+
+<p>取 $d=4$：$\quad \operatorname{PE}(p)=[\sin p,\ \cos p,\ \sin(p/100),\ \cos(p/100)]$。</p>
+
+<table>
+<thead><tr><th>位置</th><th class="num">维度 0</th><th class="num">维度 1</th><th class="num">维度 2</th><th class="num">维度 3</th></tr></thead>
+<tbody>
+<tr><td>$p=0$</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+<tr><td>$p=1$</td><td class="num">0.841</td><td class="num">0.540</td><td class="num">0.010</td><td class="num">1.000</td></tr>
+</tbody>
+</table>
+
+<p>位置 1 处「can」的玩具嵌入：$e_{t_1}=[1,0,1,0]$。</p>
+
+$$x_1=e_{t_1}+\operatorname{PE}(1)\approx[1.841,\ 0.540,\ 1.010,\ 1.000]$$
+
+<p>逐坐标相加，向量仍然是四个坐标。</p>
+
+<div class="box key">
+<span class="label">补充 · 逐项验算（用弧度）</span>
+<p>这里 $d=4$，所以 $\omega_0=10000^{-0/4}=1$，$\omega_1=10000^{-2/4}=10000^{-0.5}=0.01$。于是</p>
+\[\operatorname{PE}(p)=[\sin(p\cdot1),\ \cos(p\cdot1),\ \sin(p\cdot0.01),\ \cos(p\cdot0.01)]\]
+<p><strong>$p=0$：</strong>$\sin0=0$，$\cos0=1$，两次都是 → $[0,1,0,1]$。✓</p>
+<p><strong>$p=1$：</strong></p>
+<table>
+<thead><tr><th>坐标</th><th>计算</th><th>值</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>$\sin(1)$</td><td>0.8414709848</td></tr>
+<tr><td>1</td><td>$\cos(1)$</td><td>0.5403023059</td></tr>
+<tr><td>2</td><td>$\sin(0.01)$</td><td>0.0099998333</td></tr>
+<tr><td>3</td><td>$\cos(0.01)$</td><td>0.9999500004</td></tr>
+</tbody>
+</table>
+<p>注意第 4 项是 $0.99995\ldots$，四舍五入到 <strong>1.000</strong>，但<strong>并不恰好等于 1</strong>。</p>
+<p><strong>相加：</strong></p>
+\[x_1=[1,0,1,0]+[0.8415,0.5403,0.0100,0.99995]
+=[1.8415,\ 0.5403,\ 1.0100,\ 0.99995]\ \checkmark\]
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 为什么这里用 $d=4$</span>
+<p>上一张图的例子用的是 $d=8$，这里<strong>换成了 $d=4$</strong>，就是为了让学生能手算完整个向量。
+两个频率分别是每 token 1 弧度和 0.01 弧度。<strong>不要沿用 $d=8$ 的分母。</strong></p>
+<p>另外 $e$ 是上一节已经缩放过的嵌入；这里 $d=4$ 时编造的原始查表 $E[\text{can}]=[0.5,0,0.5,0]$。
+这个例子不涉及任何训练过的模型或数据集。这是不计分的课堂练习。</p>
+</div>
+
+<h3 id="s110">1.10 输出会随 token 移动吗 <span class="tag s">课件</span></h3>
+
+<p><strong>实现练习 E02 · 3 分钟 · 预测后到浏览器里对照。</strong></p>
+
+<div class="box key">
+<span class="label">补充 · 置换等变到底是什么意思</span>
+<p>把位置 0 的 <code>Noa</code> 和位置 5 的 <code>she</code> 对调，
+然后在输出上把置换「撤销」回来。结论是：</p>
+\[\operatorname{SA}(PX)=P\,\operatorname{SA}(X)\]
+<p>其中 $P$ 是置换矩阵。注意这个式子的含义是：
+<strong>「先置换输入再算注意力」等于「先算注意力再置换输出」</strong>——
+这叫<strong>置换等变</strong>（permutation equivariance），
+<strong>不是</strong>说两个张量在撤销置换之前就相等。</p>
+<p>换句话说：<strong>没有位置机制、没有掩码时，自注意力完全不知道顺序。</strong>
+「Noa 讨厌」和「讨厌 Noa」在它眼里是同一个东西。</p>
+<p>一旦给每个<strong>槽位</strong>绑定了固定的正弦位置向量，
+把 token 挪到别的槽位就会改变它的输入，输出也就变了。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个演示的具体配置</span>
+<ul>
+<li>六个词向量是 $I_6$ 的行（不是训练出来的嵌入）；Q/K/V 投影是单位阵，缩放因子是 $\sqrt 6$。</li>
+<li>置换是 $[5,1,2,3,4,0]$。没有位置时，还原后的输出在舍入误差内一致；
+加上固定正弦位置后，输出会变。这个六 token 夹具上测到的最大差约
+<strong>0.4492044856670271</strong>。</li>
+<li>这里<strong>刻意不加因果掩码</strong>：固定的因果掩码本身就引入了顺序不对称，
+它<strong>不</strong>满足这个任意置换下的恒等式。</li>
+<li>要比较的是实现笔记本里的真实张量，而不只是图里的颜色。</li>
+</ul>
+</div>
+
+<h3 id="s111">1.11 RoPE：旋转每个 query/key 对 <span class="tag s">课件</span></h3>
+
+<p>RoPE = rotary position embedding（旋转位置编码）。</p>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figRopeT figRopeD">
+<title id="figRopeT">RoPE 把查询向量的坐标对按位置旋转</title>
+<desc id="figRopeD">编造的查询内容对 (1,0) 在位置 p=5、频率 pi/6 时旋转 150 度，得到 (-sqrt3/2, 1/2)，长度保持为 1。</desc>
+<g font-family="system-ui,sans-serif">
+<!-- 坐标系 -->
+<line x1="80" y1="200" x2="330" y2="200" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="200" y1="60" x2="200" y2="270" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="338" y="204" font-size="11.5" fill="#77777f">坐标 2i</text>
+<text x="204" y="54" font-size="11.5" fill="#77777f">坐标 2i+1</text>
+<!-- 单位圆 -->
+<circle cx="200" cy="200" r="90" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 3"/>
+<!-- 原向量 (1,0) -->
+<line x1="200" y1="200" x2="290" y2="200" stroke="var(--purple)" stroke-width="2.4" marker-end="url(#arRope)"/>
+<text x="252" y="220" font-size="12" fill="var(--purple)" font-weight="600">p = 0：(1, 0)</text>
+<!-- 旋转后 -->
+<line x1="200" y1="200" x2="122" y2="155" stroke="var(--teal)" stroke-width="2.4" marker-end="url(#arRope2)"/>
+<text x="86" y="146" font-size="12" fill="var(--teal)" font-weight="600">p = 5</text>
+<!-- 弧线 -->
+<path d="M 250 200 A 50 50 0 0 0 232 158" fill="none" stroke="var(--gold)" stroke-width="1.8"/>
+<text x="258" y="172" font-size="12" fill="var(--gold)" font-weight="600">150&#176;</text>
+<!-- 文字说明 -->
+<text x="392" y="96"  font-size="12.5" fill="var(--ink2)">频率 &#952; = &#960;/6（每 token 30&#176;）</text>
+<text x="392" y="120" font-size="12.5" fill="var(--ink2)">位置 p = 5 &#8658; 旋转角 &#966; = p&#952; = 150&#176;</text>
+<text x="392" y="148" font-size="12.5" fill="var(--ink)">(1, 0) &#8594; (&#8722;&#8730;3/2, 1/2)</text>
+<text x="392" y="172" font-size="12.5" fill="var(--ink3)">&#8776; (&#8722;0.866, 0.5)</text>
+<text x="392" y="204" font-size="12.5" fill="var(--teal)">长度保持：|z&#8242;| = |z| = 1</text>
+<text x="392" y="234" font-size="12.5" fill="var(--ink2)">p = 0 时不变；p = 3 时变成 (0, 1)</text>
+<text x="80" y="290" font-size="12" fill="var(--ink3)">同一对坐标在二维平面里旋转；一个 head 的每对坐标各有自己的 &#952;&#7522; = 10000&#8315;&#178;&#7502;&#8260;&#7496;&#8341;</text>
+<defs>
+<marker id="arRope" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--purple)"/>
+</marker>
+<marker id="arRope2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--teal)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 9 · RoPE 的旋转操作。</strong>
+把编造的查询内容对 $(1,0)$ 赋予 <code>she</code>。在它真实的位置 $p=5$、
+教学频率 $\theta=\pi/6$ 下旋转 $150^\circ$，得到 $(-\sqrt3/2,\ 1/2)$。
+拖动位置滑块可以问「如果这个固定内容对出现在别处会怎样」。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 旋转公式与验算</span>
+<p>二维旋转是</p>
+\[\begin{pmatrix}a'\\ b'\end{pmatrix}
+=\begin{pmatrix}\cos\phi & -\sin\phi\\ \sin\phi & \cos\phi\end{pmatrix}
+\begin{pmatrix}a\\ b\end{pmatrix}\]
+<p>取 $\phi=150^\circ$：$\cos150^\circ=-\frac{\sqrt3}{2}\approx-0.8660254$，
+$\sin150^\circ=\frac12$。代入 $(a,b)=(1,0)$：</p>
+\[a'=1\times(-0.8660254)-0\times0.5=-0.8660254,\qquad
+b'=1\times0.5+0\times(-0.8660254)=0.5\]
+<p>正是 $(-\sqrt3/2,\ 1/2)$。✓ 长度：$\sqrt{0.75+0.25}=1$，与原向量相同。</p>
+<p>再验两个特殊位置：</p>
+<ul>
+<li>$p=0$：$\phi=0$，旋转矩阵是单位阵，$(1,0)$ 不动。✓</li>
+<li>$p=3$：$\phi=3\times30^\circ=90^\circ$，$\cos90^\circ=0$，$\sin90^\circ=1$，
+于是 $a'=0,\ b'=1$，得到 $(0,1)$。✓</li>
+</ul>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个例子里的频率是编的</span>
+<ul>
+<li>教学用的频率是<strong>每 token 30°</strong>，不是标准第一对的 1 弧度。这样手算好看。</li>
+<li>对于一个宽度为偶数 $d_h$ 的 head，对每一对坐标 $(2i,2i+1)$ <strong>独立</strong>施加一个二维旋转，
+旋转角由 $\theta_i=10000^{-2i/d_h}$ 决定。</li>
+<li>RoPE 施加在<strong>每个注意力层每个 head</strong> 的查询和键上。
+标准构造<strong>不</strong>旋转 $V$。</li>
+<li>RoPE <strong>不替代</strong>可学习的 Q/K 投影，也<strong>不替代</strong>因果掩码，
+更<strong>不需要</strong>在模型输入处加位置向量。它的插入点和正弦加法、GPT-2 的可学习表<strong>完全不同</strong>。</li>
+</ul>
+</div>
+
+<h3 id="s112">1.12 两个坐标，一个复数 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<p>把 $(a,b)$ 写成 $z=a+ib$。在位置 $p$ 令 $\phi=p\theta$：</p>
+<p>$$z'=z\,e^{i\phi}$$</p>
+<p>$$a'=a\cos\phi-b\sin\phi$$</p>
+<p>$$b'=a\sin\phi+b\cos\phi$$</p>
+<p>长度相同：$|z'|=|z|$。这就是刚才看到的实数旋转。</p>
+</div>
+<div>
+<figure style="margin:0">
+<img src="assets/img/L05-rope-complex-plane.svg" alt="she 的编造查询对从 1+0i 旋转到 -sqrt3/2 + i/2，长度保持为 1。">
+<figcaption>玩具频率 $\theta=\pi/6$；<code>she</code> 在 $p=5$。</figcaption>
+</figure>
+</div>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 复数乘法展开成两个实方程</span>
+<p>用 $e^{i\phi}=\cos\phi+i\sin\phi$：</p>
+\[z'=(a+ib)(\cos\phi+i\sin\phi)=a\cos\phi+ia\sin\phi+ib\cos\phi+i^2b\sin\phi\]
+<p>因为 $i^2=-1$，实部虚部分开：</p>
+\[\operatorname{Re}z'=a\cos\phi-b\sin\phi,\qquad \operatorname{Im}z'=a\sin\phi+b\cos\phi\]
+<p>正好是课件上那两个方程，也正是旋转矩阵的两行。</p>
+<p><strong>长度保持</strong>可以一步看出：$|z'|=|z|\cdot|e^{i\phi}|=|z|\cdot1$。</p>
+<p>复数是很好的<strong>描述</strong>，但实现上完全可以用实数的乘法加法完成，
+不需要真的引入复数类型。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 一个符号撞车</span>
+<p>这里的 $i$ 是<strong>虚数单位</strong>（$i^2=-1$），
+<strong>不是</strong>别处用来索引坐标对的 $i$。两者同名但无关。</p>
+</div>
+
+<h3 id="s113">1.13 一个 head，多种转速 <span class="tag s">课件</span></h3>
+
+<p>取 $d_h=8$：四对坐标，$\theta_j=10000^{-2j/d_h}$。</p>
+
+<figure>
+<img src="assets/img/L05-rope-pair-frequencies.svg" alt="一个 head 里四对坐标以 5、0.5、0.05、0.005 弧度旋转位置 5 的 she。位置 0 的 Noa 保持在角度零。">
+<figcaption><strong>图 10 · 一个 head 里的四种转速。</strong>
+四对坐标分别旋转 $5,\ 0.5,\ 0.05,\ 0.005$ 弧度；
+位置 0 的 <code>Noa</code> 在每一对里都保持角度 0。四组点积<strong>相加</strong>得到这个 head 的原始注意力分数。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 四个角度怎么来的</span>
+<p>基线底数取 10000，$d_h=8$，于是 $\theta_j=10000^{-2j/8}=10000^{-j/4}$：</p>
+<table>
+<thead><tr><th>$j$</th><th>$\theta_j$</th><th>$\times$ 位置 5</th><th>每 token 弧度</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>$1$</td><td>$5$</td><td>1</td></tr>
+<tr><td>1</td><td>$0.1$</td><td>$0.5$</td><td>0.1</td></tr>
+<tr><td>2</td><td>$0.01$</td><td>$0.05$</td><td>0.01</td></tr>
+<tr><td>3</td><td>$0.001$</td><td>$0.005$</td><td>0.001</td></tr>
+</tbody>
+</table>
+<p>一个八维 head 里有<strong>四个二维平面</strong>，每个平面只混合它自己的两个坐标。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 为什么「相对偏移」在多头里依然成立</span>
+<p>对<strong>每一对</strong>坐标，给查询和键施加<strong>相同</strong>的角度增量时，
+两者的夹角不变，于是这一对的点积不变。把四对的贡献加起来，
+<strong>固定内容下的整个 head 分数</strong>就不变。</p>
+<p>所以「平移不变」不是某一对的巧合，而是逐对成立、再求和保持的性质。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别过度外推</span>
+<p>重复的相位模式<strong>不保证</strong>在训练上下文之外有用，也不保证分数单调递减。
+RoPE 保持 head 宽度不变，标准的 $V$ 仍然不旋转。
+另外：图里那些「重复的单位内容对」是为了<strong>隔离频率差异</strong>而编造的；
+真实的投影对可以有不同长度和起始角度。慢平面里箭头几乎重合是正常的。</p>
+</div>
+
+<h3 id="s114">1.14 RoPE：分数中的相对偏移（E02） <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="figRelT figRelD">
+<title id="figRelT">共同平移不改变 RoPE 后的点积</title>
+<desc id="figRelD">查询和键都共同平移 s 后，两者点积保持不变，因为只依赖相对偏移 n 减 m。</desc>
+<g font-family="system-ui,sans-serif">
+<!-- 左圆 -->
+<text x="170" y="24" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">原始：(m, n) = (5, 0)</text>
+<circle cx="170" cy="160" r="88" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 3"/>
+<line x1="82" y1="160" x2="258" y2="160" stroke="#b4b2a9" stroke-width="1"/>
+<line x1="170" y1="72" x2="170" y2="248" stroke="#b4b2a9" stroke-width="1"/>
+<line x1="170" y1="160" x2="170" y2="72" stroke="var(--teal)" stroke-width="2.4" marker-end="url(#arRel)"/>
+<text x="176" y="66" font-size="11.5" fill="var(--teal)" font-weight="600">k（Noa, n=0）</text>
+<line x1="170" y1="160" x2="94" y2="116" stroke="var(--purple)" stroke-width="2.4" marker-end="url(#arRel)"/>
+<text x="46" y="112" font-size="11.5" fill="var(--purple)" font-weight="600">q（she, m=5）</text>
+<path d="M 200 160 A 30 30 0 0 0 185 132" fill="none" stroke="var(--gold)" stroke-width="1.6"/>
+<text x="206" y="142" font-size="11" fill="var(--gold)">150&#176;</text>
+<text x="170" y="272" text-anchor="middle" font-size="12" fill="var(--ink2)">点积 = &#8722;&#8730;3/2 &#8776; &#8722;0.866</text>
+<!-- 右圆 -->
+<text x="510" y="24" text-anchor="middle" font-size="12.5" fill="var(--ink)" font-weight="600">共同平移 s = 3：(8, 3)</text>
+<circle cx="510" cy="160" r="88" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 3"/>
+<line x1="422" y1="160" x2="598" y2="160" stroke="#b4b2a9" stroke-width="1"/>
+<line x1="510" y1="72" x2="510" y2="248" stroke="#b4b2a9" stroke-width="1"/>
+<line x1="510" y1="160" x2="510" y2="72" stroke="var(--teal)" stroke-width="2.4" marker-end="url(#arRel)"/>
+<text x="516" y="66" font-size="11.5" fill="var(--teal)" font-weight="600">k&#8242;</text>
+<line x1="510" y1="160" x2="434" y2="116" stroke="var(--purple)" stroke-width="2.4" marker-end="url(#arRel)"/>
+<text x="386" y="112" font-size="11.5" fill="var(--purple)" font-weight="600">q&#8242;</text>
+<path d="M 540 160 A 30 30 0 0 0 525 132" fill="none" stroke="var(--gold)" stroke-width="1.6"/>
+<text x="546" y="142" font-size="11" fill="var(--gold)">240&#176;</text>
+<text x="510" y="272" text-anchor="middle" font-size="12" fill="var(--ink2)">点积 = &#8722;&#8730;3/2 &#8776; &#8722;0.866</text>
+<!-- 底部恒等式 -->
+<line x1="40" y1="292" x2="640" y2="292" stroke="var(--line)" stroke-width="1"/>
+<text x="340" y="318" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600" font-family="ui-monospace,Menlo,Consolas,monospace">q&#771;&#8341;&#7488; k&#771;&#8342; = q&#8341;&#7488; R((n&#8722;m)&#952;) k&#8342;&#8195;&#8212;&#8195;只依赖相对偏移</text>
+<defs>
+<marker id="arRel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 11 · 共同平移不改变点积。</strong>
+内容向量固定为 $q=k=(1,0)$，教学频率 $\theta=30^\circ$。
+左：查询 <code>she</code> 在 $m=5$，键 <code>Noa</code> 在 $n=0$，点积 $=-\sqrt3/2$。
+右：两者共同平移 $s=3$ 变成 $(8,3)$，旋转角各自增加 $90^\circ$，
+但<strong>点积仍然是 $-\sqrt3/2$</strong>。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 恒等式的来源（一步就够）</span>
+<p>旋转矩阵是正交矩阵，$R(\phi)^{\mathsf T}R(\phi)=I$，而且 $R(\alpha)R(\beta)=R(\alpha+\beta)$。于是</p>
+\[\tilde q_m^{\mathsf T}\tilde k_n
+=q_m^{\mathsf T}R(m\theta)^{\mathsf T}R(n\theta)k_n
+=q_m^{\mathsf T}R\big((n-m)\theta\big)k_n\]
+<p>所以分数只依赖<strong>相对偏移 $n-m$</strong>，与绝对位置 $m,n$ 各自是多少无关。
+这里用<strong>列向量</strong>约定，符号是 $n-m$。</p>
+<p>在我们的例子里 $n-m=0-5=-5$，对应 $-5\times30^\circ=-150^\circ$。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 把右图的两个点积都算一遍</span>
+<p>平移后 $(m+s,n+s)=(8,3)$：</p>
+<table>
+<thead><tr><th></th><th>旋转角</th><th>向量</th></tr></thead>
+<tbody>
+<tr><td>$q'$</td><td>$8\times30^\circ=240^\circ$</td><td>$(\cos240^\circ,\sin240^\circ)=(-0.5,-0.8660)$</td></tr>
+<tr><td>$k'$</td><td>$3\times30^\circ=90^\circ$</td><td>$(\cos90^\circ,\sin90^\circ)=(0,1)$</td></tr>
+</tbody>
+</table>
+\[q'^{\mathsf T}k'=(-0.5)(0)+(-0.8660)(1)=-0.8660=-\frac{\sqrt3}{2}\ \checkmark\]
+<p>与左图完全一致。<strong>注意原始分数是负数，这是完全合法的</strong>——
+softmax 之后才会变成非负权重。</p>
+<p>另外，这里键的位置 $n=0$ 在查询位置 $m=5$ <strong>之前</strong>，
+所以两种排布都满足因果掩码。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个性质的适用范围</span>
+<p>相对偏移的性质是对<strong>位置操作本身</strong>成立的（在内容向量 $q_m,k_n$ 固定时）。
+它<strong>不</strong>断言「整个语言模型在提示内容或上下文改变时输出不变」。</p>
+<p>另外注意<strong>余弦不是单调的距离衰减函数</strong>——
+不能拿它当「距离越远分数越低」的保证。</p>
+</div>
+
+<h3 id="s115">1.15 两种方法，两个插入点 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th></th><th>正弦编码 · 2017</th><th>RoPE · 2021</th></tr></thead>
+<tbody>
+<tr><th>作用对象</th><td>token 嵌入</td><td>查询与键</td></tr>
+<tr><th>操作</th><td>加一个位置向量</td><td>旋转坐标对</td></tr>
+<tr><th>施加位置</th><td>堆栈入口</td><td>每个注意力层内部</td></tr>
+</tbody>
+</table>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figInsT figInsD">
+<title id="figInsT">两种位置方法的插入点对比</title>
+<desc id="figInsD">左侧正弦方法在堆栈入口把位置向量加到 token 嵌入上；右侧 RoPE 在注意力内部对 Q 和 K 施加旋转，V 不旋转。</desc>
+<g font-family="system-ui,sans-serif" font-size="12">
+<!-- 左：正弦 -->
+<text x="150" y="26" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">正弦编码：入口加法</text>
+<rect x="52" y="220" width="90" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="97" y="240" text-anchor="middle" fill="var(--ink)">E[t]</text>
+<rect x="158" y="220" width="90" height="30" rx="6" fill="var(--gold-bg)" stroke="var(--gold)"/>
+<text x="203" y="240" text-anchor="middle" fill="var(--ink)">PE(p)</text>
+<line x1="97" y1="220" x2="97" y2="204" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="203" y1="220" x2="203" y2="204" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="97" y1="204" x2="203" y2="204" stroke="var(--ink3)" stroke-width="1.3"/>
+<circle cx="150" cy="204" r="7" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.2"/>
+<text x="150" y="208" text-anchor="middle" fill="var(--ink2)" font-size="12">+</text>
+<line x1="150" y1="197" x2="150" y2="180" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arIns)"/>
+<rect x="72" y="146" width="156" height="32" rx="6" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.5"/>
+<text x="150" y="167" text-anchor="middle" fill="var(--ink)">块（含注意力）</text>
+<line x1="150" y1="146" x2="150" y2="128" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arIns)"/>
+<text x="150" y="114" text-anchor="middle" fill="var(--ink3)">&#8942; 重复 L 次</text>
+<text x="150" y="276" text-anchor="middle" font-size="11.5" fill="var(--ink3)">宽度由 d_model 决定</text>
+<!-- 右：RoPE -->
+<text x="510" y="26" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">RoPE：注意力内部旋转</text>
+<rect x="432" y="220" width="156" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)"/>
+<text x="510" y="240" text-anchor="middle" fill="var(--ink)">X（无位置分支）</text>
+<line x1="510" y1="220" x2="510" y2="200" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arIns)"/>
+<rect x="432" y="166" width="156" height="34" rx="6" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.5"/>
+<text x="510" y="188" text-anchor="middle" fill="var(--ink)">Q/K/V 投影</text>
+<line x1="474" y1="166" x2="474" y2="148" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arIns)"/>
+<line x1="546" y1="166" x2="546" y2="148" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arIns)"/>
+<rect x="424" y="112" width="100" height="34" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.6"/>
+<text x="474" y="134" text-anchor="middle" fill="var(--ink)" font-weight="600">旋转 Q, K</text>
+<rect x="532" y="112" width="66" height="34" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.4"/>
+<text x="565" y="134" text-anchor="middle" fill="var(--ink3)">V 不动</text>
+<text x="510" y="276" text-anchor="middle" font-size="11.5" fill="var(--ink3)">宽度由每个 head 的 d_h 决定</text>
+<!-- 对比注记 -->
+<line x1="340" y1="40" x2="340" y2="280" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="340" y="292" text-anchor="middle" font-size="12" fill="var(--ink2)">两者都保留可训练的嵌入与投影参数；都需要因果掩码</text>
+<defs>
+<marker id="arIns" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 12 · 两种方法，两个插入点。</strong>
+左边沿用架构总览里已经画出的位置输入分支；
+右边把那个加法分支<strong>去掉</strong>，改成在每个注意力 head 内部对 Q 和 K 施加旋转，$V$ 分支绕过旋转。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 三种位置方案的完整对照</span>
+<table>
+<thead><tr><th>方案</th><th>形式</th><th>插入点</th><th>参数量</th></tr></thead>
+<tbody>
+<tr><td>正弦编码（2017）</td><td>固定公式，加</td><td>堆栈入口</td><td>0</td></tr>
+<tr><td>可学习绝对位置（GPT-2）</td><td>可学习表，加</td><td>堆栈入口</td><td>$\text{max\_len}\times d$</td></tr>
+<tr><td>RoPE（2021 RoFormer）</td><td>固定频率，旋转</td><td>每层每个 head 的 Q/K</td><td>0（基线形式）</td></tr>
+</tbody>
+</table>
+<p>前两种都是<strong>加性输入方案</strong>，都是「在入口处加一个向量」；
+RoPE 是<strong>乘性、层内</strong>的方案。三者的可学习嵌入与投影参数都保持可训练。</p>
+<p>注意宽度控制者不同：<strong>加性编码的宽度由 $d_{\text{model}}$ 决定；RoPE 的旋转由每个 head 的 $d_h$ 决定。</strong>
+两者都<strong>不</strong>能单靠自身保证超出训练长度后仍然准确。</p>
+</div>
+
+<hr>
+
+<h2 id="p2">第二部分 · 多头注意力与 Transformer 块</h2>
+
+<p>第二节课 45 分钟：先把单头注意力写成矩阵形式并加上因果掩码，
+再看清「为什么要多头」，然后逐个补齐 Transformer 块的其余零件——
+残差、LayerNorm、前馈网络。</p>
+
+<h3 id="s21">2.1 单头：缩放点积注意力 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 360" width="100%" role="img" aria-labelledby="figSdpT figSdpD">
+<title id="figSdpT">缩放点积注意力的四步数据流</title>
+<desc id="figSdpD">Q 与 K 点积得到分数矩阵，除以 sqrt dk，施加因果掩码，按行 softmax 得到权重，最后与 V 相乘得到输出。</desc>
+<g font-family="system-ui,sans-serif" font-size="12.5">
+<!-- 输入三个分支 -->
+<rect x="34"  y="308" width="120" height="32" rx="7" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.6"/>
+<text x="94"  y="329" text-anchor="middle" fill="var(--ink)" font-weight="600">Q（6 &#215; d_k）</text>
+<rect x="278" y="308" width="120" height="32" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="338" y="329" text-anchor="middle" fill="var(--ink)" font-weight="600">K（6 &#215; d_k）</text>
+<rect x="522" y="308" width="120" height="32" rx="7" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.6"/>
+<text x="582" y="329" text-anchor="middle" fill="var(--ink)" font-weight="600">V（6 &#215; d_v）</text>
+<!-- 第 1 步 -->
+<line x1="94" y1="308" x2="94" y2="284" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="338" y1="308" x2="338" y2="284" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="94" y1="284" x2="338" y2="284" stroke="var(--ink3)" stroke-width="1.3"/>
+<circle cx="216" cy="284" r="7" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.2"/>
+<text x="216" y="288" text-anchor="middle" fill="var(--ink2)" font-size="12">&#215;</text>
+<line x1="216" y1="277" x2="216" y2="258" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arSdp)"/>
+<rect x="120" y="226" width="192" height="32" rx="7" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="216" y="247" text-anchor="middle" fill="var(--ink)">① QK&#7488;（6 &#215; 6）</text>
+<text x="326" y="247" fill="var(--ink3)" font-size="11.5">&#8592; 打分</text>
+<!-- 第 2 步 -->
+<line x1="216" y1="226" x2="216" y2="208" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arSdp)"/>
+<rect x="120" y="176" width="192" height="32" rx="7" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="216" y="197" text-anchor="middle" fill="var(--ink)">② &#247; &#8730;d_k&#8195;缩放</text>
+<text x="326" y="197" fill="var(--ink3)" font-size="11.5">&#8592; 控制方差</text>
+<!-- 第 3 步 -->
+<line x1="216" y1="176" x2="216" y2="158" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arSdp)"/>
+<rect x="120" y="126" width="192" height="32" rx="7" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.4"/>
+<text x="216" y="147" text-anchor="middle" fill="var(--ink)">③ 施加因果掩码 M</text>
+<text x="326" y="147" fill="var(--ink3)" font-size="11.5">&#8592; 未来位置 &#8594; &#8722;&#8734;</text>
+<!-- 第 4 步 -->
+<line x1="216" y1="126" x2="216" y2="108" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arSdp)"/>
+<rect x="120" y="76" width="192" height="32" rx="7" fill="var(--bg2)" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="216" y="97" text-anchor="middle" fill="var(--ink)">④ 按行 softmax &#8594; A（6 &#215; 6）</text>
+<text x="326" y="97" fill="var(--ink3)" font-size="11.5">&#8592; 每行和为 1</text>
+<!-- 第 5 步 -->
+<line x1="216" y1="76" x2="216" y2="58" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arSdp)"/>
+<rect x="120" y="26" width="192" height="32" rx="7" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.5"/>
+<text x="216" y="47" text-anchor="middle" fill="var(--ink)" font-weight="600">⑤ Z = A V（6 &#215; d_v）</text>
+<!-- V 的旁路 -->
+<path d="M 582 308 L 582 42 L 316 42" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="470" y="34" fill="var(--teal)" font-size="11.5">值分支只在最后一步进入</text>
+<defs>
+<marker id="arSdp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 13 · 单头缩放点积注意力（从下往上读）。</strong>
+$Q$ 和 $K$ 相乘得到分数矩阵；除以 $\sqrt{d_k}$；施加掩码；
+沿键轴做 softmax；最后与 $V$ 相乘。<strong>值分支只在最后的加权和处进入。</strong></figcaption>
+</figure>
+
+<p>写成一行矩阵公式：</p>
+
+$$Z=\operatorname{softmax}_{\text{row}}\!\left(\frac{QK^{\mathsf T}}{\sqrt{d_k}}+M\right)V$$
+
+<p>其中 $M[t,j]=0$（当 $j\le t$）或 $-\infty$（当 $j\gt t$）。</p>
+
+<div class="box key">
+<span class="label">补充 · 除以 $\sqrt{d_k}$ 到底在防什么</span>
+<p>假设 $q,k\in\mathbb{R}^{d_k}$ 的各分量<strong>独立、零均值、单位方差</strong>，那么点积</p>
+\[q^{\mathsf T}k=\sum_{i=1}^{d_k}q_ik_i\]
+<p>是 $d_k$ 个独立同分布项之和，因此它的<strong>方差是 $d_k$</strong>（均值仍为 0），
+标准差是 $\sqrt{d_k}$。除以 $\sqrt{d_k}$ 就把方差拉回 1 的量级。</p>
+<p>为什么在意这个？如果 logits 的量级随 $d_k$ 增长，softmax 会变得<strong>极其尖锐</strong>：
+某一项接近 1、其余接近 0，梯度会趋近于零，训练变慢甚至停滞。
+缩放让 logits 的尺度与 $d_k$ 解耦。</p>
+<p>这些假设是<strong>初始化时的近似</strong>，不是训练好的 Q/K 的普遍性质——不要把推导当成定理。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 掩码与尺寸</span>
+<p>用 token 行记法：$Q,K$ 是 $n\times d_k$，$V$ 是 $n\times d_v$，
+分数与权重是 $n\times n$，$Z$ 是 $n\times d_v$。</p>
+<p>对我们的 Noa 前缀 $n=6$；选中的查询是零基位置 5 的 <code>she</code>。
+位置 $t$ 的查询可以看 $j\le t$ 的键，<strong>包含它自己</strong>。
+未来的 logits 在 softmax 之前变成 $-\infty$，权重就是 0。一个查询行里保留下来的权重和为 1。
+这里没有 padding 掩码。</p>
+<p>如果用了 RoPE，这里的 $Q$ 和 $K$ 已经在每个 head 内<strong>各自旋转过</strong>了；值不旋转。</p>
+</div>
+
+<h3 id="s22">2.2 数值化的因果注意力 <span class="tag s">课件</span></h3>
+
+<p>位置 0–5 是前缀 <code>Noa, can, be, annoying, but, she</code>，
+位置 6 显示下一个词 <code>is</code>——<strong>它存在的唯一目的是检验因果掩码</strong>。</p>
+
+<table>
+<thead><tr><th>位置</th><th>0 Noa</th><th>1 can</th><th>2 be</th><th>3 annoying</th><th>4 but</th><th>5 she</th><th>6 is</th></tr></thead>
+<tbody>
+<tr><th>缩放后的分数</th><td>$\log4$</td><td>$0$</td><td>$0$</td><td>$\log2$</td><td>$0$</td><td>$\log2$</td><td>$\log3$</td></tr>
+<tr><th>值向量 $v_j$</th><td>$(1,0)$</td><td>$(0,1)$</td><td>$(1,1)$</td><td>$(2,0)$</td><td>$(0,2)$</td><td>$(1,2)$</td><td>$(3,1)$</td></tr>
+<tr><th>$\exp$（权重分子）</th><td class="num">4</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">1</td><td class="num">2</td><td class="num">3</td></tr>
+</tbody>
+</table>
+
+<p>查询是 $q_{\text{she}}=(\sqrt2,0)$，$d_k=2$。</p>
+
+<div class="box key">
+<span class="label">补充 · 有掩码的结果，一步步算</span>
+<p><strong>第一步：掩码。</strong>位置 6 的 <code>is</code> 被遮住，它的 $\exp$ 贡献变成 0。
+剩下六项之和：</p>
+\[4+1+1+2+1+2=11\]
+<p>权重：$\big(\tfrac{4}{11},\tfrac{1}{11},\tfrac{1}{11},\tfrac{2}{11},\tfrac{1}{11},\tfrac{2}{11},0\big)$。
+验算和为 $11/11=1$。✓</p>
+<p><strong>第二步：加权求和。</strong>第一坐标：</p>
+\[4(1)+1(0)+1(1)+2(2)+1(0)+2(1)+0=\frac{4+0+1+4+0+2+0}{11}=\frac{11}{11}=1\]
+<p>第二坐标：</p>
+\[\frac{4(0)+1(1)+1(1)+2(0)+1(2)+2(2)+0}{11}=\frac{0+1+1+0+2+4+0}{11}=\frac{8}{11}\]
+<p>所以输出是 $\big(1,\ \tfrac{8}{11}\big)\approx(1,\ 0.727273)$。✓</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 去掉掩码会怎样（对比）</span>
+<p>把位置 6 也算进来，$\exp$ 之和变成 $11+3=14$：</p>
+\[\text{权重}=\Big(\tfrac{4}{14},\tfrac{1}{14},\tfrac{1}{14},\tfrac{2}{14},\tfrac{1}{14},\tfrac{2}{14},\tfrac{3}{14}\Big)\]
+<p>第一坐标增加 $3\times3=9$：$\dfrac{11+9}{14}=\dfrac{20}{14}=\dfrac{10}{7}\approx1.428571$。</p>
+<p>第二坐标增加 $3\times1=3$：$\dfrac{8+3}{14}=\dfrac{11}{14}\approx0.785714$。</p>
+<p>和课件给出的 $(10/7,\ 11/14)$ 一致。✓</p>
+</div>
+
+<div class="box warn">
+<span class="label">补充 · 「改未来值」测试的精确含义</span>
+<p>课件说「只改 $V_{\text{is}}$」。这里的算例是<strong>给 $V_{\text{is}}$ 加上 $(10,10)$</strong>，
+此时无掩码输出每个坐标增加</p>
+\[\frac{3}{14}\times 10=\frac{30}{14}=\frac{15}{7}\approx2.142857\]
+<p>而<strong>有掩码</strong>的 <code>she</code> 输出<strong>完全不变</strong>——因为 $V_{\text{is}}$ 的权重是 0。
+这正是因果掩码的作用：未来 token 的值对当前输出没有任何影响。</p>
+<p><strong>一个必须注意的实现陷阱：</strong>「先做无掩码 softmax、再把未来权重置 0」
+和「先掩码再 softmax」<strong>不是同一个计算</strong>——
+前者剩下的权重总和是 $11/14$，不是 1。</p>
+<p>另外，<strong>整行全被掩码时 softmax 是未定义的</strong>，
+所以对角线必须保留（这就是「对角线允许」的原因，见 <a href="#s37">§3.7</a>）。</p>
+</div>
+
+<h3 id="s23">2.3 掩码加权和（P01） <span class="tag s">课件</span></h3>
+
+<p><strong>实现练习 P01 · 3 分钟 · 先算，再对照。</strong></p>
+
+<p>对位置 $p=5$ 的 <strong>she</strong>，另一个玩具 head 的缩放分数是
+$(\log2,0,0,\log2,0,\log3,\log4)$，值向量沿用上表。</p>
+
+<p>求因果权重与输出。改变 $V_{\text{is}}$ 能改变这个输出吗？</p>
+
+<div class="box ok">
+<span class="label">解答 · 权重 $(2,1,1,2,1,3,0)/10$，输出 $(1,1)$；未来的值权重为零</span>
+<p>取指数：$(2,1,1,2,1,3,4)$。位置 6 掩掉，和 $=2+1+1+2+1+3=10$。</p>
+<p>第一坐标：</p>
+\[\frac{2(1)+1(0)+1(1)+2(2)+1(0)+3(1)}{10}=\frac{2+0+1+4+0+3}{10}=\frac{10}{10}=1\]
+<p>第二坐标：</p>
+\[\frac{2(0)+1(1)+1(1)+2(0)+1(2)+3(2)}{10}=\frac{0+1+1+0+2+6}{10}=\frac{10}{10}=1\]
+<p>输出 $(1,1)$。✓ 因为位置 6 的权重是 0，<strong>只改 $V_{\text{is}}$ 不可能改变这一行</strong>。</p>
+</div>
+
+<h3 id="s24">2.4 为什么要用多头 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 260" width="100%" role="img" aria-labelledby="figMhT figMhD">
+<title id="figMhT">三个不同的注意力分布强调前缀中的不同位置</title>
+<desc id="figMhD">对 she 这个查询，三个编造的注意力行分别强调 Noa、annoying 和 but，每行权重之和为一。</desc>
+<g font-family="system-ui,sans-serif" font-size="12">
+<text x="14" y="22" fill="var(--ink3)" font-size="12" font-weight="600">对 she 这一个查询，三个 head 给出三种不同的分布（每行和为 1）</text>
+<!-- 行标签 -->
+<text x="14" y="62"  fill="var(--purple)" font-size="12" font-weight="600">head A</text>
+<text x="14" y="122" fill="var(--accent)" font-size="12" font-weight="600">head B</text>
+<text x="14" y="182" fill="var(--teal)" font-size="12" font-weight="600">head C</text>
+<!-- head A -->
+<rect x="76" y="44" width="76.8" height="26" rx="4" fill="var(--purple)" opacity="0.85"/>
+<text x="114" y="61" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">0.60</text>
+<rect x="152.8" y="44" width="6.4" height="26" rx="3" fill="var(--purple)" opacity="0.5"/>
+<rect x="159.2" y="44" width="5.1" height="26" rx="3" fill="var(--purple)" opacity="0.5"/>
+<rect x="164.3" y="44" width="12.8" height="26" rx="3" fill="var(--purple)" opacity="0.5"/>
+<rect x="177.1" y="44" width="7.7" height="26" rx="3" fill="var(--purple)" opacity="0.5"/>
+<rect x="184.8" y="44" width="19.2" height="26" rx="3" fill="var(--purple)" opacity="0.6"/>
+<text x="212" y="61" fill="var(--ink2)" font-size="11.5">强调 Noa</text>
+<!-- head B -->
+<rect x="76" y="104" width="12.8" height="26" rx="3" fill="var(--accent)" opacity="0.5"/>
+<rect x="88.8" y="104" width="7.7" height="26" rx="3" fill="var(--accent)" opacity="0.5"/>
+<rect x="96.5" y="104" width="10.2" height="26" rx="3" fill="var(--accent)" opacity="0.5"/>
+<rect x="106.7" y="104" width="74.2" height="26" rx="4" fill="var(--accent)" opacity="0.85"/>
+<text x="143.8" y="121" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">0.58</text>
+<rect x="180.9" y="104" width="12.8" height="26" rx="3" fill="var(--accent)" opacity="0.5"/>
+<rect x="193.7" y="104" width="10.2" height="26" rx="3" fill="var(--accent)" opacity="0.5"/>
+<text x="212" y="121" fill="var(--ink2)" font-size="11.5">强调 annoying</text>
+<!-- head C -->
+<rect x="76" y="164" width="12.8" height="26" rx="3" fill="var(--teal)" opacity="0.5"/>
+<rect x="88.8" y="164" width="6.4" height="26" rx="3" fill="var(--teal)" opacity="0.5"/>
+<rect x="95.2" y="164" width="6.4" height="26" rx="3" fill="var(--teal)" opacity="0.5"/>
+<rect x="101.6" y="164" width="15.4" height="26" rx="3" fill="var(--teal)" opacity="0.5"/>
+<rect x="117" y="164" width="76.8" height="26" rx="4" fill="var(--teal)" opacity="0.85"/>
+<text x="155.4" y="181" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">0.60</text>
+<rect x="193.8" y="164" width="10.2" height="26" rx="3" fill="var(--teal)" opacity="0.5"/>
+<text x="212" y="181" fill="var(--ink2)" font-size="11.5">强调 but</text>
+<!-- 底部位置轴 -->
+<line x1="76" y1="206" x2="396" y2="206" stroke="var(--line)" stroke-width="1"/>
+<text x="114" y="222" text-anchor="middle" fill="var(--ink3)" font-size="11">Noa</text>
+<text x="156" y="222" text-anchor="middle" fill="var(--ink3)" font-size="11">can</text>
+<text x="162" y="236" text-anchor="middle" fill="var(--ink3)" font-size="11">be</text>
+<text x="184" y="222" text-anchor="middle" fill="var(--ink3)" font-size="11">annoy</text>
+<text x="200" y="236" text-anchor="middle" fill="var(--ink3)" font-size="11">but</text>
+<text x="240" y="222" text-anchor="middle" fill="var(--ink3)" font-size="11">she</text>
+<text x="430" y="121" fill="var(--ink2)" font-size="12">&#8594; 每个 head 先各自形成一个上下文混合，之后才合并</text>
+</g>
+</svg>
+<figcaption><strong>图 14 · 三个 head 的三种注意力分布（示意值）。</strong>
+查询固定在 <code>she</code>（位置 5），六个位置都在它的可用前缀里。
+可以问三个不同的问题：<em>哪个更早的名字指明了指代对象？哪个更早的特征在描述它？哪个词在提示转折？</em>
+人读出来的答案分别是 <code>Noa</code>、<code>annoying</code>、<code>but</code>。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 多头的真正收益：表达「多种关系」而不是「更多参数」</span>
+<p>单个 head 只能给出一<strong>个</strong>关于位置的分布。
+上面三个分布无法用某一种加权平均同时逼近——
+它们强调的是完全不同的位置。</p>
+<p>而多头让<strong>每个 head 学自己的 Q/K/V 投影</strong>，
+于是可以并行地提取不同种类的关系（指代、修饰、转折……）。</p>
+<p>关键的成本性质：在 $d_{\text{model}}$ 固定、$d_k=d_v=d_{\text{model}}/h$ 时，
+<strong>改变 $h$ 不会成倍增加 Q/K/V 与输出投影的总参数量</strong>——
+因为每个 head 的宽度按比例缩小了。总参数始终是 $4d^2$（见 <a href="#s212">§2.12</a>）。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这些权重是编的</span>
+<p>三行权重是<strong>编造的归一化示意</strong>，不是训练出来的注意力权重，
+也<strong>不</strong>代表被分配的语法任务。模式之间可以重叠。
+一个 head 可以给多个词分配权重，但对这个查询它仍然只提供<strong>一个</strong>位置上的分布。</p>
+<p>而且：<strong>只看注意力权重，无法确立预测的因果解释。</strong></p>
+</div>
+
+<h3 id="s25">2.5 多头注意力：投影、注意力、合并 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="figParT figParD">
+<title id="figParT">多头注意力：各头独立投影与注意力，拼接后经输出投影合并</title>
+<desc id="figParD">同一输入矩阵 X 分成 h 个 head，每个 head 有自己的 Q/K/V 投影和独立的注意力计算，输出沿特征维拼接后乘以 W_O。</desc>
+<g font-family="system-ui,sans-serif" font-size="12">
+<!-- 输入 -->
+<rect x="16" y="146" width="86" height="40" rx="7" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.6"/>
+<text x="59" y="164" text-anchor="middle" fill="var(--ink)" font-weight="700">X</text>
+<text x="59" y="180" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; d_model</text>
+<!-- 三个 head -->
+<g>
+<rect x="152" y="24" width="176" height="60" rx="8" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.5"/>
+<text x="240" y="44" text-anchor="middle" fill="var(--ink)" font-weight="600">head 1</text>
+<text x="240" y="62" text-anchor="middle" fill="var(--ink2)" font-size="11">H&#8321; = Attn(XW&#8321;&#7484;, XW&#8321;&#7470;, XW&#8321;&#7476;)</text>
+<text x="240" y="77" text-anchor="middle" fill="var(--ink3)" font-size="10.5">6 &#215; d_v</text>
+<rect x="152" y="104" width="176" height="60" rx="8" fill="var(--bg2)" stroke="var(--accent)" stroke-width="1.5"/>
+<text x="240" y="124" text-anchor="middle" fill="var(--ink)" font-weight="600">head 2</text>
+<text x="240" y="142" text-anchor="middle" fill="var(--ink2)" font-size="11">H&#8322; = Attn(XW&#8322;&#7484;, XW&#8322;&#7470;, XW&#8322;&#7476;)</text>
+<text x="240" y="157" text-anchor="middle" fill="var(--ink3)" font-size="10.5">6 &#215; d_v</text>
+<rect x="152" y="184" width="176" height="60" rx="8" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.5"/>
+<text x="240" y="204" text-anchor="middle" fill="var(--ink)" font-weight="600">head h</text>
+<text x="240" y="222" text-anchor="middle" fill="var(--ink2)" font-size="11">H&#8341; = Attn(XW&#8341;&#7484;, XW&#8341;&#7470;, XW&#8341;&#7476;)</text>
+<text x="240" y="237" text-anchor="middle" fill="var(--ink3)" font-size="10.5">6 &#215; d_v</text>
+<text x="240" y="264" text-anchor="middle" fill="var(--ink3)" font-size="11.5">&#8942; 省略号表示 h 可以是任意个数，不是 3</text>
+</g>
+<line x1="102" y1="166" x2="148" y2="54"  stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arPar)"/>
+<line x1="102" y1="166" x2="148" y2="134" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arPar)"/>
+<line x1="102" y1="166" x2="148" y2="214" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arPar)"/>
+<!-- 拼接 -->
+<line x1="328" y1="54"  x2="368" y2="54"  stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="328" y1="134" x2="368" y2="134" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="328" y1="214" x2="368" y2="214" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="368" y1="54" x2="368" y2="214" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="368" y1="134" x2="392" y2="134" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arPar)"/>
+<rect x="396" y="106" width="120" height="56" rx="7" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.5"/>
+<text x="456" y="128" text-anchor="middle" fill="var(--ink)" font-weight="600">拼接 Concat</text>
+<text x="456" y="146" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; (h&#183;d_v)</text>
+<line x1="516" y1="134" x2="548" y2="134" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arPar)"/>
+<rect x="552" y="106" width="112" height="56" rx="7" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.5"/>
+<text x="608" y="128" text-anchor="middle" fill="var(--ink)" font-weight="600">&#215; W&#7504;</text>
+<text x="608" y="146" text-anchor="middle" fill="var(--ink2)" font-size="11">6 &#215; d_model</text>
+<text x="456" y="284" text-anchor="middle" fill="var(--ink3)" font-size="11.5">沿特征维拼接，保留每个 token 的行</text>
+<text x="240" y="298" text-anchor="middle" fill="var(--ink2)" font-size="12">每个投影都可以用到全部 d_model 个输入特征 —— 不是把 X 直接切成几段</text>
+<defs>
+<marker id="arPar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 15 · 多头注意力：投影、注意力、合并。</strong>
+同一个输入矩阵 $X$ 分成 $h$ 个头，每个头有自己的 $W_i^Q,W_i^K,W_i^V$ 和独立的注意力计算。
+各头输出沿特征维<strong>拼接</strong>，再乘可学习的输出矩阵 $W^O$。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 四步公式化</span>
+<ol class="steps">
+<li>每个 head 有自己的 $W_i^Q,W_i^K,W_i^V$。每个投影都可以用到<strong>全部</strong> $d_{\text{model}}$ 个输入特征——
+<strong>不是</strong>把原始 $X$ 切成固定的几段。</li>
+<li>$H_i=\operatorname{Attention}(XW_i^Q,\ XW_i^K,\ XW_i^V)$。
+每个 head 独立形成自己的分数矩阵并<strong>按行归一化</strong>。
+在因果模型里，每个 head 施加<strong>同一套</strong>因果可见性规则。</li>
+<li>把 $H_1,\dots,H_h$ 沿特征维拼接，<strong>保留每个 token 的行</strong>。</li>
+<li>乘输出矩阵：$Y=\operatorname{Concat}(H_1,\dots,H_h)W^O$。
+$W^O$ 负责<strong>混合</strong>各 head 的特征。<strong>拼接本身不做平均。</strong></li>
+</ol>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · E03 的尺寸计算（原版 base 模型配置）</span>
+<p>取 $d_{\text{model}}=512$，$h=8$，$d_k=d_v=d_{\text{model}}/h$：</p>
+<table>
+<thead><tr><th>量</th><th>尺寸</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>每个 head 的宽度</td><td>$512/8=64$</td><td>$d_k=d_v=64$</td></tr>
+<tr><td>拼接后的宽度</td><td>$8\times64=512$</td><td>回到 $d_{\text{model}}$</td></tr>
+<tr><td>每个 $W_i^Q,W_i^K,W_i^V$</td><td>$512\times64$</td><td>共 $3\times512\times64$ 每头</td></tr>
+<tr><td>$W^O$</td><td>$512\times512$</td><td>$(h\,d_v)\times d_{\text{model}}$</td></tr>
+<tr><td>对六词前缀 $n=6$</td><td>$H_i$ 为 $6\times64$</td><td>拼接后 $6\times512$，$Y$ 也是 $6\times512$</td></tr>
+</tbody>
+</table>
+<p>token 轴<strong>从头到尾都是 6 行</strong>。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 一般性与可选的延伸阅读</span>
+<p>这是标准的等宽 Q/K/V 多头自注意力。一般的输出投影是 $(h\,d_v)\times d_{\text{model}}$；
+其他配置里 $h\,d_v$ <strong>不</strong>必等于 $d_{\text{model}}$。
+分组查询注意力（GQA）和多查询注意力（MQA）是另外的变体，不在本讲范围内。</p>
+<p><strong>可选讨论：</strong>「每个训练出来的 head 都必要吗？」
+Michel, Levy, Neubig (NeurIPS 2019) 发现他们训练的翻译和 BERT 模型可以容忍剪掉一部分 head，
+其中<strong>翻译的交叉注意力更敏感</strong>。
+但要注意：剪枝结果衡量的是<strong>训练之后</strong>的依赖程度，
+它<strong>不</strong>能证明「训练时多少个头才够」，也<strong>不</strong>能推出「每层一个头就够了」。</p>
+</div>
+
+<h3 id="s26">2.6 多头注意力用在哪里 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 340" width="100%" role="img" aria-labelledby="figArcT figArcD">
+<title id="figArcT">注意力在编码器-解码器与 GPT 式解码器中的位置</title>
+<desc id="figArcD">左图编码器自注意力与解码器的因果自注意力和交叉注意力；右图 GPT 式解码器只有因果自注意力，没有编码器交叉注意力。</desc>
+<g font-family="system-ui,sans-serif" font-size="11.5">
+<!-- 左：原始 -->
+<text x="170" y="20" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">2017 编码器–解码器</text>
+<rect x="60" y="34" width="220" height="130" rx="9" fill="none" stroke="var(--line)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="72" y="50" fill="var(--ink3)" font-size="11">编码器 &#215; N</text>
+<rect x="86" y="58" width="168" height="32" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="170" y="79" text-anchor="middle" fill="var(--ink)">自注意力（双向，看全部源）</text>
+<rect x="86" y="98" width="168" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="170" y="117" text-anchor="middle" fill="var(--ink2)">逐位置 FFN</text>
+<text x="170" y="152" text-anchor="middle" fill="var(--ink3)" font-size="11">Q, K, V 全部来自编码器当前状态</text>
+<rect x="60" y="176" width="220" height="140" rx="9" fill="none" stroke="var(--line)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="72" y="192" fill="var(--ink3)" font-size="11">解码器 &#215; N</text>
+<rect x="86" y="200" width="168" height="30" rx="6" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.4"/>
+<text x="170" y="220" text-anchor="middle" fill="var(--ink)">因果自注意力（读目标前缀）</text>
+<rect x="86" y="238" width="168" height="30" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.4"/>
+<text x="170" y="258" text-anchor="middle" fill="var(--ink)">交叉注意力</text>
+<rect x="86" y="276" width="168" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="170" y="295" text-anchor="middle" fill="var(--ink2)">逐位置 FFN</text>
+<path d="M 300 96 L 330 96 L 330 253 L 258 253" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arArc)"/>
+<text x="336" y="180" fill="var(--teal)" font-size="11">K, V 来自编码器</text>
+<!-- 右：GPT -->
+<text x="510" y="20" text-anchor="middle" font-size="13" fill="var(--ink)" font-weight="600">GPT 式因果解码器</text>
+<rect x="400" y="34" width="220" height="282" rx="9" fill="none" stroke="var(--line)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="412" y="50" fill="var(--ink3)" font-size="11">块 &#215; L</text>
+<rect x="426" y="58" width="168" height="30" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="510" y="78" text-anchor="middle" fill="var(--ink)">因果自注意力</text>
+<rect x="426" y="96" width="168" height="28" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="510" y="115" text-anchor="middle" fill="var(--ink2)">MLP（逐位置）</text>
+<text x="510" y="144" text-anchor="middle" fill="var(--ink3)" font-size="11">&#8942; 重复 L 次</text>
+<rect x="426" y="158" width="168" height="30" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="510" y="178" text-anchor="middle" fill="var(--ink2)">最终 LayerNorm</text>
+<rect x="426" y="196" width="168" height="30" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="510" y="216" text-anchor="middle" fill="var(--ink2)">词表投影（LM head）</text>
+<rect x="426" y="240" width="168" height="30" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="510" y="260" text-anchor="middle" fill="var(--ink2)">token 嵌入 + 位置</text>
+<text x="510" y="292" text-anchor="middle" fill="var(--warn)" font-size="11.5">没有编码器交叉注意力子层</text>
+<text x="510" y="310" text-anchor="middle" fill="var(--ink3)" font-size="11">只在单一前缀内部做注意力</text>
+<!-- 对比注 -->
+<line x1="340" y1="30" x2="340" y2="320" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="340" y="334" text-anchor="middle" font-size="11.5" fill="var(--ink2)">每个注意力框都代表「多头注意力」，机制已在图 15 展开</text>
+<defs>
+<marker id="arArc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--teal)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 16 · 注意力用在哪里。</strong>
+2017 原版是编码器–解码器：编码器自注意力双向看全部源位置；
+解码器有两个注意力子层——因果自注意力读目标前缀，交叉注意力的 $Q$ 来自解码器状态、$K/V$ 来自编码器最终输出。
+课程用的 GPT 式模型<strong>只有因果自注意力</strong>，没有交叉注意力子层。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 三个必须分清的概念</span>
+<table>
+<thead><tr><th>概念</th><th>含义</th><th>数量关系</th></tr></thead>
+<tbody>
+<tr><td>head</td><td>一个注意力子层内部<strong>并行</strong>的多个头</td><td>同一层内 $h$ 个</td></tr>
+<tr><td>层 / 块</td><td><strong>串行</strong>堆叠，每层用上一层的隐藏状态</td><td>$N$ 或 $L$ 个</td></tr>
+<tr><td>交叉注意力</td><td>$Q$ 来自解码器，$K/V$ 来自编码器</td><td>原版解码器每层 1 个</td></tr>
+</tbody>
+</table>
+<p>交叉注意力的键覆盖<strong>源序列</strong>，所以它<strong>不</strong>使用目标序列的因果三角掩码
+（源方向的 padding 掩码仍然可以施加）。</p>
+<p>训练时，目标输入右移一位以预测下一个目标 token。</p>
+</div>
+
+<h3 id="s27">2.7 残差加法保留直接通路 <span class="tag s">课件</span></h3>
+
+<p>一个子层学到的是对<strong>当前表示</strong>的一个更新：</p>
+
+$$y=\underbrace{x}_{\text{直接通路}}+\underbrace{G(x)}_{\text{学到的更新}}$$
+
+<div class="cols">
+<div>
+<h4>前向</h4>
+<p>逐坐标相加，形状保持 $(B,T,d)$。</p>
+<p>如果 $G(x)=0$，那么 $y=x$。</p>
+</div>
+<div>
+<h4>反向</h4>
+<p>$$\frac{\partial y}{\partial x}=I+J_G(x)$$</p>
+<p>单位阵那一项给梯度一条<strong>直接通路</strong>。</p>
+</div>
+</div>
+
+<p>在我们的 pre-LN 模型里，更新是 $G(x)=F(\operatorname{LN}(x))$。</p>
+
+<div class="box key">
+<span class="label">补充 · 逐坐标相加 ≠ 拼接，也 ≠ 跨位置相加</span>
+<p>「逐坐标相加」的准确含义：$y_{b,t,i}=x_{b,t,i}+G(x)_{b,t,i}$。
+<strong>位置 $(b,t)$ 只和自己的 $(b,t)$ 相加</strong>，不会把不同 token 混起来。</p>
+<p>跨位置的信息交换已经由注意力分支<strong>在它自己内部</strong>完成了。
+残差本身<strong>不引入任何可训练参数</strong>，也不做拼接。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 反向那一行要写全</span>
+<p>把张量看成一个长向量，$J_G$ 是更新分支对 $x$ 的雅可比矩阵。用列梯度约定：</p>
+\[\operatorname{grad}_x L=\operatorname{grad}_y L+J_G(x)^{\mathsf T}\operatorname{grad}_y L\]
+<p>那个 $I$（单位阵）贡献就是<strong>绕过整个学到的分支</strong>的那条路。
+但要注意一个常见误解：</p>
+<p><strong>恒等项的存在，不保证总梯度会变大或变小</strong>——两项可能相互抵消，也可能相互增强。
+例如取 $G(x)=-x$，$J_G=-I$，于是 $I+J_G=0$，直接通路的收益被完全抵消了。</p>
+<p>所以「近似恒等」这个直觉<strong>依赖「更新很小」这个假设</strong>，
+它不是一个关于所有训练后块的断言。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 出处勘误</span>
+<p>这篇残差学习的预印本出现在 2015 年，会议论文是 <strong>CVPR 2016</strong>——
+课件原始材料写的是「CVPR, 2015」，这里已经纠正。</p>
+<p>Transformer 在<strong>每一个</strong>注意力子层和 FFN 子层周围都加了残差连接。
+来源：<a href="https://arxiv.org/abs/1512.03385">He et al., §3.2</a>。</p>
+</div>
+
+<h3 id="s28">2.8 LayerNorm 归一化单个 token 的特征 <span class="tag s">课件</span></h3>
+
+<p>对每个 token 向量 $x\in\mathbb{R}^{d}$，用<strong>它自己</strong>的统计量：</p>
+
+$$\mu=\frac1d\sum_{j=1}^{d}x_j,\qquad \sigma^2=\frac1d\sum_{j=1}^{d}(x_j-\mu)^2$$
+$$\operatorname{LN}(x)_j=\gamma_j\frac{x_j-\mu}{\sqrt{\sigma^2+\epsilon}}+\beta_j$$
+
+<ul>
+<li>对 $(B,T,d)$，沿<strong>最后一维</strong>归一化，token 之间保持独立。</li>
+<li>可学习的 $\gamma,\beta\in\mathbb{R}^{d}$ <strong>在所有 token 位置共享</strong>。</li>
+<li>重新居中并重标定特征；$\epsilon$ 保证分母为正。</li>
+</ul>
+
+<div class="box key">
+<span class="label">补充 · 形状与参数量</span>
+<p>这里的 $d=d_{\text{model}}$。统计量属于<strong>一个 batch 项、一个 token 位置</strong>：
+每个 $(b,t)$ 各有一对均值和方差，都是在 $j=1,\dots,d$ 上算的。</p>
+<p>一个带仿射的 LayerNorm 模块有 <strong>$2d$ 个参数</strong>（$d$ 个 $\gamma$ 加 $d$ 个 $\beta$），
+在所有 token 位置复用。一个块里不同的归一化模块<strong>参数各自独立</strong>。</p>
+<p><strong>注意：</strong>仿射变换之后，输出<strong>不一定</strong>均值为 0、方差为 1。
+在仿射之前，方差是 $\sigma^2/(\sigma^2+\epsilon)$，
+所以即使只看这一步，方差也只是在 $\epsilon\ne0$ 时<strong>近似</strong>为 1。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 实现细节与常见错误</span>
+<p>用<strong>总体方差</strong>（除以 $d$），$\epsilon$ 放在<strong>根号里面</strong>。</p>
+<p>课件里历史代码用的是 <code>x.std(-1)</code> 并在标准差<strong>之后</strong>加 $\epsilon$，
+这<strong>不</strong>等价于 PyTorch 的 LayerNorm，不要照抄。
+而且 PyTorch 的 <code>std</code> 默认带样本修正（除以 $d-1$）。显式实现应该是：</p>
+<pre><code>mean = x.mean(dim=-1, keepdim=True)
+var = x.var(dim=-1, correction=0, keepdim=True)
+y = gamma * (x - mean) / torch.sqrt(var + eps) + beta</code></pre>
+<p>另外：LayerNorm 在<strong>训练和评估时都用输入自身的统计量</strong>，不需要 batch 的运行平均。
+<strong>不要</strong>沿时间维归一化——那会让不同 token 的统计量耦合，
+可能让未来的 token 改变更早位置的表示。</p>
+</div>
+
+<h3 id="s29">2.9 归一化放在哪里 <span class="tag s">课件</span></h3>
+
+<p>设 $F$ 是注意力或前馈网络，省略 dropout。</p>
+
+<table>
+<thead><tr><th>架构</th><th>一个子层</th></tr></thead>
+<tbody>
+<tr><td>原始 Transformer：post-LN</td><td>$y=\operatorname{LN}\big(x+F(x)\big)$</td></tr>
+<tr><td>我们的 GPT 式模型：pre-LN</td><td>$y=x+F\big(\operatorname{LN}(x)\big)$</td></tr>
+</tbody>
+</table>
+
+<p>pre-LN 让直接通路<strong>在穿过每个子层时保持不变</strong>。
+我们的模型在块堆栈<strong>之后</strong>再加一个最终 LayerNorm。</p>
+
+<div class="box key">
+<span class="label">补充 · 两者的雅可比不一样（这是「顺序」真正的含义）</span>
+<p><strong>pre-LN：</strong>归一化在更新分支<strong>内部</strong>，加法节点处的雅可比确实是 $I+J_F'$，
+那条 $I$ 是干净的。</p>
+<p><strong>post-LN：</strong>归一化还作用在加法结果上，整个子层的雅可比变成</p>
+\[J_{\operatorname{LN}(x+F(x))}\big(I+J_F(x)\big)\]
+<p>那个 $I$ 被前面的 $J_{\operatorname{LN}}$ <strong>夹住了</strong>，
+所以 <a href="#s27">§2.7</a> 里说的「恒等导数」描述的是<strong>加法节点</strong>，
+而不是「穿过整个 post-LN 子层都保持不变的路径」。</p>
+<p>我们的 pre-LN 模型在堆栈之后、词表投影之前再做<strong>一次</strong>最终归一化。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 一处源材料的不一致</span>
+<p>课件的第 10–11 页有一处不一致：「Add &amp; Norm」的图示跟随 2017 架构（post-LN），
+但第 10 页的代码截图却在调用子层<strong>之前</strong>归一化输入。
+那段代码应当按 <strong>pre-LN</strong> 来读，它和 $\operatorname{LN}(x+F(x))$ 不是同一个计算。</p>
+<p>原始模型还会在把子层输出加到残差之前施加 dropout，这里省略以便看清顺序。
+Xiong 等人分析的是<strong>在明确假设下</strong>的初始化与 warm-up，
+他们的结论是<strong>启发</strong>这个对比，不是对所有 pre-LN / post-LN 模型的普遍排序。
+架构、初始化、深度、学习率和训练设置仍然都重要。</p>
+</div>
+
+<h3 id="s210">2.10 先归一化，再加更新（E04） <span class="tag s">课件</span></h3>
+
+<p><strong>练习 E04 · 2 分钟 · 给定的 she 状态。</strong></p>
+
+<p>$x=(1,3)$，$\gamma=(1,1)$，$\beta=(0,0)$，$\epsilon=10^{-5}$。
+更新已给定：$F(\operatorname{LN}(x))=(2,-1)$。</p>
+
+<ol>
+<li>求 $\mu$、$\sigma^2$、$\operatorname{LN}(x)$ 和输出 $y$。</li>
+<li>另一个 token 能改变 $\operatorname{LN}(x)$ 吗？</li>
+</ol>
+
+<div class="box ok">
+<span class="label">解答 · $\mu=2$，$\sigma^2=1$，$\operatorname{LN}(x)\approx(-1,1)$；$y=(1,3)+(2,-1)=(3,2)$</span>
+<p><strong>第一问验算：</strong></p>
+\[\mu=\frac{1+3}{2}=2,\qquad \sigma^2=\frac{(1-2)^2+(3-2)^2}{2}=\frac{1+1}{2}=1\]
+\[\operatorname{LN}(x)_1=1\cdot\frac{1-2}{\sqrt{1+10^{-5}}}=\frac{-1}{\sqrt{1.00001}}\approx-0.999995\]
+\[\operatorname{LN}(x)_2=\frac{3-2}{\sqrt{1.00001}}\approx+0.999995\]
+<p>所以 $\operatorname{LN}(x)\approx(-1,1)$（精确值是 $(-1,1)/\sqrt{1.00001}$）。</p>
+<p>残差项用的是<strong>原始的 $x$</strong>，所以</p>
+\[y=x+F(\operatorname{LN}(x))=(1,3)+(2,-1)=(3,2)\]
+<p><strong>不是</strong> $\operatorname{LN}(x)+(2,-1)$。✓</p>
+<p><strong>第二问：</strong>不能。每个 token 的归一化<strong>只用它自己的特征</strong>。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 「独立」的边界在哪里</span>
+<p>LayerNorm 的独立性是关于<strong>归一化操作本身</strong>的。
+但一个<strong>允许的</strong>更早 token 仍然可以通过 $F$（注意力）影响这个 token 的更新值。</p>
+<p>所以：<strong>LayerNorm 的独立 ≠ 整个注意力子层的独立。</strong>
+这两句话不矛盾，但很容易混。</p>
+<p>另外，给定的 $(2,-1)$ 已经是 $F(\operatorname{LN}(x))$ 的结果，
+不要再把 $F$ 作用一次。</p>
+</div>
+
+<h3 id="s211">2.11 前馈网络：逐 token 变换 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 280" width="100%" role="img" aria-labelledby="figFfnT figFfnD">
+<title id="figFfnT">前馈网络对每个 token 独立地做升维、非线性、降维</title>
+<desc id="figFfnD">三个 token 列各自用同一套参数，先经 W1 升到 d_ff 维，再逐坐标施加激活函数，最后经 W2 降回 d_model 维。</desc>
+<g font-family="system-ui,sans-serif" font-size="11.5">
+<!-- 三列 -->
+<g>
+<rect x="60" y="196" width="72" height="34" rx="6" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.4"/>
+<text x="96" y="217" text-anchor="middle" fill="var(--ink)">Noa (p=0)</text>
+<rect x="200" y="196" width="72" height="34" rx="6" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.4"/>
+<text x="236" y="217" text-anchor="middle" fill="var(--ink)">can (p=1)</text>
+<rect x="340" y="196" width="72" height="34" rx="6" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.4"/>
+<text x="376" y="217" text-anchor="middle" fill="var(--ink)">she (p=5)</text>
+</g>
+<!-- 箭头 -->
+<line x1="96"  y1="196" x2="96"  y2="176" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="236" y1="196" x2="236" y2="176" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="376" y1="196" x2="376" y2="176" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<!-- W1 行 -->
+<rect x="46"  y="142" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="96"  y="163" text-anchor="middle" fill="var(--ink)">&#215; W&#8321; + b&#8321;</text>
+<rect x="186" y="142" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="236" y="163" text-anchor="middle" fill="var(--ink)">&#215; W&#8321; + b&#8321;</text>
+<rect x="326" y="142" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--purple)" stroke-width="1.4"/>
+<text x="376" y="163" text-anchor="middle" fill="var(--ink)">&#215; W&#8321; + b&#8321;</text>
+<text x="450" y="163" fill="var(--ink3)">d_model &#8594; d_ff</text>
+<!-- 激活 -->
+<line x1="96"  y1="142" x2="96"  y2="124" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="236" y1="142" x2="236" y2="124" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="376" y1="142" x2="376" y2="124" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<rect x="46"  y="90" width="100" height="34" rx="6" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.4"/>
+<text x="96"  y="111" text-anchor="middle" fill="var(--ink)">&#963; 逐坐标</text>
+<rect x="186" y="90" width="100" height="34" rx="6" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.4"/>
+<text x="236" y="111" text-anchor="middle" fill="var(--ink)">&#963; 逐坐标</text>
+<rect x="326" y="90" width="100" height="34" rx="6" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.4"/>
+<text x="376" y="111" text-anchor="middle" fill="var(--ink)">&#963; 逐坐标</text>
+<text x="450" y="111" fill="var(--ink3)">ReLU（2017）或 GELU（GPT-2）</text>
+<!-- W2 -->
+<line x1="96"  y1="90" x2="96"  y2="72" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="236" y1="90" x2="236" y2="72" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<line x1="376" y1="90" x2="376" y2="72" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arFfn)"/>
+<rect x="46"  y="38" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.4"/>
+<text x="96"  y="59" text-anchor="middle" fill="var(--ink)">&#215; W&#8322; + b&#8322;</text>
+<rect x="186" y="38" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.4"/>
+<text x="236" y="59" text-anchor="middle" fill="var(--ink)">&#215; W&#8322; + b&#8322;</text>
+<rect x="326" y="38" width="100" height="34" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.4"/>
+<text x="376" y="59" text-anchor="middle" fill="var(--ink)">&#215; W&#8322; + b&#8322;</text>
+<text x="450" y="59" fill="var(--ink3)">d_ff &#8594; d_model</text>
+<!-- 输出 -->
+<line x1="96"  y1="38" x2="96"  y2="24" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="236" y1="38" x2="236" y2="24" stroke="var(--ink3)" stroke-width="1.3"/>
+<line x1="376" y1="38" x2="376" y2="24" stroke="var(--ink3)" stroke-width="1.3"/>
+<text x="96"  y="18" text-anchor="middle" fill="var(--ink2)">输出</text>
+<text x="236" y="18" text-anchor="middle" fill="var(--ink2)">输出</text>
+<text x="376" y="18" text-anchor="middle" fill="var(--ink2)">输出</text>
+<!-- 分隔说明 -->
+<line x1="26" y1="252" x2="654" y2="252" stroke="var(--line)" stroke-width="1"/>
+<text x="26" y="272" fill="var(--ink2)" font-size="12">三个位置用的是<strong>同一套参数</strong>（W&#8321;, b&#8321;, W&#8322;, b&#8322;）；这里画的是六词前缀里不连续的一个子集。</text>
+<text x="26" y="292" fill="var(--warn)" font-size="12">对固定的输入状态，这个 FFN <strong>不引入任何跨 token 位置的通信</strong>。</text>
+<defs>
+<marker id="arFfn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 17 · 前馈网络逐 token 变换（从下往上读）。</strong>
+三个 token 列 <code>Noa</code>、<code>can</code>、<code>she</code> 各自独立地经过同一套参数。
+先升维到 $d_{\text{ff}}$，逐坐标施加激活，再降回 $d_{\text{model}}$。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 三步与形状</span>
+<ol class="steps">
+<li>用 $W_1$（形状 $d_{\text{model}}\times d_{\text{ff}}$）和偏置 $b_1$（宽度 $d_{\text{ff}}$）<strong>升维</strong>。</li>
+<li>逐坐标施加 $\sigma$。<strong>2017 模型用 ReLU，GPT-2 架构用 GELU。</strong></li>
+<li>用 $W_2$（形状 $d_{\text{ff}}\times d_{\text{model}}$）和偏置 $b_2$（宽度 $d_{\text{model}}$）<strong>降维</strong>。</li>
+</ol>
+<p>输出保持 batch 和 token 轴：$(B,T,d_{\text{model}})$。
+经典的 $512\to2048\to512$ 是 2017 的 base 模型；扩张比例是<strong>设计选择</strong>。</p>
+<p>在 pre-LN 块里，这里的 $x_t$ 指的是<strong>经过它自己的 LayerNorm 之后</strong>的输入；
+残差加法在 FFN <strong>外面</strong>。输入状态本身可能已经含有注意力带来的上下文。</p>
+</div>
+
+<h3 id="s212">2.12 为什么 FFN 重要 <span class="tag s">课件</span></h3>
+
+<p>注意力负责<strong>汇集上下文</strong>，FFN 负责从上下文里<strong>学非线性特征</strong>。</p>
+
+<p>一个 GPT 式块，标准多头注意力，$d_{\text{ff}}=4d$：</p>
+
+<table>
+<thead><tr><th>模块</th><th>权重矩阵</th><th class="num">参数量</th></tr></thead>
+<tbody>
+<tr><td>注意力</td><td>$W_Q,W_K,W_V,W_O$</td><td class="num">$4d^2$</td></tr>
+<tr><td>FFN</td><td>$d\times4d$ 与 $4d\times d$</td><td class="num">$8d^2$</td></tr>
+</tbody>
+</table>
+
+<p>FFN 占比：$\dfrac{8d^2}{4d^2+8d^2}=\dfrac23\approx67\%$。</p>
+
+<figure>
+<img src="assets/img/L05-ffn-parameter-share.svg" alt="FFN 宽度为 4d 时的块矩阵参数占比：注意力三分之一，FFN 三分之二。">
+<figcaption><strong>图 18 · 块的矩阵参数占比。</strong>
+不含嵌入、偏置和归一化参数。这里统计的是<strong>块内矩阵权重</strong>。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 这个比例怎么算出来的</span>
+<p>标准多头注意力有<strong>四个</strong> $d\times d$ 的投影（Q、K、V、输出）。
+对 head 求和<strong>不会</strong>额外引入因子 $h$——因为每个 head 的宽度是 $d/h$，
+$h$ 个 head 加起来仍然是 $d\times d$。</p>
+<p>两层矩阵的 FFN 有 $d\cdot d_{\text{ff}}+d_{\text{ff}}\cdot d$ 个权重。取 $d_{\text{ff}}=4d$：</p>
+<table>
+<thead><tr><th>模块</th><th>计算</th><th class="num">$d=512$ 时的数量</th></tr></thead>
+<tbody>
+<tr><td>注意力</td><td>$4d^2$</td><td class="num">1,048,576</td></tr>
+<tr><td>FFN</td><td>$8d^2$</td><td class="num">2,097,152</td></tr>
+</tbody>
+</table>
+<p>所以 FFN 占这 12 个 $d^2$ 里的 8 份，即 $2/3$。</p>
+<p><strong>去掉激活函数会怎样？</strong>两个仿射映射会塌成一个仿射映射
+（推导见 Lecture 04 的 <a href="LLM-04-神经语言模型与循环注意力.html#s16">§1.6</a>），
+FFN 就失去了存在的意义。但注意不要反过来说「没有 FFN 的 Transformer 就完全是线性的」——
+注意力的 softmax 本身就是非线性的。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 「容量」这个词要限定</span>
+<p>这里的「容量」指<strong>参数数量</strong>，不是推理能力、存储事实、内存占用或推理速度的精确度量。
+而且 $2/3$ 是<strong>块内矩阵权重</strong>的占比——
+算上嵌入、位置表、输出头、偏置和归一化，整个模型的占比会变。</p>
+<p>改变 $d_{\text{ff}}$、使用门控 FFN 或 GQA、或者加上交叉注意力，都会改变这个账。
+特别地，<strong>原版编码器–解码器的解码器多了一个注意力子层</strong>，
+那个分母描述的是我们 GPT 式块的账。</p>
+</div>
+
+<h3 id="s213">2.13 对单个 token 应用 FFN（E05） <span class="tag s">课件</span></h3>
+
+<p><strong>练习 E05 · 2 分钟 · she 的输入 · ReLU · 零偏置。</strong></p>
+
+$$x=(1,-2),\qquad W_1=\begin{pmatrix}1&-1&2\\0&1&-1\end{pmatrix},\qquad W_2=\begin{pmatrix}1&0\\0&1\\1&-1\end{pmatrix}$$
+
+<ol>
+<li>计算 $xW_1$，再算 $\operatorname{ReLU}(xW_1)W_2$。</li>
+<li>改变另一个 token 的 FFN 输入能改变这个输出吗？</li>
+</ol>
+
+<div class="box ok">
+<span class="label">解答 · $xW_1=(1,-3,4)$；ReLU 后 $(1,0,4)$；$\operatorname{FFN}(x)=(5,-4)$</span>
+<p><strong>第一问验算（行向量约定）：</strong></p>
+\[xW_1=(1,-2)\begin{pmatrix}1&-1&2\\0&1&-1\end{pmatrix}
+=(1\cdot1+(-2)\cdot0,\ \ 1\cdot(-1)+(-2)\cdot1,\ \ 1\cdot2+(-2)\cdot(-1))\]
+\[=(1,\ -3,\ 4)\ \checkmark\]
+<p>ReLU 把负的坐标清零：$(1,0,4)$。再乘 $W_2$：</p>
+\[(1,0,4)\begin{pmatrix}1&0\\0&1\\1&-1\end{pmatrix}
+=(1\cdot1+0\cdot0+4\cdot1,\ \ 1\cdot0+0\cdot1+4\cdot(-1))=(5,\ -4)\ \checkmark\]
+<p>这是<strong>残差加法之前</strong>的孤立 FFN 输出。</p>
+<p><strong>第二问：</strong>不能。这个 FFN 对每个给定的 token 向量<strong>独立处理</strong>。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 用这个例子理解非线性</span>
+<p>取相反输入 $(-1,2)$：</p>
+\[(-1,2)W_1=(-1,\ 3,\ -4)\ \xrightarrow{\text{ReLU}}\ (0,\ 3,\ 0)\ \xrightarrow{W_2}\ (0,\ 3)\]
+<p>而 $\operatorname{FFN}(1,-2)+\operatorname{FFN}(-1,2)=(5,-4)+(0,3)=(5,-1)$，
+它<strong>不等于</strong> $\operatorname{FFN}(0,0)=(0,0)$。
+这正好说明 $x\mapsto\operatorname{FFN}(x)$ 是<strong>非线性</strong>的——
+如果它是线性的，就应该满足 $\operatorname{FFN}(x)+\operatorname{FFN}(-x)=\operatorname{FFN}(0)=0$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 宽度不一定是 4 倍</span>
+<p>这个玩具例子的宽度是 $2\to3\to2$，说明隐层宽度<strong>不必</strong>是模型宽度的 4 倍。
+另外要分清：FFN「不混合 token」是关于<strong>这个孤立操作</strong>的陈述；
+更早的注意力仍然可以改变 FFN 收到的上下文输入。</p>
+</div>
+
+<h3 id="s214">2.14 多头下的形状 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>量</th><th>形状</th></tr></thead>
+<tbody>
+<tr><td>输入与投影后的 Q/K/V</td><td>$(B,T,d)$</td></tr>
+<tr><td>拆分后的 Q/K/V</td><td>$(B,h,T,d_h)$</td></tr>
+<tr><td>分数与权重</td><td>$(B,h,T,T)$</td></tr>
+<tr><td>每个 head 的输出</td><td>$(B,h,T,d_h)$</td></tr>
+<tr><td>拼接并投影后的输出</td><td>$(B,T,d)$</td></tr>
+</tbody>
+</table>
+
+<p>完整的 Noa 句子：$B=2,\ T=10,\ d=16,\ h=4$。</p>
+
+<div class="box key">
+<span class="label">补充 · 四个轴分别是什么</span>
+<p>分数张量 $(B,h,T,T)$ 的四个轴依次是：
+<strong>batch</strong>、<strong>head</strong>、<strong>查询位置</strong>、<strong>键位置</strong>。</p>
+<p>softmax 要沿<strong>最后一个轴</strong>（键位置）做。
+注意在自注意力里查询长度和键长度<strong>恰好</strong>相等，
+但在交叉注意力里它们可以不同（目标长度 vs 源长度）。</p>
+<p>实现里的 batch 是 $B=2$、$T=10$、$d=16$、$h=4$、$d_h=4$。
+每个输入是一整句十个词的 Noa 句子，然后再接 EOS 目标。</p>
+</div>
+
+<h3 id="s215">2.15 拆分、注意力、合并（代码） <span class="tag s">课件</span></h3>
+
+<pre><code>q = q_proj(x).reshape(B, T, h, dh).transpose(1, 2)
+# Apply the same split to projected K and V.
+scores = q @ k.transpose(-2, -1) / math.sqrt(dh)
+scores = scores.masked_fill(~allowed, -torch.inf)
+weights = scores.softmax(dim=-1)
+z = weights @ v
+z = z.transpose(1, 2).contiguous().view(B, T, d)
+out = out_proj(z)</code></pre>
+
+<p>先拆特征，再移动 head 轴。合并时按相反顺序还原。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么必须先 reshape 再 transpose</span>
+<p>投影后的 Q/K/V 是 $(B,T,d)$，目标是 $(B,h,T,d_h)$。</p>
+<p><strong>不能</strong>直接 <code>reshape(B,h,T,dh)</code>——
+那样会把 token 下标和 head 下标<strong>混在一起</strong>
+（即使 $h\cdot d_h=d$ 这个维度数值恰好对得上）。</p>
+<p>正确顺序是 <code>reshape(B,T,h,dh)</code>（把特征轴切成 head 和 head 内宽度）
+再 <code>transpose(1,2)</code>（把 head 轴提到 token 轴前面）。</p>
+<p>还原时反过来：<code>transpose(1,2)</code> 之后<strong>必须先</strong> <code>contiguous()</code>
+再 <code>view(B,T,d)</code>——因为 transpose 只改变步长（stride），
+不改变底层内存布局，而 <code>view</code> 要求内存连续。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 掩码与教学实现</span>
+<p>下三角的 $(T,T)$ 布尔掩码<strong>广播</strong>到 batch 和 head 维上。
+<strong><code>True</code> 表示允许。</strong>归一化沿最后一个键轴。</p>
+<p>PyTorch 的 <code>nn.Linear</code> 存的是 <code>(out_features, in_features)</code>，
+而公式里用的是行向量矩阵——两者转置对应。</p>
+<p>这个显式的教学实现会<strong>实际物化</strong>注意力矩阵，它不是生产级的融合算子。</p>
+</div>
+
+<h3 id="s216">2.16 一个完整的 pre-LN 块 <span class="tag s">课件</span></h3>
+
+<pre><code>def forward(self, x, causal=True):
+    update, _ = self.attention(self.attention_norm(x), causal)
+    x = x + update
+    return x + self.ffn(self.ffn_norm(x))</code></pre>
+
+<p>每个块有自己的注意力、FFN 和归一化参数。笔记本里每个组件都显式定义。</p>
+
+<div class="box key">
+<span class="label">补充 · 四行代码对应四条设计决定</span>
+<table>
+<thead><tr><th>行</th><th>决定</th></tr></thead>
+<tbody>
+<tr><td><code>self.attention_norm(x)</code></td><td><strong>先归一化</strong>再进注意力 → pre-LN</td></tr>
+<tr><td><code>x = x + update</code></td><td>残差加法用的是<strong>未归一化</strong>的 $x$</td></tr>
+<tr><td><code>self.ffn_norm(x)</code></td><td>FFN 有<strong>自己的</strong>归一化模块（参数独立）</td></tr>
+<tr><td><code>x + self.ffn(...)</code></td><td>第二个残差加法，形状仍是 $(B,T,d)$</td></tr>
+</tbody>
+</table>
+<p>注意力还会返回权重供检查，下划线把它丢弃。
+不同块有<strong>不同的参数</strong>；同一个块的参数在<strong>所有时间位置</strong>上复用。
+这里<strong>没有引入任何沿位置的循环</strong>。</p>
+</div>
+
+<hr>
+
+<h2 id="p3">第三部分 · 一个可运行的模型与论文证据</h2>
+
+<p>第三节课：把前面所有零件组装成一个真正能跑的小模型，逐项核对参数、因果性和损失；
+然后回到 2017 年那篇原始论文，逐张表读懂它的实验证据——
+<strong>把「设计」和「证据」放在一起读</strong>。</p>
+
+<h3 id="s31">3.1 从原始文本到模型输入 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="figTokT figTokD">
+<title id="figTokT">从原始文本经分词、ID 映射到嵌入查表的流程</title>
+<desc id="figTokD">原始文本被切成 token，映射到 token ID，再查嵌入表得到向量；下方列出 BPE、Unigram、WordPiece 三种分词算法，以及学习器与分段器的分工。</desc>
+<g font-family="system-ui,sans-serif" font-size="12">
+<!-- 左上流程 -->
+<text x="20" y="22" fill="var(--ink3)" font-size="12" font-weight="600">① 文本 &#8594; token &#8594; ID &#8594; 嵌入</text>
+<rect x="20" y="34" width="300" height="30" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="170" y="54" text-anchor="middle" fill="var(--ink)" font-size="12">Noa can be annoying but she</text>
+<line x1="170" y1="64" x2="170" y2="80" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arTok)"/>
+<rect x="20" y="86" width="300" height="30" rx="6" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.3"/>
+<text x="170" y="106" text-anchor="middle" fill="var(--ink)" font-size="12">token（一个显示词 = 一个玩具 token）</text>
+<line x1="170" y1="116" x2="170" y2="132" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arTok)"/>
+<rect x="20" y="138" width="300" height="30" rx="6" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.3"/>
+<text x="170" y="158" text-anchor="middle" fill="var(--ink)" font-size="12">token ID：0, 1, 2, 3, 4, 5</text>
+<line x1="170" y1="168" x2="170" y2="184" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arTok)"/>
+<rect x="20" y="190" width="300" height="30" rx="6" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="1.3"/>
+<text x="170" y="210" text-anchor="middle" fill="var(--ink)" font-size="12">可训练嵌入表查表 &#8594; 向量</text>
+<!-- 左下算法 -->
+<text x="20" y="248" fill="var(--ink3)" font-size="12" font-weight="600">② 三种分词算法（三选一，不是三个阶段）</text>
+<rect x="20" y="256" width="96" height="46" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.3"/>
+<text x="68" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">BPE</text>
+<text x="68" y="292" text-anchor="middle" fill="var(--ink3)" font-size="10.5">迭代合并词对</text>
+<rect x="122" y="256" width="96" height="46" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.3"/>
+<text x="170" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">Unigram</text>
+<text x="170" y="292" text-anchor="middle" fill="var(--ink3)" font-size="10.5">概率子词模型</text>
+<rect x="224" y="256" width="96" height="46" rx="6" fill="var(--bg2)" stroke="var(--teal)" stroke-width="1.3"/>
+<text x="272" y="274" text-anchor="middle" fill="var(--ink)" font-weight="600">WordPiece</text>
+<text x="272" y="292" text-anchor="middle" fill="var(--ink3)" font-size="10.5">子词词表 + 切分</text>
+<!-- 右侧 -->
+<line x1="352" y1="20" x2="352" y2="316" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="370" y="22" fill="var(--ink3)" font-size="12" font-weight="600">③ 学习器与分段器的分工</text>
+<rect x="370" y="34" width="290" height="52" rx="6" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.3"/>
+<text x="515" y="54" text-anchor="middle" fill="var(--ink)" font-weight="600">学习器（learner）</text>
+<text x="515" y="74" text-anchor="middle" fill="var(--ink2)" font-size="11">吃训练语料 &#8594; 产出词表 + 规则/参数</text>
+<line x1="515" y1="86" x2="515" y2="102" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arTok)"/>
+<rect x="370" y="108" width="290" height="46" rx="6" fill="var(--bg2)" stroke="var(--line)" stroke-width="1.3"/>
+<text x="515" y="128" text-anchor="middle" fill="var(--ink2)" font-size="11">产出：BPE 合并排名 / Unigram 概率 /</text>
+<text x="515" y="145" text-anchor="middle" fill="var(--ink2)" font-size="11">WordPiece 词表与切分规则</text>
+<line x1="515" y1="154" x2="515" y2="170" stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arTok)"/>
+<rect x="370" y="176" width="290" height="52" rx="6" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1.3"/>
+<text x="515" y="196" text-anchor="middle" fill="var(--ink)" font-weight="600">分段器（segmenter）</text>
+<text x="515" y="216" text-anchor="middle" fill="var(--ink2)" font-size="11">对新文本施加这个已拟合的分词器 &#8594; token ID</text>
+<text x="370" y="252" fill="var(--warn)" font-size="11.5">复用与模型相同的分词器配置；</text>
+<text x="370" y="270" fill="var(--warn)" font-size="11.5">不要对每个测试句重新拟合。</text>
+<text x="370" y="300" fill="var(--ink3)" font-size="11">位置编码：这里画的是 2017 式加性位置；</text>
+<text x="370" y="316" fill="var(--ink3)" font-size="11">RoPE 走 Q/K 那条独立的插入路径。</text>
+<defs>
+<marker id="arTok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+</g>
+</svg>
+<figcaption><strong>图 19 · 从原始文本到模型输入。</strong>
+左边是文本 → token → ID → 嵌入的四步；下面三种分词算法是<strong>互相替代</strong>的方案，不是同一流程的三个阶段。
+右边区分<strong>学习器</strong>（从语料拟合出词表）和<strong>分段器</strong>（把拟合好的分词器应用到新文本）。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 一个必须纠正的说法</span>
+<p>课件的原始材料说「输入嵌入来自一个单独的预训练嵌入模型」——这是<strong>错的</strong>。
+Transformer 通常有一张<strong>和其他参数一起训练</strong>的嵌入表；
+预训练模型只是「带着一张已经训好的表」而已。</p>
+<p><strong>词表学习</strong>（选出哪些子词）和<strong>神经嵌入权重的学习</strong>是两个不同的训练过程。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 几个细节</span>
+<ul>
+<li>这里的「一个显示词 = 一个玩具 token」是刻意的简化，
+<strong>不是</strong> BPE、WordPiece 或任何具体分词器的输出。
+真实分词器可能把 <code>annoying</code> 切成多段。</li>
+<li>子词词表里可以同时有<strong>完整单词</strong>和<strong>词片段</strong>。</li>
+<li>不要因为幻灯片标题写了「Input (BPE)」就把 Unigram 和 WordPiece 也说成 BPE 算法。</li>
+<li>空白标记和分词器特有的归一化都省略了。</li>
+</ul>
+</div>
+
+<h3 id="s32">3.2 小到能看清的模型 <span class="tag s">课件</span></h3>
+
+<p>用 <strong>is a great cat</strong> 或 <strong>is a great friend</strong> 补完前缀。</p>
+
+<table>
+<thead><tr><th>设置</th><th>教学基线</th></tr></thead>
+<tbody>
+<tr><td>数据</td><td>两句 Noa 句子；词表大小 12</td></tr>
+<tr><td>形状</td><td>Batch 2，长度 10，宽度 16</td></tr>
+<tr><td>块</td><td>2 个；每块 4 个头，FFN 宽度 32</td></tr>
+<tr><td>位置 / 归一化</td><td>可学习绝对位置 / pre-LN</td></tr>
+<tr><td>读出 / 总参数</td><td>权重绑定 / 4,608</td></tr>
+</tbody>
+</table>
+
+<p>ReLU、无偏置 Linear 层，以及 $d_{\text{ff}}=2d$ 把这个小模型和 GPT-2 区分开。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个模型的两句语料</span>
+<p>「Noa can be annoying but she is a great cat」和同一句以 friend 结尾的版本。
+每句末尾<strong>追加 EOS</strong>，<strong>没有 BOS</strong>。词表有 12 项。</p>
+<p>没有 dropout，Linear 层没有偏置，LayerNorm 带仿射，$\epsilon=10^{-5}$。
+参数用 seed 7 和一套有记录的初始化方式。</p>
+<p>这是一个<strong>透明的机制与调试例子</strong>：两句编造的句子支撑不起任何泛化性结论或基准级别的说法。</p>
+</div>
+
+<h3 id="s33">3.3 可学习的绝对位置 <span class="tag s">课件</span></h3>
+
+<pre><code>token_table = nn.Embedding(vocab_size, d)
+position_table = nn.Embedding(max_length, d)
+positions = torch.arange(ids.shape[1], device=ids.device)
+x = token_table(ids) + position_table(positions)</code></pre>
+
+<p>两张表在我们的实现模型里<strong>联合训练</strong>。位置表覆盖固定范围的槽位。</p>
+
+<div class="box key">
+<span class="label">补充 · 参数量与边界行为</span>
+<p>实现里用一张 <strong>10 行</strong>的位置表来覆盖十词的输入。
+可学习位置会增加 $\text{max\_length}\times d$ 个参数，本例是 $10\times16=160$。</p>
+<p>超出 <code>max_length</code> 的序列应该<strong>直接拒绝</strong>，
+而不是悄悄地把下标循环复用——那会让位置 10 和位置 0 共用一个向量。</p>
+<p>可学习位置<strong>不需要</strong>任何预训练词向量模型。</p>
+</div>
+
+<h3 id="s34">3.4 数一个块的参数 <span class="tag s">课件</span></h3>
+
+<p>取 $d=16$，$h=4$，$d_{\text{ff}}=32$。</p>
+
+<table>
+<thead><tr><th>组件</th><th>计数</th><th class="num">数值</th></tr></thead>
+<tbody>
+<tr><td>Q、K、V、输出投影</td><td>$4d^2$</td><td class="num">1,024</td></tr>
+<tr><td>两个 FFN 矩阵</td><td>$2d\,d_{\text{ff}}$</td><td class="num">1,024</td></tr>
+<tr><td>两个仿射 LayerNorm</td><td>$4d$</td><td class="num">64</td></tr>
+<tr><td><strong>一个块</strong></td><td></td><td class="num"><strong>2,112</strong></td></tr>
+</tbody>
+</table>
+
+<p>这里 $d_{\text{ff}}=2d$：FFN 占一半的矩阵权重。Linear 层无偏置。</p>
+
+<div class="box key">
+<span class="label">补充 · 逐项验算</span>
+\[4d^2=4\times256=1024\ \checkmark\]
+\[2d\,d_{\text{ff}}=2\times16\times32=1024\ \checkmark\]
+\[4d=4\times16=64\ \checkmark\]
+\[1024+1024+64=2112\ \checkmark\]
+<p><strong>四个宽度为 4 的 head 恰好把整个宽度的投影切开</strong>，$4d^2$ 里<strong>没有</strong>额外的因子 $h$。</p>
+<p>softmax、reshape、掩码、残差加法、ReLU <strong>都不增加可训练参数</strong>。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 两个 $2/3$ 别搞混</span>
+<p><a href="#s212">§2.12</a> 那张「为什么 FFN 重要」的图假设 $d_{\text{ff}}=4d$，只数<strong>块内矩阵</strong>，得到 FFN 占 $2/3$。</p>
+<p>这个实现用的是 $d_{\text{ff}}=2d$：注意力和 FFN 的矩阵各有 1024 个参数，
+所以在 2048 个矩阵权重里 FFN 占 $1/2$。
+把 64 个归一化参数也算进来的话，块内占比是 $1024/2112$。</p>
+<p>两个例子<strong>刻意用了不同的宽度</strong>——$2/3$ 不是一个普遍适用的整模型比例。</p>
+</div>
+
+<h3 id="s35">3.5 组装语言模型 <span class="tag s">课件</span></h3>
+
+<figure>
+<img src="assets/img/L05-decoder-model.svg" alt="token ID 选出 token 嵌入并加上可学习位置，两个解码器块和最终 LayerNorm 产生状态，词表读出复用 token 嵌入表产生下一个 token 的 logits。">
+<figcaption><strong>图 20 · 组装好的语言模型。</strong>
+token ID 查表 + 可学习位置相加；两个解码器块；最终 LayerNorm；
+词表读出<strong>复用 token 嵌入表</strong>（权重绑定）产生下一个 token 的 logits。
+每个位置都产生一个 12 维的词表 logit 向量：$(B,T,12)$。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 这张图里值得注意的三点</span>
+<ul>
+<li><strong>重复的块改变表示但保持形状。</strong>$(B,T,d)$ 进、$(B,T,d)$ 出。</li>
+<li><strong>只有 token 嵌入表被读出复用</strong>（weight tying），位置表是独立的。</li>
+<li>原版架构的编码器和交叉注意力<strong>被省略</strong>了，因为这个模型只从一个前缀预测续写。</li>
+</ul>
+<p>权重绑定（weight tying）意味着<strong>同一个 <code>Parameter</code> 对象被复用</strong>；
+两个独立的 Parameter 恰好初始化成相同的值<strong>不算</strong>绑定。</p>
+</div>
+
+<h3 id="s36">3.6 数整个语言模型（E04） <span class="tag s">课件</span></h3>
+
+<p>两个块；$d=16$；词表大小 12；10 个可学习位置。加一个最终的仿射 LayerNorm。
+把无偏置的输出矩阵<strong>绑定</strong>到 token 表上。</p>
+
+<div class="box ok">
+<span class="label">解答 · $2(2112)+12(16)+10(16)+2(16)=\mathbf{4608}$；解开绑定会多 192 个参数</span>
+<table>
+<thead><tr><th>组件</th><th>计算</th><th class="num">参数</th></tr></thead>
+<tbody>
+<tr><td>两个块</td><td>$2\times2112$</td><td class="num">4,224</td></tr>
+<tr><td>token 嵌入表</td><td>$12\times16$</td><td class="num">192</td></tr>
+<tr><td>位置表</td><td>$10\times16$</td><td class="num">160</td></tr>
+<tr><td>最终 LayerNorm</td><td>$2\times16$</td><td class="num">32</td></tr>
+<tr><td><strong>合计</strong></td><td></td><td class="num"><strong>4,608</strong></td></tr>
+</tbody>
+</table>
+<p>读出矩阵被绑定到 token 表（$12\times16$ 个参数复用），所以<strong>不额外计数</strong>。
+如果解开绑定，要多 $12\times16=192$ 个参数，总数变成 4,800。</p>
+</div>
+
+<h3 id="s37">3.7 对角线是允许的 <span class="tag s">课件</span></h3>
+
+<figure>
+<img src="assets/img/L05-causal-mask.svg" alt="Noa 前缀上的因果注意力。位置 5 的 she 可以读位置 0 到 5，同时预测位置 6 的 is。对角线上的输入是被观察到的，未来位置仍然被掩码。">
+<figcaption><strong>图 21 · 因果掩码：对角线是允许的。</strong>
+位置 $t$ 可以读<strong>输入</strong> $t$，同时预测<strong>目标</strong> $t+1$。
+下三角包含对角线，所以每一行至少有一个允许的键。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 为什么不能是「严格下三角」</span>
+<p>如果把掩码设成严格下三角（对角线也不允许），那么<strong>位置 0 的那一行全部被遮住</strong>——
+softmax 在一个空集合上<strong>没有定义</strong>。</p>
+<p>所以约定是：<strong>对角线上的 token 是一个已被观察到的输入</strong>，不是下一个目标。
+位置 $t$ 的 logit 行用来预测位置 $t+1$ 的目标——错开一位，正好不泄露答案。</p>
+<p>这也和 <a href="#s13">§1.3</a> 的观察一致：查询位置可以把自己也加权进去。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 完整的训练批次怎么构造</span>
+<p>跑完整模型训练时，用完整的十词句子（以 cat 结尾）和另一句（以 friend 结尾），各追加 EOS。
+<strong>输入</strong>是每篇文档的前十个 token，<strong>目标</strong>是它的后十个。
+没有 BOS、没有 padding、不跨文档取窗口。</p>
+<p>teacher forcing 会把观察到的词<strong>一起</strong>喂进去，
+但因果掩码仍然阻止每个查询访问未来的词。</p>
+</div>
+
+<h3 id="s38">3.8 从 logits 算 next-token 损失 <span class="tag s">课件</span></h3>
+
+<pre><code>inputs = documents[:, :-1]
+targets = documents[:, 1:]
+logits = model(inputs)              # (2, 10, 12)
+loss = F.cross_entropy(
+    logits.reshape(-1, 12), targets.reshape(-1)
+)</code></pre>
+
+<p>交叉熵接收的是<strong>原始 logits</strong>。在 <strong>she</strong>（位置 5）预测 <strong>is</strong>（位置 6）；
+在 <strong>cat</strong>（位置 9）预测 <strong>EOS</strong>（位置 10）。</p>
+
+<div class="box key">
+<span class="label">补充 · 三个容易出错的细节</span>
+<ul>
+<li><strong>展平顺序必须一致。</strong><code>logits.reshape(-1,12)</code> 和 <code>targets.reshape(-1)</code>
+都要按「先 batch 后位置」的顺序展开，否则目标会错位。</li>
+<li><strong>不要先做 softmax。</strong>库函数内部已经算 log-softmax；
+先做 softmax 会改变它期望的输入。</li>
+<li>每个输入都以 Noa 开头，每个目标序列以 EOS 结尾，<strong>没有 BOS</strong>。</li>
+</ul>
+<p>因为 EOS 在这里是<strong>目标</strong>，所以这个批次只需要<strong>十个</strong>输入位置嵌入——
+输出行在位置 9（cat/friend）预测文档位置 10（EOS）。</p>
+</div>
+
+<h3 id="s39">3.9 未来能改变前缀吗（E05） <span class="tag s">课件</span></h3>
+
+<p><strong>实现练习 E05 · 3 分钟 + 跟进。</strong></p>
+
+<p>只改两个块模型里输入位置 6（<code>is</code>）。哪些 logits 会变？早期输出的损失会把梯度送到哪里？</p>
+
+<div class="box ok">
+<span class="label">解答 · 位置 0–5（到 she 为止）的 logits 不变；它们的损失对未来输入状态 6–9 的梯度为零</span>
+<p>因果掩码保证了这一点。<strong>无掩码的对照组会泄漏</strong>——所以必须把这个负对照也跑一遍，
+否则一个「恒定输出」的实现也能骗过这个测试。</p>
+<p>笔记本里对比完整模型的 logits，并对位置 0–5（以 she 结尾）的前缀损失求导，
+检查对位置 6–9 的输入状态的梯度为零，同时允许前缀内的梯度非零。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 验证清单（这一段很值得记住）</span>
+<ol class="steps">
+<li><strong>把批量注意力与独立的逐 head 循环参照实现对比</strong>——形状对不等于数值对。</li>
+<li><strong>在完整模型里扰动一个未来 token</strong>，检查早期输出是否变化。</li>
+<li><strong>对一个前缀损失求关于逐位置输入状态的梯度</strong>，检查未来位置梯度为零。</li>
+<li>确定性运行，关闭 dropout，设置显式容差。</li>
+<li><strong>也要跑无掩码的负对照。</strong></li>
+</ol>
+<p>两个反例：<strong>嵌入表的梯度不能用来检验位置泄漏</strong>，
+因为同一个参数可能被多个出现位置共享；
+<strong>head 正确也不能证明整个解码器正确</strong>——
+错误的归一化轴或 reshape 都可能造成泄漏。拟合曲线好看，也证明不了张量正确性或因果性。</p>
+</div>
+
+<h3 id="s310">3.10 玩具批次无法到达零损失 <span class="tag s">课件</span></h3>
+
+<p>两句话共享 <strong>「Noa can be annoying but she is a great」</strong>。
+下一个 token 是 <strong>cat</strong> 或 <strong>friend</strong>，出现得一样频繁。</p>
+
+$$L_{\min}=\frac{\log 2}{10}\approx0.0693\quad\text{nats per token}$$
+
+<p>每句话里其余九个目标都可以被一致地预测。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个下界怎么来的</span>
+<p>每句十个词加上 EOS，产生<strong>十个</strong>下一个 token 目标，两句话共二十个目标。</p>
+<p>通过 <code>great</code>（输入位置 8）之前的<strong>前缀完全相同</strong>。
+它们的下一个目标不同：cat 与 friend，各占一半。
+这两处目标位置在最优时各贡献 $\log2$；其余每一个目标都可以趋近零损失。</p>
+<p>于是平均损失的<strong>下确界</strong>是</p>
+\[\frac{2\log 2}{20}=\frac{\log 2}{10}\approx0.0693147\ \text{nats/token}\ \checkmark\]
+<p>把 $\log2=0.6931472$ 除以 10 正好是这个值。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别把这个下界读错</span>
+<ul>
+<li><strong>要保留那些有歧义的目标位置</strong>，不要把它们从损失里删掉。</li>
+<li>在共享前缀处做确定性的 top-1 选择，<strong>不可能对两句话都正确</strong>。</li>
+<li>这个下界描述的是<strong>编造的拟合批次</strong>，不是留出集性能。</li>
+<li>有限 logits 下，确定性目标的损失是<strong>趋近</strong>零而不是<strong>达到</strong>零。</li>
+</ul>
+</div>
+
+<h3 id="s311">3.11 拟合检查过的模型 <span class="tag s">课件</span></h3>
+
+<pre><code>optimizer = torch.optim.AdamW(
+    model.parameters(), lr=0.02, weight_decay=0.0
+)
+for step in range(200):
+    optimizer.zero_grad()
+    logits = model(inputs)
+    loss = F.cross_entropy(
+        logits.flatten(0, 1), targets.flatten()
+    )
+    loss.backward()
+    optimizer.step()</code></pre>
+
+<p>CPU、seed 7、全批次、无 dropout。这是一次<strong>拟合检查</strong>。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 记录损失的位置</span>
+<p>参数初始化：嵌入和 Linear 权重标准差 0.02；归一化的 scale 初始化为 1、bias 为 0。
+AdamW 用 betas $(0.9,0.999)$、$\epsilon=10^{-8}$、零权重衰减。</p>
+<p>记录损失时要区分「训练前」和「每次更新完成后」——
+<strong>不要把更新下标和「在一个大数据集上跑了一轮」混为一谈</strong>。</p>
+</div>
+
+<h3 id="s312">3.12 比较归一化顺序 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 320" width="100%" role="img" aria-labelledby="figNormT figNormD">
+<title id="figNormT">pre-LN 与 post-LN 教学模型在同一个玩具批次上的损失曲线</title>
+<desc id="figNormD">两条曲线从约 2.51 下降到理论下界 0.0693，pre-LN 在前二十步略快，之后两者几乎重合。</desc>
+<rect x="0" y="0" width="680" height="320" fill="none"/>
+<line x1="86" y1="252" x2="646" y2="252" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="86" y1="30" x2="86" y2="252" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="78" y="256" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="78" y="211.7" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0.5</text>
+<text x="78" y="170.5" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">1.0</text>
+<text x="78" y="129.3" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">1.5</text>
+<text x="78" y="88.2" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">2.0</text>
+<text x="78" y="47" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">2.5</text>
+<line x1="82" y1="211.7" x2="86" y2="211.7" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="170.5" x2="86" y2="170.5" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="129.3" x2="86" y2="129.3" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="88.2" x2="86" y2="88.2" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="47" x2="86" y2="47" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="86" y1="252" x2="86" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="225" y1="252" x2="225" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="364" y1="252" x2="364" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="503" y1="252" x2="503" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="642" y1="252" x2="642" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="86" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="225" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">50</text>
+<text x="364" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">100</text>
+<text x="503" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">150</text>
+<text x="642" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">200</text>
+<text x="366" y="294" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">已完成的更新次数</text>
+<text x="20" y="141" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif" transform="rotate(-90 20 141)">损失 (nats / token)</text>
+<!-- 下界 -->
+<line x1="86" y1="246.3" x2="646" y2="246.3" stroke="#566471" stroke-width="1.6" stroke-dasharray="2 4"/>
+<text x="92" y="240" font-size="11" fill="#566471" font-family="system-ui,sans-serif">理论下界 0.0693</text>
+<!-- pre-LN -->
+<polyline fill="none" stroke="#20578c" stroke-width="2.6" stroke-linejoin="round" points="86,45.7 88.8,65.1 91.6,84.6 94.3,99.5 97.1,119.8 99.9,136.1 102.7,151.7 108.2,179.2 113.8,200.9 119.4,217.2 127.7,232.2 141.6,242.1 155.5,244.8 169.4,245.6 197.2,246.0 225,246.1 252.8,246.2 294.5,246.2 364,246.2 433.5,246.2 503,246.2 572.5,246.3 646,246.3"/>
+<!-- post-LN -->
+<polyline fill="none" stroke="#a85a29" stroke-width="2.2" stroke-dasharray="7 4" stroke-linejoin="round" points="86,45.6 88.8,67.6 91.6,85.4 94.3,103.0 97.1,120.2 99.9,137.2 102.7,153.0 108.2,181.0 113.8,203.7 119.4,220.3 127.7,234.8 141.6,243.2 155.5,245.3 169.4,245.8 197.2,246.1 225,246.2 252.8,246.2 294.5,246.2 364,246.2 433.5,246.2 503,246.3 572.5,246.3 646,246.3"/>
+<!-- 图例（右下空白） -->
+<line x1="440" y1="200" x2="468" y2="200" stroke="#20578c" stroke-width="2.6"/>
+<text x="476" y="204" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">pre-LN</text>
+<line x1="440" y1="220" x2="468" y2="220" stroke="#a85a29" stroke-width="2.2" stroke-dasharray="7 4"/>
+<text x="476" y="224" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">post-LN</text>
+<line x1="440" y1="240" x2="468" y2="240" stroke="#566471" stroke-width="1.6" stroke-dasharray="2 4"/>
+<text x="476" y="244" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">玩具损失下界</text>
+</svg>
+<figcaption><strong>图 22 · 归一化顺序的受控对比（实测）。</strong>
+同一个初始状态、同一份预算，<strong>只改块的归一化顺序</strong>。
+两者都保留最终的 LayerNorm、绑定的读出和可学习位置表。
+起点约 2.51，前二十步 pre-LN 略快，之后两条曲线几乎重合，都趋向下界 0.0693。</figcaption>
+</figure>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这张图能说什么</span>
+<p>曲线是从笔记本<strong>重新计算</strong>的，不是「某一种放法总是训得更快」的断言。
+横轴 0 是更新之前，200 是 200 次更新之后。</p>
+<p>历史动机来自 Xiong et al. (2020)，但<strong>这个受控对比是我们自己的玩具实验</strong>：
+<strong>一个 seed、两层、两句话，不足以确立普遍的归一化排序</strong>，也不能说明留出集性能。</p>
+<p>如果要把实验做下去：<strong>一次只改一个因素</strong>，并且在构造重叠窗口<strong>之前</strong>切分文档。
+报告结果时要如实记录损失和梯度范数——<strong>即使预期的赢家没有赢</strong>。</p>
+</div>
+
+<h3 id="s313">3.13 注意力矩阵按平方增长 <span class="tag s">课件</span></h3>
+
+$$\text{score storage}=4BhT^2\ \text{bytes in float32}$$
+
+<table>
+<thead><tr><th>长度 $T$</th><th class="num">一个矩阵（$B=2,\ h=4$）</th></tr></thead>
+<tbody>
+<tr><td>256</td><td class="num">2 MiB</td></tr>
+<tr><td>1,024</td><td class="num">32 MiB</td></tr>
+<tr><td>2,048</td><td class="num">128 MiB</td></tr>
+</tbody>
+</table>
+
+<p>这是<strong>一层</strong>的分数或权重张量，不是总训练显存。</p>
+
+<div class="box key">
+<span class="label">补充 · 三个数验算一遍</span>
+<p>float32 每个数 4 字节，张量形状 $(B,h,T,T)$：</p>
+\[\text{bytes}=4\times B\times h\times T\times T=4\times2\times4\times T^2=32T^2\]
+<table>
+<thead><tr><th>$T$</th><th>计算</th><th class="num">字节</th><th class="num">MiB</th></tr></thead>
+<tbody>
+<tr><td>256</td><td>$32\times65536$</td><td class="num">2,097,152</td><td class="num">2</td></tr>
+<tr><td>1,024</td><td>$32\times1{,}048{,}576$</td><td class="num">33,554,432</td><td class="num">32</td></tr>
+<tr><td>2,048</td><td>$32\times4{,}194{,}304$</td><td class="num">134,217,728</td><td class="num">128</td></tr>
+</tbody>
+</table>
+<p>（这里 MiB 指 $2^{20}$ 字节。）长度翻倍，存储<strong>翻四倍</strong>——这就是 $T^2$ 的代价。</p>
+<p>我们完整句子的 $T=10$ 张量只需要 $32\times100=3{,}200$ 字节；
+六 token 前缀视图在同样 $B=2,h=4$ 下是 $32\times36=1{,}152$ 字节。</p>
+<p>在固定宽度下，$QK$ 与 $AV$ 合起来约需 $4BT^2d$ 次浮点运算（把一次乘加算作 2 次）。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 训练能并行，生成不能</span>
+<p>训练时所有位置可以并行计算，但<strong>自回归生成仍然依赖前面已生成的 token</strong>。
+KV 缓存可以复用之前的键和值（留到 Lecture 13）。</p>
+</div>
+
+<h3 id="s314">3.14 三种配置要分开 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>选择</th><th>2017 翻译模型</th><th>GPT-2 总览</th><th>小实现模型</th></tr></thead>
+<tbody>
+<tr><td>架构</td><td>编码器–解码器</td><td>因果解码器</td><td>两个解码器块</td></tr>
+<tr><td>位置</td><td>正弦</td><td>可学习</td><td>可学习，十个槽位</td></tr>
+<tr><td>归一化顺序</td><td>post-LN</td><td>pre-LN</td><td>pre-LN</td></tr>
+<tr><td>FFN</td><td>ReLU，$4d$</td><td>GELU，$4d$</td><td>ReLU，$2d$</td></tr>
+<tr><td>Linear 偏置</td><td>有</td><td>有</td><td>无</td></tr>
+</tbody>
+</table>
+
+<p>这个小模型是一个<strong>可检视的实现</strong>，绑定参数 4,608 个。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么必须把它们分开</span>
+<p>课件里穿插着三套不同的东西：<strong>原始论文的定义</strong>、<strong>GPT-2 风格的总览</strong>、
+以及<strong>我们自己的小 PyTorch 模型</strong>。混着讲很容易得出错误结论。</p>
+<p>几个具体差异：2017 模型有编码器到解码器的交叉注意力、dropout 和标签平滑，
+小拟合里<strong>一个都没有</strong>。受控的 post-LN 玩具对比<strong>只改子层归一化位置</strong>，
+并保留最终 LayerNorm，所以它<strong>不是</strong> 2017 架构的完整复现。</p>
+<p>宽度上：标准解码器块在 $d_{\text{ff}}=4d$ 时把 $2/3$ 的矩阵权重给了 FFN；
+小模型用 $2d$，比例变成一半。嵌入、归一化、偏置和额外的交叉注意力都会改变整模型占比。</p>
+</div>
+
+<h3 id="s315">3.15 Attention Is All You Need · 2017 <span class="tag s">课件</span></h3>
+
+<p>Vaswani 等，NeurIPS。一个<strong>没有循环、没有卷积层</strong>的编码器–解码器翻译模型。</p>
+
+<div class="cols">
+<div>
+<h4>原始模型</h4>
+<ul>
+<li>六个编码器层、六个解码器层。</li>
+<li>自注意力、交叉注意力、逐位置 ReLU 网络。</li>
+<li>post-LN 残差块与正弦位置。</li>
+</ul>
+</div>
+<div>
+<h4>为什么要去掉循环？</h4>
+<table>
+<thead><tr><th>$n$ 个 token</th><th>RNN</th><th>注意力</th></tr></thead>
+<tbody>
+<tr><td>串行步数</td><td>$O(n)$</td><td>$O(1)$</td></tr>
+<tr><td>路径长度</td><td>$O(n)$</td><td>$O(1)$</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<p>并行训练，串行生成。路径更短<strong>不保证</strong>梯度更稳。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个对比在比什么、不在比什么</span>
+<p><strong>比的是</strong>：一层的<strong>序列轴依赖</strong>。
+RNN 要处理 $n$ 个 token 必须串行走 $n$ 步，任意两个位置之间的依赖路径长度也是 $O(n)$；
+注意力可以一次性看到全部位置，路径长度是 $O(1)$。</p>
+<p><strong>不是</strong>：墙钟时间的常数级承诺，也不是「更少的优化步数」。
+投影和 FFN 的开销仍然存在，而且稠密注意力<strong>会物化二次规模的分数矩阵</strong>
+（见 <a href="#s313">§3.13</a>）。</p>
+<p>另外，「没有循环或卷积」<strong>不等于</strong>「没有前馈层」——
+逐位置 FFN 是架构的正式组成部分。</p>
+<p>最后：Transformer 仍然会有梯度消失或爆炸，初始化、残差、归一化、深度和优化过程都起作用。</p>
+</div>
+
+<h3 id="s316">3.16 翻译数据与模型配置 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<h4>WMT 2014</h4>
+<p><strong>英→德：</strong>450 万句对；共享词表约 3.7 万 BPE token。</p>
+<p><strong>英→法：</strong>3600 万句对；3.2 万 wordpiece。</p>
+<p>按长度相近组批：约 2.5 万源 token + 2.5 万目标 token。</p>
+</div>
+<div>
+<h4>Base 与 big</h4>
+<table>
+<thead><tr><th>设置</th><th>Base</th><th>Big</th></tr></thead>
+<tbody>
+<tr><td>每个堆栈层数</td><td>6</td><td>6</td></tr>
+<tr><td>$d_{\text{model}}$</td><td>512</td><td>1024</td></tr>
+<tr><td>$d_{\text{ff}}$</td><td>2048</td><td>4096</td></tr>
+<tr><td>头数</td><td>8</td><td>16</td></tr>
+<tr><td>Dropout</td><td>0.1</td><td>0.3*</td></tr>
+</tbody>
+</table>
+<p>两者都是 $d_k=d_v=64$；标签平滑 $0.1$。</p>
+</div>
+</div>
+
+<p>八块 P100：base 十万步 / 12 小时；big 三十万步 / 3.5 天。
+*big 在英→法上用 dropout 0.1。</p>
+
+<div class="box key">
+<span class="label">补充 · 读这张表的几个要点</span>
+<ul>
+<li><strong>M 是百万句对</strong>，不是 token 数。</li>
+<li>$N$ 数的是<strong>每个堆栈</strong>的层数，所以 $N=6$ 意味着 6 个编码器层 + 6 个解码器层。</li>
+<li>注意力投影把模型宽度切成 $h$ 个等宽的头；base 和 big 的 $d_{\text{model}}/h$ <strong>都是 64</strong>。</li>
+<li>FFN 把特征扩到模型宽度的<strong>四倍</strong>再投回来。</li>
+</ul>
+<p>训练细节：Adam $\beta_1=0.9$、$\beta_2=0.98$、$\epsilon=10^{-9}$；
+4000 步线性 warm-up，然后按步数的平方根倒数衰减，学习率是
+$d_{\text{model}}^{-1/2}\min(\text{step}^{-1/2},\ \text{step}\cdot4000^{-3/2})$。
+标签平滑用 $\epsilon_{ls}=0.1$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这是历史实验</span>
+<p>论文报告的是在他们硬件上 base 每步约 0.4 秒、big 每步约 1 秒——
+<strong>不是</strong>学生机器上的预期性能。
+论文 Table 3 报告完整 base / big 翻译模型分别约 65M 和 213M 参数；
+下一节是<strong>另一个</strong>只数编码器的练习。</p>
+</div>
+
+<h3 id="s317">3.17 编码器参数计数（E06） <span class="tag s">课件</span></h3>
+
+<p><strong>练习 E06 · 3 分钟 · 数一个编码器。</strong></p>
+
+<p>$N=12$，$d=768$，$h=12$，$|V|=30{,}522$；$d_k=d_v=64$，$d_{\text{ff}}=4d$。
+包含偏置和每层两个 LayerNorm。用正弦位置，<strong>不要</strong>预测头。</p>
+
+<div class="cols">
+<div>
+<table>
+<thead><tr><th>组件</th><th>参数量</th></tr></thead>
+<tbody>
+<tr><td>token 嵌入</td><td>$|V|d$</td></tr>
+<tr><td>Q/K/V + 输出，每层</td><td>$4d^2+4d$</td></tr>
+<tr><td>FFN，每层</td><td>$8d^2+5d$</td></tr>
+<tr><td>两个 LayerNorm，每层</td><td>$4d$</td></tr>
+</tbody>
+</table>
+</div>
+<div>
+<h4>合并各项</h4>
+<p>$$P=|V|d+N(12d^2+13d)$$</p>
+<p>嵌入：<strong>23,440,896</strong></p>
+<p>编码器堆栈：<strong>85,054,464</strong></p>
+<p>总计：<strong>108,495,360 ≈ 108.50M</strong></p>
+</div>
+</div>
+
+<div class="box ok">
+<span class="label">解答 · 逐项验算</span>
+<p><strong>每层的 $12d^2+13d$ 是怎么来的：</strong></p>
+<table>
+<thead><tr><th>项</th><th>来源</th><th>计数</th></tr></thead>
+<tbody>
+<tr><td>$4d^2$</td><td>Q、K、V、输出四个 $d\times d$ 矩阵</td><td rowspan="2">合计 $12d^2$</td></tr>
+<tr><td>$8d^2$</td><td>FFN 的 $d\times4d$ 与 $4d\times d$</td></tr>
+<tr><td>$4d$</td><td>四个线性层的偏置</td><td rowspan="3">合计 $13d$</td></tr>
+<tr><td>$5d$</td><td>FFN 的 $4d$ 与 $d$ 两个偏置</td></tr>
+<tr><td>$4d$</td><td>两个 LayerNorm 各 $d$ 个 scale + $d$ 个 bias</td></tr>
+</tbody>
+</table>
+<p><strong>代入 $d=768$：</strong></p>
+\[12d^2=12\times589{,}824=7{,}077{,}888,\qquad 13d=9{,}984\]
+\[12d^2+13d=7{,}087{,}872\quad\text{（每层）}\]
+\[N=12:\quad 12\times7{,}087{,}872=85{,}054{,}464\ \checkmark\]
+\[|V|d=30{,}522\times768=23{,}440{,}896\ \checkmark\]
+\[23{,}440{,}896+85{,}054{,}464=108{,}495{,}360\ \checkmark\]
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个计数的边界</span>
+<p>源材料给的是 $N=12,d=768,h=12,|V|=30522$，这<strong>不是</strong>论文的六层 base 模型。</p>
+<p>原始题目没有规定是否有偏置、是否用可学习位置、是否有 segment 嵌入、是否有输出头——
+<strong>精确计数必须先把这些选择定下来</strong>。这里的选择是：包含所有线性偏置、
+两个 LayerNorm 的可学习 $\gamma/\beta$、一张 token 嵌入表、固定的正弦位置。</p>
+<p><strong>排除</strong>：嵌入归一化、segment 嵌入、pooling、额外的最终归一化、以及所有预测头。
+所以<strong>不要</strong>把它标成「精确的 BERT 参数量」。</p>
+<p>另外：把固定宽度切成 $h$ 个头<strong>不会</strong>再乘一次 $h$。
+残差加法、softmax、dropout 和正弦位置<strong>都不增加可学习参数</strong>。</p>
+</div>
+
+<h3 id="s318">3.18 翻译质量与训练成本 <span class="tag s">课件</span></h3>
+
+<p>WMT <strong>newstest2014 测试集</strong> · BLEU，越高越好</p>
+
+<table>
+<thead><tr><th>模型</th><th class="num">英–德</th><th class="num">英–法</th><th class="num">英–法训练 FLOPs</th></tr></thead>
+<tbody>
+<tr><td>ConvS2S，单模型</td><td class="num">25.16</td><td class="num">40.46</td><td class="num">$1.5\times10^{20}$</td></tr>
+<tr><td>ConvS2S，集成</td><td class="num">26.36</td><td class="num">41.29</td><td class="num">$1.2\times10^{21}$</td></tr>
+<tr><td>Transformer base</td><td class="num">27.3</td><td class="num">38.1</td><td class="num">$3.3\times10^{18}$</td></tr>
+<tr><td><strong>Transformer big</strong></td><td class="num"><strong>28.4</strong></td><td class="num"><strong>41.8</strong></td><td class="num">$2.3\times10^{19}$</td></tr>
+</tbody>
+</table>
+
+<p>big 的估计训练 FLOPs 约为单个 ConvS2S 的 <strong>1/6.5</strong>；约为其集成的 <strong>1/52</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 这两个倍数算出来</span>
+\[\frac{1.5\times10^{20}}{2.3\times10^{19}}=6.5217\ldots\ \approx6.5\]
+\[\frac{1.2\times10^{21}}{2.3\times10^{19}}=52.1739\ldots\ \approx52\]
+<p>论文的训练 FLOPs 是<strong>估计值</strong>：由墙钟训练时间、GPU 数量、
+以及每块 GPU 估计的持续单精度算力推算而来。</p>
+<p>所以这些比值<strong>不是</strong>每 token 推理吞吐，也<strong>不是</strong>同硬件下的速度测量。
+课件原文的「快 50 倍」把算力和时间混在一起了，比较对象也不明确。</p>
+<p>另外注意 base 那一行：<strong>更小的模型并没有在两个任务上都赢过所有基线</strong>
+（英–法 38.1 低于 ConvS2S 的 40.46）。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 数值的出处要统一</span>
+<p>这里的数字<strong>明确跟随论文的 Table 2</strong>（big 41.8，base 38.1）。
+源材料的英–法柱状图与那张表并不完全一致，论文不同版本的正文也报告过不同的英–法分数——
+<strong>不要</strong>把图里的数和正文里的数悄悄混起来用。</p>
+<p>BLEU 比较的是生成译文和参考译文，它<strong>不是</strong>困惑度；
+它的绝对值也<strong>不应</strong>跨语言对直接比较，仿佛两者是同一份测试。</p>
+</div>
+
+<h3 id="s319">3.19 论文里哪些选择重要 <span class="tag s">课件</span></h3>
+
+<p>英–德 <strong>newstest2013 开发集</strong> · Table 3</p>
+
+<table>
+<thead><tr><th>相对 base 的改变</th><th class="num">开发集 PPL ↓</th><th class="num">开发集 BLEU ↑</th></tr></thead>
+<tbody>
+<tr><td>Base：8 头，FFN 宽度 2048</td><td class="num">4.92</td><td class="num">25.8</td></tr>
+<tr><td>单头；保持总头宽度不变</td><td class="num">5.29</td><td class="num">24.9</td></tr>
+<tr><td>FFN 宽度 4096</td><td class="num">4.75</td><td class="num">26.2</td></tr>
+<tr><td>去掉 dropout</td><td class="num">5.77</td><td class="num">24.6</td></tr>
+<tr><td>去掉标签平滑</td><td class="num">4.67</td><td class="num">25.3</td></tr>
+<tr><td>可学习位置替代正弦</td><td class="num">4.92</td><td class="num">25.7</td></tr>
+</tbody>
+</table>
+
+<p>困惑度更低<strong>不</strong>必然意味着翻译 BLEU 更好。
+这些是<strong>在该训练设置下</strong>的结果，不是普遍排序。</p>
+
+<div class="box key">
+<span class="label">补充 · 三个反直觉的行</span>
+<ol class="steps">
+<li><strong>去掉标签平滑：PPL 更低（4.67）但 BLEU 更低（25.3）。</strong>
+标签平滑改变了目标的<strong>置信度</strong>，两个指标衡量的是不同的东西。
+PPL 奖励「更自信的分布」，而 BLEU 关心最终译文的词序重叠。</li>
+<li><strong>可学习位置与正弦几乎一样（4.92 / 25.7 vs 4.92 / 25.8）。</strong>
+在这份数据上两者打平，但这<strong>不构成</strong>「外推能力相同」的证明。</li>
+<li><strong>FFN 宽度 4096 更好，但不是免费的。</strong>
+更大的 FFN 同时增加了参数量和计算量，所以这个提升<strong>不是</strong>纯架构红利。</li>
+</ol>
+<p>其他行也值得看：头数 4、16、32 给出 BLEU 25.5、25.8、25.4——
+<strong>头数越多并不是单调越好</strong>。把键宽度降到 16 或 32 给出 25.1 或 25.4。
+编码器/解码器深度 2、4、8 给出 23.7、25.3、25.5。模型宽度 256 或 1024 给出 24.5 或 26.0。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别把两张表混起来比</span>
+<p>这是一张<strong>开发集</strong>的消融表，<strong>没有做 checkpoint 平均</strong>。
+所以不要拿它的 base BLEU 25.8 去和 Table 2 的测试集 BLEU 27.3 直接比。</p>
+<p>PPL 是在这个 BPE 词表下<strong>按 wordpiece</strong> 算的，不是按词。
+每一行只改动了它列出的那一项设置。big 用了更大容量和 30 万步，
+所以它的 26.4 开发 BLEU 和 4.33 PPL <strong>不是</strong>对 10 万步 base 的单因素消融。</p>
+</div>
+
+<h3 id="s320">3.20 翻译之外：成分句法分析 <span class="tag s">课件</span></h3>
+
+<p>为输入句子预测一个短语结构。</p>
+
+<div class="cols">
+<div>
+<h4>结构化的目标</h4>
+<p>「Noa can be annoying but she is a great cat」</p>
+<p>「a great cat」在第二个分句里构成一个名词短语。</p>
+<p>一串括号和标签就能编码这棵树。</p>
+<p>四层 Transformer；$d=1024$。</p>
+</div>
+<div>
+<h4>WSJ 第 23 节 · F1 ↑</h4>
+<table>
+<thead><tr><th>训练设置</th><th class="num">F1</th></tr></thead>
+<tbody>
+<tr><td>Transformer，仅 WSJ（约 4 万句）</td><td class="num">91.3</td></tr>
+<tr><td>Transformer，半监督（约 1700 万句）</td><td class="num">92.7</td></tr>
+<tr><td>Dyer 等，仅 WSJ 判别式</td><td class="num">91.7</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<p>这是<strong>向结构化预测迁移</strong>的证据；各行之间的训练数据和建模假设并不相同。</p>
+
+<div class="box key">
+<span class="label">补充 · F1 和 BLEU 不是一回事</span>
+<p>成分句法 F1 衡量的是<strong>带标签的跨度</strong>与参考句法树的匹配程度，
+不像 BLEU 那样看 n-gram 重叠。输出的 token 序列可以用括号和标签把一棵树<strong>序列化</strong>出来。</p>
+<p>论文训练的是一个<strong>四层、宽度 1024</strong> 的模型，在约 4 万句 WSJ 训练句上；
+另外还在约 1700 万句的半监督设置下训练，词表分别是 16K 和 32K。
+解析用 beam size 21、长度惩罚 0.3。</p>
+<p>这些是<strong>针对另一个任务做的适配</strong>，
+不是「拿一个未改动的预训练翻译模型直接评估」。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这张表说明的是适用面，不是「全面获胜」</span>
+<p>原始表格里的其他行提供背景：仅 WSJ 的判别式系统报告 88.3、90.4、90.4、91.7；
+半监督系统报告 91.3、91.3、92.1、92.1；Transformer 在两种设置下是 91.3 或 92.7。
+多任务的 Luong 等报告 93.0，生成的 Dyer 等报告 93.3。</p>
+<p>所以这个实验展示的是<strong>更广的适用性</strong>，
+而<strong>不是</strong>「Transformer 在每种解析设置下都赢」。</p>
+</div>
+
+<h3 id="s321">3.21 长序列代价的后续工作 <span class="tag s">课件</span></h3>
+
+<p>稠密注意力每个头有 $n\times n$ 个分数。这两篇论文都出现在 <strong>2020 年</strong>。</p>
+
+<table>
+<thead><tr><th>方法</th><th>核心想法</th><th>序列长度代价</th></tr></thead>
+<tbody>
+<tr><td>稠密注意力</td><td>每个查询和每个键都比较</td><td>$O(n^2)$</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2001.04451">Reformer</a></td><td>把相似向量哈希进桶；桶内做注意力</td><td>$O(n\log n)$</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2006.04768">Linformer</a></td><td>把键和值沿序列投影到秩 $k$</td><td>$O(nk)$</td></tr>
+</tbody>
+</table>
+
+<p>Reformer 还用可逆残差层来减少沿深度保存的激活。</p>
+
+<div class="box key">
+<span class="label">补充 · 两条复杂度的适用条件</span>
+<p><strong>Reformer</strong> 用局部敏感哈希、排序和分桶来做注意力，
+避免评估每一对。它的复杂度结论<strong>依赖</strong>该方法的桶设置与哈希设置；
+哈希是<strong>对全对注意力的近似</strong>，并不保证每一个相关对都存活下来。
+可逆残差层重构中间状态，减少的是<strong>层深方向</strong>的激活贡献，
+并<strong>不</strong>让所有训练显存都与深度无关。</p>
+<p><strong>Linformer</strong> 把 K 和 V 的<strong>序列维</strong>从 $n$ 投影到 $k$，
+于是查询只关注 $k$ 个投影位置。固定特征宽度时得到 $O(nk)$ 的计算与分数存储，
+$k$ 固定时对 $n$ 是线性的。</p>
+<p>低秩近似<strong>可能改变模型输出</strong>；
+这两篇都不是「任意稠密注意力的精确实现 + 无条件加速保证」。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这是两篇独立的论文</span>
+<p>Reformer 和 Linformer <strong>不是</strong> Attention Is All You Need 的章节。
+另外要区分「2017 架构的长序列局限」和「后来针对它的应对」——
+这两件事在时间上相差三年。</p>
+</div>
+
+<hr>
+
+<h2 id="ap">附录</h2>
+
+<h3 id="apA">A · 课堂练习与实现练习全解</h3>
+
+<p>按课件顺序汇总。带 ★ 的是<strong>实现笔记本</strong>里的练习（需要跑代码），其余是课堂手算练习。</p>
+
+<div class="box">
+<span class="label">E01 · 构造位置向量（2 分钟）</span>
+<p><strong>题：</strong>$d=4$ 时先预测 $\operatorname{PE}(0)$，再把 $\operatorname{PE}(1)$ 加到「can」的玩具嵌入 $e_{t_1}=[1,0,1,0]$ 上。</p>
+<p><strong>答：</strong>$\operatorname{PE}(0)=[0,1,0,1]$；
+$x_1\approx[1.841,\ 0.540,\ 1.010,\ 1.000]$。详细验算见 <a href="#s19">§1.9</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">★ E02 · 置换等变（3 分钟）</span>
+<p><strong>题：</strong>把位置 0 的 Noa 和位置 5 的 she 对调，再撤销置换。输出会变吗？</p>
+<p><strong>答：</strong>无位置、无掩码时 $\operatorname{SA}(PX)=P\operatorname{SA}(X)$，
+还原后输出一致（差在舍入）；加上固定正弦位置后输出改变，实测最大差约 0.4492。
+见 <a href="#s110">§1.10</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">E03 · head 宽度（1 分钟）</span>
+<p><strong>题：</strong>$d_{\text{model}}=512$，$h=8$，$d_k=d_v=d_{\text{model}}/h$，每个头多宽？拼接后多宽？</p>
+<p><strong>答：</strong>每头 64；拼接后 $8\times64=512$。见 <a href="#s25">§2.5</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">E04 · 归一化再相加（2 分钟）</span>
+<p><strong>题：</strong>$x=(1,3)$，$\gamma=(1,1)$，$\beta=(0,0)$，$\epsilon=10^{-5}$，
+$F(\operatorname{LN}(x))=(2,-1)$。求 $\mu,\sigma^2,\operatorname{LN}(x),y$；另一个 token 能改变 $\operatorname{LN}(x)$ 吗？</p>
+<p><strong>答：</strong>$\mu=2$，$\sigma^2=1$，$\operatorname{LN}(x)\approx(-1,1)$，$y=(3,2)$；不能。见 <a href="#s210">§2.10</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">E05 · 对单个 token 应用 FFN（2 分钟）</span>
+<p><strong>题：</strong>$x=(1,-2)$，$W_1=\begin{pmatrix}1&-1&2\\0&1&-1\end{pmatrix}$，
+$W_2=\begin{pmatrix}1&0\\0&1\\1&-1\end{pmatrix}$，零偏置，ReLU。求输出。</p>
+<p><strong>答：</strong>$xW_1=(1,-3,4)$；ReLU 后 $(1,0,4)$；$\operatorname{FFN}(x)=(5,-4)$。见 <a href="#s213">§2.13</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">P01 · 掩码加权和（3 分钟）</span>
+<p><strong>题：</strong>缩放分数 $(\log2,0,0,\log2,0,\log3,\log4)$，值向量同 <a href="#s22">§2.2</a> 的表。
+求因果权重与输出。改变 $V_{\text{is}}$ 能改变它吗？</p>
+<p><strong>答：</strong>权重 $(2,1,1,2,1,3,0)/10$，输出 $(1,1)$；不能。见 <a href="#s23">§2.3</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">★ E01（实现）· 追踪并验证多头（5 分钟）</span>
+<p><strong>题：</strong>$B=2,T=10,d=16,h=4$。给出拆分后 Q、分数、合并输出的形状，并把批量注意力与逐 head 循环对比。</p>
+<p><strong>答：</strong>$(2,4,10,4)$；$(2,4,10,10)$；$(2,10,16)$。
+要标注每个轴的含义，并且<strong>同时比较数值和梯度</strong>，不能只看形状对不对。</p>
+</div>
+
+<div class="box">
+<span class="label">★ E04（实现）· 数整个语言模型（5 分钟）</span>
+<p><strong>题：</strong>两个块，$d=16$，词表 12，10 个位置，一个最终仿射 LayerNorm，输出矩阵绑定到 token 表。</p>
+<p><strong>答：</strong>$2(2112)+12(16)+10(16)+2(16)=4608$；解开绑定加 192。见 <a href="#s36">§3.6</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">★ E05（实现）· 未来能改变前缀吗（3 分钟）</span>
+<p><strong>题：</strong>只改位置 6 的输入。哪些 logits 会变？早期损失把梯度送到哪？</p>
+<p><strong>答：</strong>位置 0–5 的 logits 不变，它们对未来输入状态 6–9 的梯度为零；
+无掩码对照组会泄漏。见 <a href="#s39">§3.9</a>。</p>
+</div>
+
+<div class="box">
+<span class="label">E06 · 编码器参数计数（3 分钟）</span>
+<p><strong>题：</strong>$N=12,d=768,h=12,|V|=30522$，含偏置和两个 LayerNorm，正弦位置，无预测头。</p>
+<p><strong>答：</strong>$P=|V|d+N(12d^2+13d)=108{,}495{,}360\approx108.50$M。见 <a href="#s317">§3.17</a>。</p>
+</div>
+
+<h3 id="apB">B · 符号对照表</h3>
+
+<p>这节课符号密集，且有多处同名不同义，这里一次列清：</p>
+
+<table>
+<thead><tr><th>符号</th><th>出现位置</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$B,T,d$</td><td><a href="#s214">§2.14</a> 起</td><td>batch、序列长度、模型宽度 $d_{\text{model}}$</td></tr>
+<tr><td>$n$</td><td><a href="#s15">§1.5</a></td><td>token 行数（与 $T$ 同义，用于形状推导）</td></tr>
+<tr><td>$h$</td><td><a href="#s25">§2.5</a></td><td>head 个数（注意与 Lecture 04 的隐状态 $h_t$ 无关）</td></tr>
+<tr><td>$d_h,d_k,d_v$</td><td><a href="#s25">§2.5</a></td><td>每个 head 的宽度；查询/键宽度；值宽度</td></tr>
+<tr><td>$L$ / $N$</td><td><a href="#s16">§1.6</a>、<a href="#s316">§3.16</a></td><td>块/层数（$L$ 用于 GPT 式，$N$ 用于原版论文）</td></tr>
+<tr><td>$d_{\text{ff}}$</td><td><a href="#s211">§2.11</a></td><td>FFN 隐层宽度</td></tr>
+<tr><td>$M$</td><td><a href="#s21">§2.1</a></td><td>加性因果掩码矩阵（$0$ 或 $-\infty$）</td></tr>
+<tr><td>$\operatorname{PE}(p)$</td><td><a href="#s18">§1.8</a></td><td>位置 $p$ 的正弦位置向量</td></tr>
+<tr><td>$\theta_i$ / $\theta_j$</td><td><a href="#s111">§1.11</a>、<a href="#s113">§1.13</a></td><td>RoPE 第 $i$（或 $j$）对坐标的角频率</td></tr>
+<tr><td>$R(\phi)$</td><td><a href="#s114">§1.14</a></td><td>二维旋转矩阵，$R(\alpha)R(\beta)=R(\alpha+\beta)$</td></tr>
+<tr><td>$i$</td><td><a href="#s112">§1.12</a></td><td><strong>虚数单位</strong>（$i^2=-1$），与坐标对下标 $i$ 同名但无关</td></tr>
+<tr><td>$\gamma,\beta$</td><td><a href="#s28">§2.8</a></td><td>LayerNorm 的可学习 scale 与 bias</td></tr>
+<tr><td>$\epsilon$</td><td><a href="#s28">§2.8</a></td><td>LayerNorm 的数值稳定项（本例 $10^{-5}$）</td></tr>
+<tr><td>$W^O$</td><td><a href="#s25">§2.5</a></td><td>多头的输出投影矩阵</td></tr>
+<tr><td>$[\,;\,]$</td><td><a href="#s15">§1.5</a></td><td>沿特征维拼接（不是相加）</td></tr>
+<tr><td>$\odot$</td><td>（Lecture 04）</td><td>逐元素乘积</td></tr>
+</tbody>
+</table>
+
+<h3 id="apC">C · 参考文献</h3>
+
+<ul>
+<li><a href="https://arxiv.org/html/1706.03762v7">Vaswani et al. (2017)</a>, <em>Attention Is All You Need</em>, §§3–6 —— 原始架构、训练设置、Table 2/3/4。</li>
+<li><a href="https://arxiv.org/html/2104.09864v5">Su et al. (2021)</a>, <em>RoFormer</em>, §§3.2.1–3.2.2，式 13–16 —— RoPE。</li>
+<li><a href="https://blog.eleuther.ai/rotary-embeddings/">EleutherAI (2021)</a>, <em>Rotary Embeddings: A Relative Revolution</em> —— RoPE 的几何直觉与实现。</li>
+<li><a href="https://arxiv.org/abs/2203.16634">Haviv et al. (2022)</a> —— 无位置编码的语言模型仍能学到位置信息（§1.7 的提醒）。</li>
+<li><a href="https://arxiv.org/abs/1512.03385">He et al. (2015/CVPR 2016)</a>, §3.2 —— 残差学习。</li>
+<li><a href="https://arxiv.org/html/1607.06450v1#S3">Ba et al. (2016)</a>, §3 —— LayerNorm；<a href="https://github.com/pytorch/pytorch/blob/v2.8.0/torch/nn/modules/normalization.py#L88">PyTorch 实现与文档公式</a>。</li>
+<li><a href="https://proceedings.mlr.press/v119/xiong20b.html">Xiong et al. (2020)</a>, §§2–4 —— pre-LN 与 post-LN 的初始化与 warm-up 分析。</li>
+<li><a href="https://github.com/openai/gpt-2/blob/master/src/model.py">OpenAI GPT-2 实现</a> —— <code>attention_mask</code>、<code>block</code>、<code>model</code>。</li>
+<li><a href="https://papers.neurips.cc/paper_files/paper/2019/file/2c601ad9d2ff9bc8b282670cdd54f69f-Paper.pdf">Michel, Levy, Neubig (2019)</a>, §§3–5 —— head 剪枝（§2.5 的可选阅读）。</li>
+<li><a href="https://aclanthology.org/P16-1162/">Sennrich et al. (2016)</a>, §3；<a href="https://aclanthology.org/P18-1007/">Kudo (2018)</a>, §3.2；<a href="https://research.google/pubs/japanese-and-korean-voice-search/">Schuster &amp; Nakajima (2012)</a> —— BPE / Unigram / WordPiece。</li>
+<li><a href="https://arxiv.org/abs/2001.04451">Kitaev et al. (2020)</a>, <em>Reformer</em>；<a href="https://arxiv.org/abs/2006.04768">Wang et al. (2020)</a>, <em>Linformer</em>。</li>
+<li><a href="https://aclanthology.org/2021.emnlp-main.465/">Narang et al. (EMNLP 2021)</a> —— 修改是否真的可迁移。</li>
+<li><a href="http://nlp.seas.harvard.edu/annotated-transformer/">The Annotated Transformer</a>（Harvard）；<a href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a>（Alammar）—— 自学的代码与图解走读。</li>
+</ul>
+
+<p class="footnote">
+<strong>本笔记说明。</strong>内容整理自 CS40008.01《NLP and LLMs》Lecture 05 公开课件
+（<code>baojian.github.io/llm-26-fall/slides/lecture-05/</code>，含幻灯片正文与讲者备注）。
+课件中大量交互式示意图（网页上由 JavaScript 现场绘制）在本笔记里<strong>重画为静态 SVG</strong>；
+标 <span class="tag n">补充</span> 的部分是课件只给图或只给结论、没有展开的推导、验算与几何直觉，
+由本笔记补全，<strong>不属于课堂内容</strong>；所有示例数值均已独立验算。
+图 1、10、18、20、21 取自课件原始素材（图 1 为课件内嵌位图），未作修改；
+图 2–9、11–17、19、22 为依据课件内容与数据重绘。
+课程内容版权归复旦大学及授课教师所有。
+</p>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body>
+</html>

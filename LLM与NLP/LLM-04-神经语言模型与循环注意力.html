@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 04 · 神经语言模型与循环注意力 — CS40008.01 课程笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+  --purple:#5b3a8e; --purple-bg:#efe8f8;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+  --purple:#b49ae0; --purple-bg:#2a1f3d;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.85}
+.wrap{max-width:920px;margin:0 auto;padding:52px 30px 100px}
+
+h1{font-size:29px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.4;margin:56px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:17.5px;line-height:1.5;margin:34px 0 10px}
+h4{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:11px 0}
+ul,ol{padding-left:24px;margin:11px 0}
+li{margin:5px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;overflow-x:auto;margin:16px 0;line-height:1.65}
+pre code{background:none;border:none;padding:0;font-size:13.5px}
+
+.lede{font-size:16.5px;color:var(--ink2);margin:0 0 8px}
+.sub{color:var(--ink3);font-size:14px;margin:0 0 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin:0 0 6px;display:block}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;background:var(--bg2);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;
+  background:var(--gold-bg);color:var(--gold);white-space:nowrap;vertical-align:middle;font-weight:600}
+.tag.a{background:var(--purple-bg);color:var(--purple)}
+.tag.n{background:var(--ok-bg);color:var(--ok)}
+.tag.s{background:var(--accent-bg);color:var(--accent)}
+
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px}
+figcaption{font-size:13.5px;color:var(--ink3);margin-top:9px;line-height:1.7;text-align:left}
+svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+.toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
+.toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.toc ol{margin:0;padding-left:20px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc li{font-size:14.5px}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.katex{font-size:1.04em}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{font-size:13.5px;color:var(--ink3);line-height:1.85;margin-top:44px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+@media (max-width:680px){.cols{grid-template-columns:1fr}}
+.steps{counter-reset:st;list-style:none;padding-left:0}
+.steps li{counter-increment:st;position:relative;padding-left:38px;margin:10px 0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:2px;width:24px;height:24px;
+  border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">CS40008.01 · NLP and LLMs · Lecture 04</p>
+<h1>神经语言模型与循环注意力</h1>
+<p class="sub">Neural LMs and Recurrent Attention · 复旦大学数据科学学院 · Baojian Zhou · 2026-09-30</p>
+
+<p class="lede">这节课回答一个问题：<strong>模型如何保留并选择有用的上下文？</strong>
+从「只看最后一个词」的 bigram，到定长窗口前馈网络，再到循环状态、LSTM 门控，
+最后到 RNN 编码器–解码器里的注意力对齐。这是 Lecture 05 自注意力与 Transformer 的直接前身。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源标注</span>
+<p>这份笔记整理自课程公开课件（<code>baojian.github.io/llm-26-fall/slides/lecture-04/</code>）。每节标题后的标签含义：</p>
+<ul>
+<li><span class="tag s">课件</span> — 幻灯片正文里的内容（含公式、表格、示例数值）。</li>
+<li><span class="tag a">讲者备注</span> — 幻灯片 <code>Note:</code> 里的讲者备注，相当于老师课堂上的口头讲解与提醒。</li>
+<li><span class="tag n">补充</span> — 课件只有图或只有结论、没有展开的地方，我补的推导、验算与几何直觉。</li>
+</ul>
+<p>老师特别提醒的易错点，我用橙色框单独标出。所有示例数值我都重新验算过一遍。</p>
+</div>
+
+<div class="toc">
+<h3 id="toc">目录</h3>
+<ol>
+<li><a href="#p1">第一部分 · 前馈语言模型</a>
+  <ol>
+    <li><a href="#s11">1.1 Lecture 03 的上下文限制</a></li>
+    <li><a href="#s12">1.2 两个前缀，同一个末词</a></li>
+    <li><a href="#s13">1.3 一个很小的词表</a></li>
+    <li><a href="#s14">1.4 上下文窗口与目标</a></li>
+    <li><a href="#s15">1.5 前馈语言模型的结构</a></li>
+    <li><a href="#s16">1.6 上下文的隐层表示</a></li>
+    <li><a href="#s17">1.7 形状账本</a></li>
+    <li><a href="#s18">1.8 同样的路径用 PyTorch 写</a></li>
+    <li><a href="#s19">1.9 每个上下文一个目标</a></li>
+    <li><a href="#s110">1.10 损失的数值稳定性</a></li>
+    <li><a href="#s111">1.11 一次训练步</a></li>
+    <li><a href="#s112">1.12 拟合这个玩具批次</a></li>
+    <li><a href="#s113">1.13 学到的区分</a></li>
+    <li><a href="#s114">1.14 拟合不了的时候怎么查</a></li>
+    <li><a href="#s115">1.15 训练拟合与泛化</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 循环状态与门控记忆</a>
+  <ol>
+    <li><a href="#s21">2.1 定长窗口与循环状态</a></li>
+    <li><a href="#s22">2.2 循环状态</a></li>
+    <li><a href="#s23">2.3 循环更新式</a></li>
+    <li><a href="#s24">2.4 穿过重复更新的梯度</a></li>
+    <li><a href="#s25">2.5 共享权重跨时间累积贡献</a></li>
+    <li><a href="#s26">2.6 LSTM 的记忆与门</a></li>
+    <li><a href="#s27">2.7 剩下的局限</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · RNN 编码器–解码器中的注意力</a>
+  <ol>
+    <li><a href="#s31">3.1 用 RNN 做机器翻译</a></li>
+    <li><a href="#s32">3.2 Bahdanau 注意力</a></li>
+    <li><a href="#s33">3.3 从对齐分数到上下文</a></li>
+    <li><a href="#s34">3.4 解码器一步的上下文向量</a></li>
+    <li><a href="#s35">3.5 下一次解码器更新</a></li>
+    <li><a href="#s36">3.6 源可见性与对齐权重</a></li>
+  </ol>
+</li>
+<li><a href="#ap">附录</a>
+  <ol>
+    <li><a href="#apA">A · 课堂练习 E01–E05 全解</a></li>
+    <li><a href="#apB">B · 符号对照表</a></li>
+    <li><a href="#apC">C · 参考文献</a></li>
+  </ol>
+</li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="p1">第一部分 · 前馈语言模型</h2>
+
+<p>第一节课 45 分钟的目标：先把「上下文」这个概念从 1 个词扩展到 $C$ 个词，
+看清一个完整的前向计算是怎么走的，然后亲手把它训练起来。
+这一步不涉及循环，也不涉及注意力——它是后面两节课的基线。</p>
+
+<h3 id="s11">1.1 Lecture 03 的上下文限制 <span class="tag s">课件</span></h3>
+
+<p>上一讲的 TinyLM 是一个<strong>向量瓶颈的 bigram</strong>：</p>
+
+$$h_t=E[w_t],\qquad z_t=W_o h_t+b_o,\qquad p(w_{t+1}\mid w_t)=\operatorname{softmax}(z_t)$$
+
+<p>这里 $E\in\mathbb{R}^{|V|\times d}$ 是嵌入表，$W_o\in\mathbb{R}^{|V|\times d}$ 是输出投影。
+查表和投影都是可训练参数。</p>
+
+<div class="box key">
+<span class="label">这一节的全部要点</span>
+<p><strong>只有当前 token 决定下一个预测。</strong>给嵌入表加可训练参数，并不会让这个计算看到更早的词。</p>
+<p>记号上：$t$ 是<strong>当前输入</strong> token 的位置，$z_t$ 用来预测 $t+1$。</p>
+</div>
+
+<h3 id="s12">1.2 两个前缀，同一个末词 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>观察到的前缀</th><th>玩具语料里的下一个词</th></tr></thead>
+<tbody>
+<tr><td>BOS <strong>red</strong> key</td><td>opens</td></tr>
+<tr><td>BOS <strong>blue</strong> key</td><td>closes</td></tr>
+</tbody>
+</table>
+
+<p>两个前缀的最后一个词都是 <code>key</code>。bigram 只看当前 token，所以它在 <code>key</code> 之后
+<strong>必须</strong>给出同一个分布。要区分这两个前缀，至少需要两个 token 的上下文。</p>
+
+<div class="box gold">
+<span class="label">补充 · 把「必然失败」算出来</span>
+<p>把注意力限制在这两个目标上。因为两种前缀出现得一样频繁，最优的 bigram 概率只能是</p>
+\[p(\text{opens}\mid \text{key})=p(\text{closes}\mid \text{key})=\tfrac12\]
+<p>于是平均损失是</p>
+\[-\tfrac12\log\tfrac12-\tfrac12\log\tfrac12=\log 2\approx 0.6931\ \text{nats}\]
+<p>这就是这个 bigram 在 <code>key</code> 处的损失下界——无论怎么训练都降不下去。而换成 $C=2$ 的窗口，
+两个前缀可以给出不同的分布，这个 $0.6931$ 就能被压掉。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别过度解读</span>
+<p>这是一个<strong>刻意构造的调试语料</strong>，不是「自然语言的下一个词都是确定的」这种论断。
+老师强调：不要在课堂上宣称自然语言的续写具有确定性。笔记本在这两个完整句子上训练，
+一共六个「长度 2 的上下文/目标」配对。</p>
+</div>
+
+<h3 id="s13">1.3 一个很小的词表 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>ID</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th></tr></thead>
+<tbody>
+<tr><td>Token</td><td>BOS</td><td>red</td><td>blue</td><td>key</td><td>opens</td><td>closes</td><td>EOS</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li>ID 只是<strong>任意的查表下标</strong>，本身不携带任何语义距离。</li>
+<li>BOS 标记句子开始，EOS 标记句子结束。</li>
+<li>每个上下文预测<strong>一个</strong>后续 token。</li>
+</ul>
+
+<div class="box warn">
+<span class="label">讲者备注 · 几个容易搞混的细节</span>
+<ul>
+<li>这套 ID 是<strong>本讲本地</strong>的映射，和 Lecture 02、03 的映射不同，不要串用。</li>
+<li>输出层有 7 行（含 BOS），但 BOS <strong>永远不是目标</strong>。</li>
+<li>没有 padding。只有在已经有两个输入 token 之后，才开始取长度 2 的窗口。</li>
+<li>没有跨句子的样本，也不在 EOS 之后预测任何东西。</li>
+</ul>
+</div>
+
+<h3 id="s14">1.4 上下文窗口与目标 <span class="tag s">课件</span></h3>
+
+<figure>
+<img src="assets/img/L04-context-windows.svg" alt="BOS red key opens EOS 中的三个窗口：BOS red 预测 key，red key 预测 opens，key opens 预测 EOS。">
+<figcaption><strong>图 1 · 上下文窗口与下一个 token 目标。</strong>上下文大小 $C=2$，窗口每次前移一个 token。
+蓝色方框是「观察到的上下文」，绿色方框是窗口外的目标词。</figcaption>
+</figure>
+
+<p>以句子 <code>BOS red key opens EOS</code> 为例，三个窗口与目标分别是：</p>
+
+<table>
+<thead><tr><th>#</th><th>上下文（$C=2$）</th><th>目标</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>BOS red</td><td>key</td></tr>
+<tr><td>2</td><td>red key</td><td>opens</td></tr>
+<tr><td>3</td><td>key opens</td><td>EOS</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 为什么是「前移一个」而不是「前移 C 个」</span>
+<p>滑动步长取 1，意味着相邻的两个训练样本共享 $C-1$ 个 token。这样做的代价是样本冗余，
+收益是<strong>每一个位置都能作为「最后一个上下文位置」出现一次</strong>——
+而最后一个位置正是我们要预测下一个词的地方。</p>
+<p>如果步长取 $C$，那每个窗口只有末尾那一位参与预测，前面的位置就白白浪费了。
+这也解释了为什么 $C=2$ 时一共只有 3 个窗口：句长 5，可用的「末位」位置是 $1,2,3$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 顺序不能反</span>
+<p>把语料切分成 train/dev 文档，<strong>必须发生在抽取重叠窗口之前</strong>。
+否则同一个窗口可能一半在训练集、一半在验证集。这个演示只用了一个极小的训练批次，没有留出评估集。</p>
+</div>
+
+<h3 id="s15">1.5 前馈语言模型的结构 <span class="tag s">课件</span></h3>
+
+<figure>
+<img src="assets/img/L04-feedforward-lm.svg" alt="两个 token ID 选出嵌入行，拼接后经过 tanh 隐层和词表投影，得到下一个 token 的 logits。">
+<figcaption><strong>图 2 · 前馈语言模型（Bengio 式 NPLM 的简化版）。</strong>
+定长窗口里的每一个位置，在拼接后的向量里都有自己固定的位置。
+左端是两个 token ID，右端是 7 维词表 logits。</figcaption>
+</figure>
+
+<p>数据流一共四步：</p>
+
+<ol class="steps">
+<li><strong>查表。</strong>两个 token ID 各自从嵌入表 $E$ 里取出一行 $d$ 维向量。</li>
+<li><strong>拼接。</strong>两个向量首尾相接，得到 $2d$ 维的上下文向量 $x$。</li>
+<li><strong>隐层。</strong>过一层仿射变换加 $\tanh$ 非线性，得到 $h$ 维表示。</li>
+<li><strong>投影。</strong>再过一层仿射变换，映射到 $|V|$ 维的 logits。</li>
+</ol>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个网络的出处与简化</span>
+<p>机制沿用 2025 春季 Lecture 04 的 NPLM，第 17–20 页。新的 CPU 例子用 <code>nn.Module</code>
+和一个本地词表，不依赖 Transformers 封装，也不需要下载任何东西。
+这是 Bengio 风格网络的<strong>简化版</strong>：省略了可选的「输入直连输出」连接
+（原论文 §2，<a href="https://www.jmlr.org/papers/v3/bengio03a.html">Bengio et al. 2003</a>）。</p>
+</div>
+
+<h3 id="s16">1.6 上下文的隐层表示 <span class="tag s">课件</span></h3>
+
+$$x=[E[w_{t-1}];E[w_t]]$$
+$$h=\tanh(W_hx+b_h),\qquad z=W_oh+b_o$$
+
+<p>非线性让网络能够学习特征之间的<strong>交互</strong>。而连续的仿射层本身做不到这件事。</p>
+
+<div class="box key">
+<span class="label">补充 · 「两个仿射层会塌成一个」到底怎么塌</span>
+<p>设两层仿射变换为 $y=W_2(W_1x+b_1)+b_2$。把括号展开：</p>
+\[y=W_2W_1x+(W_2b_1+b_2)\]
+<p>记 $\widetilde W=W_2W_1$、$\tilde b=W_2b_1+b_2$，则 $y=\widetilde Wx+\tilde b$——
+这<strong>仍然是一个仿射映射</strong>，和只用一层在表达能力上没有任何区别。参数量多了，但函数族没变大。</p>
+<p>所以中间那层 $\tanh$（或 ReLU、GELU）不是装饰：它打断了线性叠加，让网络能表示
+「$w_{t-1}$ 是 red 且 $w_t$ 是 key」这类<strong>合取条件</strong>。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 记法与实现约定</span>
+<ul>
+<li>这里用<strong>列向量</strong>记法。PyTorch 里 batch 存的是行向量，<code>nn.Linear</code> 的权重形状是 <code>(out_features, in_features)</code>。</li>
+<li>$x$ 里的<strong>分号表示拼接</strong>，不是相加。</li>
+<li>再深一点当然可以，但对这个调试例子没必要。</li>
+</ul>
+</div>
+
+<h3 id="s17">1.7 形状账本 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>量</th><th>形状</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>上下文 ID</td><td>$(B,C)$</td><td>$B$ 是窗口个数，不一定是文档数</td></tr>
+<tr><td>嵌入查表</td><td>$(B,C,d)$</td><td>每个窗口 $C$ 行</td></tr>
+<tr><td>拼接后的上下文</td><td>$(B,Cd)$</td><td>展平，保持窗口内位置顺序</td></tr>
+<tr><td>隐表示</td><td>$(B,h)$</td><td>一个窗口一个向量</td></tr>
+<tr><td>词表 logits</td><td>$(B,\lvert V\rvert)$</td><td>每行一个目标</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 形状为什么会「塌掉一个轴」</span>
+<p>注意 $(B,C,d)\to(B,Cd)$ 这一步：$C$ 轴被<strong>展平进特征轴</strong>，而不是被聚合掉。
+这就是「位置信息靠拼接顺序携带」的含义——第 1 个 token 的 $d$ 个分量永远落在前 $d$ 列。</p>
+<p>再往后，$(B,Cd)\to(B,h)$ 才是真正的聚合：$C$ 个位置的信息被压进一个 $h$ 维向量。
+<strong>这个「压成一个向量」正是后文注意力要解决的问题</strong>——定长窗口的网络必须把所有位置挤进一个表示里。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 容易错的地方</span>
+<p>常见错误：在输出里保留了序列长度轴，尽管这个模型对每个<strong>完整窗口</strong>只产生一个下一个 token 预测。
+形状推理的做法沿用 CS336 Lecture 2 的 tensor/einops 例子。</p>
+</div>
+
+<h3 id="s18">1.8 同样的路径用 PyTorch 写 <span class="tag s">课件</span></h3>
+
+<pre><code>self.embedding = nn.Embedding(V, d)
+self.hidden = nn.Linear(C * d, h)
+self.output = nn.Linear(h, V)
+
+def forward(self, ids):
+    x = self.embedding(ids)       # B, C, d
+    x = x.flatten(start_dim=1)    # B, C*d
+    h = torch.tanh(self.hidden(x))
+    return self.output(h)         # B, V</code></pre>
+
+<p>这是笔记本里 <code>ContextLM</code> 的摘录；初始化写在 <code>__init__</code> 里。
+宽度 $V,d,h,C$ 与上一节的记号一一对应。<code>nn.Linear</code> 默认带偏置。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 两条实操提醒</span>
+<ul>
+<li><strong>不要</strong>在把 logits 交给 <code>cross_entropy</code> 之前先做 softmax。</li>
+<li>嵌入参数与隐层/输出权重是<strong>一起训练</strong>的。</li>
+</ul>
+</div>
+
+<h3 id="s19">1.9 每个上下文一个目标 <span class="tag s">课件</span></h3>
+
+$$\ell(z,y)=-z_y+\log\sum_j e^{z_j}$$
+
+<pre><code>logits = model(contexts)           # B, V
+loss = F.cross_entropy(logits, y)  # y: B</code></pre>
+
+<p>均匀 logits 的平均损失是 $\log |V|$。对这个词表就是 $\log 7\approx1.9459$ nats。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个式子就是交叉熵，展开给你看</span>
+<p>softmax 给出 $p_j=e^{z_j}/\sum_k e^{z_k}$，而目标 $y$ 是 one-hot。于是</p>
+\[\ell(z,y)=-\log p_y=-\log\frac{e^{z_y}}{\sum_j e^{z_j}}
+=-z_y+\log\sum_j e^{z_j}\]
+<p>最后这个形式就是「<strong>目标 logit 减去 log-sum-exp</strong>」。写成这个形状的好处是：
+它不再需要显式构造 softmax 概率，数值上也更稳（下一节）。</p>
+<p>如果 logits 全部相等（比如随机初始化后接近均匀），则 $\ell=\log|V|$，正好是「什么都不知道」的基线。
+对本例 $|V|=7$：$\log 7=1.9459101\ldots$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 基线怎么读</span>
+<p>默认的 reduction 是 $B$ 个样本取平均。这个 7 路均匀基线<strong>包含 BOS 那一行</strong>。
+随机初始化的模型不一定恰好从均匀基线开始。目标 ID 用的是和输出行同一套词表映射。</p>
+</div>
+
+<h3 id="s110">1.10 损失的数值稳定性 <span class="tag s">课件</span></h3>
+
+<p>给定 logits $(1000,\,1001,\,999)$，目标下标为 $1$：</p>
+
+<pre><code>log_z = torch.logsumexp(logits, dim=-1)
+loss = log_z - logits[..., 1]</code></pre>
+
+<p>直接做指数运算会<strong>溢出</strong>。稳定版本的损失是 <strong>0.4076 nats</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 0.4076 是怎么来的（手算一遍）</span>
+<p>取最大 logit $m=1001$，利用 $\log\sum e^{z_j}=m+\log\sum e^{z_j-m}$：</p>
+\[\log\sum_j e^{z_j}=1001+\log\big(e^{1000-1001}+e^{0}+e^{999-1001}\big)
+=1001+\log\big(e^{-1}+1+e^{-2}\big)\]
+<p>代入 $e^{-1}=0.3678794$、$e^{-2}=0.1353353$，括号内为 $1.5032147$，取对数得 $0.4076060$。所以</p>
+\[\text{loss}=\big(1001+0.4076060\big)-1001=0.4076060\ \text{nats}\]
+<p>如果不做平移而直接算 $e^{1000}$，float32 的上限约为 $3.4\times10^{38}$ 而 $e^{1000}\approx1.97\times10^{434}$，
+直接变成 <code>inf</code>，$\log(\infty)-\infty$ 就成了 <code>nan</code>。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 为什么这样写不改变结果</span>
+<p>减去最大 logit <strong>不改变</strong> softmax 概率，也不改变最终的对数归一化损失——
+因为分子分母同乘一个常数因子。对一般的 batch，要<strong>按行</strong>取出各自的
+目标 logit，而不是永远取第 1 列。</p>
+<p>训练循环里请直接把原始 logits 交给 <code>cross_entropy</code>，让它内部做稳定化。</p>
+</div>
+
+<h3 id="s111">1.11 一次训练步 <span class="tag s">课件</span></h3>
+
+<pre><code>optimizer.zero_grad(set_to_none=True)
+logits = model(contexts)
+loss = F.cross_entropy(logits, targets)
+loss.backward()
+optimizer.step()
+history.append(loss.item())</code></pre>
+
+<p>梯度会<strong>累积</strong>，直到被清零。优化器负责更新参数。</p>
+
+<div class="box key">
+<span class="label">补充 · 五行代码各管什么</span>
+<table>
+<thead><tr><th>行</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td><code>zero_grad</code></td><td>清空上一轮留下的梯度（PyTorch 默认累加）</td></tr>
+<tr><td><code>model(contexts)</code></td><td>前向，建立计算图</td></tr>
+<tr><td><code>cross_entropy</code></td><td>标量损失，是计算图的叶子</td></tr>
+<tr><td><code>backward</code></td><td>反向，把梯度写进各参数的 <code>.grad</code></td></tr>
+<tr><td><code>step</code></td><td>按优化器规则修改参数数值</td></tr>
+</tbody>
+</table>
+<p>一句话：<strong><code>backward</code> 产生梯度，<code>step</code> 改变权重</strong>，两者缺一不可。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 200 步里哪些东西不变</span>
+<p>整个 200 次更新中，模型结构和数据都<strong>不变</strong>。这里的 <code>history</code> 记录的是每次更新<strong>之前</strong>的损失；
+笔记本里画的曲线则显式地在训练前和每次更新后各测一次，所以它的横轴表示「已完成的更新次数」是准确的。</p>
+</div>
+
+<h3 id="s112">1.12 拟合这个玩具批次 <span class="tag s">课件</span></h3>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figLossT figLossD">
+<title id="figLossT">玩具训练损失随 SGD 更新次数下降</title>
+<desc id="figLossD">平均损失从 2.1729 nats 降到 0.0070，虚线是均匀 logit 基线 log 7 约 1.9459。</desc>
+<rect x="0" y="0" width="680" height="300" fill="none"/>
+<!-- 坐标轴 -->
+<line x1="86" y1="252" x2="642" y2="252" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="86" y1="30" x2="86" y2="252" stroke="#b4b2a9" stroke-width="1.2"/>
+<!-- y 轴刻度 -->
+<line x1="82" y1="252" x2="86" y2="252" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="207.6" x2="86" y2="207.6" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="163.2" x2="86" y2="163.2" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="118.8" x2="86" y2="118.8" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="74.4" x2="86" y2="74.4" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="82" y1="30" x2="86" y2="30" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="76" y="256" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="76" y="211.6" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0.5</text>
+<text x="76" y="167.2" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">1.0</text>
+<text x="76" y="122.8" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">1.5</text>
+<text x="76" y="78.4" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">2.0</text>
+<text x="76" y="34" text-anchor="end" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">2.5</text>
+<!-- x 轴刻度 -->
+<line x1="86" y1="252" x2="86" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="225" y1="252" x2="225" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="364" y1="252" x2="364" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="503" y1="252" x2="503" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<line x1="642" y1="252" x2="642" y2="256" stroke="#b4b2a9" stroke-width="1.2"/>
+<text x="86" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">0</text>
+<text x="225" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">50</text>
+<text x="364" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">100</text>
+<text x="503" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">150</text>
+<text x="642" y="272" text-anchor="middle" font-size="11.5" fill="#77777f" font-family="system-ui,sans-serif">200</text>
+<text x="364" y="292" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">已完成的 SGD 更新次数</text>
+<text x="20" y="141" text-anchor="middle" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif" transform="rotate(-90 20 141)">平均损失 (nats)</text>
+<!-- 均匀基线 -->
+<line x1="86" y1="79.2" x2="642" y2="79.2" stroke="#a85a29" stroke-width="2" stroke-dasharray="7 5"/>
+<!-- 损失曲线 -->
+<polyline points="86.0,59.1 88.8,98.8 99.9,183.7 113.8,217.4 141.6,230.6 197.2,245.0 252.8,248.6 364.0,250.4 503.0,251.1 642.0,251.4"
+  fill="none" stroke="#20578c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="86.0" cy="59.1" r="4" fill="#20578c"/>
+<circle cx="88.8" cy="98.8" r="4" fill="#20578c"/>
+<circle cx="99.9" cy="183.7" r="4" fill="#20578c"/>
+<circle cx="113.8" cy="217.4" r="4" fill="#20578c"/>
+<circle cx="141.6" cy="230.6" r="4" fill="#20578c"/>
+<circle cx="197.2" cy="245.0" r="4" fill="#20578c"/>
+<circle cx="252.8" cy="248.6" r="4" fill="#20578c"/>
+<circle cx="364.0" cy="250.4" r="4" fill="#20578c"/>
+<circle cx="503.0" cy="251.1" r="4" fill="#20578c"/>
+<circle cx="642.0" cy="251.4" r="4" fill="#20578c"/>
+<!-- 起点标注 -->
+<text x="98" y="52" font-size="12" fill="#20578c" font-family="system-ui,sans-serif" font-weight="600">2.1729</text>
+<!-- 终点标注 -->
+<text x="634" y="282" text-anchor="end" font-size="12" fill="#20578c" font-family="system-ui,sans-serif" font-weight="600">0.0070</text>
+<!-- 图例 -->
+<line x1="452" y1="42" x2="480" y2="42" stroke="#20578c" stroke-width="3"/>
+<circle cx="466" cy="42" r="4" fill="#20578c"/>
+<text x="488" y="46" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">训练批次</text>
+<line x1="452" y1="62" x2="480" y2="62" stroke="#a85a29" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="488" y="66" font-size="12" fill="#4a4a52" font-family="system-ui,sans-serif">均匀 logits（log 7）</text>
+</svg>
+<figcaption><strong>图 3 · 拟合这个玩具批次。</strong>六个窗口 · CPU · SGD · 一次调试实验。
+纵轴是平均损失（nats），虚线是 $\log 7\approx1.9459$ 的均匀基线。
+曲线不是理想化趋势，而是从笔记本实算出来的：第 0 步是训练前，第 200 步是 200 次更新之后。</figcaption>
+</figure>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这张图能说明什么、不能说明什么</span>
+<p>参考 CPU 环境上的最终损失约 <strong>0.006996</strong>。不同平台会有微小的浮点差异。
+<strong>训练损失低本身，不能作为「能处理新文档」的任何证据。</strong></p>
+</div>
+
+<h3 id="s113">1.13 学到的区分 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>上下文</th><th>目标</th><th>模型预测</th></tr></thead>
+<tbody>
+<tr><td>red key</td><td>opens</td><td>opens</td></tr>
+<tr><td>blue key</td><td>closes</td><td>closes</td></tr>
+</tbody>
+</table>
+
+<p>模型现在<strong>用上了更早的那个 token</strong>。六个训练窗口全部预测正确。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么单 token 基线做不到，这里就能做到</span>
+<p>bigram 在 <code>key</code> 处的输入表示是 $E[\text{key}]$——<strong>两个前缀完全一样</strong>，
+所以它只能输出一个分布，两个目标里必然错一个，损失下界 $\log 2$（见 <a href="#s12">§1.2</a>）。</p>
+<p>而 $C=2$ 的模型看到的输入是 $[E[\text{red}];E[\text{key}]]$ 和 $[E[\text{blue}];E[\text{key}]]$，
+这是<strong>两个不同的向量</strong>。既然输入不同，隐层就可以把它们分到不同的区域，
+从而在输出层给出「opens 高 / closes 低」和「closes 高 / opens 低」两种分布。</p>
+<p>注意这是<strong>训练集上的预测</strong>，不是留出集准确率。</p>
+</div>
+
+<h3 id="s114">1.14 拟合不了的时候怎么查 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>观察到的现象</th><th>先查什么</th></tr></thead>
+<tbody>
+<tr><td>反向传播直接报错</td><td>损失被 detach 了，或梯度被禁用</td></tr>
+<tr><td>损失一直不降</td><td>更新有没有执行、学习率、目标对齐</td></tr>
+<tr><td>损失变成非有限值</td><td>logits、梯度、学习率</td></tr>
+<tr><td>同样的输入、冲突的目标</td><td>模型<strong>实际能看到</strong>的上下文</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这是起点，不是诊断书</span>
+<p>这些只是排查的<strong>第一步</strong>，不是唯一的诊断结论。具体做法：打印几个上下文/目标对，
+检查梯度范数，验证 <code>step</code> 之后参数确实变了。</p>
+<p>梯度非零<strong>不</strong>等于实现正确。另外，冲突的目标即使优化到完美也会有不可约的条件熵。
+当前的 $C=2$ 批次是刻意避开这种冲突的。</p>
+</div>
+
+<h3 id="s115">1.15 训练拟合与泛化 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>问题</th><th>该看什么证据</th></tr></thead>
+<tbody>
+<tr><td>这个实现能学吗？</td><td>拟合一个小而一致的训练批次</td></tr>
+<tr><td>它能预测新文本吗？</td><td>在<strong>单独留出</strong>的文档上测损失</td></tr>
+</tbody>
+</table>
+
+<p>在构造重叠窗口<strong>之前</strong>切分文档。保持分词器、目标对齐和损失单位一致。</p>
+
+<div class="box key">
+<span class="label">补充 · 两个常被混淆的 API</span>
+<p><code>model.eval()</code> 改变的是 dropout、BatchNorm 这类模块的行为；
+<code>torch.no_grad()</code> 控制的是要不要记录梯度。<strong>两者都不改变评估用的是哪批数据</strong>——
+留出集必须是你自己切出来的。</p>
+<p>留出集上的困惑度 $\exp(\text{平均 NLL})$ 只有在分词方式和计分约定相同时才可比较
+（Lecture 02 已讨论）。</p>
+</div>
+
+<hr>
+
+<h2 id="p2">第二部分 · 循环状态与门控记忆</h2>
+
+<p>第二节课 45 分钟：从「固定看 $C$ 个词」过渡到「用状态记住整个前缀」。
+核心动作是亲手追踪一个状态和一个梯度，然后看懂一个 LSTM 单元的更新。</p>
+
+<h3 id="s21">2.1 定长窗口与循环状态 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>模型</th><th>一次预测能拿到的信息</th></tr></thead>
+<tbody>
+<tr><td>Bigram</td><td>当前 token</td></tr>
+<tr><td>定长窗口神经 LM</td><td>固定数量的近期 token 向量</td></tr>
+<tr><td>循环 LM</td><td>通过整个前缀更新出来的<strong>状态</strong></td></tr>
+</tbody>
+</table>
+
+<p>循环状态的宽度<strong>不随前缀增长</strong>——这是它的关键性质，也是它的根本约束。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别把「能拿到」当成「学得会」</span>
+<p>沿用 red key / blue key 的例子：循环状态<strong>有能力</strong>把前面的颜色带过来。
+但「信息可用」和「模型成功学到了这段记忆」是两个不同的断言。
+这张表比较的是<strong>上下文的通路</strong>，不是普遍的质量排序。</p>
+</div>
+
+<h3 id="s22">2.2 循环状态 <span class="tag s">课件</span></h3>
+
+<figure>
+<img src="assets/img/L04-recurrent-state.svg" alt="输入向量 red、key、opens 依次更新隐状态。同一套循环权重在每一步被复用，每个状态预测下一个 token。">
+<figcaption><strong>图 4 · 循环状态。</strong>每一步用<strong>前一个状态</strong>和<strong>当前输入</strong>做一次更新。
+注意重复的方框用的是同一套参数，但产生的状态各不相同。
+图里每个状态同时输出对下一个 token 的预测。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 这个图最重要的一点</span>
+<p>把图从左到右读，你会发现它是<strong>一条链</strong>，而不是一棵树或一张网：
+第 $t$ 步只能通过 $h_{t-1}$ 间接看到 $t-1$ 步之前的一切。</p>
+<p>于是「距离」变成了一个很具体的量：从位置 1 到位置 50，信息要穿过 <strong>49 次状态更新</strong>。
+下一节的梯度问题，根源就在这个「49 次」。另外，独立的文档边界处必须<strong>重置状态</strong>，
+否则上一篇文章的语义会漏进下一篇。</p>
+</div>
+
+<h3 id="s23">2.3 循环更新式 <span class="tag s">课件</span></h3>
+
+$$h_t=\tanh(W_xx_t+W_hh_{t-1}+b)$$
+
+<table>
+<thead><tr><th>量</th><th>单条序列的形状</th></tr></thead>
+<tbody>
+<tr><td>输入 $x_t$</td><td>$d$</td></tr>
+<tr><td>状态 $h_t$</td><td>$m$</td></tr>
+<tr><td>输入矩阵 / 循环矩阵</td><td>$m\times d$ / $m\times m$</td></tr>
+</tbody>
+</table>
+
+<p>参数在时间上<strong>共享</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么「参数共享」是核心设计</span>
+<p>参数量是 $md+m^2+m$，<strong>与序列长度无关</strong>。处理 5 个词和处理 5000 个词，参数一样多。</p>
+<p>另外要分清两件事：<strong>状态 $h_t$ 是激活值，不是每一步新增的可训练参数</strong>。
+每一步都在用同一套 $W_x,W_h,b$，只是喂进去的 $x_t$ 不同。</p>
+<p>这个式子还有一种等价写法：把 $x_t$ 和 $h_{t-1}$ 拼起来，用一个 $m\times(m+d)$ 的大矩阵乘一次。
+实现上更省一次矩阵乘法的调度开销，数学上完全一样。</p>
+</div>
+
+<h3 id="s24">2.4 穿过重复更新的梯度 <span class="tag s">课件</span></h3>
+
+<p>链式法则把局部导数沿着状态路径<strong>连乘</strong>起来。</p>
+
+$$0.9^{50}\approx0.0052,\qquad 1.1^{50}\approx117.4$$
+
+<p>真实的循环梯度涉及<strong>雅可比矩阵的乘积</strong>。信号收缩和放大，都会让长距离依赖难以学习。</p>
+
+<div class="box key">
+<span class="label">补充 · 这两个数字在说什么</span>
+<p>它们是对「连乘」这个机制的<strong>标量示意</strong>，不是实测的 RNN 梯度：</p>
+<table>
+<thead><tr><th>每步因子</th><th>50 步之后</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$0.9$</td><td>$0.0052$</td><td>梯度衰减到约千分之五 → <strong>梯度消失</strong>，远端信息学不到</td></tr>
+<tr><td>$1.1$</td><td>$117.4$</td><td>梯度放大一百多倍 → <strong>梯度爆炸</strong>，训练发散</td></tr>
+</tbody>
+</table>
+<p>把标量换成矩阵，就是</p>
+\[\frac{\partial h_t}{\partial h_{t-1}}=W_h^{\mathsf T}\operatorname{diag}\!\big(1-h_t^2\big)\]
+<p>其中 $\operatorname{diag}(1-h_t^2)$ 来自 $\tanh'=1-\tanh^2$。于是 $k$ 步之外的依赖要乘上</p>
+\[\prod_{i=1}^{k}W_h^{\mathsf T}\operatorname{diag}\!\big(1-h_{t-i+1}^2\big)\]
+<p>这个乘积的谱半径决定衰减还是放大：小于 1 就消失，大于 1 就爆炸。
+<strong>激活函数的导数也参与其中</strong>——$\tanh'$ 的取值永远 $\le1$，这本身就偏向收缩。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 不要把话说满</span>
+<p>不要说「每个循环梯度都会消失或爆炸」。消失/爆炸是<strong>倾向</strong>，不是必然；
+长短依赖能否学出来，取决于具体初始化、数据与优化过程。
+来源：<a href="https://proceedings.mlr.press/v28/pascanu13.html">Pascanu, Mikolov, Bengio (2013), §2</a>。</p>
+</div>
+
+<h3 id="s25">2.5 共享权重跨时间累积贡献 <span class="tag s">课件</span></h3>
+
+<p>对 $h_t=ah_{t-1}+x_t$ 且 $h_0=0$：</p>
+
+$$h_3=a^2x_1+ax_2+x_3$$
+$$\frac{\partial h_3}{\partial a}=2ax_1+x_2$$
+
+<p>用 <a href="#apA">E03</a> 的输入和 $a=0.5$，这个导数是 <strong>1</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 展开验证（这就是「BPTT 累加」的具体样子）</span>
+<p>逐层代入，$h_0=0$：</p>
+\[h_1=x_1,\quad h_2=ax_1+x_2,\quad h_3=a(ax_1+x_2)+x_3=a^2x_1+ax_2+x_3\]
+<p>对 $a$ 求偏导（$x$ 视为常数）：</p>
+\[\frac{\partial h_3}{\partial a}=2ax_1+x_2\]
+<p>代入 E03 的 $x=(x_1,x_2,x_3)=(1,0,1)$ 与 $a=0.5$：$2\times0.5\times1+0=1$。✓</p>
+<p>顺便复核状态：$h_3=0.25\times1+0.5\times0+1=1.25$，与 E03 的答案一致。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 两个导数为什么不一样（这是本节最值得记住的对比）</span>
+<table>
+<thead><tr><th>求导对象</th><th>结果</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$\partial h_3/\partial x_1$</td><td>$a^2=0.25$</td><td>第一个<strong>输入</strong>对最终状态的影响，被衰减了两次</td></tr>
+<tr><td>$\partial h_3/\partial a$</td><td>$2ax_1+x_2=1$</td><td>共享<strong>权重</strong>的影响，来自两个不同时间步的<strong>累加</strong></td></tr>
+</tbody>
+</table>
+<p>为什么后者更大？因为参数 $a$ 在第 1 步和第 2 步<strong>各出现一次</strong>，两次贡献都要算进去。
+这就是 BPTT（沿时间反向传播）的本质：<strong>展开计算图求导，但梯度最终累加到同一个参数上</strong>。</p>
+<p>反过来，如果你在某处把状态 <code>detach()</code> 掉，虽然数值不变，
+但那条梯度通路被<strong>剪断</strong>了——参数就收不到那一段的贡献。</p>
+</div>
+
+<h3 id="s26">2.6 LSTM 的记忆与门 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<h4>单元记忆</h4>
+<p>$$c_t=f_t\odot c_{t-1}+i_t\odot\widetilde c_t$$</p>
+<table>
+<thead><tr><th>贡献项</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>$f_t\odot c_{t-1}$</td><td>保留上一单元的一部分</td></tr>
+<tr><td>$i_t\odot\widetilde c_t$</td><td>加入被选中的候选信息</td></tr>
+</tbody>
+</table>
+<p>单元状态 $c_t$ 和对外暴露的状态 $h_t$ 是<strong>两个不同的量</strong>。</p>
+</div>
+<div>
+<h4>门与暴露</h4>
+<p>$$g_t=\sigma(W_gx_t+U_gh_{t-1}+b_g)$$</p>
+<p>$f_t,i_t,o_t$ 各有自己的参数，取值都在 0 到 1 之间。</p>
+<p>$$\widetilde c_t=\tanh(\text{学到的候选})$$</p>
+<p>$$h_t=o_t\odot\tanh(c_t)$$</p>
+<p>输出门控制<strong>有多少信息进入下一次预测</strong>。</p>
+</div>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 三个门分别管什么（一句话版）</span>
+<table>
+<thead><tr><th>门</th><th>取值</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>遗忘门 $f_t$</td><td>$\to0$ 就清空，$\to1$ 就全留</td><td>决定旧记忆 $c_{t-1}$ 保留多少</td></tr>
+<tr><td>输入门 $i_t$</td><td>$\to0$ 就拒收，$\to1$ 就全收</td><td>决定新候选 $\widetilde c_t$ 写入多少</td></tr>
+<tr><td>输出门 $o_t$</td><td>$\to0$ 就不外露</td><td>决定 $c_t$ 有多少暴露成 $h_t$</td></tr>
+</tbody>
+</table>
+<p>注意 $\odot$ 是<strong>逐元素乘积</strong>，不是矩阵乘法。三个门都是同一个 sigmoid 形式的仿射映射，
+但<strong>参数各自独立</strong>——记号只是把三个仿射映射缩写了。</p>
+<p>为什么这样能缓解梯度问题？看单元路径 $c_{t-1}\to c_t$：</p>
+\[\frac{\partial c_t}{\partial c_{t-1}}=f_t\]
+<p>如果遗忘门学成接近 1，梯度就<strong>几乎原样穿过</strong>，不会被 $\tanh'$ 反复收缩。
+这条「高速公路」是 LSTM 相比朴素 RNN 的关键改进。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 出处与边界</span>
+<ul>
+<li>这是<strong>带遗忘门的现代 LSTM</strong>。Hochreiter–Schmidhuber 1997 年的原始模型<strong>没有</strong>这个门，
+不要把当前形式归到原论文上。</li>
+<li>方程遵循 <code>torch.nn.LSTM</code> 的实现。</li>
+<li>门控<strong>有助于</strong>保留直接的状态通路，但<strong>不保证</strong>梯度稳定。</li>
+<li>输出门很小的时候，存储的信息会被「藏起来」而<strong>不是被擦除</strong>——$c_t$ 里还在，只是 $h_t$ 看不见。</li>
+</ul>
+</div>
+
+<h3 id="s27">2.7 剩下的局限 <span class="tag s">课件</span></h3>
+
+<ul>
+<li>状态更新依赖前面的状态（无法并行）。</li>
+<li>信息必须<strong>存活过</strong>很多次更新。</li>
+<li>定长上下文的编码器–解码器只传递<strong>一个</strong>源摘要——这正是引入注意力的动机。</li>
+</ul>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这个「瓶颈」的适用边界</span>
+<p>「固定最终向量」这个瓶颈属于<strong>接下来要讨论的那种特定编码器–解码器设计</strong>，
+不是所有可能的循环架构都如此。LSTM 的门解决了记忆传播问题，
+但<strong>不会自动让解码器访问每一个编码器状态</strong>。来源：Bahdanau et al., §§2–3。</p>
+</div>
+
+<hr>
+
+<h2 id="p3">第三部分 · RNN 编码器–解码器中的注意力</h2>
+
+<p>第三节课 45 分钟：注意力在这里解决的是一个<strong>非常具体的循环翻译问题</strong>。
+本节从头到尾用「编码器源状态 + 解码器状态」这套记号。
+Transformer 的自注意力在 Lecture 05 展开。</p>
+
+<h3 id="s31">3.1 用 RNN 做机器翻译 <span class="tag s">课件</span></h3>
+
+<p><strong>翻译任务：</strong>「I am hungry」（英）→「J'ai faim」（法）。</p>
+
+<ul>
+<li><strong>编码器：</strong>源句 → 固定大小的最终状态 $c=h_n^{\mathrm{enc}}$。</li>
+<li><strong>解码器：</strong>$s_t=f(s_{t-1},y_{t-1},c)$，<strong>每一个</strong>目标步都用同一个 $c$。</li>
+</ul>
+
+<figure>
+<img src="assets/img/L04-encoder-bottleneck.png" alt="编码器用五个紫色循环状态读入源 token，绿色圆圈标出最终状态作为瓶颈传给红色循环解码器，解码器顺序生成目标 token。">
+<figcaption><strong>图 5 · 编码器–解码器的瓶颈。</strong>紫色方框是每读入一个源 token 后的编码器状态，
+绿色虚线圈是最终状态 $c$；红色方框是解码器状态，弯箭头把上一步生成的 token 带回下一步。
+<strong>瓶颈：</strong>解码器只能通过 $c$ 看到源句。注意力则让每个目标步从<strong>所有</strong>编码器状态里挑选。</figcaption>
+</figure>
+
+<p>源句和目标句的长度可以不同。</p>
+
+<div class="box key">
+<span class="label">补充 · 「固定大小」到底固定的是什么</span>
+<p>注意 $c$ 是<strong>维度</strong>固定，不是数值恒定。不同的源句会产生不同的 $c$——
+它是一句话读完之后的状态向量，长度恒为 $m$。</p>
+<p>问题出在「一句话 → 一个 $m$ 维向量」这个压缩比上：源句越长，需要塞进同一个容器的信息越多。
+而且解码器在第 1 步和第 8 步看到的 $c$ <strong>完全相同</strong>，
+它没有机会说「现在我要看的是源句的第三个词」。</p>
+<p>注意力要做的，就是把「一个固定 $c$」换成「<strong>每个目标步各自算一个 $c_t$</strong>」。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 图是示意，别读数字</span>
+<p>这张插图取自老师课件的第 7 页（原图 <code>ppt/media/image10.png</code>，未作修改）。
+紫色方框的<strong>个数是示意</strong>，不代表源句真的有 5 个词。
+$y_{t-1}$ 表示上一个目标词或其嵌入。
+概念来源：Bahdanau et al., §§2–3；<a href="https://aclanthology.org/D14-1179/">Cho et al. (2014)</a>。</p>
+</div>
+
+<h3 id="s32">3.2 Bahdanau 注意力 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<h4>Bahdanau, Cho, and Bengio</h4>
+<p><em>Neural Machine Translation by Jointly Learning to Align and Translate</em></p>
+<p>2014 预印本；ICLR 2015。</p>
+<p>一个<strong>对齐网络</strong>学习：对每个目标词，应该把哪些编码器状态组合起来。</p>
+</div>
+<div>
+<h4>双向源状态</h4>
+<p>$$h_j=[\overrightarrow h_j;\overleftarrow h_j]$$</p>
+<p>编码器<strong>两个方向</strong>读源句。</p>
+<p>每个标注代表一个源位置及其周围的上下文。</p>
+<p>翻译开始之前，整个源句就已经可用了。</p>
+</div>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 为什么要双向</span>
+<p>单向 RNN 的 $\overrightarrow h_j$ 只包含了位置 $j$ <strong>之前</strong>的信息。
+但翻译「key」的时候，有时需要看它<strong>后面</strong>的词（比如「the key to the door」里的 to the door）。
+双向读一遍，把两个方向的最终状态拼接起来：</p>
+\[h_j=[\overrightarrow h_j;\overleftarrow h_j]\in\mathbb{R}^{2m}\]
+<p>这样每个标注都带上了<strong>整句</strong>的上下文。因为编码阶段在生成之前就全部完成了，
+所以「看到后面的源词」是完全合法的——它<strong>不会泄露任何未来的目标词</strong>。</p>
+<p>顺带一提：论文里编码器用的是 GRU（门控循环单元），不是 LSTM。
+LSTM 在 <a href="#s26">§2.6</a> 只是用来更一般地说明循环记忆。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 归因要准确</span>
+<p>这是神经机器翻译里<strong>开创性的加性软注意力</strong>模型，
+但不要说它是「整个神经计算史上的第一个注意力机制」。
+论文 §6.1 自己就提到了 Graves 更早的手写对齐工作（2013）。
+Mnih 等人的视觉注意力论文 2014 年 6 月就投出了，早于这份 2014 年 9 月的 NMT 预印本。</p>
+</div>
+
+<h3 id="s33">3.3 从对齐分数到上下文 <span class="tag s">课件</span></h3>
+
+$$e_{t,j}=v_a^{\mathsf T}\tanh(W_as_{t-1}+U_ah_j)$$
+
+<div class="cols">
+<div>
+<h4>给每个源位置打分</h4>
+<table>
+<thead><tr><th>输入</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$s_{t-1}$</td><td>上一个解码器状态（充当查询）</td></tr>
+<tr><td>$h_j$</td><td>源位置 $j$ 的标注</td></tr>
+</tbody>
+</table>
+<p>$W_a$、$U_a$、$v_a$ 都和翻译模型一起训练。</p>
+</div>
+<div>
+<h4>归一化并组合</h4>
+<p>$$\alpha_{t,j}=\frac{\exp(e_{t,j})}{\sum_{k=1}^{S}\exp(e_{t,k})}$$</p>
+<p>$$c_t=\sum_{j=1}^{S}\alpha_{t,j}h_j$$</p>
+<p>每个目标步得到源位置上的一个分布。上下文的宽度和单个编码器标注一样。</p>
+</div>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 三个矩阵各干什么（形状角度）</span>
+<p>设解码器状态 $s_{t-1}\in\mathbb{R}^{n}$，源标注 $h_j\in\mathbb{R}^{2m}$。三个参数的作用是：</p>
+<table>
+<thead><tr><th>参数</th><th>形状</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>$W_a$</td><td>$p\times n$</td><td>把解码器状态投影到<strong>对齐空间</strong> $\mathbb{R}^p$</td></tr>
+<tr><td>$U_a$</td><td>$p\times 2m$</td><td>把源标注投影到<strong>同一个</strong>对齐空间 $\mathbb{R}^p$</td></tr>
+<tr><td>$v_a$</td><td>$p$</td><td>把 $p$ 维向量压成<strong>一个标量分数</strong></td></tr>
+</tbody>
+</table>
+<p>关键点：$W_a$ 和 $U_a$ 的输出维度都是 $p$，所以两者可以相加——
+<strong>原始的解码器宽度 $n$ 和编码器宽度 $2m$ 不需要相等</strong>。</p>
+<p>为什么叫「加性」？因为 $W_as_{t-1}+U_ah_j$ 是先<strong>相加</strong>再进 $\tanh$。
+对比 Lecture 05 的缩放点积注意力，那里是 $q^{\mathsf T}k$ 直接<strong>相乘</strong>。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 三步走一遍（呼应 E05 的数值）</span>
+<ol class="steps">
+<li><strong>打分。</strong>对每个源位置 $j$ 算一个实数 $e_{t,j}$。可以是负数。</li>
+<li><strong>归一化。</strong>沿<strong>源序列轴</strong>做 softmax，得到 $\alpha_{t,j}\ge0$ 且 $\sum_j\alpha_{t,j}=1$。</li>
+<li><strong>加权求和。</strong>$c_t=\sum_j\alpha_{t,j}h_j$，是一个<strong>可微的凸组合</strong>，不是从源位置里采样一个。</li>
+</ol>
+<p>用 E05 给的分数 $(0,\log3)$ 和标注 $h_1=(1,2),h_2=(3,0)$ 走一遍：</p>
+\[\exp(0)=1,\quad \exp(\log 3)=3\ \Longrightarrow\ \alpha=\Big(\tfrac{1}{4},\tfrac{3}{4}\Big)\]
+\[c=\tfrac14(1,2)+\tfrac34(3,0)=(0.25+2.25,\ 0.5+0)=(2.5,\ 0.5)\ \checkmark\]
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 记号撞车警告</span>
+<p>上一节用 $c$ 表示 <strong>LSTM 的单元记忆</strong>，这一节用 $c$ 表示 <strong>上下文向量</strong>——
+两个 $c$ 是不同模型里的不同东西。解码器状态统一记作 $s$。
+softmax 的轴是<strong>源序列</strong>。来源：Bahdanau et al., §3.1，式 (5)–(6)。</p>
+</div>
+
+<h3 id="s34">3.4 解码器一步的上下文向量 <span class="tag s">课件</span></h3>
+
+<p>$$\alpha_{t,:}=\operatorname{softmax}(e_{t,:}),\qquad c_t=\sum_j\alpha_{t,j}h_j$$</p>
+
+<figure>
+<img src="assets/img/L04-rnn-attention.png" alt="编码器状态按上一个解码器状态得到 0.4、0.3、0.1、0.2 的注意力权重，加权求和构成上下文向量，送入下一次解码器更新。">
+<figcaption><strong>图 6 · 循环注意力的数据流（通用示意）。</strong>
+绿色虚线是从上一个解码器状态 $h^d_{i-1}$ 到对齐权重的<strong>打分</strong>路径；
+源状态 $h^e_j$ 按权重加权求和得到上下文 $c_i$，再送入解码器。
+图中四个权重 $0.4+0.3+0.1+0.2=1$。</figcaption>
+</figure>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这张图是「通用示意」，不是 Bahdanau 的严格图</span>
+<ul>
+<li>图里的 $i$ 对应我们的 $t$，$h^e_j$ 对应编码器标注 $h_j$，$h^d_{i-1}$ 对应上一个解码器状态 $s_{t-1}$。</li>
+<li>图中的绿色虚线标注画的是<strong>点积</strong>打分；而本讲的模型用的是 Bahdanau 的<strong>加性</strong>打分
+（见 <a href="#s33">§3.3</a>）。两者都沿源位置归一化、都构成加权上下文，只是分数算法不同。</li>
+<li>图中的编码器是<strong>单向</strong>的，且有自己的解码器/输出下标；
+它不是双向 Bahdanau 模型的字面还原。</li>
+<li>那四个权重是<strong>示意值</strong>，不是某次真实翻译的测量结果。</li>
+</ul>
+</div>
+
+<h3 id="s35">3.5 下一次解码器更新 <span class="tag s">课件</span></h3>
+
+$$s_{t-1},\lbrace h_j\rbrace\ \longrightarrow\ \lbrace e_{t,j}\rbrace\ \longrightarrow\ c_t$$
+$$s_t=f(s_{t-1},y_{t-1},c_t)$$
+$$p(y_t\mid y_{\lt t},x)=g(y_{t-1},s_t,c_t)$$
+
+<p>翻译损失<strong>联合训练</strong>编码器、对齐网络和解码器。</p>
+
+<div class="box key">
+<span class="label">补充 · 这条箭头链在说什么</span>
+<p>第一行是<strong>依赖关系</strong>，不是三个额外的离散决策：
+「上一状态 + 全部源标注」算出分数，分数归一化后得到上下文。
+第二行用新上下文更新解码器状态；第三行给出词表上的概率分布。</p>
+<p>注意 Bahdanau 的约定里，打分用的是 $s_{t-1}$（<strong>新的状态 $s_t$ 还没算出来</strong>）。
+其他注意力架构里这个次序可能不同。</p>
+<p>$g$ 里包含了词表概率的计算。整个目标函数<strong>不需要</strong>任何人工词对齐标签——
+对齐是学出来的副产品。来源：Bahdanau et al., §3.1 与附录 A.1.2。</p>
+</div>
+
+<h3 id="s36">3.6 源可见性与对齐权重 <span class="tag s">课件</span></h3>
+
+<div class="cols">
+<div>
+<h4>生成目标 $y_t$ 时</h4>
+<table>
+<thead><tr><th>信息</th><th>可用？</th></tr></thead>
+<tbody>
+<tr><td>整个源句</td><td>是</td></tr>
+<tr><td>之前生成的目标词</td><td>是</td></tr>
+<tr><td>未来的目标词</td><td><strong>否</strong></td></tr>
+</tbody>
+</table>
+<p>源位置 $j$ 和目标步 $t$ 索引的是<strong>两条不同的序列</strong>。</p>
+</div>
+<div>
+<h4>怎么解读权重</h4>
+<p>权重越大，该源标注在上下文里的系数越大。</p>
+<p>标注本身已经含有上下文信息。</p>
+<p>权重有助于<strong>检查</strong>对齐，但不能确立预测的<strong>唯一解释</strong>。</p>
+</div>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 这里没有三角掩码（和 Lecture 05 的关键区别）</span>
+<p>翻译需要<strong>重排</strong>：源位置 $j$ 大于目标下标 $t$ 时，那个源词<strong>仍然可用</strong>。
+所以<strong>不要</strong>给这个源对齐强加「目标下标三角掩码」。</p>
+<p>那为什么还叫「自回归」？因为自回归限制的是<strong>目标词</strong>方向：生成 $y_t$ 时不能用 $y_{t+1},y_{t+2},\dots$。
+源方向是完全没有因果限制的。</p>
+<p>Lecture 05 讲的自注意力掩码，遮的是<strong>同一个序列内部</strong>的未来位置，那是另一回事。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 权重不是语言学标注</span>
+<p>某个标注的最终贡献，还取决于<strong>被加权的那个向量本身</strong>有多大。
+Bahdanau et al. §5.2 和图 3 展示了学到的对齐与源/目标重排。
+讲这个图的时候，要说明坐标轴的含义，但<strong>不要把注意力当作可靠的人语言学标注或因果归因方法</strong>。</p>
+</div>
+
+<hr>
+
+<h2 id="ap">附录</h2>
+
+<h3 id="apA">A · 课堂练习 E01–E05 全解</h3>
+
+<div class="box">
+<span class="label">E01 · 上下文与张量形状（4 分钟）</span>
+<p><strong>题：</strong>对 <code>BOS red key opens EOS</code> 列出三个窗口与目标；
+再取 $B=2,C=2,d=4,h=8,|V|=7$，给出查表、拼接、隐层、logits 的形状。</p>
+<p><strong>答：</strong>窗口与目标是 BOS red → key；red key → opens；key opens → EOS。</p>
+<p>形状依次为 $(2,2,4)$、$(2,8)$、$(2,8)$、$(2,7)$。</p>
+<p><strong>验算：</strong>查表 $(B,C,d)=(2,2,4)$；拼接把后两轴合并得 $(B,Cd)=(2,8)$；
+隐层 $(B,h)=(2,8)$；词表投影 $(B,|V|)=(2,7)$。</p>
+<p><em>常见错误：</em>在输出里保留了序列长度轴。这个模型对每个完整窗口只产出一个 next-token 预测。</p>
+</div>
+
+<div class="box">
+<span class="label">E02 · 断开的训练损失（6 分钟）</span>
+<p><strong>题：</strong>下面为什么失败？修好循环，然后拟合六个窗口。</p>
+<pre><code>loss = F.cross_entropy(model(contexts), y).detach()
+loss.backward()</code></pre>
+<p><strong>答：</strong>去掉 <code>detach</code>。在 <code>backward</code> 之前清零梯度，然后调用 <code>step</code>。</p>
+<p>目标：200 次更新后损失降到 0.03 nats 以下（实测约 0.0070）。</p>
+<p><strong>为什么失败：</strong><code>detach</code> 把损失从计算图上切了下来，
+它不再连接到任何可训练参数，<code>backward</code> 对这个标量会直接报错。
+配置：CPU、seed 7、SGD 学习率 0.5、$C=2,d=4,h=8,V=7$。</p>
+</div>
+
+<div class="box">
+<span class="label">E03 · 追踪一条记忆路径（7 分钟）</span>
+<p><strong>题：</strong>用线性玩具循环 $h_t=0.5h_{t-1}+x_t$，$h_0=0$，输入 $(1,0,1)$。
+求 $h_1,h_2,h_3$ 与 $\partial h_3/\partial x_1$。若第一个输入改成 2 呢？</p>
+<p><strong>答：</strong>状态依次为 $1,\ 0.5,\ 1.25$；导数是 $0.25$。
+第一个输入改成 2 后，最终状态变为 $1.5$。</p>
+<p><strong>验算：</strong>$h_1=0+1=1$；$h_2=0.5\times1+0=0.5$；$h_3=0.5\times0.5+1=1.25$。✓</p>
+<p>把 $h_3$ 展开成 $h_3=0.25x_1+0.5x_2+x_3$，立即读出 $\partial h_3/\partial x_1=0.25$。</p>
+<p>改成 $x_1=2$：$h_3=0.25\times2+0+1=1.5$。✓
+<strong>注意最后一个输入没变，但它的状态里保留了更早输入的信息。</strong></p>
+</div>
+
+<div class="box">
+<span class="label">E04 · 门控更新与循环局限（7 分钟）</span>
+<p><strong>题：</strong>给定 $c_{t-1}=2$、$f_t=0.75$、$i_t=0.5$、$\widetilde c_t=-0.5$、$o_t=0.5$。
+求 $c_t$ 与 $h_t$；固定这些门，$\partial c_t/\partial c_{t-1}$ 是多少？</p>
+<p><strong>答：</strong>$c_t=1.25$；$h_t=0.5\tanh(1.25)\approx0.4241$；单元路径的直接导数是 $0.75$。</p>
+<p><strong>验算：</strong></p>
+\[c_t=0.75\times2+0.5\times(-0.5)=1.5-0.25=1.25\ \checkmark\]
+\[\tanh(1.25)=0.8482836\ldots,\quad h_t=0.5\times0.8482836=0.4241418\ldots\approx0.4241\ \checkmark\]
+\[\frac{\partial c_t}{\partial c_{t-1}}=f_t=0.75\ \checkmark\]
+<p>完整的循环导数还要加上「经由更早隐状态和门的计算」那部分依赖。</p>
+<p><strong>思考题：</strong>$f=0$ 与 $f=1$ 如何改变保留项？$o=0$ 如何在不改变 $c$ 的情况下改变暴露？</p>
+</div>
+
+<div class="box">
+<span class="label">E05 · 每个目标步不同的上下文（7 分钟）</span>
+<p><strong>题：</strong>源标注 $h_1=(1,2)$、$h_2=(3,0)$，分数 $(0,\log3)$。
+求权重与上下文；再对另一个目标步用分数 $(\log3,0)$ 重做。</p>
+<p><strong>答：</strong>第一组权重 $(\tfrac14,\tfrac34)$，上下文 $(2.5,0.5)$；
+第二组权重 $(\tfrac34,\tfrac14)$，上下文 $(1.5,1.5)$。</p>
+<p><strong>验算：</strong></p>
+\[\text{第一组：}c=\tfrac14(1,2)+\tfrac34(3,0)=(0.25+2.25,\ 0.5+0)=(2.5,\ 0.5)\ \checkmark\]
+\[\text{第二组：}c=\tfrac34(1,2)+\tfrac14(3,0)=(0.75+0.75,\ 1.5+0)=(1.5,\ 1.5)\ \checkmark\]
+<p><strong>关键观察：</strong>同一组源标注，因为解码器相关的分数变了，上下文就变了。
+这正是注意力相对「一个固定 $c$」的优势。</p>
+</div>
+
+<h3 id="apB">B · 符号对照表</h3>
+
+<p>这份笔记里同一个字母在不同小节含义不同，这里一次列清：</p>
+
+<table>
+<thead><tr><th>符号</th><th>出现位置</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$c$</td><td><a href="#s26">§2.6</a></td><td>LSTM 的<strong>单元记忆</strong>（cell state）</td></tr>
+<tr><td>$c$</td><td><a href="#s31">§3.1</a>–<a href="#s36">§3.6</a></td><td>编码器最终状态 / <strong>上下文向量</strong> $c_t$</td></tr>
+<tr><td>$h_t$</td><td><a href="#s23">§2.3</a></td><td>循环隐状态（激活值，非参数）</td></tr>
+<tr><td>$h_j$</td><td><a href="#s32">§3.2</a></td><td>源位置 $j$ 的双向<strong>标注</strong> $[\overrightarrow h_j;\overleftarrow h_j]$</td></tr>
+<tr><td>$s_t$</td><td><a href="#s31">§3.1</a>起</td><td>解码器状态</td></tr>
+<tr><td>$C$</td><td><a href="#s14">§1.4</a></td><td>上下文窗口长度（token 数）</td></tr>
+<tr><td>$d$</td><td><a href="#s17">§1.7</a></td><td>嵌入宽度</td></tr>
+<tr><td>$m$</td><td><a href="#s23">§2.3</a></td><td>循环状态宽度</td></tr>
+<tr><td>$S$</td><td><a href="#s33">§3.3</a></td><td>源序列长度</td></tr>
+<tr><td>$\alpha_{t,j}$</td><td><a href="#s33">§3.3</a></td><td>目标步 $t$ 对源位置 $j$ 的注意力权重</td></tr>
+<tr><td>$e_{t,j}$</td><td><a href="#s33">§3.3</a></td><td>未归一化的对齐分数</td></tr>
+<tr><td>$\odot$</td><td><a href="#s26">§2.6</a></td><td>逐元素乘积（不是矩阵乘法）</td></tr>
+<tr><td>$[\,;\,]$</td><td><a href="#s16">§1.6</a>、<a href="#s32">§3.2</a></td><td>向量拼接（不是相加）</td></tr>
+</tbody>
+</table>
+
+<h3 id="apC">C · 参考文献</h3>
+
+<ul>
+<li><a href="https://www.jmlr.org/papers/v3/bengio03a.html">Bengio et al. (2003)</a>, <em>A Neural Probabilistic Language Model</em>, §2 —— 前馈神经语言模型。</li>
+<li><a href="https://proceedings.mlr.press/v28/pascanu13.html">Pascanu, Mikolov, Bengio (2013)</a>, §2 —— 循环梯度的困难。</li>
+<li><a href="https://arxiv.org/abs/1308.0850">Graves (2013)</a>, §2 —— 循环序列生成与手写对齐。</li>
+<li>Bahdanau, Cho, Bengio (2014/ICLR 2015), <em>Neural Machine Translation by Jointly Learning to Align and Translate</em>, §§2–3、附录 A.1.2、§5.2、§6.1 —— 加性注意力与对齐。</li>
+<li><a href="https://aclanthology.org/D14-1179/">Cho et al. (2014)</a> —— 编码器–解码器与 GRU。</li>
+<li><a href="https://github.com/stanford-cs336/lectures/blob/main/lecture_02.py">Stanford CS336 Lecture 2</a> —— 张量形状与训练循环的写法参考。</li>
+</ul>
+
+<p class="footnote">
+<strong>本笔记说明。</strong>内容整理自 CS40008.01《NLP and LLMs》Lecture 04 公开课件
+（<code>baojian.github.io/llm-26-fall/slides/lecture-04/</code>，含幻灯片正文与讲者备注）。
+标 <span class="tag n">补充</span> 的部分是课件只给图或只给结论、没有展开的推导、验算与几何直觉，
+由本笔记补全，<strong>不属于课堂内容</strong>；所有示例数值均已独立验算。
+图 1、2、4、5、6 取自课件原始素材（图 5 为课件内嵌位图），未作修改；图 3 依据课件数据重绘。
+课程内容版权归复旦大学及授课教师所有。
+</p>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body>
+</html>
