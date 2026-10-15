@@ -14,6 +14,10 @@
 
 直接双击用浏览器打开即可，**离线可用**（KaTeX 0.16.11 及字体已随仓库提交于 `assets/katex/`）。
 
+**渲染版（推荐）**：[在 GitHub Pages 上打开](https://michaellu2007.github.io/fdu-note-summarized/计算理论/计算理论-TC02-TC03-学习笔记.html)
+
+> 上面表格里的相对路径链接在 **github.com 的文件页**点开只会看到**源码** —— GitHub 只渲染 Markdown，不渲染 HTML。要看渲染后的页面请用 Pages 链接，或克隆到本地直接双击 `.html`。
+
 `notes/` 目录存放**逐页转写稿**（Markdown + LaTeX），是生成上面那份 HTML 的原始素材，方便检索、diff 或二次加工。
 
 ## 覆盖范围
