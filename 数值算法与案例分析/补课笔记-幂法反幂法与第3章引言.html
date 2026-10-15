@@ -504,7 +504,7 @@ P=\begin{bmatrix}1&1\\0&1\end{bmatrix},\qquad P^{-1}=\begin{bmatrix}1&-1\\0&1\en
 <div class="box warn">
 <p class="label">两个前提（考试常考）</p>
 <p><strong>① $\lambda_1$ 必须严格占优。</strong>整段推导用到了 $|\lambda_2/\lambda_1|<1$。若出现 $|\lambda_2|=|\lambda_1|$（例如 $\lambda_2=-\lambda_1$，像 $\operatorname{diag}(1,-1)$），那么 $(\lambda_2/\lambda_1)^k=(-1)^k$ <strong>不收敛</strong>，幂法失效。这就是定理里把条件写成严格不等号 $|\lambda_1|>|\lambda_2|$ 的原因。</p>
-<p><strong>② 「$\lambda_1$ 半简单」这个条件的来处。</strong>若 $A$ 不可对角化（存在阶数 $>1$ 的 Jordan 块），$\hat J^k$ 里会多出 $k^m$ 这样的多项式因子，但<strong>指数衰减仍然赢</strong>（$k^m\epsilon^k\to0$），结论不变——只是需要 $\lambda_1$ 自己的 Jordan 块是 $1\times1$ 的，这就是「半简单」的作用。</p>
+<p><strong>② 「$\lambda_1$ 半简单」这个条件的来处。</strong>若 $A$ 不可对角化（存在阶数 $>1$ 的 Jordan 块），$\hat J^k$ 里会多出 $k^m$ 这样的多项式因子，但<strong>指数衰减仍然赢</strong>（$k^m\epsilon^k\to0$），结论不变——只是需要 $\lambda_1$ 自己的 Jordan 块是 $1\times1$ 的，这就是「半简单」的作用。<strong>但若 $\lambda_1$ <em>本身</em>就有重数（$\lambda_1=\cdots=\lambda_k$），下面的论证不再成立——见本节末尾「模最大特征值有重数时会怎样」。</strong></p>
 </div>
 
 <div class="box key">
@@ -623,6 +623,20 @@ r=0:\ c_1q_1+c_2\omega^0q_2=(1,0)^{\mathsf T},\qquad r=1:\ c_1q_1+c_2\omega^1q_2
 <p>若初值恰好取成特征向量（如 $x^{(0)}=(1,1)^{\mathsf T}$），它是<strong>不动点</strong>，迭代老老实实停住，看起来「收敛得很好」。用随机初值则几乎必然撞上周期震荡——这种<strong>对初值的病态依赖</strong>本身就是失效的信号。</p>
 </div>
 
+<div class="box key">
+<p class="label">具体一例（作业 P4）：$A=\begin{bmatrix}\lambda&1\\0&-\lambda\end{bmatrix}$</p>
+<p>取 $\lambda\in\mathbb{C}\setminus\{0\}$。直接平方，交叉项 $\lambda-\lambda$ 恰好消掉：</p>
+\[
+A^2=\begin{bmatrix}\lambda&1\\0&-\lambda\end{bmatrix}^{2}=\begin{bmatrix}\lambda^2&0\\0&\lambda^2\end{bmatrix}=\lambda^2I
+\]
+<p>于是 $A^{2m}=\lambda^{2m}I$、$A^{2m+1}=\lambda^{2m}A$（等价地：最小多项式是 $t^2-\lambda^2$，即 $A$ 是 $\lambda^2I$ 的一个「平方根」）。代入幂法 $x^{(t)}=A^tx^{(0)}/\lVert A^tx^{(0)}\rVert$：</p>
+\[
+x^{(2m)}=\frac{x^{(0)}}{\lVert x^{(0)}\rVert}=:u,\qquad x^{(2m+1)}=\frac{Ax^{(0)}}{\lVert Ax^{(0)}\rVert}=:v
+\]
+<p>序列<strong>严格以 $2$ 为周期</strong>，在 $u$、$v$ 之间来回跳，<strong>永不收敛</strong>；只有当 $x^{(0)}$ 本身是特征向量（$u=\pm v$）时它才是<strong>不动点</strong>。Rayleigh 商同样二周期振荡，一般两个值都不等于 $\pm\lambda$——这与上面图 5 的交换矩阵是同一个机制（两者相似）。</p>
+<p>注意 $A$ 的特征值是 $\lambda$ 与 $-\lambda$，二者互异，故 $A$ <strong>可对角化</strong>：这里的失效<strong>与重根、亏损都无关，纯粹是模相等造成的</strong>，正好与下面「有重数」的情形互为对照。</p>
+</div>
+
 <table>
 <thead><tr><th>情形</th><th>$(\lambda_2/\lambda_1)^k$ 的行为</th><th>幂法结果</th></tr></thead>
 <tbody>
@@ -638,6 +652,107 @@ r=0:\ c_1q_1+c_2\omega^0q_2=(1,0)^{\mathsf T},\qquad r=1:\ c_1q_1+c_2\omega^1q_2
 <p class="label">一句话总结</p>
 <p>定理里把条件写成<strong>严格</strong>不等号 $|\lambda_1|>|\lambda_2|$，不是数学家的洁癖，而是实打实的必要条件：一旦相等，$(\lambda_2/\lambda_1)^k$ 就不再衰减，整个衰减论证立刻失效。</p>
 </div>
+
+<h4>附注 · 模最大特征值有<strong>重数</strong>时会怎样（作业 P3）</h4>
+
+<p>上一小节破坏的是 $|\lambda_1|>|\lambda_2|$ 这条假设。定理里还有两条：$A$ 要有 $n$ 个<strong>互不相同</strong>的特征值，且 $\lambda_1$ 是<strong>半简单</strong>的。若</p>
+
+\[
+\lambda_1=\lambda_2=\cdots=\lambda_k,\qquad |\lambda_k|>|\lambda_{k+1}|
+\]
+
+<p>则「模最大」这一条<strong>仍然成立</strong>（$\lambda_1$ 的模严格大于其余全部特征值），只是它不再单重。记 $E_{\lambda_1}$ 为 $\lambda_1$ 的特征子空间，分两种情形。</p>
+
+<p><strong>情形一 · $\lambda_1$ 半简单</strong>（几何重数 $=$ 代数重数 $=k$）。把 $x^{(0)}=\sum_ic_iq_i$ 按特征基展开：</p>
+
+\[
+A^tx^{(0)}=\lambda_1^t\Big[\underbrace{\sum_{i=1}^{k}c_iq_i}_{=w}+\sum_{i>k}c_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^tq_i\Big]
+\]
+
+<p>括号里第一项 $w$ 是<strong>固定</strong>的（不随 $t$ 变），第二项按 $|\lambda_{k+1}/\lambda_1|^t$ 指数衰减。于是归一化后</p>
+
+\[
+\frac{A^tx^{(0)}}{\lVert A^tx^{(0)}\rVert}\ \longrightarrow\ \frac{w}{\lVert w\rVert},\qquad w=\sum_{i=1}^{k}c_iq_i\in E_{\lambda_1}
+\]
+
+<p>结论：幂法<strong>仍然收敛</strong>，但收敛到的是 $E_{\lambda_1}$ 中<strong>由初始向量决定</strong>的那一个向量——一般<strong>不是特征向量</strong>（除非 $c_1,\dots,c_k$ 里只有一个非零）。注意 Rayleigh 商<strong>照样收敛到 $\lambda_1$</strong>：<strong>特征值求对了，特征向量没求对</strong>。收敛速度仍是 $|\lambda_{k+1}/\lambda_1|^t$。</p>
+
+<p>退化情形：若 $x^{(0)}\in E_{\lambda_1}$ 且 $k\ge2$，则 $A^tx^{(0)}=\lambda_1^tx^{(0)}$，序列<strong>原地不动</strong>，永远停不到单个特征向量上。</p>
+
+<p><strong>情形二 · $\lambda_1$ 亏损</strong>（几何重数 $<$ 代数重数）。取一个 $k\times k$ 的 Jordan 块 $J=\lambda_1I+N$（$N$ 幂零，$N^k=0$）：</p>
+
+\[
+J^t=\sum_{j=0}^{k-1}\binom{t}{j}\lambda_1^{t-j}N^j\ \Longrightarrow\ \lVert J^t\rVert\sim\binom{t}{k-1}|\lambda_1|^{t-k+1}\sim t^{\,k-1}|\lambda_1|^t
+\]
+
+<p>指数增长外面多了一个<strong>多项式因子 $t^{k-1}$</strong>。归一化后 $x^{(t)}\to N^{k-1}x^{(0)}/\lVert\cdot\rVert\propto e_1$，即 Jordan 块的「顶端」特征向量。所以方向<strong>仍然收敛到那个唯一的特征向量</strong>，但速度<strong>退化成代数速度 $O(1/t)$</strong>：$t^{k-1}$ 这个因子只能靠 $t$ 变大来「甩掉」，非主导项与主导项之比 $\sim 1/t$。</p>
+
+<div class="box key">
+<p class="label">一句话对照</p>
+<p><strong>半简单 $\Rightarrow$ 几何收敛，但方向可能不对；亏损 $\Rightarrow$ 方向对，但只有代数收敛。</strong>两条路都拿不到「收敛到某个特征向量」这个结论——定理里「互不相同」和「半简单」都不是摆设。</p>
+</div>
+
+<p><strong>补救。</strong>① <strong>降阶（deflation）</strong>：见下一小节，把 $\lambda_1$ 这一块从 $A$ 里剥掉，再对剩余矩阵用幂法；② <strong>子空间迭代（正交迭代）</strong>：一次推进 $k$ 列 $X^{(k+1)}=AX^{(k)}$ 并做正交化，收敛的是整个不变子空间 $E_{\lambda_1}$——重数对子空间迭代不构成障碍，这正是 Krylov / QR 方法的思想来源。</p>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 376" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>重特征值时幂法的两种行为</title>
+<desc>左图：λ1=λ2 半简单时，迭代到主导特征子空间 E 的距离按 0.5^t 几何衰减，但到最近特征向量方向的距离停在 0.62 不再下降——收敛到子空间，却停不到单个特征向量。右图：λ1 亏损（一个 3 阶 Jordan 块）时，分量比按 2/t 与 1/t² 衰减，是代数速度，不是几何速度。</desc>
+<rect x="52" y="56" width="278" height="230" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.8"/>
+<line x1="52" y1="60.6" x2="330" y2="60.6" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="46" y="60.6" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁰</text>
+<line x1="52" y1="118.4" x2="330" y2="118.4" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="46" y="118.4" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁵</text>
+<line x1="52" y1="176.2" x2="330" y2="176.2" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="46" y="176.2" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻¹⁰</text>
+<line x1="52" y1="234.0" x2="330" y2="234.0" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="46" y="234.0" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻¹⁵</text>
+<text x="52.0" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">0</text>
+<text x="144.7" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">20</text>
+<text x="237.3" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">40</text>
+<text x="330.0" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">60</text>
+<text x="191.0" y="320" text-anchor="middle" font-size="11.5" fill="var(--ink2)">迭代步数 t</text>
+<text x="16" y="171.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)" transform="rotate(-90 16 171.0)">距离（单位向量）</text>
+<text x="191.0" y="28" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">(a) 半简单：λ₁ = λ₂ = 1, λ₃ = 0.5</text>
+<text x="191.0" y="44" text-anchor="middle" font-size="11" fill="var(--ink3)">收敛到特征子空间 E，但停不到单个特征向量</text>
+<polyline points="52.0,71.0 56.6,74.5 61.3,77.9 65.9,81.4 70.5,84.9 75.2,88.4 79.8,91.9 84.4,95.3 89.1,98.8 93.7,102.3 98.3,105.8 103.0,109.3 107.6,112.7 112.2,116.2 116.9,119.7 121.5,123.2 126.1,126.6 130.8,130.1 135.4,133.6 140.0,137.1 144.7,140.6 149.3,144.0 153.9,147.5 158.6,151.0 163.2,154.5 167.8,158.0 172.5,161.4 177.1,164.9 181.7,168.4 186.4,171.9 191.0,175.4 195.6,178.8 200.3,182.3 204.9,185.8 209.5,189.3 214.2,192.8 218.8,196.2 223.4,199.7 228.1,203.2 232.7,206.7 237.3,210.2 242.0,213.6 246.6,217.1 251.2,220.6 255.9,224.1 260.5,227.5 265.1,231.0 269.8,234.5 274.4,238.0 279.0,241.5 283.7,244.9 288.3,248.4 292.9,251.9 297.6,255.4 302.2,258.9 306.8,262.3 311.5,265.8 316.1,269.3 320.7,272.8 325.4,276.3 330.0,279.7" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<polyline points="52.0,63.0 56.6,63.0 61.3,63.0 65.9,63.0 70.5,63.0 75.2,63.0 79.8,63.0 84.4,63.0 89.1,63.0 93.7,63.0 98.3,63.0 103.0,63.0 107.6,63.0 112.2,63.0 116.9,63.0 121.5,63.0 126.1,63.0 130.8,63.0 135.4,63.0 140.0,63.0 144.7,63.0 149.3,63.0 153.9,63.0 158.6,63.0 163.2,63.0 167.8,63.0 172.5,63.0 177.1,63.0 181.7,63.0 186.4,63.0 191.0,63.0 195.6,63.0 200.3,63.0 204.9,63.0 209.5,63.0 214.2,63.0 218.8,63.0 223.4,63.0 228.1,63.0 232.7,63.0 237.3,63.0 242.0,63.0 246.6,63.0 251.2,63.0 255.9,63.0 260.5,63.0 265.1,63.0 269.8,63.0 274.4,63.0 279.0,63.0 283.7,63.0 288.3,63.0 292.9,63.0 297.6,63.0 302.2,63.0 306.8,63.0 311.5,63.0 316.1,63.0 320.7,63.0 325.4,63.0 330.0,63.0" fill="none" stroke="var(--warn)" stroke-width="2"/>
+<line x1="52" y1="340" x2="74" y2="340" stroke="var(--accent)" stroke-width="2.4"/>
+<text x="80" y="344" font-size="11" fill="var(--ink2)">到主导特征子空间 E 的距离 → 0</text>
+<line x1="52" y1="360" x2="74" y2="360" stroke="var(--warn)" stroke-width="2.4"/>
+<text x="80" y="364" font-size="11" fill="var(--ink2)">到最近特征向量方向的距离 → 0.62</text>
+<rect x="400" y="56" width="260" height="230" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.8"/>
+<line x1="400" y1="79.0" x2="660" y2="79.0" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="79.0" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁰</text>
+<line x1="400" y1="117.3" x2="660" y2="117.3" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="117.3" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻¹</text>
+<line x1="400" y1="155.7" x2="660" y2="155.7" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="155.7" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻²</text>
+<line x1="400" y1="194.0" x2="660" y2="194.0" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="194.0" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻³</text>
+<line x1="400" y1="232.3" x2="660" y2="232.3" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="232.3" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁴</text>
+<line x1="400" y1="270.7" x2="660" y2="270.7" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="394" y="270.7" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁵</text>
+<line x1="400.0" y1="56" x2="400.0" y2="286" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="400.0" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">1</text>
+<line x1="508.3" y1="56" x2="508.3" y2="286" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="508.3" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">10</text>
+<line x1="616.7" y1="56" x2="616.7" y2="286" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="616.7" y="302" text-anchor="middle" font-size="10" fill="var(--ink3)">100</text>
+<text x="530.0" y="320" text-anchor="middle" font-size="11.5" fill="var(--ink2)">迭代步数 t（对数轴）</text>
+<text x="364" y="171.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)" transform="rotate(-90 364 171.0)">分量比（对数轴）</text>
+<text x="530.0" y="28" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">(b) 亏损：λ₁ = λ₂ = λ₃ = 1（一个 3 阶 Jordan 块）</text>
+<text x="530.0" y="44" text-anchor="middle" font-size="11" fill="var(--ink3)">方向对，但只有代数收敛 O(1/t)</text>
+<polyline points="402.2,68.2 404.3,69.0 406.5,69.8 408.7,70.5 410.8,71.3 413.0,72.1 415.2,72.8 417.3,73.6 419.5,74.4 421.7,75.1 423.8,75.9 426.0,76.7 428.2,77.4 430.3,78.2 432.5,79.0 434.7,79.7 436.8,80.5 439.0,81.3 441.2,82.0 443.3,82.8 445.5,83.6 447.7,84.3 449.8,85.1 452.0,85.9 454.2,86.6 456.3,87.4 458.5,88.2 460.7,88.9 462.8,89.7 465.0,90.5 467.2,91.2 469.3,92.0 471.5,92.8 473.7,93.5 475.8,94.3 478.0,95.1 480.2,95.8 482.3,96.6 484.5,97.4 486.7,98.1 488.8,98.9 491.0,99.7 493.2,100.4 495.3,101.2 497.5,102.0 499.7,102.7 501.8,103.5 504.0,104.3 506.2,105.0 508.3,105.8 510.5,106.6 512.7,107.3 514.8,108.1 517.0,108.9 519.2,109.6 521.3,110.4 523.5,111.2 525.7,111.9 527.8,112.7 530.0,113.5 532.2,114.2 534.3,115.0 536.5,115.8 538.7,116.5 540.8,117.3 543.0,118.1 545.2,118.8 547.3,119.6 549.5,120.4 551.7,121.1 553.8,121.9 556.0,122.7 558.2,123.4 560.3,124.2 562.5,125.0 564.7,125.7 566.8,126.5 569.0,127.3 571.2,128.0 573.3,128.8 575.5,129.6 577.7,130.3 579.8,131.1 582.0,131.9 584.2,132.6 586.3,133.4 588.5,134.2 590.7,134.9 592.8,135.7 595.0,136.5 597.2,137.2 599.3,138.0 601.5,138.8 603.7,139.5 605.8,140.3 608.0,141.1 610.2,141.8 612.3,142.6 614.5,143.4 616.7,144.1 618.8,144.9 621.0,145.7 623.2,146.4 625.3,147.2 627.5,148.0 629.7,148.7 631.8,149.5 634.0,150.3 636.2,151.0 638.3,151.8 640.5,152.6 642.7,153.3 644.8,154.1 647.0,154.9 649.2,155.6" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<polyline points="402.2,80.5 404.3,82.1 406.5,83.6 408.7,85.1 410.8,86.7 413.0,88.2 415.2,89.7 417.3,91.3 419.5,92.8 421.7,94.3 423.8,95.9 426.0,97.4 428.2,98.9 430.3,100.5 432.5,102.0 434.7,103.5 436.8,105.1 439.0,106.6 441.2,108.1 443.3,109.7 445.5,111.2 447.7,112.7 449.8,114.3 452.0,115.8 454.2,117.3 456.3,118.9 458.5,120.4 460.7,121.9 462.8,123.5 465.0,125.0 467.2,126.5 469.3,128.1 471.5,129.6 473.7,131.1 475.8,132.7 478.0,134.2 480.2,135.7 482.3,137.3 484.5,138.8 486.7,140.3 488.8,141.9 491.0,143.4 493.2,144.9 495.3,146.5 497.5,148.0 499.7,149.5 501.8,151.1 504.0,152.6 506.2,154.1 508.3,155.7 510.5,157.2 512.7,158.7 514.8,160.3 517.0,161.8 519.2,163.3 521.3,164.9 523.5,166.4 525.7,167.9 527.8,169.5 530.0,171.0 532.2,172.5 534.3,174.1 536.5,175.6 538.7,177.1 540.8,178.7 543.0,180.2 545.2,181.7 547.3,183.3 549.5,184.8 551.7,186.3 553.8,187.9 556.0,189.4 558.2,190.9 560.3,192.5 562.5,194.0 564.7,195.5 566.8,197.1 569.0,198.6 571.2,200.1 573.3,201.7 575.5,203.2 577.7,204.7 579.8,206.3 582.0,207.8 584.2,209.3 586.3,210.9 588.5,212.4 590.7,213.9 592.8,215.5 595.0,217.0 597.2,218.5 599.3,220.1 601.5,221.6 603.7,223.1 605.8,224.7 608.0,226.2 610.2,227.7 612.3,229.3 614.5,230.8 616.7,232.3 618.8,233.9 621.0,235.4 623.2,236.9 625.3,238.5 627.5,240.0 629.7,241.5 631.8,243.1 634.0,244.6 636.2,246.1 638.3,247.7 640.5,249.2 642.7,250.7 644.8,252.3 647.0,253.8 649.2,255.3" fill="none" stroke="var(--ok)" stroke-width="2"/>
+<line x1="400" y1="340" x2="422" y2="340" stroke="var(--accent)" stroke-width="2.4"/>
+<text x="428" y="344" font-size="11" fill="var(--ink2)">|x₂/x₁| ~ 2/t（斜率 −1）</text>
+<line x1="400" y1="360" x2="422" y2="360" stroke="var(--ok)" stroke-width="2.4"/>
+<text x="428" y="364" font-size="11" fill="var(--ink2)">|x₃/x₁| ~ 1/t²（斜率 −2）</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 6 · 重特征值时幂法的两种行为：(a) 半简单 —— 收敛到子空间却停不到特征向量；(b) 亏损 —— 方向对，但只有代数速度 $O(1/t)$</figcaption>
+</figure>
 
 <h3 id="s15">1.5 求次大特征值：降阶（deflation）</h3>
 
@@ -679,7 +794,7 @@ r=0:\ c_1q_1+c_2\omega^0q_2=(1,0)^{\mathsf T},\qquad r=1:\ c_1q_1+c_2\omega^1q_2
 <text x="590" y="108" dominant-baseline="central" font-size="15" fill="var(--ink3)">⋯</text>
 <text x="40" y="172" font-size="12.5" fill="var(--ink3)">每剥掉一层，问题就小一维 —— 重复 n−1 次拿到全部特征值</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 6 · 降阶在整条流水线里的位置</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 7 · 降阶在整条流水线里的位置</figcaption>
 </figure>
 
 <p>具体做法是正交变换。设 $q_1$ 是已知的单位特征向量（$Aq_1=\lambda_1q_1$），在复数域上取 Householder 变换 $H$ 使得</p>
@@ -721,7 +836,7 @@ u=\frac{q_1-e_1}{\|q_1-e_1\|_2}
 <text x="310" y="162" font-size="12.5" fill="var(--accent)">把 q₁ 照过去，正好落在 e₁</text>
 <text x="310" y="184" font-size="12.5" fill="var(--ok)">即 H q₁ = e₁</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 7 · Householder = 角平分面上的镜面反射</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 8 · Householder = 角平分面上的镜面反射</figcaption>
 </figure>
 
 <p>于是（$H^{*}$ 表示共轭转置，且 $H^{*}=H^{-1}=H$）</p>
@@ -778,7 +893,7 @@ HAH^{*}=\begin{bmatrix}\lambda_1& *\\ 0&\hat A\end{bmatrix}
 <text x="425" y="172" font-size="12.5" fill="var(--ink3)">特征值 = λ₂, …, λₙ</text>
 <text x="40" y="214" font-size="12.5" fill="var(--ink3)">左下角那个 0 就是「上层的信号传不下来」—— 所以下层是一个独立子系统</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 8 · 块三角的「0」= 信号单行道</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 9 · 块三角的「0」= 信号单行道</figcaption>
 </figure>
 
 <div class="box ok">
@@ -821,7 +936,7 @@ HAH^{*}e_1=HA\,(\underbrace{H^{*}e_1}_{=\,q_1})=HAq_1=H(\lambda_1q_1)=\lambda_1\
 <text x="234" y="126" font-size="12.5" fill="var(--ink3)">Aq₁ = λ₁q₁</text>
 <text x="506" y="126" font-size="12.5" fill="var(--ok)">Hq₁ = e₁</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 9 · 追踪 $e_1$ 走一圈：每一步都是已知条件，没有额外假设</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 10 · 追踪 $e_1$ 走一圈：每一步都是已知条件，没有额外假设</figcaption>
 </figure>
 
 <p>也就是说，$HAH^{*}$ 的<strong>第 1 列被锁死</strong>成 $\lambda_1e_1$——$\lambda_1$ 在顶上、<strong>下面全是 0</strong>。第 1 行没有约束，记作 $*$；右下角那块 $(n-1)\times(n-1)$ 就是 $\hat A$。</p>
@@ -868,7 +983,7 @@ HAH^{*}=\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}\begin{bmatrix}
 <text x="242" y="136" font-size="12.5" fill="var(--warn)">块上三角 ⇒ 特征值 = 对角块之并</text>
 <text x="242" y="158" font-size="12.5" fill="var(--warn)">σ(A) = {λ₁} ∪ σ(Â)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 10 · 第 1 列被锁死 ⇒ 块上三角 ⇒ 右下角独立出一个 $(n-1)$ 阶问题</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 11 · 第 1 列被锁死 ⇒ 块上三角 ⇒ 右下角独立出一个 $(n-1)$ 阶问题</figcaption>
 </figure>
 
 <p><strong>为什么这就完成了降阶。</strong>$HAH^{*}$ 是<strong>块上三角矩阵</strong>，而块三角矩阵的特征值 = 对角块特征值之并：</p>
@@ -1483,7 +1598,7 @@ A^ke_1=\tilde Q_k\tilde R_ke_1=\tilde Q_k\big(r_{11}^{(k)}e_1\big)=r_{11}^{(k)}q
 <text x="146" y="196" font-size="12.5" fill="var(--gold)">Aᵏ = Q̃ₖ R̃ₖ（这就是 Aᵏ 的 QR 分解）</text>
 <text x="46" y="216" font-size="12.5" fill="var(--gold)">它的第一列 Aᵏe₁ = r₁₁⁽ᵏ⁾ q₁⁽ᵏ⁾，所以 q₁⁽ᵏ⁾ 就是「以 e₁ 为初值的幂法」第 k 步的归一化结果</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 11 · QR 迭代的循环，以及它与幂法的接口</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · QR 迭代的循环，以及它与幂法的接口</figcaption>
 </figure>
 
 <h4>收敛性定理</h4>
@@ -1780,7 +1895,7 @@ h_{21}&h_{22}&h_{23}&\cdots&h_{2n}\\
 <text x="34" y="198" font-size="12.5" fill="var(--gold)">代价：一次性 10/3·n³（要 Q 再加 4/3·n³）</text>
 <text x="34" y="220" font-size="12.5" fill="var(--ok)">收益：之后每次 QR 迭代从 O(n³) 降到 O(n²)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · 上 Hessenberg 约化：一列一列地往下削</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 13 · 上 Hessenberg 约化：一列一列地往下削</figcaption>
 </figure>
 
 <div class="box ok">
@@ -2240,7 +2355,7 @@ B=P_0HP_0=
 <text x="26" y="210" font-size="12.5" fill="var(--ink2)">③ 总共 n−2 步，全部是 O(n²) 的小操作——这就是「隐式」的代价优势</text>
 <text x="26" y="234" font-size="12" fill="var(--ink3)">依据：隐式 Q 定理 —— 只要第一列对了，得到的 Hessenberg 阵本质上唯一（差正负号）</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 13 · Francis 双位移：鼓包的产生与追逐</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 14 · Francis 双位移：鼓包的产生与追逐</figcaption>
 </figure>
 
 <p>综上所述，我们得到了著名的 <strong>Francis 双位移的 QR 迭代算法</strong>（双位移的 QR 迭代算法，数值线性代数，算法 6.4.2）。</p>
@@ -2375,7 +2490,7 @@ H_{22}=H(l+1:u,\,l+1:u).
 <text x="44" y="180" font-size="12.5" fill="var(--gold)">直接算 M = H² − tH + sI 要 O(n³)，且 M 已不是 Hessenberg 阵；</text>
 <text x="44" y="200" font-size="12.5" fill="var(--gold)">靠隐式 Q 定理：只要 Q 的第一列对，结果就唯一 —— 于是只算 M 的第一列前三个数，用鼓包追逐 O(n²) 搞定</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 14 · QR 方法的三层加速：Hessenberg 化省「每次迭代」，位移省「迭代次数」</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 15 · QR 方法的三层加速：Hessenberg 化省「每次迭代」，位移省「迭代次数」</figcaption>
 </figure>
 
 <h3 id="s54">5.4 实 Schur 型的后处理<span class="tag a">PDF 5 §5.4</span></h3>
@@ -2607,7 +2722,7 @@ X_{ij}^{-1}=I_n-E_iY_{ij}E_j^{\mathsf T}.
 <text x="90" y="208" font-size="12.5" fill="var(--ink2)">于是 (1,2) 块可以被「清成 0」而不改变任何特征值。</text>
 <text x="90" y="234" font-size="12" fill="var(--ink3)">对 i &lt; j 逐块做一遍（j 从 2 到 d，i 从 1 到 j−1），右上角就全部清零 —— 这就是算法 7.6.3。</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 15 · 块对角化：用相似变换把 Schur 型右上角的分块清成 0</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 16 · 块对角化：用相似变换把 Schur 型右上角的分块清成 0</figcaption>
 </figure>
 
 <div class="box">
@@ -2819,7 +2934,7 @@ k→∞</code></pre>
 
 <text x="340" y="304" text-anchor="middle" font-size="12" fill="var(--ink3)">每个 col_ptr 元素都指着一个「列与列的切分处」</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 16 · <code>col_ptr[]</code> 是 <code>values[]</code> 上的切点：它正好落在列与列的交界处，而不在元素上</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 17 · <code>col_ptr[]</code> 是 <code>values[]</code> 上的切点：它正好落在列与列的交界处，而不在元素上</figcaption>
 </figure>
 
 <div class="box">
@@ -3264,7 +3379,7 @@ B_{\mathrm{GS}}=(D-L)^{-1}U,\qquad c_{\mathrm{GS}}=(D-L)^{-1}b
 <rect x="450" y="228" width="14" height="12" rx="2" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
 <text x="470" y="234" font-size="11.5" fill="var(--ink2)">正在算的分量</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 17 · 算 $(i,j)=(2,2)$ 时两者的取数差别：Jacobi 全取旧值（可并行），Gauss-Seidel 左边和上面的邻居已更新（必须串行）</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 18 · 算 $(i,j)=(2,2)$ 时两者的取数差别：Jacobi 全取旧值（可并行），Gauss-Seidel 左边和上面的邻居已更新（必须串行）</figcaption>
 </figure>
 
 <h4>例：红黑序 Gauss-Seidel</h4>
@@ -4008,7 +4123,7 @@ R_\infty(B^{(2)}) &=-\log\left(\rho(B^{(2)})\right)=-\log\left(\rho^2(B^{(1)})\r
 <line x1="422" y1="240" x2="452" y2="240" stroke="var(--gold)" stroke-width="2.6"/>
 <text x="460" y="244" font-size="12.5" fill="var(--ink2)">SOR（最佳 ω）—— 斜率 1</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 18 · 双对数坐标下的渐近收敛速度：Jacobi 与 Gauss-Seidel 都是 <span style="white-space:nowrap">$O(h^2)$</span>（斜率 2），而最佳松弛因子的 SOR 只有 <span style="white-space:nowrap">$O(h)$</span>（斜率 1）——小 $h$ 时 SOR 快得不是一个量级</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 19 · 双对数坐标下的渐近收敛速度：Jacobi 与 Gauss-Seidel 都是 <span style="white-space:nowrap">$O(h^2)$</span>（斜率 2），而最佳松弛因子的 SOR 只有 <span style="white-space:nowrap">$O(h)$</span>（斜率 1）——小 $h$ 时 SOR 快得不是一个量级</figcaption>
 </figure>
 
 <div class="box">
@@ -4379,7 +4494,7 @@ M(\omega,\mu)=\left[\frac{\mu\omega}{2}+\sqrt{\left(\frac{\mu\omega}{2}\right)^2
 <line x1="470" y1="279" x2="496" y2="279" stroke="var(--gold)" stroke-width="2.6"/>
 <text x="504" y="283" font-size="12" fill="var(--ink2)">μ = 0.9 = ρ(B<tspan baseline-shift="super" font-size="8.5">(1)</tspan>)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 19 · 谱半径 $\rho(B_\omega)$ 随 $\omega$ 的变化：每条曲线先降到 $\omega_\mu$ 处的极小值 $\omega_\mu-1$，再沿 $\omega-1$ 上升；最上方那条（$\mu$ 取到谱半径 $\rho(B^{(1)})$）就是 $\rho(B_\omega)$，它的极小点即最佳松弛因子 $\omega_{\mathrm{opt}}$</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 20 · 谱半径 $\rho(B_\omega)$ 随 $\omega$ 的变化：每条曲线先降到 $\omega_\mu$ 处的极小值 $\omega_\mu-1$，再沿 $\omega-1$ 上升；最上方那条（$\mu$ 取到谱半径 $\rho(B^{(1)})$）就是 $\rho(B_\omega)$，它的极小点即最佳松弛因子 $\omega_{\mathrm{opt}}$</figcaption>
 </figure>
 
 <p>根据最上方的曲线 $\rho(B_\omega)=\max\limits_{0\le\mu\lt1}M(\omega,\mu)=M(\omega,\mu_{\max})$，我们得到结论：</p>
@@ -4618,7 +4733,7 @@ P(A+δA) = L̂ Û
 <text x="373" y="147" font-size="12" fill="var(--ink3)" text-anchor="middle">堆 [A; √μI]</text>
 <text x="373" y="224" font-size="12" fill="var(--ink3)" text-anchor="middle">消元降维</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 20 · §2.4.1 的三种变体最终都归约到同一个标准最小二乘——第 2 章自始至终只用了一个算法（QR 分解），换了三种包装</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 21 · §2.4.1 的三种变体最终都归约到同一个标准最小二乘——第 2 章自始至终只用了一个算法（QR 分解），换了三种包装</figcaption>
 </figure>
 
 <h4>变体 ① 标准型的三种等价表述</h4>
@@ -4680,7 +4795,7 @@ P(A+δA) = L̂ Û
 <rect x="190" y="200" width="300" height="42" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
 <text x="340" y="221" font-size="13.5" fill="var(--ink)" text-anchor="middle">化成了标准最小二乘问题</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 21 · 「本质上是标准最小二乘」的全部内容：把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 22 · 「本质上是标准最小二乘」的全部内容：把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面</figcaption>
 </figure>
 
 <p>展开验证一下，看它是不是真的一样：</p>
@@ -4741,7 +4856,7 @@ P(A+δA) = L̂ Û
 <circle cx="242" cy="208" r="2.5" fill="var(--ok)"/>
 <text x="628" y="208" font-size="12" fill="var(--ink3)" text-anchor="end">×5.0</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 22 · 位移是<strong>绝对量</strong> $\mu$，所以对大特征值几乎无影响（涨 1%），对最小的那个却相当于涨了 5 倍——条件数从 $400$ 降到 $80$ 左右</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 23 · 位移是<strong>绝对量</strong> $\mu$，所以对大特征值几乎无影响（涨 1%），对最小的那个却相当于涨了 5 倍——条件数从 $400$ 降到 $80$ 左右</figcaption>
 </figure>
 
 <p><strong>$\mu$ 到底在干什么。</strong>两个极限能说清一切：$\mu\to0$ 时退回标准最小二乘；$\mu\to\infty$ 时 $x\to0$（罚款太贵，索性什么都不要）。中间是一根旋钮。拿一个具体例子看这根旋钮的行程——取</p>
@@ -4843,7 +4958,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="282" font-size="13.5" fill="var(--ink)" text-anchor="middle">无约束标准最小二乘（只对 y₂）</text>
 <text x="340" y="300" font-size="12" fill="var(--ink3)" text-anchor="middle">解出 y₂ 后回代 x = Q₁*(R⁻¹d) + Q₂*y₂</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 23 · 消元法：用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$——带约束的 $n$ 维问题降成无约束的 $n-p$ 维问题</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 24 · 消元法：用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$——带约束的 $n$ 维问题降成无约束的 $n-p$ 维问题</figcaption>
 </figure>
 
 <h3 id="s242">§2.4.2 GTH 算法<span class="tag a">讲义 §2.4.2</span></h3>
@@ -4887,7 +5002,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="370" font-size="13.5" fill="var(--ink)" text-anchor="middle">⑤ H = Q*AQ 是上 Hessenberg ⇒ Arnoldi 过程</text>
 <text x="340" y="388" font-size="12" fill="var(--ink3)" text-anchor="middle">A 对称 ⇒ 三对角（Lanczos）；Gram–Schmidt 递推即可算出</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 24 · §2.4.3 的推导主线：一个「天真想法 → 撞墙 → 补救」的故事，撞墙的那一步靠的正是<a href="#p1">第一部分</a>的幂法</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 25 · §2.4.3 的推导主线：一个「天真想法 → 撞墙 → 补救」的故事，撞墙的那一步靠的正是<a href="#p1">第一部分</a>的幂法</figcaption>
 </figure>
 
 <h4>第一步：Krylov 幂序列，以及为什么算到 $y_n$ 就停</h4>
@@ -5003,7 +5118,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">i ≤ j + 1 处非零</text>
 <text x="567" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">|i − j| ≤ 1 处非零</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 25 · 实心格 = 可能非零，空格 = 恒为 0。从 $C$ 到 $H$ 到 $T$，「非零元素」一步步被限制到更窄的带状区域——这就是相似变换换来的全部好处</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 26 · 实心格 = 可能非零，空格 = 恒为 0。从 $C$ 到 $H$ 到 $T$，「非零元素」一步步被限制到更窄的带状区域——这就是相似变换换来的全部好处</figcaption>
 </figure>
 
 <h4>第六步：实际计算——$AQ=QH+\text{rank-one}$</h4>
@@ -5136,7 +5251,7 @@ end</pre>
 <text x="515" y="54" font-size="13.5" fill="var(--ink)" text-anchor="middle">T̃<tspan baseline-shift="sub" font-size="9">k</tspan></text>
 <text x="515" y="180" font-size="12" fill="var(--ink3)" text-anchor="middle">对称三对角</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 26 · Lanczos 的三项递推：算 $Aq_k$ 只用得到 $q_{k-1},q_k,q_{k+1}$ 三个向量，不需要保存全部历史——这是三对角结构带来的全部好处</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 27 · Lanczos 的三项递推：算 $Aq_k$ 只用得到 $q_{k-1},q_k,q_{k+1}$ 三个向量，不需要保存全部历史——这是三对角结构带来的全部好处</figcaption>
 </figure>
 
 <p>也就是说 $Aq_k$ <strong>只由三个相邻向量拼出来</strong>。由于 $q_1,\ldots,q_{k+1}$ 标准正交，两边左乘 $q_k^{\mathsf T}$ 得</p>
@@ -5232,6 +5347,7 @@ end</pre>
 <tr><td>（无）</td><td>第 3 章正文后半：<a href="#s310">误差估计</a>（两条误差上界、构造停止准则）、<a href="#s311">Jacobi / Gauss-Seidel 的收敛性</a>（范数 / 对称正定 / 严格对角占优三层判据）、<a href="#s312">收敛速度</a>（$R_\infty(B)=-\log\rho(B)$；二维 Poisson 上 Jacobi $=\frac12\pi^2h^2$、GS $=\pi^2h^2$）、<a href="#s313">超松弛迭代法 SOR</a>（$0\lt\omega\lt2$、最佳松弛因子、$R_\infty\sim2\pi h$、相容次序）</td><td>本文 <a href="#s310">§3.10</a>–<a href="#s313">§3.13</a>（<strong>讲义有、课上没讲</strong>）</td></tr>
 <tr><td>（无）</td><td>QR 方法：<a href="#s531">显式 QR 迭代</a>、<a href="#s532">实 Schur 标准型</a>、<a href="#s533">上 Hessenberg 分解与唯一性</a>、<a href="#s534">Hessenberg 阵的 QR 迭代</a>、<a href="#s535">带位移</a> / <a href="#s536">双位移隐式 QR（Francis）</a>、<a href="#s537">隐式 QR 算法与运算量</a>；实 Schur 型后处理：<a href="#s541">对角块排序</a>、<a href="#s542">Sylvester 方程（Bartels–Stewart）</a>、<a href="#s543">块对角化</a></td><td>本文 <a href="#p3">§5.3–§5.4</a>（提前自学）</td></tr>
 <tr><td>（无）</td><td>第 2 章收尾（讲义 §2.4 补充）：<a href="#s241">最小二乘的三种变体</a>（$l_2$ 惩罚项、线性等式约束的消元法）、<a href="#s242">GTH 算法</a>、<a href="#s243">Arnoldi 过程</a>（Krylov 子空间、伴随矩阵、$AQ=QH+\text{rank-one}$、Gram–Schmidt 伪代码）、<a href="#s244">Lanczos 过程</a>（三项递推）</td><td>本文 <a href="#p5">§2.4</a>（<strong>讲义有、课上没讲</strong>；其中变体 ① 与变体 ③ 的式子出现在板书 5（左）与板书 1 上）</td></tr>
+<tr><td>（无）</td><td>作业 <code>homework-20261013</code> 第 3、4 题：模最大特征值<strong>有重数</strong>（$\lambda_1=\cdots=\lambda_k$）与<strong>等模</strong>（$A=\begin{bmatrix}\lambda&1\\0&-\lambda\end{bmatrix}$）时幂法的行为</td><td>本文 <a href="#s14">§1.4</a> 两个附注（<strong>作业驱动，非板书</strong>）</td></tr>
 </table>
 
 <div class="box">
@@ -5247,7 +5363,7 @@ end</pre>
 <p><strong>第 2 章的收尾（讲义 PDF 2 §2.4）</strong>也没在课上讲过，本文第五部分是按讲义提前整理的。其中「标准型的三种等价表述」与「等式约束的消元法」在板书 5（左）和板书 1 上出现过，其余（$l_2$ 惩罚项、GTH、Arnoldi、Lanczos）都是讲义独有。§2.4.2 GTH 算法在讲义上<strong>只有标题和一行「参见 Homework 06 Problem 07」，没有正文</strong>。</p>
 </div>
 
-<p class="footnote" style="margin-top:40px">整理自：FDU 数值算法讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0–§3.4、PDF 2 §2.4，以及 2026-10-13 课堂板书。§5.3、§5.4 未出现在板书里，属提前自学；第 3 章的 §3.2–§3.5（存储、Poisson 方程）与 §3.6–§3.13（迭代法总论、Jacobi、Gauss-Seidel、收敛充要条件、误差估计、收敛性判据、收敛速度、SOR）同样是讲义内容、课上未讲；§2.6 的收敛阶推导（Rayleigh 商误差 $=O(\theta^2)$、$\mathrm{gap}$ 的定义与三次收敛）讲义只给结论、未给证明，属教材补充；讲义 PDF 2 §2.4（第 2 章补充：$l_2$ 惩罚项、GTH、Arnoldi、Lanczos）同样是讲义内容、课上未讲（其中变体 ① 与 ③ 的式子出现在板书 5（左）与板书 1）。<strong>另更正讲义五处问题</strong>：§3.11 的「$2I-A$ 应为 $2D-A$」、§3.11 的「假设 $A$ 非奇异应为奇异」、§3.12 的「收敛速度慢应为快」，§3.13 的 <code>Negative Value</code> 占位符（未完成推导，已补全），以及 §2.4.4 标题的「Lanzcos 应为 Lanczos」。公式排版：KaTeX 0.16.11（本地）。</p>
+<p class="footnote" style="margin-top:40px">整理自：FDU 数值算法讲义 PDF 5 §5.1–§5.4、PDF 3 §3.0–§3.4、PDF 2 §2.4，以及 2026-10-13 课堂板书。§5.3、§5.4 未出现在板书里，属提前自学；第 3 章的 §3.2–§3.5（存储、Poisson 方程）与 §3.6–§3.13（迭代法总论、Jacobi、Gauss-Seidel、收敛充要条件、误差估计、收敛性判据、收敛速度、SOR）同样是讲义内容、课上未讲；§2.6 的收敛阶推导（Rayleigh 商误差 $=O(\theta^2)$、$\mathrm{gap}$ 的定义与三次收敛）讲义只给结论、未给证明，属教材补充；讲义 PDF 2 §2.4（第 2 章补充：$l_2$ 惩罚项、GTH、Arnoldi、Lanczos）同样是讲义内容、课上未讲（其中变体 ① 与 ③ 的式子出现在板书 5（左）与板书 1）。<strong>另更正讲义五处问题</strong>：§3.11 的「$2I-A$ 应为 $2D-A$」、§3.11 的「假设 $A$ 非奇异应为奇异」、§3.12 的「收敛速度慢应为快」，§3.13 的 <code>Negative Value</code> 占位符（未完成推导，已补全），以及 §2.4.4 标题的「Lanzcos 应为 Lanczos」。§1.4 末尾的两个附注（「模最大特征值不唯一时会怎样」「模最大特征值有重数时会怎样」）是为回应作业 <code>homework-20261013</code> 第 3、4 题而写，分别对应定理中 $|\lambda_1|>|\lambda_2|$ 与「$n$ 个互不相同特征值 + $\lambda_1$ 半简单」两组假设被破坏的情形。公式排版：KaTeX 0.16.11（本地）。</p>
 
 </div>
 
