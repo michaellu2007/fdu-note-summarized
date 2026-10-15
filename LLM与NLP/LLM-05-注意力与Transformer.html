@@ -1249,6 +1249,73 @@ $(0.867,\,0.117,\,0.016)$——三个都还有分量。</p>
 <p>如果用了 RoPE，这里的 $Q$ 和 $K$ 已经在每个 head 内<strong>各自旋转过</strong>了；值不旋转。</p>
 </div>
 
+<div class="box ok">
+<span class="label">补充 · 上面那段话拆开讲（课件把六件事压成了一段）</span>
+
+<p><strong>① 「token 行记法」是什么。</strong>每个 token 占矩阵的<strong>一行</strong>。
+$Q,K$ 的第 $i$ 行就是第 $i$ 个 token 的 query/key 向量（宽 $d_k$），$V$ 的第 $i$ 行是它的 value 向量（宽 $d_v$）。
+分数矩阵是 $n\times n$：<strong>行 = 哪个 query，列 = 哪个 key</strong>，第 $(t,j)$ 个元素就是第 $t$ 个 query 和第 $j$ 个 key 的点积。
+输出 $Z$ 的每一行，就是那个 token 新的表示。</p>
+
+<p><strong>② 「零基位置 5」是什么。</strong>从 <strong>0</strong> 开始数（程序员数数法）：
+<code>Noa</code>=0、<code>can</code>=1、<code>be</code>=2、<code>annoying</code>=3、<code>but</code>=4、<code>she</code>=5。
+所以 <code>she</code> 是第 <strong>5</strong> 个位置，尽管它是第 6 个词。$n=6$ 就是前缀有 6 个 token。</p>
+
+<p><strong>③ 掩码规则 $j\le t$。</strong>第 $t$ 行的 query 只能看列号 $j\le t$ 的 key：</p>
+<table>
+<thead><tr><th>query 行 $t$</th><th> token</th><th>能看的 key 列</th><th class="num">个数</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>Noa</td><td>只看 $j=0$</td><td class="num">1（只有自己）</td></tr>
+<tr><td>1</td><td>can</td><td>$j=0,1$</td><td class="num">2</td></tr>
+<tr><td>2</td><td>be</td><td>$j=0,1,2$</td><td class="num">3</td></tr>
+<tr><td>3</td><td>annoying</td><td>$j=0,1,2,3$</td><td class="num">4</td></tr>
+<tr><td>4</td><td>but</td><td>$j=0,\dots,4$</td><td class="num">5</td></tr>
+<tr><td>5</td><td>she</td><td>$j=0,\dots,5$</td><td class="num">6（含自己）</td></tr>
+</tbody>
+</table>
+<p>「包含它自己」指 $j=t$ 那一项——也就是<strong>对角线上的元素</strong>。</p>
+
+<p><strong>④ 「未来的 logits 变 $-\infty$」具体怎么落到计算上。</strong>
+不是把权重置 0，而是往<strong>分数</strong>上<strong>加</strong>一个掩码矩阵：</p>
+\[\tilde S=\frac{QK^{\mathsf T}}{\sqrt{d_k}}+M,\qquad
+M_{t,j}=\begin{cases}0,& j\le t\\ -\infty,& j\gt t\end{cases}\]
+<p>掩码矩阵是个 $6\times6$ 的下三角：<strong>对角线及其下方全是 0，上方全是 $-\infty$。</strong>
+$M$ 和全 0 矩阵一样——加上去不改变可见位置的分数，只把不可见的位置压到 $-\infty$。</p>
+<p><strong>顺序不能反：</strong>必须<strong>先加掩码、再 softmax</strong>。
+如果先 softmax 再把未来权重清零，剩下的权重和会小于 1（见 §2.2 的实现陷阱）。</p>
+
+<p><strong>⑤ 为什么必须是 $-\infty$ 而不是 0。</strong>
+softmax 是 $e^{s}/{\textstyle\sum_j e^{s_j}}$。把未来的 logit 置 <strong>0</strong> 的话，
+$e^{0}=1$，它的权重<strong>不是</strong> 0，还是会分到一部分概率。
+只有置 $-\infty$ 才让 $e^{-\infty}=0$，权重<strong>真正</strong>为 0。</p>
+
+<p><strong>⑥ 为什么「权重和仍是 1」。</strong>
+softmax 是在<strong>整行</strong>（6 个位置）上做的，分母累加了 6 个 $e^{s}$；
+被掩掉的 3 个贡献都是 0，所以分母实际等于<strong>只累加可见的那几项</strong>：</p>
+\[\sum_{j=0}^{5}\alpha_{t,j}=\frac{\sum_{j\le t}e^{s_{t,j}}}{\sum_{j\le t}e^{s_{t,j}}}=1\]
+<p>换句话说，被掩的位置不是「被排除在 softmax 之外」，而是「以 0 的身份参与了归一化」——
+结果一样，但实现上是前者。</p>
+
+<p><strong>一个手算例子（$t=2$ 的 be 那一行）。</strong>
+设原始 logits 是 $(1.0,\ 0.6,\ 0.9,\ -0.2,\ 0.4,\ 1.5)$。加掩码后：</p>
+\[\tilde s_2=(1.0,\ 0.6,\ 0.9,\ -\infty,\ -\infty,\ -\infty)\]
+<p>指数后只有前三项非零：$e^{1.0}=2.718$、$e^{0.6}=1.822$、$e^{0.9}=2.460$，和为 $7.000$。于是</p>
+\[\alpha_{2,:}=\Big(\tfrac{2.718}{7},\ \tfrac{1.822}{7},\ \tfrac{2.460}{7},\ 0,\ 0,\ 0\Big)=(0.388,\ 0.260,\ 0.351,\ 0,\ 0,\ 0)\]
+<p>三项相加 $=1$。✓</p>
+
+<p><strong>⑦ 「没有 padding 掩码」是什么意思。</strong>
+掩码有<strong>两种</strong>，管的事不同：</p>
+<table>
+<thead><tr><th></th><th>管什么</th><th>怎么定</th></tr></thead>
+<tbody>
+<tr><td><strong>因果掩码</strong>（本节）</td><td><strong>先后</strong></td><td>看位置：$j\le t$ 就保留</td></tr>
+<tr><td><strong>padding 掩码</strong></td><td><strong>真假</strong></td><td>看内容：补位的 <code>&lt;pad&gt;</code> 不是真词，要一并压到 $-\infty$</td></tr>
+</tbody>
+</table>
+<p>当一个 batch 里句子长短不齐时，短的会补 padding，这时就需要<strong>两种掩码同时存在</strong>（相加后再 softmax）。
+我们的 Noa 前缀 6 个 token 全是真词、没有长短不齐，所以只需要因果掩码。</p>
+</div>
+
 <h3 id="s22">2.2 数值化的因果注意力 <span class="tag s">课件</span></h3>
 
 <figure>
