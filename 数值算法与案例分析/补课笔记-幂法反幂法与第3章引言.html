@@ -754,6 +754,87 @@ J^t=\sum_{j=0}^{k-1}\binom{t}{j}\lambda_1^{t-j}N^j\ \Longrightarrow\ \lVert J^t\
 <figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 6 · 重特征值时幂法的两种行为：(a) 半简单 —— 收敛到子空间却停不到特征向量；(b) 亏损 —— 方向对，但只有代数速度 $O(1/t)$</figcaption>
 </figure>
 
+<h4>附注 · 现实中更常见的是「几乎亏损」</h4>
+
+<p>精确亏损（$\lambda_1$ 的几何重数 $\lt$ 代数重数）在数值上很罕见；真正常见的是<strong>几乎亏损</strong>：另一个特征值就在 $\lambda_1$ 旁边，相距 $\varepsilon$。最简模型是</p>
+
+\[
+A=\begin{bmatrix}\lambda&1\\0&\lambda-\varepsilon\end{bmatrix}
+\]
+
+<p>它的两个特征值 $\lambda$ 与 $\lambda-\varepsilon$ 互不相同，所以 $A$ <strong>可对角化、并不亏损</strong>。直接算 $A^t$（代 $t=0,1$ 可验证）：</p>
+
+\[
+A^t=\begin{bmatrix}\lambda^t&\dfrac{\lambda^t-(\lambda-\varepsilon)^t}{\varepsilon}\\0&(\lambda-\varepsilon)^t\end{bmatrix}
+\]
+
+<p>取最坏初值 $x^{(0)}=(0,1)^{\mathsf T}$，记 $r=(\lambda-\varepsilon)/\lambda$，则方向偏差为</p>
+
+\[
+\frac{x_2^{(t)}}{x_1^{(t)}}=\frac{\varepsilon\,r^{\,t}}{1-r^{\,t}}
+\]
+
+<p>分两段看（当 $\varepsilon t\ll|\lambda|$ 时 $r^{\,t}\approx1-\varepsilon t/\lambda$）：</p>
+
+<ul>
+<li>$t\ll|\lambda|/\varepsilon$：分母 $\approx\varepsilon t/\lambda$，比值 $\approx\dfrac{\lambda}{t}$ —— <strong>与真亏损的 $1/t$ 完全一样</strong>；</li>
+<li>$t\gg|\lambda|/\varepsilon$：分母 $\to1$，比值 $\approx\varepsilon r^{\,t}$ —— <strong>转成几何衰减</strong>。</li>
+</ul>
+
+<div class="box warn">
+<p class="label">实用结论</p>
+<p><strong>交叉点在 $t\sim|\lambda|/\varepsilon$。</strong>$\varepsilon$ 越小，「像亏损」的阶段越长 —— 这就是幂法在近似亏损的矩阵上<strong>长时间卡住不动</strong>的原因，也说明实际观察到的收敛速度常比渐近速率 $|\lambda_{k+1}/\lambda_1|^{t}$ 慢得多。</p>
+<p><strong>数值验证</strong>（$\lambda=1$）：$\varepsilon=10^{-3}$ 时 $t=100$ 的偏差 $9.50\times10^{-3}\approx1/t$；$t=10^{4}$ 时 $4.52\times10^{-8}$，与 $\varepsilon(1-\varepsilon)^{t}=4.52\times10^{-8}$ 几乎重合。</p>
+</div>
+
+<figure style="margin:26px 0 30px; padding:0">
+<svg viewBox="0 0 680 396" width="100%" style="display:block; width:100%; height:auto" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>几乎亏损：先像 1/t 一样慢，越过交叉点后转成几何衰减</title>
+<desc>取 eps=1e-3，曲线在前段紧贴 1/t 斜率（与真亏损相同），在 t 约等于 1/eps 的交叉点之后转为 eps*(1-eps)^t 的几何衰减。所以 eps 越小，像亏损的阶段越长。</desc>
+<defs>
+<marker id="arrowFig7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="70" y="56" width="570" height="250" fill="var(--bg3)" stroke="var(--line)" stroke-width="0.8"/>
+<line x1="70" y1="64.7" x2="640" y2="64.7" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="63" y="64.7" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁰</text>
+<line x1="70" y1="122.9" x2="640" y2="122.9" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="63" y="122.9" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻²</text>
+<line x1="70" y1="181.0" x2="640" y2="181.0" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="63" y="181.0" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁴</text>
+<line x1="70" y1="239.1" x2="640" y2="239.1" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="63" y="239.1" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁶</text>
+<line x1="70" y1="297.3" x2="640" y2="297.3" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="63" y="297.3" text-anchor="end" dominant-baseline="central" font-size="10" fill="var(--ink3)">10⁻⁸</text>
+<line x1="70.0" y1="56" x2="70.0" y2="306" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="70.0" y="324" text-anchor="middle" font-size="10" fill="var(--ink3)">1</text>
+<line x1="196.7" y1="56" x2="196.7" y2="306" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="196.7" y="324" text-anchor="middle" font-size="10" fill="var(--ink3)">10</text>
+<line x1="323.3" y1="56" x2="323.3" y2="306" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="323.3" y="324" text-anchor="middle" font-size="10" fill="var(--ink3)">100</text>
+<line x1="450.0" y1="56" x2="450.0" y2="306" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="450.0" y="324" text-anchor="middle" font-size="10" fill="var(--ink3)">1000</text>
+<line x1="576.7" y1="56" x2="576.7" y2="306" stroke="var(--line)" stroke-width="0.6" stroke-dasharray="3 3"/>
+<text x="576.7" y="324" text-anchor="middle" font-size="10" fill="var(--ink3)">10⁴</text>
+<line x1="450.0" y1="56" x2="450.0" y2="306" stroke="var(--gold)" stroke-width="1.1" stroke-dasharray="5 4"/>
+<text x="457.0" y="72" font-size="10.5" fill="var(--gold)">交叉点 t ≈ 1/ε = 1000</text>
+<polyline points="72.5,65.3 75.1,65.9 77.6,66.5 80.1,67.0 82.7,67.6 85.2,68.2 87.7,68.8 90.3,69.4 92.8,70.0 95.3,70.5 97.9,71.1 100.4,71.7 102.9,72.3 105.5,72.9 108.0,73.4 110.5,74.0 113.1,74.6 115.6,75.2 118.1,75.8 120.7,76.3 123.2,76.9 125.7,77.5 128.3,78.1 130.8,78.7 133.3,79.3 135.9,79.8 138.4,80.4 140.9,81.0 143.5,81.6 146.0,82.2 148.5,82.7 151.1,83.3 153.6,83.9 156.1,84.5 158.7,85.1 161.2,85.7 163.7,86.2 166.3,86.8 168.8,87.4 171.3,88.0 173.9,88.6 176.4,89.1 178.9,89.7 181.5,90.3 184.0,90.9 186.5,91.5 189.1,92.0 191.6,92.6 194.1,93.2 196.7,93.8 199.2,94.4 201.7,95.0 204.3,95.5 206.8,96.1 209.3,96.7 211.9,97.3 214.4,97.9 216.9,98.4 219.5,99.0 222.0,99.6 224.5,100.2 227.1,100.8 229.6,101.3 232.1,101.9 234.7,102.5 237.2,103.1 239.7,103.7 242.3,104.3 244.8,104.8 247.3,105.4 249.9,106.0 252.4,106.6 254.9,107.2 257.5,107.7 260.0,108.3 262.5,108.9 265.1,109.5 267.6,110.1 270.1,110.7 272.7,111.2 275.2,111.8 277.7,112.4 280.3,113.0 282.8,113.6 285.3,114.1 287.9,114.7 290.4,115.3 292.9,115.9 295.5,116.5 298.0,117.0 300.5,117.6 303.1,118.2 305.6,118.8 308.1,119.4 310.7,120.0 313.2,120.5 315.7,121.1 318.3,121.7 320.8,122.3 323.3,122.9 325.9,123.4 328.4,124.0 330.9,124.6 333.5,125.2 336.0,125.8 338.5,126.3 341.1,126.9 343.6,127.5 346.1,128.1 348.7,128.7 351.2,129.3 353.7,129.8 356.3,130.4 358.8,131.0 361.3,131.6 363.9,132.2 366.4,132.7 368.9,133.3 371.5,133.9 374.0,134.5 376.5,135.1 379.1,135.7 381.6,136.2 384.1,136.8 386.7,137.4 389.2,138.0 391.7,138.6 394.3,139.1 396.8,139.7 399.3,140.3 401.9,140.9 404.4,141.5 406.9,142.0 409.5,142.6 412.0,143.2 414.5,143.8 417.1,144.4 419.6,145.0 422.1,145.5 424.7,146.1 427.2,146.7 429.7,147.3 432.3,147.9 434.8,148.4 437.3,149.0 439.9,149.6 442.4,150.2 444.9,150.8 447.5,151.3 450.0,151.9 452.5,152.5 455.1,153.1 457.6,153.7 460.1,154.3 462.7,154.8 465.2,155.4 467.7,156.0 470.3,156.6 472.8,157.2 475.3,157.7 477.9,158.3 480.4,158.9 482.9,159.5 485.5,160.1 488.0,160.7 490.5,161.2 493.1,161.8 495.6,162.4 498.1,163.0 500.7,163.6 503.2,164.1 505.7,164.7 508.3,165.3 510.8,165.9 513.3,166.5 515.9,167.0 518.4,167.6 520.9,168.2 523.5,168.8 526.0,169.4 528.5,170.0 531.1,170.5 533.6,171.1 536.1,171.7 538.7,172.3 541.2,172.9 543.7,173.4 546.3,174.0 548.8,174.6 551.3,175.2 553.9,175.8 556.4,176.3 558.9,176.9 561.5,177.5 564.0,178.1 566.5,178.7 569.1,179.3 571.6,179.8 574.1,180.4 576.7,181.0 579.2,181.6 581.7,182.2 584.3,182.7 586.8,183.3 589.3,183.9 591.9,184.5 594.4,185.1 596.9,185.7 599.5,186.2 602.0,186.8 604.5,187.4 607.1,188.0 609.6,188.6 612.1,189.1 614.7,189.7 617.2,190.3 619.7,190.9 622.3,191.5 624.8,192.0 627.3,192.6 629.9,193.2 632.4,193.8 634.9,194.4 637.5,195.0 640.0,195.5" fill="none" stroke="var(--ink3)" stroke-width="1.4" stroke-dasharray="7 5"/>
+<polyline points="72.5,151.9 75.1,151.9 77.6,151.9 80.1,151.9 82.7,151.9 85.2,151.9 87.7,151.9 90.3,151.9 92.8,151.9 95.3,152.0 97.9,152.0 100.4,152.0 102.9,152.0 105.5,152.0 108.0,152.0 110.5,152.0 113.1,152.0 115.6,152.0 118.1,152.0 120.7,152.0 123.2,152.0 125.7,152.0 128.3,152.0 130.8,152.0 133.3,152.0 135.9,152.0 138.4,152.0 140.9,152.0 143.5,152.0 146.0,152.0 148.5,152.0 151.1,152.0 153.6,152.0 156.1,152.0 158.7,152.0 161.2,152.0 163.7,152.0 166.3,152.0 168.8,152.0 171.3,152.0 173.9,152.0 176.4,152.0 178.9,152.0 181.5,152.0 184.0,152.0 186.5,152.0 189.1,152.0 191.6,152.0 194.1,152.1 196.7,152.1 199.2,152.1 201.7,152.1 204.3,152.1 206.8,152.1 209.3,152.1 211.9,152.1 214.4,152.1 216.9,152.1 219.5,152.1 222.0,152.1 224.5,152.1 227.1,152.1 229.6,152.2 232.1,152.2 234.7,152.2 237.2,152.2 239.7,152.2 242.3,152.2 244.8,152.2 247.3,152.2 249.9,152.3 252.4,152.3 254.9,152.3 257.5,152.3 260.0,152.3 262.5,152.3 265.1,152.4 267.6,152.4 270.1,152.4 272.7,152.4 275.2,152.5 277.7,152.5 280.3,152.5 282.8,152.5 285.3,152.6 287.9,152.6 290.4,152.6 292.9,152.7 295.5,152.7 298.0,152.7 300.5,152.8 303.1,152.8 305.6,152.8 308.1,152.9 310.7,152.9 313.2,153.0 315.7,153.0 318.3,153.1 320.8,153.1 323.3,153.2 325.9,153.3 328.4,153.3 330.9,153.4 333.5,153.4 336.0,153.5 338.5,153.6 341.1,153.7 343.6,153.8 346.1,153.8 348.7,153.9 351.2,154.0 353.7,154.1 356.3,154.2 358.8,154.3 361.3,154.5 363.9,154.6 366.4,154.7 368.9,154.8 371.5,155.0 374.0,155.1 376.5,155.3 379.1,155.4 381.6,155.6 384.1,155.7 386.7,155.9 389.2,156.1 391.7,156.3 394.3,156.5 396.8,156.7 399.3,157.0 401.9,157.2 404.4,157.4 406.9,157.7 409.5,158.0 412.0,158.3 414.5,158.6 417.1,158.9 419.6,159.2 422.1,159.5 424.7,159.9 427.2,160.3 429.7,160.7 432.3,161.1 434.8,161.5 437.3,162.0 439.9,162.4 442.4,162.9 444.9,163.4 447.5,164.0 450.0,164.6 452.5,165.2 455.1,165.8 457.6,166.4 460.1,167.1 462.7,167.8 465.2,168.6 467.7,169.4 470.3,170.2 472.8,171.0 475.3,171.9 477.9,172.9 480.4,173.9 482.9,174.9 485.5,176.0 488.0,177.1 490.5,178.3 493.1,179.6 495.6,180.9 498.1,182.2 500.7,183.7 503.2,185.2 505.7,186.7 508.3,188.4 510.8,190.1 513.3,191.9 515.9,193.8 518.4,195.7 520.9,197.8 523.5,200.0 526.0,202.2 528.5,204.6 531.1,207.1 533.6,209.7 536.1,212.4 538.7,215.2 541.2,218.2 543.7,221.3 546.3,224.6 548.8,228.0 551.3,231.6 553.9,235.4 556.4,239.3 558.9,243.4 561.5,247.7 564.0,252.3 566.5,257.0 569.1,261.9 571.6,267.1 574.1,272.6 576.7,278.2 579.2,284.2 581.7,290.4 584.3,297.0 586.8,303.8 589.3,310.9 591.9,318.4 594.4,326.3 596.9,334.5 599.5,343.1 602.0,352.1 604.5,361.6 607.1,371.4 609.6,381.8 612.1,392.6 614.7,404.0 617.2,415.8 619.7,428.3 622.3,441.3 624.8,454.9 627.3,469.2 629.9,484.2 632.4,499.8 634.9,516.2 637.5,533.4 640.0,551.4" fill="none" stroke="var(--ok)" stroke-width="1.4" stroke-dasharray="2 3"/>
+<polyline points="72.5,65.3 75.1,65.9 77.6,66.5 80.1,67.1 82.7,67.6 85.2,68.2 87.7,68.8 90.3,69.4 92.8,70.0 95.3,70.6 97.9,71.1 100.4,71.7 102.9,72.3 105.5,72.9 108.0,73.5 110.5,74.0 113.1,74.6 115.6,75.2 118.1,75.8 120.7,76.4 123.2,77.0 125.7,77.5 128.3,78.1 130.8,78.7 133.3,79.3 135.9,79.9 138.4,80.4 140.9,81.0 143.5,81.6 146.0,82.2 148.5,82.8 151.1,83.4 153.6,83.9 156.1,84.5 158.7,85.1 161.2,85.7 163.7,86.3 166.3,86.9 168.8,87.4 171.3,88.0 173.9,88.6 176.4,89.2 178.9,89.8 181.5,90.4 184.0,90.9 186.5,91.5 189.1,92.1 191.6,92.7 194.1,93.3 196.7,93.9 199.2,94.4 201.7,95.0 204.3,95.6 206.8,96.2 209.3,96.8 211.9,97.4 214.4,98.0 216.9,98.5 219.5,99.1 222.0,99.7 224.5,100.3 227.1,100.9 229.6,101.5 232.1,102.1 234.7,102.6 237.2,103.2 239.7,103.8 242.3,104.4 244.8,105.0 247.3,105.6 249.9,106.2 252.4,106.8 254.9,107.4 257.5,107.9 260.0,108.5 262.5,109.1 265.1,109.7 267.6,110.3 270.1,110.9 272.7,111.5 275.2,112.1 277.7,112.7 280.3,113.3 282.8,113.9 285.3,114.5 287.9,115.1 290.4,115.7 292.9,116.3 295.5,116.9 298.0,117.5 300.5,118.1 303.1,118.7 305.6,119.3 308.1,119.9 310.7,120.5 313.2,121.1 315.7,121.7 318.3,122.3 320.8,122.9 323.3,123.5 325.9,124.1 328.4,124.7 330.9,125.3 333.5,126.0 336.0,126.6 338.5,127.2 341.1,127.8 343.6,128.4 346.1,129.1 348.7,129.7 351.2,130.3 353.7,131.0 356.3,131.6 358.8,132.2 361.3,132.9 363.9,133.5 366.4,134.2 368.9,134.8 371.5,135.5 374.0,136.1 376.5,136.8 379.1,137.4 381.6,138.1 384.1,138.8 386.7,139.5 389.2,140.1 391.7,140.8 394.3,141.5 396.8,142.2 399.3,142.9 401.9,143.6 404.4,144.3 406.9,145.0 409.5,145.8 412.0,146.5 414.5,147.3 417.1,148.0 419.6,148.8 422.1,149.5 424.7,150.3 427.2,151.1 429.7,151.9 432.3,152.7 434.8,153.5 437.3,154.4 439.9,155.2 442.4,156.1 444.9,157.0 447.5,157.9 450.0,158.8 452.5,159.7 455.1,160.7 457.6,161.6 460.1,162.6 462.7,163.6 465.2,164.7 467.7,165.7 470.3,166.8 472.8,167.9 475.3,169.1 477.9,170.2 480.4,171.4 482.9,172.7 485.5,174.0 488.0,175.3 490.5,176.7 493.1,178.1 495.6,179.5 498.1,181.0 500.7,182.6 503.2,184.2 505.7,185.9 508.3,187.6 510.8,189.4 513.3,191.3 515.9,193.3 518.4,195.3 520.9,197.5 523.5,199.7 526.0,202.0 528.5,204.4 531.1,206.9 533.6,209.5 536.1,212.3 538.7,215.2 541.2,218.2 543.7,221.3 546.3,224.6 548.8,228.0 551.3,231.6 553.9,235.4 556.4,239.3 558.9,243.4 561.5,247.7 564.0,252.3 566.5,257.0 569.1,261.9 571.6,267.1 574.1,272.6 576.7,278.2 579.2,284.2 581.7,290.4 584.3,297.0 586.8,303.8 589.3,310.9 591.9,318.4 594.4,326.3 596.9,334.5 599.5,343.1 602.0,352.1 604.5,361.6 607.1,371.4 609.6,381.8 612.1,392.6 614.7,404.0 617.2,415.8 619.7,428.3 622.3,441.3 624.8,454.9 627.3,469.2 629.9,484.2 632.4,499.8 634.9,516.2 637.5,533.4 640.0,551.4" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+<text x="355.0" y="346" text-anchor="middle" font-size="11.5" fill="var(--ink2)">迭代步数 t（对数轴）</text>
+<text x="30" y="181.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)" transform="rotate(-90 30 181.0)">方向偏差（对数轴）</text>
+<text x="355.0" y="28" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--ink)">几乎亏损：A = [[λ, 1], [0, λ−ε]]，ε = 10⁻³，x₀ = (0, 1)ᵀ</text>
+<line x1="452" y1="84" x2="476" y2="84" stroke="var(--accent)" stroke-width="2.4"/>
+<text x="482" y="88" font-size="10.5" fill="var(--ink2)">实际偏差 |x₂/x₁|</text>
+<line x1="452" y1="104" x2="476" y2="104" stroke="var(--ink3)" stroke-width="1.4" stroke-dasharray="7 5"/>
+<text x="482" y="108" font-size="10.5" fill="var(--ink2)">真亏损渐近线 1/t</text>
+<line x1="452" y1="124" x2="476" y2="124" stroke="var(--ok)" stroke-width="1.4" stroke-dasharray="2 3"/>
+<text x="482" y="128" font-size="10.5" fill="var(--ink2)">几何渐近线 ε(1−ε)ᵗ</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 7 · 几乎亏损：前段紧贴真亏损的 $1/t$，越过交叉点 $t\approx|\lambda|/\varepsilon$ 后转成几何衰减 $\varepsilon(1-\varepsilon)^{t}$</figcaption>
+</figure>
+
 <h3 id="s15">1.5 求次大特征值：降阶（deflation）</h3>
 
 <div class="box key">
@@ -794,7 +875,7 @@ J^t=\sum_{j=0}^{k-1}\binom{t}{j}\lambda_1^{t-j}N^j\ \Longrightarrow\ \lVert J^t\
 <text x="590" y="108" dominant-baseline="central" font-size="15" fill="var(--ink3)">⋯</text>
 <text x="40" y="172" font-size="12.5" fill="var(--ink3)">每剥掉一层，问题就小一维 —— 重复 n−1 次拿到全部特征值</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 7 · 降阶在整条流水线里的位置</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 8 · 降阶在整条流水线里的位置</figcaption>
 </figure>
 
 <p>具体做法是正交变换。设 $q_1$ 是已知的单位特征向量（$Aq_1=\lambda_1q_1$），在复数域上取 Householder 变换 $H$ 使得</p>
@@ -836,7 +917,7 @@ u=\frac{q_1-e_1}{\|q_1-e_1\|_2}
 <text x="310" y="162" font-size="12.5" fill="var(--accent)">把 q₁ 照过去，正好落在 e₁</text>
 <text x="310" y="184" font-size="12.5" fill="var(--ok)">即 H q₁ = e₁</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 8 · Householder = 角平分面上的镜面反射</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 9 · Householder = 角平分面上的镜面反射</figcaption>
 </figure>
 
 <p>于是（$H^{*}$ 表示共轭转置，且 $H^{*}=H^{-1}=H$）</p>
@@ -893,7 +974,7 @@ HAH^{*}=\begin{bmatrix}\lambda_1& *\\ 0&\hat A\end{bmatrix}
 <text x="425" y="172" font-size="12.5" fill="var(--ink3)">特征值 = λ₂, …, λₙ</text>
 <text x="40" y="214" font-size="12.5" fill="var(--ink3)">左下角那个 0 就是「上层的信号传不下来」—— 所以下层是一个独立子系统</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 9 · 块三角的「0」= 信号单行道</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 10 · 块三角的「0」= 信号单行道</figcaption>
 </figure>
 
 <div class="box ok">
@@ -936,7 +1017,7 @@ HAH^{*}e_1=HA\,(\underbrace{H^{*}e_1}_{=\,q_1})=HAq_1=H(\lambda_1q_1)=\lambda_1\
 <text x="234" y="126" font-size="12.5" fill="var(--ink3)">Aq₁ = λ₁q₁</text>
 <text x="506" y="126" font-size="12.5" fill="var(--ok)">Hq₁ = e₁</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 10 · 追踪 $e_1$ 走一圈：每一步都是已知条件，没有额外假设</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 11 · 追踪 $e_1$ 走一圈：每一步都是已知条件，没有额外假设</figcaption>
 </figure>
 
 <p>也就是说，$HAH^{*}$ 的<strong>第 1 列被锁死</strong>成 $\lambda_1e_1$——$\lambda_1$ 在顶上、<strong>下面全是 0</strong>。第 1 行没有约束，记作 $*$；右下角那块 $(n-1)\times(n-1)$ 就是 $\hat A$。</p>
@@ -983,7 +1064,7 @@ HAH^{*}=\begin{bmatrix}0.7071&0.7071\\0.7071&-0.7071\end{bmatrix}\begin{bmatrix}
 <text x="242" y="136" font-size="12.5" fill="var(--warn)">块上三角 ⇒ 特征值 = 对角块之并</text>
 <text x="242" y="158" font-size="12.5" fill="var(--warn)">σ(A) = {λ₁} ∪ σ(Â)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 11 · 第 1 列被锁死 ⇒ 块上三角 ⇒ 右下角独立出一个 $(n-1)$ 阶问题</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · 第 1 列被锁死 ⇒ 块上三角 ⇒ 右下角独立出一个 $(n-1)$ 阶问题</figcaption>
 </figure>
 
 <p><strong>为什么这就完成了降阶。</strong>$HAH^{*}$ 是<strong>块上三角矩阵</strong>，而块三角矩阵的特征值 = 对角块特征值之并：</p>
@@ -1598,7 +1679,7 @@ A^ke_1=\tilde Q_k\tilde R_ke_1=\tilde Q_k\big(r_{11}^{(k)}e_1\big)=r_{11}^{(k)}q
 <text x="146" y="196" font-size="12.5" fill="var(--gold)">Aᵏ = Q̃ₖ R̃ₖ（这就是 Aᵏ 的 QR 分解）</text>
 <text x="46" y="216" font-size="12.5" fill="var(--gold)">它的第一列 Aᵏe₁ = r₁₁⁽ᵏ⁾ q₁⁽ᵏ⁾，所以 q₁⁽ᵏ⁾ 就是「以 e₁ 为初值的幂法」第 k 步的归一化结果</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · QR 迭代的循环，以及它与幂法的接口</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 13 · QR 迭代的循环，以及它与幂法的接口</figcaption>
 </figure>
 
 <h4>收敛性定理</h4>
@@ -1895,7 +1976,7 @@ h_{21}&h_{22}&h_{23}&\cdots&h_{2n}\\
 <text x="34" y="198" font-size="12.5" fill="var(--gold)">代价：一次性 10/3·n³（要 Q 再加 4/3·n³）</text>
 <text x="34" y="220" font-size="12.5" fill="var(--ok)">收益：之后每次 QR 迭代从 O(n³) 降到 O(n²)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 13 · 上 Hessenberg 约化：一列一列地往下削</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 14 · 上 Hessenberg 约化：一列一列地往下削</figcaption>
 </figure>
 
 <div class="box ok">
@@ -2355,7 +2436,7 @@ B=P_0HP_0=
 <text x="26" y="210" font-size="12.5" fill="var(--ink2)">③ 总共 n−2 步，全部是 O(n²) 的小操作——这就是「隐式」的代价优势</text>
 <text x="26" y="234" font-size="12" fill="var(--ink3)">依据：隐式 Q 定理 —— 只要第一列对了，得到的 Hessenberg 阵本质上唯一（差正负号）</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 14 · Francis 双位移：鼓包的产生与追逐</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 15 · Francis 双位移：鼓包的产生与追逐</figcaption>
 </figure>
 
 <p>综上所述，我们得到了著名的 <strong>Francis 双位移的 QR 迭代算法</strong>（双位移的 QR 迭代算法，数值线性代数，算法 6.4.2）。</p>
@@ -2490,7 +2571,7 @@ H_{22}=H(l+1:u,\,l+1:u).
 <text x="44" y="180" font-size="12.5" fill="var(--gold)">直接算 M = H² − tH + sI 要 O(n³)，且 M 已不是 Hessenberg 阵；</text>
 <text x="44" y="200" font-size="12.5" fill="var(--gold)">靠隐式 Q 定理：只要 Q 的第一列对，结果就唯一 —— 于是只算 M 的第一列前三个数，用鼓包追逐 O(n²) 搞定</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 15 · QR 方法的三层加速：Hessenberg 化省「每次迭代」，位移省「迭代次数」</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 16 · QR 方法的三层加速：Hessenberg 化省「每次迭代」，位移省「迭代次数」</figcaption>
 </figure>
 
 <h3 id="s54">5.4 实 Schur 型的后处理<span class="tag a">PDF 5 §5.4</span></h3>
@@ -2722,7 +2803,7 @@ X_{ij}^{-1}=I_n-E_iY_{ij}E_j^{\mathsf T}.
 <text x="90" y="208" font-size="12.5" fill="var(--ink2)">于是 (1,2) 块可以被「清成 0」而不改变任何特征值。</text>
 <text x="90" y="234" font-size="12" fill="var(--ink3)">对 i &lt; j 逐块做一遍（j 从 2 到 d，i 从 1 到 j−1），右上角就全部清零 —— 这就是算法 7.6.3。</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 16 · 块对角化：用相似变换把 Schur 型右上角的分块清成 0</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 17 · 块对角化：用相似变换把 Schur 型右上角的分块清成 0</figcaption>
 </figure>
 
 <div class="box">
@@ -2934,7 +3015,7 @@ k→∞</code></pre>
 
 <text x="340" y="304" text-anchor="middle" font-size="12" fill="var(--ink3)">每个 col_ptr 元素都指着一个「列与列的切分处」</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 17 · <code>col_ptr[]</code> 是 <code>values[]</code> 上的切点：它正好落在列与列的交界处，而不在元素上</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 18 · <code>col_ptr[]</code> 是 <code>values[]</code> 上的切点：它正好落在列与列的交界处，而不在元素上</figcaption>
 </figure>
 
 <div class="box">
@@ -3379,7 +3460,7 @@ B_{\mathrm{GS}}=(D-L)^{-1}U,\qquad c_{\mathrm{GS}}=(D-L)^{-1}b
 <rect x="450" y="228" width="14" height="12" rx="2" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="0.5"/>
 <text x="470" y="234" font-size="11.5" fill="var(--ink2)">正在算的分量</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 18 · 算 $(i,j)=(2,2)$ 时两者的取数差别：Jacobi 全取旧值（可并行），Gauss-Seidel 左边和上面的邻居已更新（必须串行）</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 19 · 算 $(i,j)=(2,2)$ 时两者的取数差别：Jacobi 全取旧值（可并行），Gauss-Seidel 左边和上面的邻居已更新（必须串行）</figcaption>
 </figure>
 
 <h4>例：红黑序 Gauss-Seidel</h4>
@@ -4123,7 +4204,7 @@ R_\infty(B^{(2)}) &=-\log\left(\rho(B^{(2)})\right)=-\log\left(\rho^2(B^{(1)})\r
 <line x1="422" y1="240" x2="452" y2="240" stroke="var(--gold)" stroke-width="2.6"/>
 <text x="460" y="244" font-size="12.5" fill="var(--ink2)">SOR（最佳 ω）—— 斜率 1</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 19 · 双对数坐标下的渐近收敛速度：Jacobi 与 Gauss-Seidel 都是 <span style="white-space:nowrap">$O(h^2)$</span>（斜率 2），而最佳松弛因子的 SOR 只有 <span style="white-space:nowrap">$O(h)$</span>（斜率 1）——小 $h$ 时 SOR 快得不是一个量级</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 20 · 双对数坐标下的渐近收敛速度：Jacobi 与 Gauss-Seidel 都是 <span style="white-space:nowrap">$O(h^2)$</span>（斜率 2），而最佳松弛因子的 SOR 只有 <span style="white-space:nowrap">$O(h)$</span>（斜率 1）——小 $h$ 时 SOR 快得不是一个量级</figcaption>
 </figure>
 
 <div class="box">
@@ -4494,7 +4575,7 @@ M(\omega,\mu)=\left[\frac{\mu\omega}{2}+\sqrt{\left(\frac{\mu\omega}{2}\right)^2
 <line x1="470" y1="279" x2="496" y2="279" stroke="var(--gold)" stroke-width="2.6"/>
 <text x="504" y="283" font-size="12" fill="var(--ink2)">μ = 0.9 = ρ(B<tspan baseline-shift="super" font-size="8.5">(1)</tspan>)</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 20 · 谱半径 $\rho(B_\omega)$ 随 $\omega$ 的变化：每条曲线先降到 $\omega_\mu$ 处的极小值 $\omega_\mu-1$，再沿 $\omega-1$ 上升；最上方那条（$\mu$ 取到谱半径 $\rho(B^{(1)})$）就是 $\rho(B_\omega)$，它的极小点即最佳松弛因子 $\omega_{\mathrm{opt}}$</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 21 · 谱半径 $\rho(B_\omega)$ 随 $\omega$ 的变化：每条曲线先降到 $\omega_\mu$ 处的极小值 $\omega_\mu-1$，再沿 $\omega-1$ 上升；最上方那条（$\mu$ 取到谱半径 $\rho(B^{(1)})$）就是 $\rho(B_\omega)$，它的极小点即最佳松弛因子 $\omega_{\mathrm{opt}}$</figcaption>
 </figure>
 
 <p>根据最上方的曲线 $\rho(B_\omega)=\max\limits_{0\le\mu\lt1}M(\omega,\mu)=M(\omega,\mu_{\max})$，我们得到结论：</p>
@@ -4733,7 +4814,7 @@ P(A+δA) = L̂ Û
 <text x="373" y="147" font-size="12" fill="var(--ink3)" text-anchor="middle">堆 [A; √μI]</text>
 <text x="373" y="224" font-size="12" fill="var(--ink3)" text-anchor="middle">消元降维</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 21 · §2.4.1 的三种变体最终都归约到同一个标准最小二乘——第 2 章自始至终只用了一个算法（QR 分解），换了三种包装</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 22 · §2.4.1 的三种变体最终都归约到同一个标准最小二乘——第 2 章自始至终只用了一个算法（QR 分解），换了三种包装</figcaption>
 </figure>
 
 <h4>变体 ① 标准型的三种等价表述</h4>
@@ -4795,7 +4876,7 @@ P(A+δA) = L̂ Û
 <rect x="190" y="200" width="300" height="42" rx="10" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1"/>
 <text x="340" y="221" font-size="13.5" fill="var(--ink)" text-anchor="middle">化成了标准最小二乘问题</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 22 · 「本质上是标准最小二乘」的全部内容：把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 23 · 「本质上是标准最小二乘」的全部内容：把 $\sqrt{\mu}I_n$ 堆到 $A$ 下面、把 $0_n$ 堆到 $b$ 下面</figcaption>
 </figure>
 
 <p>展开验证一下，看它是不是真的一样：</p>
@@ -4856,7 +4937,7 @@ P(A+δA) = L̂ Û
 <circle cx="242" cy="208" r="2.5" fill="var(--ok)"/>
 <text x="628" y="208" font-size="12" fill="var(--ink3)" text-anchor="end">×5.0</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 23 · 位移是<strong>绝对量</strong> $\mu$，所以对大特征值几乎无影响（涨 1%），对最小的那个却相当于涨了 5 倍——条件数从 $400$ 降到 $80$ 左右</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 24 · 位移是<strong>绝对量</strong> $\mu$，所以对大特征值几乎无影响（涨 1%），对最小的那个却相当于涨了 5 倍——条件数从 $400$ 降到 $80$ 左右</figcaption>
 </figure>
 
 <p><strong>$\mu$ 到底在干什么。</strong>两个极限能说清一切：$\mu\to0$ 时退回标准最小二乘；$\mu\to\infty$ 时 $x\to0$（罚款太贵，索性什么都不要）。中间是一根旋钮。拿一个具体例子看这根旋钮的行程——取</p>
@@ -4958,7 +5039,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="282" font-size="13.5" fill="var(--ink)" text-anchor="middle">无约束标准最小二乘（只对 y₂）</text>
 <text x="340" y="300" font-size="12" fill="var(--ink3)" text-anchor="middle">解出 y₂ 后回代 x = Q₁*(R⁻¹d) + Q₂*y₂</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 24 · 消元法：用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$——带约束的 $n$ 维问题降成无约束的 $n-p$ 维问题</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 25 · 消元法：用 $y_1$ 吃掉约束，剩下的自由度全归 $y_2$——带约束的 $n$ 维问题降成无约束的 $n-p$ 维问题</figcaption>
 </figure>
 
 <h3 id="s242">§2.4.2 GTH 算法<span class="tag a">讲义 §2.4.2</span></h3>
@@ -5002,7 +5083,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="370" font-size="13.5" fill="var(--ink)" text-anchor="middle">⑤ H = Q*AQ 是上 Hessenberg ⇒ Arnoldi 过程</text>
 <text x="340" y="388" font-size="12" fill="var(--ink3)" text-anchor="middle">A 对称 ⇒ 三对角（Lanczos）；Gram–Schmidt 递推即可算出</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 25 · §2.4.3 的推导主线：一个「天真想法 → 撞墙 → 补救」的故事，撞墙的那一步靠的正是<a href="#p1">第一部分</a>的幂法</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 26 · §2.4.3 的推导主线：一个「天真想法 → 撞墙 → 补救」的故事，撞墙的那一步靠的正是<a href="#p1">第一部分</a>的幂法</figcaption>
 </figure>
 
 <h4>第一步：Krylov 幂序列，以及为什么算到 $y_n$ 就停</h4>
@@ -5118,7 +5199,7 @@ P(A+δA) = L̂ Û
 <text x="340" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">i ≤ j + 1 处非零</text>
 <text x="567" y="170" font-size="12" fill="var(--ink3)" text-anchor="middle">|i − j| ≤ 1 处非零</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 26 · 实心格 = 可能非零，空格 = 恒为 0。从 $C$ 到 $H$ 到 $T$，「非零元素」一步步被限制到更窄的带状区域——这就是相似变换换来的全部好处</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 27 · 实心格 = 可能非零，空格 = 恒为 0。从 $C$ 到 $H$ 到 $T$，「非零元素」一步步被限制到更窄的带状区域——这就是相似变换换来的全部好处</figcaption>
 </figure>
 
 <h4>第六步：实际计算——$AQ=QH+\text{rank-one}$</h4>
@@ -5251,7 +5332,7 @@ end</pre>
 <text x="515" y="54" font-size="13.5" fill="var(--ink)" text-anchor="middle">T̃<tspan baseline-shift="sub" font-size="9">k</tspan></text>
 <text x="515" y="180" font-size="12" fill="var(--ink3)" text-anchor="middle">对称三对角</text>
 </svg>
-<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 27 · Lanczos 的三项递推：算 $Aq_k$ 只用得到 $q_{k-1},q_k,q_{k+1}$ 三个向量，不需要保存全部历史——这是三对角结构带来的全部好处</figcaption>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 28 · Lanczos 的三项递推：算 $Aq_k$ 只用得到 $q_{k-1},q_k,q_{k+1}$ 三个向量，不需要保存全部历史——这是三对角结构带来的全部好处</figcaption>
 </figure>
 
 <p>也就是说 $Aq_k$ <strong>只由三个相邻向量拼出来</strong>。由于 $q_1,\ldots,q_{k+1}$ 标准正交，两边左乘 $q_k^{\mathsf T}$ 得</p>
