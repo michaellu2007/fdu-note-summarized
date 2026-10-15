@@ -1111,6 +1111,21 @@ softmax 之后才会变成非负权重。</p>
 </table>
 <p>前两种都是<strong>加性输入方案</strong>，都是「在入口处加一个向量」；
 RoPE 是<strong>乘性、层内</strong>的方案。三者的可学习嵌入与投影参数都保持可训练。</p>
+
+<p><strong>表格最后一列「参数量」是什么意思（课件没展开）：</strong></p>
+<p>可学习位置表就是<strong>一张查找表</strong>——和 token embedding 表结构一样，只是查的不是词而是位置。
+行号是位置索引 $0,1,\dots,\text{max\_len}-1$，每行是一个 $d_{\text{model}}$ 维向量；位置 $p$ 的 token 查第 $p$ 行，
+加到自己的 embedding 上。于是</p>
+\[\text{参数量}=\underbrace{\text{max\_len}}_{\text{表有几行}}\times\underbrace{d_{\text{model}}}_{\text{每行多宽}}\]
+
+<p>代入 GPT-2 base（$\text{max\_len}=1024$，$d_{\text{model}}=768$）：
+<strong>$1024\times768=786{,}432$</strong> 个<strong>可训练</strong>参数。表格另两行的 $0$ 是因为
+正弦和 RoPE 都靠<strong>公式直接算</strong>，没有要学的数。</p>
+
+<p><strong>但这个差别不只是「省参数」。</strong>可学习表有<strong>硬上限</strong>：
+序列一旦超过 $\text{max\_len}$，表里就没有对应那一行，位置 $p$ <strong>没有定义</strong>（只能拒绝，不能循环复用）。
+正弦和 RoPE 对任意 $p$ 都算得出值——虽然算得出<strong>不等于</strong>模型在那么长的地方还准确
+（见下面的说明），但至少不会「查不到行」。</p>
 <p>注意宽度控制者不同：<strong>加性编码的宽度由 $d_{\text{model}}$ 决定；RoPE 的旋转由每个 head 的 $d_h$ 决定。</strong>
 两者都<strong>不</strong>能单靠自身保证超出训练长度后仍然准确。</p>
 </div>
@@ -1185,6 +1200,20 @@ $$Z=\operatorname{softmax}_{\text{row}}\!\left(\frac{QK^{\mathsf T}}{\sqrt{d_k}}
 
 <div class="box key">
 <span class="label">补充 · 除以 $\sqrt{d_k}$ 到底在防什么</span>
+<p><strong>先说 logits 在这里具体怎么算（课件没写过程）。</strong>
+对一个 query，每个 key 各算一次点积——把两边各 $d_k$ 个数<strong>逐对相乘再全部相加</strong>：</p>
+\[s_{t,j}=q_t\cdot k_j=\sum_{i=1}^{d_k}q_{t,i}\,k_{j,i}\]
+<p>所有 key 算完，得到一行 $n$ 个数；整行除以 $\sqrt{d_k}$，就是这一行的 logits。
+矩阵形式 $QK^{\mathsf T}$ 只是把<strong>所有</strong> query-key 对用一个乘法一起算掉，
+第 $(t,j)$ 个元素就是上面那个点积。</p>
+<p><strong>手算一遍（$d_k=4$）：</strong>取 $q=(1,1,1,1)$，某个 key 也是 $(1,1,1,1)$，
+则点积 $=1\!\times\!1+1\!\times\!1+1\!\times\!1+1\!\times\!1=4$，logit $=4/\sqrt4=2$。
+若另两个 key 与它垂直、反向，这一行 logits 就是 $(2,0,-2)$，softmax 后
+$(0.867,\,0.117,\,0.016)$——三个都还有分量。</p>
+<p><strong>同一个配置只把 $d_k$ 换成 64：</strong>点积变成 $64$，logit $=64/\sqrt{64}=8$
+（放大了 $\sqrt{64}/\sqrt4=4$ 倍），softmax 后是 $(0.9997,\,0.0003,\,\approx0)$——
+<strong>几乎只剩一个</strong>。此时非最大项的权重约等于 0，反向传播时 softmax 的雅可比在这些位置上也约等于 0，
+<strong>梯度传不回去，那些 key 的表示就学不动</strong>。训练变慢甚至停滞就是这么来的。</p>
 <p>假设 $q,k\in\mathbb{R}^{d_k}$ 的各分量<strong>独立、零均值、单位方差</strong>，那么点积</p>
 \[q^{\mathsf T}k=\sum_{i=1}^{d_k}q_ik_i\]
 <p>是 $d_k$ 个独立同分布项之和，因此它的<strong>方差是 $d_k$</strong>（均值仍为 0），
@@ -1193,6 +1222,20 @@ $$Z=\operatorname{softmax}_{\text{row}}\!\left(\frac{QK^{\mathsf T}}{\sqrt{d_k}}
 某一项接近 1、其余接近 0，梯度会趋近于零，训练变慢甚至停滞。
 缩放让 logits 的尺度与 $d_k$ 解耦。</p>
 <p>这些假设是<strong>初始化时的近似</strong>，不是训练好的 Q/K 的普遍性质——不要把推导当成定理。</p>
+
+<div class="box warn">
+<span class="label">别混 · 这里有两个都叫 logits 的东西</span>
+<table>
+<thead><tr><th></th><th>attention 的 logits</th><th>模型输出的 logits</th></tr></thead>
+<tbody>
+<tr><td>怎么算</td><td>$QK^{\mathsf T}/\sqrt{d_k}$</td><td>$H\,W_{\text{lm head}}$（最后那层线性投影）</td></tr>
+<tr><td>形状</td><td>$n\times n$（位置 × 位置）</td><td>$n\times\lvert V\rvert$（位置 × 词表）</td></tr>
+<tr><td>softmax 沿哪一轴</td><td><strong>位置轴</strong>——决定「看哪些 token」</td><td><strong>词表轴</strong>——决定「选哪个词」</td></tr>
+<tr><td>在哪一节</td><td><a href="#s21">§2.1</a>（本节）</td><td><a href="#s38">§3.8</a>、<a href="#s16">§1.6</a> 的 LM head</td></tr>
+</tbody>
+</table>
+<p>名字一样，作用和尺度完全不同。本节说的「logits 量级随 $d_k$ 增长」只指左边那个。</p>
+</div>
 </div>
 
 <div class="box warn">
