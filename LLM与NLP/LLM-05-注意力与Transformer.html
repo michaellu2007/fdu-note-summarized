@@ -723,6 +723,24 @@ $$U=H+\operatorname{CausalMHA}\big(\operatorname{LN}_1(H)\big),\qquad H_{\text{n
 但不是本节要讲的第三种方法。</p>
 </div>
 
+<div class="box ok">
+<span class="label">补充 · $x_5$ 是「第 0 层的输入」，不是输出（课件说法含糊，这里说清）</span>
+<p>整条数据流：</p>
+\[x_5^{(0)}=\sqrt{d}\,E[\text{she}]+PE(5)\quad\text{← 课件说的「模型输入」，进任何 block 之前}\]
+
+<p>之后每经过一个 block 就改写一次。形状始终是 $6\times16$，但内容已经不同：</p>
+\[x_5^{(0)}\xrightarrow{\text{block 1}}x_5^{(1)}\xrightarrow{\text{block 2}}x_5^{(2)}\xrightarrow{\mathrm{LN},\ \text{LM head}}z_5\]
+
+<p><strong>为什么容易混：</strong>残差网络里<strong>每一层的输出就是下一层的输入</strong>，
+形状不变、符号还都写作 $x$，所以「输入 / 输出」不带头号就说不清。课件的记号在三处并不一致：</p>
+<ul>
+<li><a href="#s15">§1.5</a> 的 $X$ 是 $6\times d$ 矩阵、$x_j$ 是它的行——那时<strong>还没有</strong>位置信息</li>
+<li>§1.7 的 $x_5$ = embedding + 位置相加——这是<strong>进 stack 前</strong>的输入</li>
+<li><a href="#s214">§2.14</a> 起的 $(B,T,d)$ 张量也叫 $x$——这是「每层输入 / 输出」的通称</li>
+</ul>
+<p>一句话：<strong>$x_5$ 是「还没进任何 block」的那个向量；进了 block 以后再谈输入输出，必须说第几层。</strong></p>
+</div>
+
 <h3 id="s18">1.8 正弦编码：很多时钟 <span class="tag s">课件</span></h3>
 
 <div class="cols">
@@ -798,6 +816,42 @@ $$U=H+\operatorname{CausalMHA}\big(\operatorname{LN}_1(H)\big),\qquad H_{\text{n
 <p>另外：某个位置有定义，<strong>不等于</strong>训练过的模型在那个位置（超出训练长度）就能准确外推。</p>
 </div>
 
+<div class="box key">
+<span class="label">补充 · 「很多时钟」到底指什么（课件只给了一张曲线图，未展开）</span>
+<p>$\omega_i=10000^{-2i/d}$ 这一行就是在挑<strong>转速</strong>。取 $d=8$，有 4 对坐标，转速依次
+$1,\ 0.1,\ 0.01,\ 0.001$ 弧度/token：</p>
+<table>
+<thead><tr><th>坐标对</th><th>$\omega_i$（弧度/token）</th><th>周期（token）</th><th>在前 16 个位置里的表现</th></tr></thead>
+<tbody>
+<tr><td>0 / 1</td><td>1</td><td>6.28</td><td>转了 2.5 圈以上</td></tr>
+<tr><td>2 / 3</td><td>0.1</td><td>62.8</td><td>只转了 1/4 圈</td></tr>
+<tr><td>4 / 5</td><td>0.01</td><td>628</td><td>几乎看不出在动</td></tr>
+<tr><td>6 / 7</td><td>0.001</td><td>6283</td><td>完全看不出</td></tr>
+</tbody>
+</table>
+<p>「时钟」比喻的准确版本：每个坐标对是一个钟面指针，位置每前进 1，指针转 $\omega_i$ 弧度；
+位置 $p$ 的编码 = 4 个指针的读数。</p>
+<p><strong>只看一个钟会觉得「没啥关联」——这个直觉是对的。</strong>
+最快的那对周期只有 6.28 个 token：位置 0 的读数是 $(\sin 0,\cos 0)=(0,1)$，
+位置 6 是 $(\sin 6,\cos 6)=(-0.28,\ 0.96)$，确实相当接近，会混。</p>
+<p><strong>但模型看到的从来不是单个钟，而是 8 个坐标的组合。</strong>看读数表最清楚
+（$d=8$，只列 sin 那一半，cos 只差四分之一周期）：</p>
+<table>
+<thead><tr><th>通道</th><th class="num">$p=0$</th><th class="num">$p=1$</th><th class="num">$p=2$</th><th class="num">$p=3$</th><th class="num">$p=4$</th><th class="num">$p=5$</th></tr></thead>
+<tbody>
+<tr><td>$\omega=1$</td><td class="num">0.00</td><td class="num">0.84</td><td class="num">0.91</td><td class="num">0.14</td><td class="num">&minus;0.76</td><td class="num">&minus;0.96</td></tr>
+<tr><td>$\omega=0.1$</td><td class="num">0.00</td><td class="num">0.10</td><td class="num">0.20</td><td class="num">0.30</td><td class="num">0.39</td><td class="num">0.48</td></tr>
+<tr><td>$\omega=0.01$</td><td class="num">0.00</td><td class="num">0.01</td><td class="num">0.02</td><td class="num">0.03</td><td class="num">0.04</td><td class="num">0.05</td></tr>
+<tr><td>$\omega=0.001$</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td></tr>
+</tbody>
+</table>
+<p>分工一眼可见：<strong>第一列区分近邻位置，第二列管中距离，第三、四列管长距离。</strong>
+就像秒针管分钟、分针管小时、时针管半天——多个钟不是重复，是<strong>分层覆盖不同尺度</strong>。
+这就是「很多时钟」的确切含义。</p>
+<p><strong>还有一个课件略过的性质：</strong>相邻位置的编码差分在不同通道上大小悬殊——
+$\omega=1$ 的通道从 $p=0$ 到 $p=1$ 变了 0.84，$\omega=0.1$ 的通道只变 0.10。
+模型从两个位置的编码差里就能估出距离量级。<strong>这就是相对位置的雏形，也正是 <a href="#s111">§1.11</a> RoPE 的直接动机。</strong></p>
+</div>
 <h3 id="s19">1.9 构造一个位置向量（E01） <span class="tag s">课件</span></h3>
 
 <p><strong>练习 E01 · 2 分钟 · 先预测 $\operatorname{PE}(0)$，再把 $\operatorname{PE}(1)$ 加到嵌入上。</strong></p>
@@ -1198,6 +1252,27 @@ softmax 之后才会变成非负权重。</p>
 RoPE 是<strong>乘性、层内</strong>的方案。三者的可学习嵌入与投影参数都保持可训练。</p>
 <p>注意宽度控制者不同：<strong>加性编码的宽度由 $d_{\text{model}}$ 决定；RoPE 的旋转由每个 head 的 $d_h$ 决定。</strong>
 两者都<strong>不</strong>能单靠自身保证超出训练长度后仍然准确。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 正弦与 RoPE 是同一条思路的两次实现（课件分开讲，未点明联系）</span>
+<p>两者要解决的是<strong>同一个</strong>问题：让模型知道 token 的<strong>顺序</strong>和彼此的<strong>距离</strong>。解法不同：</p>
+<table>
+<thead><tr><th></th><th>正弦编码（2017）</th><th>RoPE（2021 RoFormer）</th></tr></thead>
+<tbody>
+<tr><td>作用对象</td><td>token embedding（输入侧）</td><td>Q 和 K（每层每个 head）</td></tr>
+<tr><td>作用方式</td><td><strong>加</strong>一个位置向量</td><td><strong>旋转</strong>一个角度</td></tr>
+<tr><td>频率</td><td>$\omega_i=10000^{-2i/d}$</td><td>$\theta_i=10000^{-2i/d_h}$</td></tr>
+<tr><td>距离从哪来</td><td>希望模型从编码差值里<strong>自己学出来</strong></td><td>直接<strong>构造</strong>进点积 $q^{\mathsf T}R_{n-m}k$</td></tr>
+<tr><td>是否需要学</td><td>无参数，但依赖模型学会利用</td><td>无参数，性质由数学保证</td></tr>
+</tbody>
+</table>
+<p>RoPE 的二维旋转 $R(\theta_i)$ 就是「很多时钟」的字面实现：
+每个坐标对一个钟面，位置每前进 1 转 $\theta_i$。
+它比正弦强的地方在于<strong>把「打分只依赖相对偏移」这个性质焊死在了函数里</strong>，
+不依赖模型自己悟出来。</p>
+<p>一条线记住整条位置编码的演进：</p>
+<p style="text-align:center"><strong>要知道顺序与距离 $\to$ 正弦（输入侧、加法、隐式）$\to$ RoPE（打分侧、乘法、显式）</strong></p>
 </div>
 
 <hr>
@@ -1778,6 +1853,42 @@ Xiong 等人分析的是<strong>在明确假设下</strong>的初始化与 warm-
 
 <h3 id="s211">2.11 前馈网络：逐 token 变换 <span class="tag s">课件</span></h3>
 
+<div class="box key">
+<span class="label">补充 · 先把 MLP / FFN / self-attention 的层次理清（课件未展开，只给了一句分工）</span>
+<p>这三个名字在课件里都出现过，但它们是<strong>不同层次</strong>的东西，混在一起就会觉得矛盾：</p>
+<table>
+<thead><tr><th>名字</th><th>所属层次</th><th>在 Transformer 里对应什么</th></tr></thead>
+<tbody>
+<tr><td><strong>MLP</strong>（multi-layer perceptron）</td><td>最宽泛的<strong>类别</strong></td><td>泛指「全连接层 + 非线性」的堆叠；1986 年的老词</td></tr>
+<tr><td><strong>FFN</strong>（feed-forward network）</td><td>一个<strong>具体子层</strong></td><td>就是 block 里那个 MLP：$d\to d_{\text{ff}}\to d$ 的一层隐层网</td></tr>
+<tr><td><strong>self-attention</strong></td><td>另一个<strong>具体子层</strong></td><td>block 里负责<strong>跨位置</strong>混合的子层，与 FFN <strong>并列</strong></td></tr>
+<tr><td><strong>block / network</strong></td><td><strong>容器</strong></td><td>把 self-attention + FFN + LayerNorm + residual 打包，重复 $L$ 次</td></tr>
+</tbody>
+</table>
+<p>所以准确的关系只有两条：</p>
+<p><strong>FFN $\subset$ MLP</strong>——FFN 是 MLP 的特例。2017 论文称它 position-wise feed-forward network，
+PyTorch 里同一个模块的类名就叫 <code>MLP</code>，两者是同一份代码的两种叫法。</p>
+<p><strong>self-attention 与 FFN 并列</strong>——一个 block 里这两个子层<strong>串联</strong>，不是一个包含另一个。</p>
+<p><strong>课件原文只写了</strong>「attention 负责汇集上下文，FFN 负责从上下文里学非线性特征」（见 <a href="#s212">§2.12</a>）。
+这句话是对的，但<strong>没有说明二者的包含关系</strong>，也没说「self-attention 网络」指什么。
+本节这两段是按通用教材补的。</p>
+</div>
+
+<div class="box gold">
+<span class="label">补充 · 「self-attention 网络」这个说法有三种意思，读之前先辨认</span>
+<ol class="steps">
+<li><strong>整个 Transformer 模型</strong>——因为它最标志性的子层是 self-attention。
+课件标题 <em>Attention and the Transformer</em> 用的就是这个意思。</li>
+<li><strong>单个 self-attention 子层</strong>——即 <a href="#s21">§2.1</a> 的 Q/K/V 投影 + 缩放点积 + 掩码。
+本笔记统一用「self-attention 子层」指这一种，以免和上一种混。</li>
+<li><strong>注意力里的打分网络</strong>——Bahdanau 的对齐网络
+$v_a^{\mathsf T}\tanh(W_as_{t-1}+U_ah_j)$（见 Lecture 04 §3.3）。
+它本身也是一个小 MLP，但和 block 里的 FFN <strong>完全不是一回事</strong>，别把两个混起来。</li>
+</ol>
+<p>顺带说明另一种真正会混淆的情况：GPT-2 的官方实现里，<code>block</code> 类的成员就叫 <code>self.MLP</code>——
+所以看别人代码时出现的 "MLP" 几乎总是指 <strong>FFN 那个子层</strong>，而不是别的。</p>
+</div>
+
 <figure>
 <svg viewBox="0 0 680 280" width="100%" role="img" aria-labelledby="figFfnT figFfnD">
 <title id="figFfnT">前馈网络对每个 token 独立地做升维、非线性、降维</title>
@@ -1865,6 +1976,28 @@ Xiong 等人分析的是<strong>在明确假设下</strong>的初始化与 warm-
 <h3 id="s212">2.12 为什么 FFN 重要 <span class="tag s">课件</span></h3>
 
 <p>注意力负责<strong>汇集上下文</strong>，FFN 负责从上下文里<strong>学非线性特征</strong>。</p>
+
+<div class="box ok">
+<span class="label">补充 · attention 和 FFN 各自提供什么（课件只有一句话，这里拆开讲）</span>
+<p><strong>第一句的准确版本。</strong>attention 子层对所有 token 用的是同一套 $W_Q,W_K,W_V$、
+同一个掩码规则——它对<strong>位置</strong>一无所知，只关心「能看到哪些 token」。
+所以 attention 的本质是<strong>跨位置重新分配已有信息</strong>。</p>
+<p><strong>FFN 补的正是「位置有关」的那一半。</strong>它对第 $i$ 个 token 做的事只取决于 $x_i$ 这个 $d$ 维向量本身，
+和其他 token 无关。两个内容相同的 token 在不同位置，会被各自的 FFN 单独处理。</p>
+<p><strong>为什么不能只有 attention。</strong>设想一个把 FFN 全删掉、只剩 attention 子层的网络：</p>
+<ul>
+<li>softmax 确实是非线性的，所以整个网络<strong>不会</strong>塌成一个线性映射。</li>
+<li>但所有非线性都来自那<strong>一个</strong> softmax。它的输出是「一组归一化权重」，
+本身不产生新的特征方向——新方向只能来自被加权的那些 $V=XW_V$ 的行。</li>
+<li>于是模型缺一块「把单个 token 的表示往深处变换」的能力。</li>
+</ul>
+<p>FFN 就是那一块：$W_2\sigma(W_1x)$ 先升维到 $d_{\text{ff}}$ 再压回 $d$，
+相当于给每个 token 单独做一次可学习的重映射。GPT-2 的后续研究
+（Geva et al. 2021）发现 FFN 隐层神经元的行为接近 key-value 记忆——
+视角虽然不同，结论却一致：<strong>「知识」主要住在 FFN 里，attention 负责把它取出来。</strong></p>
+<p>对照 Lecture 04 §1.6 的结论：两个连续仿射层会塌成一个。
+所以如果没有中间的 $\sigma$，FFN 就是白占参数的恒等模仿。</p>
+</div>
 
 <p>一个 GPT 式块，标准多头注意力，$d_{\text{ff}}=4d$：</p>
 
