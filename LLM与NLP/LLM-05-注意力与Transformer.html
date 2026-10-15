@@ -116,6 +116,10 @@ hr{border:none;border-top:1px solid var(--line);margin:52px 0}
 .ilabel{font-size:13.5px;color:var(--ink2);margin:8px 0 0;line-height:1.7}
 .istatic{font-size:12.5px;color:var(--ink3);padding:7px 16px;border-top:1px solid var(--line);background:var(--bg2)}
 .iplot{margin:22px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fbfbf9}
+.ihover-note{border-top:1px solid var(--line);background:var(--bg2);padding:9px 16px;margin:0;
+  font-size:13.5px;color:var(--ink2);line-height:1.7;min-height:46px}
+.idiagram svg g[data-illustrative-head]{transition:opacity .15s ease;cursor:pointer}
+.idiagram svg g[data-illustrative-head].mh-dim{opacity:.2}
 </style>
 </head>
 <body>
@@ -1405,6 +1409,8 @@ $(\log2,0,0,\log2,0,\log3,\log4)$，值向量沿用上表。</p>
 </div>
 <figcaption><strong>图 16 · 三个 head 的三种注意力分布（示意值）。</strong>
 查询固定在 <code>she</code>（位置 5），六个位置都在它的可用前缀里。
+<strong>这张图默认三行并排显示，不点「下一步」</strong>——因为它的价值就在一眼看出「同一查询、三种分布」。
+把鼠标移到某一行，下方会说明它把权重集中在哪个 token 上（同时其余两行变淡）。
 可以问三个不同的问题：<em>哪个更早的名字指明了指代对象？哪个更早的特征在描述它？哪个词在提示转折？</em>
 人读出来的答案分别是 <code>Noa</code>、<code>annoying</code>、<code>but</code>。</figcaption>
 </figure>
