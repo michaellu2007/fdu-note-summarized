@@ -2973,7 +2973,7 @@ A=\begin{bmatrix}
 <p>设 $\mathrm{cc}_j$ 为第 $j$ 列的非零元个数，则</p>
 \[
 \texttt{col\_ptr}[0]=0,\qquad
-\texttt{col\_ptr}[j]=\sum_{t<j}\mathrm{cc}_t,\qquad
+\texttt{col\_ptr}[j]=\sum_{t\lt j}\mathrm{cc}_t,\qquad
 \texttt{col\_ptr}[n]=\mathrm{nnz}
 \]
 <p>上例中逐列个数是 $[2,1,2,1]$，前缀和正好是 $[0,2,3,5,6]$。由此得到两条<strong>恒定成立</strong>的性质，也是最好的自检条件：</p>
