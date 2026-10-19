@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概率论 · 第四章 数学期望（§4.1）与随机变量独立性</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+h1{font-size:27px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:21px;margin:56px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:34px 0 10px;color:var(--ink)}
+h4{font-size:15px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:10px 0}
+.lede{color:var(--ink2);font-size:15px;margin:0 0 8px}
+.meta{color:var(--ink3);font-size:13px;margin:0}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.2px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13.5px;background:var(--bg2)}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:6px;
+  background:var(--bg2);color:var(--ink3);border:1px solid var(--line);
+  vertical-align:2px;margin-left:10px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.tag.a{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.tag.b{background:var(--gold-bg);color:var(--gold);border-color:transparent}
+.tag.c{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.toc{border:1px solid var(--line);border-radius:12px;padding:16px 24px;background:var(--bg3);margin:26px 0 10px}
+.toc ol{margin:6px 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+figure{margin:24px 0}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px;text-align:center}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:12px 16px;overflow-x:auto;font-size:13px;line-height:1.6;
+  font-family:ui-monospace,Consolas,monospace;color:var(--ink2)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;
+  background:var(--bg2);padding:1px 5px;border-radius:4px}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12.8px;color:var(--ink3);line-height:1.75}
+.q{border-left:3px solid var(--line);padding-left:14px;color:var(--ink2);margin:16px 0}
+ol.work{padding-left:24px}
+ol.work>li{margin:20px 0}
+ol.work .stem{font-weight:500}
+.hint{margin:8px 0 0;padding:10px 14px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;font-size:14px;color:var(--ink2)}
+.hint b{color:var(--ink)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>概率论 · 第四章 数学期望（§4.1）与随机变量独立性</h1>
+<p class="lede">课堂板书 12 张 + 课件 PPT + 讲义 §3.3 / §4.1 + 教材 §4.1，外加一段关于「随机变量可测性」的问答整理。</p>
+<p class="meta">整理日期 2026-10-18　|　本次课对应课件日期 2026 年 10 月 8 日</p>
+
+<div class="toc">
+<strong style="font-size:13.5px;color:var(--ink2)">目录</strong>
+<ol>
+<li><a href="#p0">第零部分 · 怎么读这份笔记</a></li>
+<li><a href="#p1">第一部分 · 前置：随机变量是可测函数</a>
+  <ol>
+  <li><a href="#s11">§1.1　σ-代数：概率只能站在事件上</a></li>
+  <li><a href="#s12">§1.2　Borel 集：实数轴上「能安全谈概率」的集合</a></li>
+  <li><a href="#s13">§1.3　随机变量的定义：把 Borel 集拉回去</a></li>
+  <li><a href="#s14">§1.4　四个等价条件与「集族法」</a></li>
+  <li><a href="#s15">§1.5　这一步和期望的关系</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 期望：为什么必须分三步</a>
+  <ol>
+  <li><a href="#s21">§2.1　三步走的动机</a></li>
+  <li><a href="#s22">§2.2　第一步：简单随机变量</a></li>
+  <li><a href="#s23">§2.3　引理 4.1.1：期望与表示无关</a></li>
+  <li><a href="#s24">§2.4　第二步：非负随机变量（上确界定义）</a></li>
+  <li><a href="#s25">§2.5　单调收敛定理：完整证明与 <em>a</em> &lt; 1 的玄机</a></li>
+  <li><a href="#s26">§2.6　等价定义与记号 E(ξ; A)</a></li>
+  <li><a href="#s27">§2.7　第三步：一般随机变量（正负部分）</a></li>
+  <li><a href="#s28">§2.8　三层结构总表</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 期望的性质</a>
+  <ol>
+  <li><a href="#s31">§3.1　线性性：先证非负，再拆正负</a></li>
+  <li><a href="#s32">§3.2　单调性与绝对可积估计</a></li>
+  <li><a href="#s33">§3.3　独立 ⇒ 乘积期望分解（及反例）</a></li>
+  <li><a href="#s34">§3.4　讲义里两处疑似笔误</a></li>
+  </ol>
+</li>
+<li><a href="#p4">第四部分 · 计算实例</a>
+  <ol>
+  <li><a href="#s41">§4.1　二项分布 Eξ = np：两条路</a></li>
+  <li><a href="#s42">§4.2　电话局：Poisson 期望 λt</a></li>
+  <li><a href="#s43">§4.3　指示变量法小结</a></li>
+  </ol>
+</li>
+<li><a href="#p5">第五部分 · 作业与提示</a>
+  <ol>
+  <li><a href="#s51">§5.1　第四章 P89 第 2、3、4 题</a></li>
+  <li><a href="#s52">§5.2　第三章 P64 第 3、7、10、17、21、28 题</a></li>
+  </ol>
+</li>
+<li><a href="#pa">附录 A · 板书逐张对照</a></li>
+<li><a href="#pb">附录 B · 页码与材料索引</a></li>
+<li><a href="#pc">附录 C · 还没讲的</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p0">第零部分 · 怎么读这份笔记</h2>
+
+<p>这份笔记有三类来源，每个小节标题右侧都有一个标签告诉你它属于哪一类。缺课时靠这个判断「哪部分现在必须看、哪部分可以等老师讲到再回来看」。</p>
+
+<table>
+<tr><th style="width:96px">标签</th><th style="width:130px">含义</th><th>判据</th></tr>
+<tr><td><span class="tag b">板书 N</span></td><td>课上讲过，有照片</td><td>N 指附录 A 里的照片编号。文字是从照片上逐字认出来的，认不清的地方会标注。</td></tr>
+<tr><td><span class="tag a">讲义 §x</span></td><td>讲义里有，课上没讲</td><td>讲义《概率论讲义（2026-9）》的页码和节号。上课没板书不代表不重要，只代表没在课上展开。</td></tr>
+<tr><td><span class="tag c">教材 p.xx</span></td><td>教材补充</td><td>《概率论》（应坚刚、何萍，第 2 版）页码。多数时候教材比讲义写得更细。</td></tr>
+<tr><td><span class="tag">我补的</span></td><td>上面三处都没有</td><td>为了把证明走通而补的中间步骤、反例、解释。这类内容<strong>不要当成老师讲过的</strong>。</td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">本次课的实际覆盖范围</p>
+<p>12 张照片里，8 张是黑板、4 张是投影课件。课件页脚显示的是「第四章 随机变量的数字特征　8/50」和「11/50」，以及一张「第三章　条件概率与概率公式　24/52」——所以这次课的主线是<strong>讲义 §4.1 数学期望</strong>，中间插了一段<strong>§3.3 随机变量独立性</strong>的复习与延伸（因为证乘积期望要用）。</p>
+<p>讲义 §4.1 是 p39–p49 共 11 页，本次课基本走完；§4.2 收敛定理（p50 起）<strong>还没讲</strong>，见 <a href="#pc">附录 C</a>。</p>
+</div>
+
+<h3 id="sym">符号对照表<span class="tag">我补的</span></h3>
+
+<p>这套记号在不同书里会撞车，先钉死。尤其是 $\xi$ 和 $x$、$\Omega$ 和 $\omega$、$\mathcal F$ 和 $F$ 这几对，混了就全乱。</p>
+
+<table>
+<tr><th style="width:120px">记号</th><th>是什么</th><th>一句话记住</th></tr>
+<tr><td>$\Omega$</td><td>样本空间</td><td>所有可能结果的<em>集合</em></td></tr>
+<tr><td>$\omega$</td><td>样本点</td><td>$\Omega$ 里的<em>一个</em>元素，即一次试验的结果</td></tr>
+<tr><td>$\mathcal F$</td><td>事件域（σ-代数）</td><td>$\Omega$ 的子集组成的族，成员才叫「事件」</td></tr>
+<tr><td>$\mathbb P$</td><td>概率测度</td><td>定义在 $\mathcal F$ 上，$\mathbb P:\mathcal F\to[0,1]$</td></tr>
+<tr><td>$\xi,\eta$</td><td>随机变量</td><td>函数 $\Omega\to\mathbb R$，$\omega\mapsto\xi(\omega)$</td></tr>
+<tr><td>$x,y$</td><td>实数</td><td>$\xi$ 的<em>取值</em>，不是随机变量</td></tr>
+<tr><td>$R(\xi)$</td><td>值域</td><td>$\{\xi(\omega):\omega\in\Omega\}$，$\xi$ 能取到的所有实数</td></tr>
+<tr><td>$\mathcal S$</td><td>简单随机变量全体</td><td>只取<strong>有限</strong>个值的随机变量</td></tr>
+<tr><td>$\mathcal F_+$</td><td>非负随机变量全体</td><td>$\{\xi:\xi\ge 0\}$，取值可以是 $+\infty$</td></tr>
+<tr><td>$1_A$</td><td>示性函数</td><td>$\omega\in A$ 时取 1，否则取 0</td></tr>
+<tr><td>$\xi^+,\xi^-$</td><td>正部、负部</td><td>$\max\{\xi,0\}$ 与 $\max\{-\xi,0\}$，<strong>两个都非负</strong></td></tr>
+<tr><td>$\mathbb E(\xi;A)$</td><td>在 $A$ 上的期望</td><td>就是 $\mathbb E(\xi\,1_A)$，也写作 $\int_A\xi\,\mathrm d\mathbb P$</td></tr>
+<tr><td>a.s.</td><td>almost surely</td><td>「以概率 1 成立」，即不成立的那个集合概率为 0</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p1">第一部分 · 前置：随机变量是可测函数</h2>
+
+<p>这一部分来自你和 AI 的那段讨论（σ-代数、Borel 集、可测性的四个等价条件、集族法）。放在最前面是因为：<strong>期望本质上就是积分</strong>，而积分要先保证被积函数「可测」。如果这一层不清楚，后面 §2 里那些 $\sup$、$\lim$ 为什么能取、取了之后为什么还是随机变量，全都悬空。</p>
+
+<div class="box warn">
+<p class="label">来源说明</p>
+<p>本节对应讲义 §2.1（p13–p17）与 §2.2（p18–p23）。<strong>这几节是更早的课讲的，本次课（10 月 8 日）没有板书</strong>。下面的整理主要依据讲义原文 + 你的提问，其中「集族法四步」和几个反例是我按讨论内容重写的。</p>
+</div>
+
+<h3 id="s11">§1.1　σ-代数：概率只能站在事件上<span class="tag a">讲义 §2.1</span></h3>
+
+<p><strong>先给结论：</strong>σ-代数就是「允许被赋概率的那些子集」组成的族，它必须对取补和可数并封闭，否则连 $\mathbb P(A\cup B)$ 都写不出来。</p>
+
+<p>为什么必须封闭？因为概率论要算的东西全是集合运算的结果。「$A$ 或 $B$ 发生」是 $A\cup B$，「$A$ 不发生」是 $A^c$，「$A$ 发生而 $B$ 不发生」是 $A\setminus B$。如果这些运算的结果跑出了事件族，那 $\mathbb P$ 就没法作用在它上面——整个体系在这里断掉。</p>
+
+<p>定义（讲义 p13）：设 $\Omega$ 是一个非空集合，$\mathcal F$ 是 $\Omega$ 的一族子集。若</p>
+
+\[
+\text{(F1)}\ \Omega\in\mathcal F;\qquad
+\text{(F2)}\ A\in\mathcal F\ \Longrightarrow\ A^c:=\Omega\setminus A\in\mathcal F;\qquad
+\text{(F3)}\ A_1,A_2,\dots\in\mathcal F\ \Longrightarrow\ \bigcup_{i\ge1}A_i\in\mathcal F,
+\]
+
+<p>则称 $\mathcal F$ 是 $\Omega$ 上的一个 <strong>σ-代数</strong>，$\mathcal F$ 的成员称为<strong>事件</strong>，$(\Omega,\mathcal F)$ 称为<strong>可测空间</strong>。</p>
+
+<p>三条公理能推出三件常用的事（证明都是「取补 + 德摩根」）：</p>
+
+\[
+\varnothing\in\mathcal F;\qquad
+A_1,A_2,\dots\in\mathcal F\Rightarrow\bigcap_{i\ge1}A_i\in\mathcal F;\qquad
+A,B\in\mathcal F\Rightarrow A\setminus B\in\mathcal F.
+\]
+
+<p>以第二条为例：$\bigcap_i A_i=\Big(\bigcup_i A_i^c\Big)^c$，括号里是可数并（用 F2 每个 $A_i^c$ 都在 $\mathcal F$ 里，再用 F3），再取补（再用 F2）。</p>
+
+<p><strong>「σ」是什么意思？</strong>指<em>可数</em>。只要求<strong>有限</strong>并封闭的叫<strong>代数</strong>；要求<strong>可数</strong>并封闭的才叫 σ-代数。这个差别不是抠字眼：概率的<em>下连续性</em> $\mathbb P(\bigcup_n A_n)=\lim_n\mathbb P(A_n)$（$A_n\uparrow$）恰恰需要可数并，而它在 <a href="#s25">§2.5</a> 的证明里是承重墙。</p>
+
+<p><strong>生成 σ-代数。</strong>给定一族集合 $\mathcal C$（叫集类），一般它不是 σ-代数。定理 2.1.1（讲义 p14）：存在唯一的 σ-代数 $\sigma(\mathcal C)$ 满足</p>
+
+\[
+\sigma(\mathcal C)\supset\mathcal C,\qquad
+\text{若 }\mathcal G\ \text{是含 }\mathcal C\text{ 的 }\sigma\text{-代数，则 }\mathcal G\supset\sigma(\mathcal C),
+\]
+
+<p>即<strong>包含 $\mathcal C$ 的最小 σ-代数</strong>。存在性的证法很干脆：把所有「含 $\mathcal C$ 的 σ-代数」交起来，交还是 σ-代数，且它含 $\mathcal C$、又被任何这样的 σ-代数包含。这个「取交」的构造在 <a href="#s14">§1.4</a> 会再出现一次。</p>
+
+<h3 id="s12">§1.2　Borel 集：实数轴上「能安全谈概率」的集合<span class="tag a">讲义 §2.2</span></h3>
+
+<p><strong>结论：</strong>$\mathcal B(\mathbb R)$ 是包含所有开集的最小 σ-代数，它也是「半射线」生成的最小 σ-代数——后一个刻画是可测性判定的全部基础。</p>
+
+\[
+\mathcal B(\mathbb R):=\sigma\big(\{U\subset\mathbb R:U\ \text{是开集}\}\big).
+\]
+
+<p>三个生成元族其实给出同一个 σ-代数：</p>
+
+\[
+\mathcal B(\mathbb R)=\sigma\big(\{(a,b):a\lt b\}\big)=\sigma\big(\{(-\infty,x]:x\in\mathbb R\}\big).
+\]
+
+<p>为什么等价？两边互相生成即可。</p>
+
+<p><em>开区间 → 半射线：</em>$(a,b)=\bigcup_{n\ge1}\big(a,\,b-\tfrac1n\big]$，而 $(a,b]=(-\infty,b]\cap(a,\infty)=(-\infty,b]\cap(-\infty,a]^c$。所以半射线能造出开区间。</p>
+
+<p><em>半射线 → 开区间：</em>$(-\infty,x]=\bigcap_{n\ge1}(-\infty,x+\tfrac1n)=\bigcap_{n\ge1}\Big(\bigcup_{k\ge1}(-k,\,x+\tfrac1n)\Big)$，右边只用开区间和可数运算。所以开区间能造出半射线。</p>
+
+<div class="box key">
+<p class="label">为什么偏偏挑「半射线」当生成元</p>
+<p>因为它和分布函数是天生一对。分布函数定义成 $F_\xi(x)=\mathbb P(\xi\le x)$，而 $\{\xi\le x\}$ 正是半射线 $(-\infty,x]$ 的逆像。用半射线当生成元，可测性就变成「<strong>只验一维的单参数条件</strong>」——<a href="#s14">§1.4</a> 的整个技巧就建立在这上面。</p>
+</div>
+
+<h3 id="s13">§1.3　随机变量的定义：把 Borel 集拉回去<span class="tag a">讲义 §2.2</span></h3>
+
+<p>定义 2.2.1（讲义 p18）：设 $\xi:\Omega\to\mathbb R$ 是定义在可测空间 $(\Omega,\mathcal F)$ 上的函数。若对任意 $x\in\mathbb R$，</p>
+
+\[
+\{\xi\le x\}:=\{\omega\in\Omega:\xi(\omega)\le x\}\in\mathcal F,
+\]
+
+<p>则称 $\xi$ 是<strong>随机变量</strong>（或 $(\Omega,\mathcal F)$ 上的<strong>可测函数</strong>），记作 $\xi\in\mathcal F$。</p>
+
+<p>这里有三个容易被问到的点：</p>
+
+<p><strong>(a) 定义里没有 $\mathbb P$。</strong>随机变量作为「可测函数」只用到 $\Omega$ 和 $\mathcal F$，跟概率测度无关。同一个 $\xi$ 换一个 $\mathbb P$ 仍然是随机变量，只是分布变了。所以「随机变量的定义与 $\mathbb P$ 无关」这句话是对的——但它的<em>分布、期望、独立性</em>全都依赖 $\mathbb P$。</p>
+
+<p><strong>(b) 为什么要求 $\mathbb P(\xi\in\mathbb R)=1$？</strong>因为要排除 $\xi=\pm\infty$ 的情形，让 $\xi$ 真的是实值函数。讲义把这条单列出来作为约定。</p>
+
+<p><strong>(c) $x$ 是什么？</strong>就是一个普通的实数门槛。$\{\xi\le x\}$ 读作「$\xi$ 的取值不超过 $x$ 的那些样本点」。举个能手算的例子：掷骰子，$\Omega=\{1,\dots,6\}$，$\xi(\omega)=\omega$。则</p>
+
+\[
+x=3\Rightarrow\{\xi\le3\}=\{1,2,3\};\qquad
+x=4.5\Rightarrow\{\xi\le4.5\}=\{1,2,3,4\};\qquad
+x=0\Rightarrow\{\xi\le0\}=\varnothing.
+\]
+
+<p>门槛定在哪里，截出来的集合都得是事件——「对任意 $x$」就是这个意思。</p>
+
+<h3 id="s14">§1.4　四个等价条件与「集族法」<span class="tag a">讲义 §2.2</span></h3>
+
+<p>讲义给了一个等价刻画（也是课件上那张「这几个为啥等价」的图）。设 $\xi:\Omega\to\mathbb R$，则下列四条等价：</p>
+
+\[
+\begin{aligned}
+(1)&\quad \forall x\in\mathbb R,\ \{\xi\le x\}\in\mathcal F;\\
+(2)&\quad \forall x\in\mathbb R,\ \{\xi\lt x\}\in\mathcal F;\\
+(3)&\quad \forall x\in\mathbb R,\ \{\xi\ge x\}\in\mathcal F;\\
+(4)&\quad \forall A\in\mathcal B(\mathbb R),\ \xi^{-1}(A)=\{\omega:\xi(\omega)\in A\}\in\mathcal F.
+\end{aligned}
+\]
+
+<p>核心思想一句话：<strong>研究 $\xi$ 是否可测，本质上是研究「实数轴上的 Borel 集被拉回样本空间后还是不是事件」。</strong></p>
+
+<h4>第一步：(1)(2)(3) 互相等价</h4>
+
+<p>全靠 $\mathcal F$ 对可数并、可数交、取补封闭：</p>
+
+\[
+\{\xi\lt x\}=\bigcup_{n\ge1}\Big\{\xi\le x-\tfrac1n\Big\},
+\qquad
+\{\xi\le x\}=\bigcap_{n\ge1}\Big\{\xi\lt x+\tfrac1n\Big\},
+\qquad
+\{\xi\ge x\}=\{\xi\lt x\}^c .
+\]
+
+<p>第一个等式的两个方向都值得验一遍，因为这是最容易「看着像对」而其实没想清的地方：</p>
+
+<p>「$\subset$」：若 $\xi(\omega)\lt x$，则 $x-\xi(\omega)\gt0$，取 $n$ 使 $\tfrac1n\lt x-\xi(\omega)$，就有 $\xi(\omega)\le x-\tfrac1n$，于是 $\omega$ 落在右边某一项里。</p>
+
+<p>「$\supset$」：若存在 $n$ 使 $\xi(\omega)\le x-\tfrac1n\lt x$，则 $\xi(\omega)\lt x$。</p>
+
+<p>第二个等式同理（用「$\xi\le x$ $\Leftrightarrow$ 对一切 $n$ 有 $\xi\lt x+\tfrac1n$」）。第三个就是取补。</p>
+
+<h4>第二步：(1) ⇒ (4)，集族法</h4>
+
+<p>(4) ⇒ (1) 是显然的，因为 $(-\infty,x]\in\mathcal B(\mathbb R)$。反方向是全部难点。做法是「造一个俱乐部，然后证明它大到必须包含所有 Borel 集」。</p>
+
+<p><strong>Step 0（建俱乐部）.</strong> 令</p>
+
+\[
+\mathcal C:=\big\{A\subset\mathbb R:\xi^{-1}(A)\in\mathcal F\big\}.
+\]
+
+<p>目标：证明 $\mathcal B(\mathbb R)\subset\mathcal C$。翻译成人话就是「每个 Borel 集拉回去都是事件」。</p>
+
+<p><strong>Step 1（$\mathcal C$ 是 σ-代数）.</strong> 逐条验三条公理，每条都只用「逆像保持集合运算」这一件事：</p>
+
+\[
+\xi^{-1}(\mathbb R)=\Omega\in\mathcal F\ \Rightarrow\ \mathbb R\in\mathcal C;
+\]
+
+\[
+A\in\mathcal C\ \Rightarrow\ \xi^{-1}(A^c)=\big(\xi^{-1}(A)\big)^c\in\mathcal F\ \Rightarrow\ A^c\in\mathcal C;
+\]
+
+\[
+A_1,A_2,\dots\in\mathcal C\ \Rightarrow\ \xi^{-1}\Big(\bigcup_i A_i\Big)=\bigcup_i\xi^{-1}(A_i)\in\mathcal F\ \Rightarrow\ \bigcup_i A_i\in\mathcal C.
+\]
+
+<p>注意最后一条：右边是可数并，能落在 $\mathcal F$ 里，靠的正是 $\mathcal F$ 的公理 (F3)。如果当初定义的是「代数」而不是「σ-代数」，这一步就断了。</p>
+
+<p><strong>Step 2（半射线都在 $\mathcal C$ 里）.</strong> 这正是假设 (1)：$\xi^{-1}\big((-\infty,x]\big)=\{\xi\le x\}\in\mathcal F$，所以 $(-\infty,x]\in\mathcal C$。</p>
+
+<p><strong>Step 3（最小性绝杀）.</strong> $\mathcal B(\mathbb R)=\sigma\big(\{(-\infty,x]:x\in\mathbb R\}\big)$ 是<em>包含所有半射线的最小</em> σ-代数；而 $\mathcal C$ 是一个<em>包含所有半射线</em>的 σ-代数。由「最小」的定义，$\mathcal B(\mathbb R)\subset\mathcal C$。</p>
+
+<p><strong>Step 4.</strong> 于是对任意 $A\in\mathcal B(\mathbb R)$ 有 $\xi^{-1}(A)\in\mathcal F$。证毕。</p>
+
+<div class="box ok">
+<p class="label">这个证明的骨架，压缩成两句话</p>
+<p>① 逆像把集合运算原封不动搬过去（所以「拉回去是事件」这件事对并、补封闭）；② Borel 集是半射线「生成」出来的最小 σ-代数（所以只要半射线合格，全体都合格）。</p>
+<p>你之前说「集族法没看懂」，多半是卡在 Step 3——它没有做任何计算，只用了「最小」这个词的含义。<strong>「最小」在这里不是形容词，是一个可用的性质</strong>：$\mathcal B\subset\mathcal C$ 就是直接由它读出来的。</p>
+</div>
+
+<div class="box warn">
+<p class="label">类比要小心用</p>
+<p>当时那个「想证所有中国人都吃过米饭，就先建一个『吃过米饭的人』的俱乐部」的类比方向是对的（先建集合、再证它满足生成条件、最后用最小性），但<strong>它把「最小性」类比成了「中国人恰好是由广东人生成的最小群体」，这一步在数学上并不对应</strong>。真正对应的是 Step 3 那句话：$\mathcal B(\mathbb R)$ 按定义就是「包含半射线的最小 σ-代数」，所以任何包含半射线的 σ-代数都自动包含它。类比只用来记流程，不要拿它当证明。</p>
+</div>
+
+<h3 id="s15">§1.5　这一步和期望的关系<span class="tag">我补的</span></h3>
+
+<p>教材第四章开头（p68）有一句话把整章定性了：</p>
+
+<p class="q">随机变量的数学期望……它实际上是随机变量关于概率测度的积分，类似于函数关于 Lebesgue 测度的积分，所以这部分内容对于有实变函数基础的读者是容易的。</p>
+
+<p>也就是说 $\mathbb E\xi=\int_\Omega\xi\,\mathrm d\mathbb P$。而 Lebesgue 积分的标准建法就是三步：</p>
+
+\[
+\text{示性函数}\ \longrightarrow\ \text{非负简单函数}\ \longrightarrow\ \text{非负可测函数}\ \longrightarrow\ \text{一般可测函数}.
+\]
+
+<p>第四章 §4.1 走的<strong>完全是同一条路</strong>，只是把「简单函数」叫「简单随机变量」，把「可测」叫「随机变量」。所以 <a href="#p2">第二部分</a> 那个「三步走」不是老师为了难而难，它就是积分的标准流程，一步都省不掉。而第一步能走通的前提，恰恰是 <a href="#s14">§1.4</a> 证过的「$\xi$ 可测」——否则 $\xi^{-1}(A)$ 不是事件，示性函数 $1_{\{\xi=x\}}$ 都不是随机变量，整个构造从第一块砖就塌了。</p>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p2">第二部分 · 期望：为什么必须分三步</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:150px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s21">§2.1</a> 三步走的动机</td><td><span class="tag">我补的</span></td><td>讲义直接给定义，没讲「为什么不能一步到位」。这里补的是动机。</td></tr>
+<tr><td><a href="#s22">§2.2</a> 简单随机变量</td><td><span class="tag b">板书 1</span><span class="tag a">讲义 §4.1</span></td><td>板书上有 $\xi=\sum k\,1_{A_k}$ 的形式，但那是例题里的用法；定义本身在讲义 p40、教材 p68。</td></tr>
+<tr><td><a href="#s23">§2.3</a> 引理 4.1.1</td><td><span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.69</span></td><td><strong>课上没有板书</strong>。教材的证明比讲义干净（四行），这里用教材版。</td></tr>
+<tr><td><a href="#s24">§2.4</a> 非负随机变量</td><td><span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.71</span></td><td>定义 4.1.2，课上没单独讲。</td></tr>
+<tr><td><a href="#s25">§2.5</a> 单调收敛定理</td><td><span class="tag b">板书 7·9</span><span class="tag a">讲义 §4.1</span></td><td><strong>本次课的重点</strong>。板书 7 是课件标题页，板书 9 是完整证明（含 $A_n$ 构造）。</td></tr>
+<tr><td><a href="#s26">§2.6</a> 等价定义与 $\mathbb E(\xi;A)$</td><td><span class="tag b">板书 6·8</span><span class="tag a">讲义 §4.1</span></td><td>板书 6、8 是同一块黑板的两个角度，写了 $\int_A\xi\,\mathrm d\mathbb P$ 那串等式。</td></tr>
+<tr><td><a href="#s27">§2.7</a> 一般随机变量</td><td><span class="tag b">板书 4</span><span class="tag a">讲义 §4.1</span></td><td>板书 4 是课件「一般随机变量的期望」页，正负部分分解 + 那条折线图。</td></tr>
+<tr><td><a href="#s28">§2.8</a> 三层结构总表</td><td><span class="tag">我补的</span></td><td>把三层的依赖关系列成表，方便复习时定位。</td></tr>
+</table>
+</div>
+
+<h3 id="s21">§2.1　三步走的动机<span class="tag">我补的</span></h3>
+
+<p><strong>结论：</strong>「加权平均」这个直觉只在 $\xi$ 取有限个值时直接可用；取值一多，求和号就失效了，只能靠「从下面逼近 + 取极限」重建。</p>
+
+<p>最朴素的期望就是加权平均：$\xi$ 取 $x_i$ 的概率是 $p_i$，那平均取值就是 $\sum_i x_ip_i$。这在掷骰子、二项分布这类问题上毫无障碍。障碍出现在下面这张表的后两行：</p>
+
+<table>
+<tr><th style="width:150px">$\xi$ 的类型</th><th style="width:210px">朴素做法</th><th>障碍</th></tr>
+<tr><td>有限个取值</td><td>$\sum_{i=1}^n x_ip_i$</td><td>无。这就是定义。</td></tr>
+<tr><td>可数无穷个取值（如 Poisson）</td><td>$\sum_{k=0}^\infty x_kp_k$</td><td>这是<strong>无穷级数</strong>，不是有限和。级数可能发散、可能不绝对收敛，而「按什么顺序加」会影响结果——概率论不能容忍这种不确定性。</td></tr>
+<tr><td>不可数取值（如连续型）</td><td>$\sum$ 无从下手</td><td>不可数求和没有定义。必须换成积分。</td></tr>
+</table>
+
+<p>所以标准解法是：<strong>先只对「有限个取值」定义期望，再用它们从下方逼近一般情形。</strong>逼近出来的极限存不存在、与逼近方式有没有关系，这就是单调收敛定理要回答的问题。整个逻辑链是：</p>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="f1t f1d">
+<title id="f1t">期望定义的三层结构</title>
+<desc id="f1d">从底层的简单随机变量出发，经上确界与单调收敛定理得到非负随机变量的期望，再经正负部分分解得到一般随机变量的期望。</desc>
+<defs>
+<marker id="arwF1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<rect x="40" y="238" width="600" height="62" rx="10" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="60" y="264" font-size="14" font-weight="600" fill="var(--ink)">第 1 层　简单随机变量</text>
+<text x="60" y="286" font-size="13" fill="var(--ink2)">只取有限个值　ξ = Σ xᵢ 1<tspan baseline-shift="sub" font-size="9">Aᵢ</tspan>　　Eξ = Σ xᵢ P(Aᵢ)</text>
+<text x="600" y="286" font-size="12" fill="var(--ink3)" text-anchor="end">有限和，无困难</text>
+
+<rect x="40" y="146" width="600" height="62" rx="10" fill="var(--accent-bg)" stroke="none"/>
+<text x="60" y="172" font-size="14" font-weight="600" fill="var(--accent)">第 2 层　非负随机变量</text>
+<text x="60" y="194" font-size="13" fill="var(--ink2)">Eξ = sup{ Eη : 0 ≤ η ≤ ξ, η ∈ S }　　再用 MCT 换成 lim Eξₙ</text>
+<text x="600" y="194" font-size="12" fill="var(--ink3)" text-anchor="end">上确界 + 极限</text>
+
+<rect x="40" y="54" width="600" height="62" rx="10" fill="var(--ok-bg)" stroke="none"/>
+<text x="60" y="80" font-size="14" font-weight="600" fill="var(--ok)">第 3 层　一般随机变量</text>
+<text x="60" y="102" font-size="13" fill="var(--ink2)">ξ = ξ⁺ − ξ⁻　　Eξ = Eξ⁺ − Eξ⁻　（要求 E|ξ| &lt; ∞）</text>
+<text x="600" y="102" font-size="12" fill="var(--ink3)" text-anchor="end">拆正负部分</text>
+
+<line x1="340" y1="236" x2="340" y2="214" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arwF1)"/>
+<text x="352" y="230" font-size="12" fill="var(--ink3)">取上确界</text>
+
+<line x1="340" y1="144" x2="340" y2="122" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arwF1)"/>
+<text x="352" y="138" font-size="12" fill="var(--ink3)">拆正负部分</text>
+</svg>
+<figcaption>图 1 · 期望定义的三层结构。每一层只借用下一层的结论，所以逻辑上没有循环。</figcaption>
+</figure>
+
+<p>注意图 1 里的箭头方向：<strong>第 2 层的 $\sup$ 里出现的是第 1 层的 $\eta$</strong>，第 3 层的 $\xi^\pm$ 属于第 2 层。所以只要第 1 层站得住，上面两层就是纯粹的「搭积木」。这也是为什么 <a href="#s23">§2.3</a> 那个看起来很技术性的引理其实是整章的地基。</p>
+
+<h3 id="s22">§2.2　第一步：简单随机变量<span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.68</span></h3>
+
+<p>定义（教材 p68 / 讲义 p41）：设 $\{A_1,\dots,A_n\}$ 是 $\Omega$ 的一个<strong>有限分割</strong>（两两不交，并为 $\Omega$），$x_1,\dots,x_n\in\mathbb R$，称</p>
+
+\[
+\xi=\sum_{i=1}^{n}x_i\,1_{A_i}
+\]
+
+<p>为<strong>简单随机变量</strong>，记其全体为 $\mathcal S$。直观上就是「只取有限个值的随机变量」，而 $A_i=\{\xi=x_i\}$ 是它取到 $x_i$ 的那批样本点。</p>
+
+<p>定义 4.1.1（教材 p68）：若 $\xi$ 是简单随机变量，定义</p>
+
+\[
+\mathbb E\xi:=\sum_{x\in R(\xi)}x\,\mathbb P(\xi=x)
+\]
+
+<p>为 $\xi$ 的<strong>数学期望</strong>（均值）。也就是「取值 × 该取值的概率」再相加，权就是概率。</p>
+
+<p>讲义 p40 的例 4.1.1 用的正是这个定义：$\xi$ 是 $n$ 重 Bernoulli 试验中的成功次数，$R(\xi)=\{0,1,\dots,n\}$，$\mathbb P(\xi=k)=\binom nk p^kq^{n-k}$，于是</p>
+
+\[
+\mathbb E\xi=\sum_{k=0}^{n}k\binom nk p^kq^{n-k}.
+\]
+
+<p>这个和式怎么算出来是 $np$，见 <a href="#s41">§4.1</a>（板书上就是这一步）。</p>
+
+<div class="box warn">
+<p class="label">这里藏着一个需要交代的问题</p>
+<p>同一个简单随机变量可以写成很多种 $\sum x_i1_{A_i}$：$x_i$ 可以重复（比如 $\xi=2\cdot1_A+2\cdot1_{A^c}$ 其实恒等于 2），$A_i$ 也可以相交。那么<strong>按不同写法代进定义，会不会算出不同的期望？</strong></p>
+<p>教材 p68 明确点出了这个担忧：「问题是简单随机变量不一定是这样表示的……下面的引理试图说明简单随机变量的期望值与它的具体表示无关。」这就是下一个引理存在的唯一理由。</p>
+</div>
+
+<h3 id="s23">§2.3　引理 4.1.1：期望与表示无关<span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.69</span></h3>
+
+<p><strong>引理 4.1.1.</strong> 如果 $x_1,\dots,x_n\in\mathbb R$，$\{A_1,\dots,A_n\}$ 是 $\Omega$ 的有限分割，那么</p>
+
+\[
+\mathbb E\Big(\sum_{i=1}^{n}x_i1_{A_i}\Big)=\sum_{i=1}^{n}x_i\,\mathbb P(A_i).
+\]
+
+<p><strong>证明（教材 p69，四步）.</strong> 令 $\xi:=\sum_{i=1}^n x_i1_{A_i}$。因为 $A_i$ 是分割，在 $A_i$ 上有 $\xi=x_i$。由定义 4.1.1，</p>
+
+\[
+\begin{aligned}
+\mathbb E\xi
+&=\sum_{y\in R(\xi)}y\,\mathbb P(\{\xi=y\})\\
+&=\sum_{y\in R(\xi)}y\sum_{i=1}^{n}\mathbb P(\xi=y,\,A_i)
+&&\text{（把 }\{\xi=y\}\text{ 按分割 }A_i\text{ 拆开）}\\
+&=\sum_{i=1}^{n}\sum_{y\in R(\xi)}y\,\mathbb P(\xi=y,\,A_i)
+&&\text{（有限和交换次序）}\\
+&=\sum_{i=1}^{n}x_i\,\mathbb P(\xi=x_i,\,A_i)=\sum_{i=1}^{n}x_i\,\mathbb P(A_i).
+&&\text{（在 }A_i\text{ 上只有 }y=x_i\text{ 非零）}
+\end{aligned}
+\]
+
+<p>最后一步：$A_i\subset\{\xi=x_i\}$，所以 $\{\xi=x_i\}\cap A_i=A_i$。</p>
+
+<p>第二步用到的「拆开」是：$\mathbb P(B)=\sum_{i=1}^n\mathbb P(B\cap A_i)$，即概率的<strong>有限可加性</strong>（分割的不交性在这里第一次出场）。第三步交换两个有限和的次序——<strong>只对有限和成立</strong>，这也解释了为什么第 1 层必须限制在「有限个取值」。</p>
+
+<div class="box key">
+<p class="label">推论 4.1.1（教材 p70）：不交的条件可以去掉</p>
+<p>任取事件 $\{A_k:1\le k\le n\}$ 与数 $\{x_k:1\le k\le n\}$，<strong>不要求 $A_k$ 两两不交</strong>，仍有</p>
+\[
+\mathbb E\Big(\sum_{k=1}^{n}x_k1_{A_k}\Big)=\sum_{k=1}^{n}x_k\,\mathbb P(A_k).
+\]
+<p>教材原话：「由性质 (2),(3),(4) 得到下面的结果，注意它和引理 4.1.1 的区别。」也就是说这条推论是用<em>已经证好的</em>线性性推出来的，不是重新算一遍。</p>
+<p><strong>它是后面所有计算的真正主力</strong>：把一个随机变量写成示性函数的线性组合，期望立刻变成概率之和——这正是 <a href="#s43">§4.3</a> 的「指示变量法」。</p>
+</div>
+
+<h4>简单随机变量的基本性质</h4>
+
+<p>讲义 p41 列了 6 条，教材 p70 列了 5 条（内容一致）。设 $\xi,\eta\in\mathcal S$，则</p>
+
+<table>
+<tr><th style="width:56px">编号</th><th>性质</th><th>证明</th></tr>
+<tr><td>(1)</td><td>$\xi\ge0\Rightarrow\mathbb E\xi\ge0$</td><td>定义直接给出（每项非负）</td></tr>
+<tr><td>(2)</td><td>$\xi\ge\eta\Rightarrow\mathbb E\xi\ge\mathbb E\eta$</td><td>对 $\xi-\eta\ge0$ 用 (1) 与线性性</td></tr>
+<tr><td>(3)</td><td>$\mathbb E1_A=\mathbb P(A)$</td><td>引理 4.1.1 取 $n=1$</td></tr>
+<tr><td>(4)</td><td>$\mathbb E(\xi+\eta)=\mathbb E\xi+\mathbb E\eta$</td><td>下面单独证</td></tr>
+<tr><td>(5)</td><td>$\mathbb P(\xi\ne0)=0\Rightarrow\mathbb E\xi=0$</td><td>非零项的概率权重全为 0</td></tr>
+</table>
+
+<p><strong>(4) 的证明（教材 p70）.</strong> 设 $\xi,\eta$ 的值域分别为 $I,J$。因为 $I,J$ 都有限，可以把 $\xi+\eta$ 写成「按联合取值展开」的形式：</p>
+
+\[
+\xi+\eta=\sum_{x\in I}\sum_{y\in J}(x+y)\,1_{\{\xi=x,\eta=y\}}.
+\]
+
+<p>这一步值得停一下：右边在任意样本点 $\omega$ 上，只有一对 $(x,y)=(\xi(\omega),\eta(\omega))$ 的示性函数等于 1，其余全是 0，所以右边 $=x+y=\xi(\omega)+\eta(\omega)$。也就是说这个展开是<strong>恒等式</strong>，不是近似。</p>
+
+<p>由推论 4.1.1（$\{\xi=x,\eta=y\}$ 这一族事件本来就是 $\Omega$ 的有限分割，用引理 4.1.1 也完全够；这里用推论只是图省事）：</p>
+
+\[
+\begin{aligned}
+\mathbb E(\xi+\eta)
+&=\sum_{x\in I}\sum_{y\in J}(x+y)\,\mathbb P(\xi=x,\eta=y)\\
+&=\underbrace{\sum_{x\in I}x\sum_{y\in J}\mathbb P(\xi=x,\eta=y)}_{=\,\mathbb P(\xi=x)}
++\underbrace{\sum_{y\in J}y\sum_{x\in I}\mathbb P(\xi=x,\eta=y)}_{=\,\mathbb P(\eta=y)}\\
+&=\sum_{x\in I}x\,\mathbb P(\xi=x)+\sum_{y\in J}y\,\mathbb P(\eta=y)=\mathbb E\xi+\mathbb E\eta.\qquad\blacksquare
+\end{aligned}
+\]
+
+<p>注意这里<strong>完全没有用到 $\xi,\eta$ 独立</strong>。线性性是无条件的，这一点在 <a href="#s41">§4.1</a> 会救你一命。</p>
+
+<h3 id="s24">§2.4　第二步：非负随机变量（上确界定义）<span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.71</span></h3>
+
+<p>定义 4.1.2（教材 p71 / 讲义 p40）：设 $\xi$ 是<strong>非负</strong>随机变量，定义</p>
+
+\[
+\mathbb E\xi:=\sup\big\{\mathbb E\eta:\ 0\le\eta\le\xi,\ \eta\in\mathcal S\big\},
+\]
+
+<p>即「由 $\xi$ 控制的全体非负简单随机变量的期望」的上确界。若 $\mathbb E\xi\lt\infty$，称 $\xi$ <strong>可积</strong>。另外，若 $A$ 是事件，用 $\mathbb E(\xi;A)$ 表示 $\xi\cdot1_A$ 的期望。</p>
+
+<p>教材紧接着说了一句很关键的话：「<strong>非负随机变量即使不可积，它的期望总是可以被定义的。</strong>」因为 $\sup$ 允许取 $+\infty$。这一点在 <a href="#s27">§2.7</a> 会用到：正负部分分解时，$\mathbb E\xi^\pm$ 各自可以是 $+\infty$，只要不同时为 $+\infty$，差值就有意义。</p>
+
+<div class="box key">
+<p class="label">为什么用 sup，而不是直接说「取一列简单随机变量逼近再取极限」</p>
+<p>因为逼近序列<strong>不唯一</strong>。$\xi$ 可以被无数个递增的简单序列逼近（取不同的网格、不同的截断高度），如果定义写成「$\lim_n\mathbb E\xi_n$」，那就得先证明这个极限与序列的选取无关，否则定义本身不合法。</p>
+<p>用 $\sup$ 就绕开了这个问题：上确界只依赖集合 $\{0\le\eta\le\xi,\eta\in\mathcal S\}$，而它只由 $\xi$ 决定。<strong>先把定义做合法，再回头证「不管怎么逼近，极限都一样」</strong>——后者就是单调收敛定理。这个顺序很重要，考试里也常考「为什么不能直接定义成极限」。</p>
+</div>
+
+<h3 id="s25">§2.5　单调收敛定理：完整证明与 <em>a</em> &lt; 1 的玄机<span class="tag b">板书 7·9</span><span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.71</span></h3>
+
+<p>这是本次课的核心。先看板书上写了什么（板书 9，逐字）：</p>
+
+<pre>∀ξ ≥ 0,  ∃ξₙ ≥ 0, ξₙ ∈ S,  ξₙ ↑      （即 ξₙ ↑ ξ）
+定理：设 {ξₙ} ⊂ F₊, 且 ξₙ ↑ ξ, 则
+        E(ξ) = lim Eξₙ        （等号下画了 ≥ 与 ≤ 两个方向）
+证明：只需证 E(ξ) ≤ lim Eξₙ</pre>
+
+<p>板书 7 是同一内容的课件页，标题「单调收敛定理」，下面一行「意义：当随机变量单调增加时，可以把『极限』和『期望』交换」，并配了一条 $\xi_1\to\xi_2\to\xi_3\to\cdots\to\xi$ 的链。</p>
+
+<h4>定理 4.1.1（Lévy 单调收敛定理）</h4>
+
+<p>(1) 如果随机变量 $0\le\eta\le\xi$，那么 $\mathbb E\eta\le\mathbb E\xi$；</p>
+<p>(2) $\{\xi_n\}$ 是递增收敛于 $\xi$ 的非负随机变量列，那么 $\displaystyle\lim_{n\to\infty}\mathbb E\xi_n=\mathbb E\xi$；</p>
+<p>(3) 非负随机变量总可以表示成递增的非负简单随机变量序列的极限。</p>
+
+<h4>证明</h4>
+
+<p><strong>(1)</strong> 由定义 4.1.2，$\mathbb E\eta$ 是集合 $\{0\le\eta'\le\eta,\eta'\in\mathcal S\}$ 的上确界，$\mathbb E\xi$ 是 $\{0\le\eta'\le\xi,\eta'\in\mathcal S\}$ 的上确界。前者是后者的子集（因为 $\eta'\le\eta\le\xi$），所以前者的上确界不超过后者。<strong>这一步只用了「上确界对子集单调」</strong>。</p>
+
+<p><strong>(2)</strong> 分两个方向。</p>
+
+<p><em>方向一（$\le$）：</em>对每个 $n$ 都有 $\xi_n\le\xi$，由 (1) 得 $\mathbb E\xi_n\le\mathbb E\xi$，取极限即 $\lim_n\mathbb E\xi_n\le\mathbb E\xi$。</p>
+
+<p><em>方向二（$\ge$）：</em>这是全部的技术核心。目标是证 $\lim_n\mathbb E\xi_n\ge\mathbb E\xi$，但 $\mathbb E\xi$ 是<em>上确界</em>，没法直接算。标准手法是「对任意一个被试者 $\eta$ 逐个击破，最后取 sup」。</p>
+
+<p>任取非负简单随机变量 $\eta\in\mathcal S$ 满足 $0\le\eta\le\xi$，再任取一个实数 $0\lt a\lt1$。令</p>
+
+\[
+A_n:=\{\xi_n\ge a\eta\}.
+\]
+
+<p>（i）<strong>$A_n$ 递增。</strong> 因为 $\xi_n$ 逐点递增，若 $\omega\in A_n$ 则 $\xi_{n+1}(\omega)\ge\xi_n(\omega)\ge a\eta(\omega)$，故 $\omega\in A_{n+1}$。</p>
+
+<p>（ii）<strong>$\bigcup_nA_n=\Omega$。</strong> 分两种情形：</p>
+
+<p style="margin-left:1.6em">若 $\eta(\omega)=0$：则 $\xi_n(\omega)\ge0=a\eta(\omega)$ 对一切 $n$ 成立，$\omega\in A_1$。</p>
+
+<p style="margin-left:1.6em">若 $\eta(\omega)\gt0$：则 $a\eta(\omega)\lt\eta(\omega)\le\xi(\omega)=\lim_n\xi_n(\omega)$。既然 $\xi_n(\omega)$ 是一个收敛到 $\xi(\omega)$ 的数列，而 $a\eta(\omega)$ <strong>严格小于</strong>极限，由数列极限的定义，存在 $n$ 使 $\xi_n(\omega)\gt a\eta(\omega)$，即 $\omega\in A_n$。</p>
+
+<figure>
+<svg viewBox="0 0 680 320" width="100%" role="img" aria-labelledby="f4t f4d">
+<title id="f4t">A_n 递增到 Ω 的示意</title>
+<desc id="f4d">四条递增的曲线 ξ₁ 到 ξ 依次逼近，与水平线 aη 的交点不断左移，因此集合 A_n 不断扩张，最终覆盖整个横轴。</desc>
+<defs>
+<marker id="arwF4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<text x="300" y="30" font-size="13" fill="var(--ink2)" text-anchor="middle">A₁ ⊂ A₂ ⊂ A₃ ⊂ ⋯ ⊂ Ω</text>
+
+<line x1="70" y1="250" x2="648" y2="250" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwF4)"/>
+<line x1="70" y1="250" x2="70" y2="40" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwF4)"/>
+
+<line x1="70" y1="155" x2="645" y2="155" stroke="var(--warn)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="74" y="148" font-size="12.5" fill="var(--warn)" font-weight="600">aη</text>
+
+<line x1="90" y1="245" x2="620" y2="140" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="90" y1="242" x2="620" y2="115" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="90" y1="239" x2="620" y2="95" stroke="var(--ink3)" stroke-width="1.4"/>
+<line x1="90" y1="236" x2="620" y2="70" stroke="var(--ink)" stroke-width="2.2"/>
+
+<circle cx="544" cy="155" r="3" fill="var(--warn)"/>
+<circle cx="453" cy="155" r="3" fill="var(--warn)"/>
+<circle cx="399" cy="155" r="3" fill="var(--warn)"/>
+<circle cx="349" cy="155" r="3" fill="var(--warn)"/>
+
+<text x="628" y="145" font-size="11.5" fill="var(--ink3)">ξ₁</text>
+<text x="628" y="120" font-size="11.5" fill="var(--ink3)">ξ₂</text>
+<text x="628" y="100" font-size="11.5" fill="var(--ink3)">ξ₃</text>
+<text x="628" y="74" font-size="11.5" fill="var(--ink)">ξ</text>
+
+<rect x="544" y="258" width="86" height="6" rx="3" fill="var(--warn)" opacity="0.55"/>
+<rect x="453" y="270" width="177" height="6" rx="3" fill="var(--accent)" opacity="0.55"/>
+<rect x="399" y="282" width="231" height="6" rx="3" fill="var(--ok)" opacity="0.55"/>
+<text x="537" y="264" font-size="11.5" fill="var(--warn)" text-anchor="end">A₁</text>
+<text x="446" y="276" font-size="11.5" fill="var(--accent)" text-anchor="end">A₂</text>
+<text x="392" y="288" font-size="11.5" fill="var(--ok)" text-anchor="end">A₃</text>
+
+<text x="648" y="254" font-size="12" fill="var(--ink3)">ω</text>
+<text x="58" y="46" font-size="12" fill="var(--ink3)">ξ</text>
+</svg>
+<figcaption>图 2 · 为什么 $A_n=\{\xi_n\ge a\eta\}$ 会涨到 $\Omega$。$\xi_n$ 越往上抬，与水平线 $a\eta$ 的交点越往左移，于是 $A_n$（横轴下方那三条色条）不断变长，最终盖满整条轴。</figcaption>
+</figure>
+
+<p>（iii）<strong>夹逼。</strong> 由 $\xi_n\ge0$ 与 $A_n\subset\Omega$，</p>
+
+\[
+\mathbb E\xi_n\ \ge\ \mathbb E(\xi_n\,1_{A_n})\ \ge\ a\,\mathbb E(\eta\,1_{A_n})\ =\ a\,\mathbb E(\eta;A_n).
+\]
+
+<p>第一个不等号：$\xi_n-\xi_n1_{A_n}=\xi_n1_{A_n^c}\ge0$，用 (1)。第二个不等号：在 $A_n$ 上 $\xi_n\ge a\eta$，再乘 $1_{A_n}$ 得 $\xi_n1_{A_n}\ge a\eta1_{A_n}$，用 (1)。</p>
+
+<p>（iv）<strong>令 $n\to\infty$。</strong> 由 (ii) 得 $A_n\uparrow\Omega$，而 $\eta$ 是简单随机变量（有限个取值），所以 $\mathbb E(\eta;A_n)\to\mathbb E(\eta;\Omega)=\mathbb E\eta$——这就是概率的<strong>下连续性</strong>：$A_n\uparrow A$ 时 $\mathbb P(A_n)\to\mathbb P(A)$。于是</p>
+
+\[
+\lim_{n\to\infty}\mathbb E\xi_n\ \ge\ a\,\mathbb E\eta .
+\]
+
+<p>（v）<strong>收回余量。</strong> 上式对一切 $0\lt a\lt1$ 成立，令 $a\uparrow1$ 得 $\lim_n\mathbb E\xi_n\ge\mathbb E\eta$。又因为这对一切满足 $0\le\eta\le\xi,\ \eta\in\mathcal S$ 的 $\eta$ 都成立，取上确界：</p>
+
+\[
+\lim_{n\to\infty}\mathbb E\xi_n\ \ge\ \sup_{0\le\eta\le\xi,\ \eta\in\mathcal S}\mathbb E\eta\ =\ \mathbb E\xi .
+\]
+
+<p>两个方向合起来，$\lim_n\mathbb E\xi_n=\mathbb E\xi$。$\blacksquare$</p>
+
+<div class="box warn">
+<p class="label">整个证明只有一个地方「不显然」：为什么非要把 <em>a</em> 取成严格小于 1</p>
+<p>很多人第一反应是直接令 $A_n=\{\xi_n\ge\eta\}$（即取 $a=1$），看起来更自然。但<strong>这样 $A_n\uparrow\Omega$ 会失败</strong>。</p>
+<p>反例：取 $\eta\equiv1$，$\xi\equiv1$，$\xi_n\equiv1-\tfrac1n$。此时确实有 $\xi_n\uparrow\xi$ 且 $\eta\le\xi$，但对每个 $n$ 都有 $\xi_n=1-\tfrac1n\lt1=\eta$，所以 $A_n=\varnothing$ 恒成立，$\bigcup_nA_n=\varnothing\ne\Omega$。整条证明在 (ii) 处就断了。</p>
+<p>病根在于：<strong>逐点收敛 $\xi_n(\omega)\uparrow\xi(\omega)$ 只保证「最终会超过任何严格小于 $\xi(\omega)$ 的数」，不保证「会超过 $\xi(\omega)$ 本身」</strong>。放一个 $a\lt1$ 正好把 $a\eta(\omega)$ 压到 $\xi(\omega)$ 的严格下方，让「最终超过」这条性质生效；最后再令 $a\uparrow1$ 把损失补回来。</p>
+<p>这是 $\varepsilon$-论证的标准套路：<strong>先用严格不等式换到「存在某个 $n$」，再用极限把严格不等式收回</strong>。同型的技巧在实分析里到处都是。</p>
+</div>
+
+<p><strong>(3) 构造.</strong> 讲义 p43–44 给了显式的逼近序列。对 $n\ge1$ 令</p>
+
+\[
+\xi_n:=\sum_{i=1}^{n2^n}\frac{i-1}{2^n}\,1_{\big\{\frac{i-1}{2^n}\lt\xi\le\frac{i}{2^n}\big\}}\ +\ n\,1_{\{\xi\ge n\}} .
+\]
+
+<p>它做的事很朴素：把 $[0,n]$ 切成 $n2^n$ 个长为 $2^{-n}$ 的小区间，$\xi$ 落在哪个小区间就取该区间的左端点；超过 $n$ 的部分一律截到 $n$。于是</p>
+
+<p style="margin-left:1.6em">① $\xi_n$ 只取有限个值，属于 $\mathcal S$；</p>
+<p style="margin-left:1.6em">② $\xi_n\le\xi_{n+1}$（网格加密 + 截断高度上升，两边都只会让取值变大）；</p>
+<p style="margin-left:1.6em">③ 若 $\xi(\omega)\lt\infty$，取 $n\gt\xi(\omega)$，则 $\xi_n(\omega)$ 是 $\xi(\omega)$ 向下取整到 $1/2^n$ 的格点，误差 $\lt2^{-n}\to0$；若 $\xi(\omega)=+\infty$，则 $\xi_n(\omega)=n\to\infty$。两种情形都有 $\xi_n(\omega)\to\xi(\omega)$。</p>
+
+<p>这条 (3) 是后面所有「先用简单情形证、再推到一般情形」的通行证。<a href="#s31">§3.1</a> 的线性性证明第一步就是「由 (3)，存在 $\xi_n\uparrow\xi$」。</p>
+
+<h3 id="s26">§2.6　等价定义与记号 $\mathbb E(\xi;A)$<span class="tag b">板书 6·8</span><span class="tag a">讲义 §4.1</span></h3>
+
+<p>板书上这一段（板书 6 / 8，同一块黑板）逐字是：</p>
+
+<pre>ξ, ξₙ ↑,  ξₙ ≥ 0,  ξₙ ∈ S,  s.t. ξₙ → ξ
+Eξ = lim Eξₙ
+
+A ∈ F,   E(ξ; A) = ∫_A ξ dP
+       = E(1_A ξ) = ∫_Ω 1_A ξ dP
+A = Ω,   E(ξ; A) = Eξ = ∫_Ω ξ dP</pre>
+
+<p>对应讲义 p45 的定义 4.1.3：设 $\xi,\xi_n\in\mathcal F_+$ 并且 $\xi_n\uparrow\xi$，则</p>
+
+\[
+\mathbb E(\xi):=\lim_{n\to\infty}\mathbb E(\xi_n).
+\]
+
+<p>讲义特意加了一句「<strong>有时这个定义用起来更加方便</strong>」。它和定义 4.1.2（$\sup$）等价，理由就是定理 4.1.1(2)：不管选哪一串递增逼近，极限都相同，所以右端其实只依赖 $\xi$。</p>
+
+<p>接着定义集合 $A\in\mathcal F$ 上的期望：</p>
+
+\[
+\mathbb E(\xi;A):=\int_A\xi\,\mathrm d\mathbb P .
+\]
+
+<p>它和另外两种写法是同一件事：</p>
+
+\[
+\mathbb E(\xi;A)=\mathbb E(\xi\,1_A)=\int_\Omega 1_A\xi\,\mathrm d\mathbb P .
+\]
+
+<p>取 $A=\Omega$ 就退回 $\mathbb E(\xi;\Omega)=\mathbb E\xi=\int_\Omega\xi\,\mathrm d\mathbb P$。这就是教材第四章开头那句话的具体落地：<strong>期望 = 关于概率测度的积分</strong>。$\mathbb E(\xi;A)$ 只是把积分区域限制在 $A$ 上。</p>
+
+<p>讲义 p45 给了两条性质：</p>
+
+<p>(1) 设 $\{\xi_n\}\subset\mathcal F_+$，有 $\displaystyle\mathbb E\Big(\sum_n\xi_n\Big)=\sum_n\mathbb E(\xi_n)$；</p>
+<p>(2) $\forall A\in\mathcal F$，有 $\mathbb E(1_A)=\mathbb P(A)$。</p>
+
+<p>性质 (1) 说的是「非负项可以随便交换求和与期望」，它是 <a href="#s42">§4.2</a> 电话局例题里能逐项算的根据。</p>
+
+<h3 id="s27">§2.7　第三步：一般随机变量（正负部分）<span class="tag b">板书 4</span><span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.71</span></h3>
+
+<p>板书 4 是课件「一般随机变量的期望」那一页，分两块：「正负部分分解」和「期望定义」，右边配了一条穿过横轴的曲线图（$\xi^+$ 在上、$\xi^-$ 在下）。</p>
+
+<h4>正负部分分解</h4>
+
+<p>对一般随机变量 $\xi$，定义</p>
+
+\[
+\xi^+:=\xi\vee0=\max\{\xi,0\},\qquad
+\xi^-:=(-\xi)\vee0=\max\{-\xi,0\}.
+\]
+
+<p>于是</p>
+
+\[
+\xi=\xi^+-\xi^-,\qquad |\xi|=\xi^++\xi^-,
+\]
+
+<p>并且<strong>$\xi^+,\xi^-\in\mathcal F_+$</strong>——两个都非负。这一点是全部意义所在：把一个「有正有负」的对象拆成两个「非负」的对象，就可以套用第 2 层的结果。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="f2t f2d">
+<title id="f2t">正负部分分解示意</title>
+<desc id="f2d">曲线穿过横轴，横轴以上部分为 ξ 的正部 ξ⁺，横轴以下部分翻上来为负部 ξ⁻。</desc>
+<defs>
+<marker id="arwF2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<path d="M 240 120 C 290 75 330 50 390 52 C 460 55 490 85 520 120 L 520 120 Z" fill="var(--accent)" opacity="0.28"/>
+<path d="M 80 180 C 140 175 200 150 240 120 L 80 120 Z" fill="var(--warn)" opacity="0.28"/>
+<path d="M 520 120 C 555 155 590 175 620 182 L 620 120 Z" fill="var(--warn)" opacity="0.28"/>
+
+<line x1="70" y1="120" x2="640" y2="120" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwF2)"/>
+<line x1="70" y1="205" x2="70" y2="42" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwF2)"/>
+
+<path d="M 80 180 C 140 175 200 150 240 120 C 290 75 330 50 390 52 C 460 55 490 85 520 120 C 555 155 590 175 620 182"
+      fill="none" stroke="var(--ink)" stroke-width="2.2"/>
+
+<circle cx="240" cy="120" r="3" fill="var(--ink)"/>
+<circle cx="520" cy="120" r="3" fill="var(--ink)"/>
+
+<text x="400" y="42" font-size="13" fill="var(--accent)" text-anchor="middle" font-weight="600">ξ⁺ &gt; 0</text>
+<text x="150" y="152" font-size="13" fill="var(--warn)" text-anchor="middle" font-weight="600">ξ⁻ &gt; 0</text>
+<text x="586" y="176" font-size="13" fill="var(--warn)" text-anchor="middle" font-weight="600">ξ⁻ &gt; 0</text>
+<text x="646" y="124" font-size="12" fill="var(--ink3)">ω</text>
+<text x="60" y="46" font-size="12" fill="var(--ink3)">ξ</text>
+<text x="238" y="138" font-size="11.5" fill="var(--ink3)" text-anchor="middle">ξ = 0</text>
+<text x="522" y="138" font-size="11.5" fill="var(--ink3)" text-anchor="middle">ξ = 0</text>
+</svg>
+<figcaption>图 3 · 正负部分分解。$\xi^+$ 是把横轴以下的部分压成 0，$\xi^-$ 是把横轴以上压成 0 再翻上来。两者都非负，且 $\xi=\xi^+-\xi^-$、$|\xi|=\xi^++\xi^-$。</figcaption>
+</figure>
+
+<h4>期望的定义</h4>
+
+<p>定义 4.1.4（讲义 p46）：设 $\xi$ 是一个随机变量，如果 $\mathbb E(\xi^+)$ 与 $\mathbb E(\xi^-)$ <strong>至少有一个有限</strong>，则定义</p>
+
+\[
+\mathbb E(\xi):=\mathbb E(\xi^+)-\mathbb E(\xi^-)
+\]
+
+<p>为 $\xi$ 的数学期望，此时称 $\xi$ 的期望<strong>存在</strong>（或积分存在）。如果进一步假设 $\mathbb E(|\xi|)\lt\infty$，则称 $\xi$ <strong>可积</strong>。</p>
+
+<div class="box key">
+<p class="label">为什么条件是「至少有一个有限」</p>
+<p>因为要避免 $\infty-\infty$。三种情形：</p>
+<table style="margin:6px 0 0">
+<tr><th style="width:230px">$\mathbb E\xi^+$</th><th style="width:230px">$\mathbb E\xi^-$</th><th>结论</th></tr>
+<tr><td>有限</td><td>有限</td><td>$\mathbb E\xi$ 有限，$\xi$ 可积</td></tr>
+<tr><td>有限</td><td>$+\infty$</td><td>$\mathbb E\xi=-\infty$，积分存在但不可积</td></tr>
+<tr><td>$+\infty$</td><td>有限</td><td>$\mathbb E\xi=+\infty$，积分存在但不可积</td></tr>
+<tr><td>$+\infty$</td><td>$+\infty$</td><td><strong>无定义</strong>（$\infty-\infty$）</td></tr>
+</table>
+<p style="margin-top:10px">由 $|\xi|=\xi^++\xi^-$ 得 $\mathbb E|\xi|=\mathbb E\xi^++\mathbb E\xi^-$（讲义 p46 注 (a)）。所以「$\mathbb E|\xi|\lt\infty$」等价于「两者都有限」，也就是可积。</p>
+</div>
+
+<p>讲义 p46 注 (b)：<strong>非负随机变量总是积分存在</strong>（只是可能等于 $+\infty$）。这正好呼应 <a href="#s24">§2.4</a> 里教材那句话。</p>
+
+<h3 id="s28">§2.8　三层结构总表<span class="tag">我补的</span></h3>
+
+<table>
+<tr><th style="width:56px">层次</th><th style="width:150px">$\xi$ 的范围</th><th style="width:250px">定义</th><th>用到的工具</th></tr>
+<tr><td>1</td><td>简单（有限个值）</td><td>$\mathbb E\xi=\sum_{x\in R(\xi)}x\mathbb P(\xi=x)$</td><td>有限可加性、有限和交换</td></tr>
+<tr><td>2</td><td>非负</td><td>$\mathbb E\xi=\sup\{\mathbb E\eta:0\le\eta\le\xi,\eta\in\mathcal S\}$</td><td>上确界；再用 MCT 换成 $\lim$</td></tr>
+<tr><td>3</td><td>一般</td><td>$\mathbb E\xi=\mathbb E\xi^+-\mathbb E\xi^-$</td><td>层次 2 + 可积性（排除 $\infty-\infty$）</td></tr>
+</table>
+
+<p>复习时的自查顺序：<strong>能不能不看书说出第 2 层为什么用 $\sup$、第 3 层为什么要求「至少一个有限」</strong>。这两个「为什么」是本章最容易被跳过、也最容易被考到的地方。</p>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p3">第三部分 · 期望的性质</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:150px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s31">§3.1</a> 线性性</td><td><span class="tag b">板书 1·3</span><span class="tag a">讲义 §4.1</span></td><td>板书 3 是投影上那一页（就是讲义 p47），板书 1 下半张是同一段的最后一行。<strong>这是本次课唯一完整走完的证明</strong>。</td></tr>
+<tr><td><a href="#s32">§3.2</a> 单调性与绝对可积估计</td><td><span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.70</span></td><td>课上没有单独板书，夹在性质列表里。</td></tr>
+<tr><td><a href="#s33">§3.3</a> 独立 ⇒ 乘积期望</td><td><span class="tag b">板书 10·11</span><span class="tag a">讲义 §4.1</span></td><td>板书 10 是课件「独立随机变量乘积的期望」，板书 11 上半张是离散型独立性判定的推导。</td></tr>
+<tr><td><a href="#s34">§3.4</a> 讲义两处疑似笔误</td><td><span class="tag">我补的</span></td><td>对照教材与讲义自身后文核出来的，附反例。</td></tr>
+</table>
+</div>
+
+<h3 id="s31">§3.1　线性性：先证非负，再拆正负<span class="tag b">板书 1·3</span><span class="tag a">讲义 §4.1</span></h3>
+
+<p><strong>结论：</strong>$\xi,\eta$ 可积 $\Rightarrow$ $\xi+\eta$ 可积，且 $\mathbb E(\xi+\eta)=\mathbb E\xi+\mathbb E\eta$。</p>
+
+<p>证明分两层：先在非负情形证（这时可以用 MCT），再把一般情形重排成非负情形。第二层的那个「重排」是本节唯一的技巧点。</p>
+
+<h4>(a) 非负情形</h4>
+
+<p>设 $\xi,\eta\in\mathcal F_+$。由定理 4.1.1(3)，存在 $\{\xi_n\},\{\eta_n\}\subset\mathcal S$ 使得</p>
+
+\[
+\xi_n\uparrow\xi,\qquad \eta_n\uparrow\eta .
+\]
+
+<p>两个数列都逐点递增，加起来仍然递增，并且逐点收敛到 $\xi+\eta$：</p>
+
+\[
+\xi_n+\eta_n\ \uparrow\ \xi+\eta .
+\]
+
+<p>而 $\xi_n+\eta_n\in\mathcal S$，简单情形的可加性（<a href="#s23">§2.3</a> 性质 (4)）已经证过。于是由 MCT（定理 4.1.1(2)）与极限的四则运算：</p>
+
+\[
+\mathbb E(\xi+\eta)=\lim_{n\to\infty}\mathbb E(\xi_n+\eta_n)
+=\lim_{n\to\infty}\big(\mathbb E\xi_n+\mathbb E\eta_n\big)
+=\lim_{n\to\infty}\mathbb E\xi_n+\lim_{n\to\infty}\mathbb E\eta_n
+=\mathbb E\xi+\mathbb E\eta .
+\]
+
+<p>每一步都交代一下：第一个等号用 MCT（对 $\xi_n+\eta_n\uparrow\xi+\eta$）；第二个用简单情形的可加性；第三个是「两个收敛数列的和的极限 = 极限的和」；第四个再用一次 MCT。</p>
+
+<h4>(b) 一般情形</h4>
+
+<p>这就是板书 1 下半张、板书 3（讲义 p47）的内容。分三步。</p>
+
+<p><strong>第一步：先证 $\xi+\eta$ 可积。</strong>这一步不能省，因为后面要移项，移项的前提是每一项都有限。</p>
+
+\[
+|\xi+\eta|\le|\xi|+|\eta|\ \Longrightarrow\ \mathbb E(|\xi+\eta|)\le\mathbb E(|\xi|)+\mathbb E(|\eta|)\lt\infty .
+\]
+
+<p>（第一个不等号是三角不等式，第二个用的是 $\mathbb E(|\xi|)\lt\infty$ 与 (a) 的结论——注意 $|\xi|,|\eta|$ 都非负，可以直接用 (a)。）</p>
+
+<p><strong>第二步：把等式重排成「两边都非负」。</strong></p>
+
+<p>由 $\xi=\xi^+-\xi^-$、$\eta=\eta^+-\eta^-$，</p>
+
+\[
+(\xi+\eta)^+-(\xi+\eta)^-=\xi+\eta=\xi^+-\xi^-+\eta^+-\eta^- .
+\]
+
+<p>把两个负部搬到等号左边：</p>
+
+\[
+(\xi+\eta)^++\xi^-+\eta^-=\xi^++\eta^++(\xi+\eta)^- .
+\]
+
+<p>这就是板书 1 上那个带花括号的式子的来源。<strong>现在等号两边都是非负随机变量之和</strong>，可以对两边分别用 (a)。</p>
+
+<p><strong>第三步：两边取期望，移项。</strong></p>
+
+\[
+\mathbb E\big((\xi+\eta)^+\big)+\mathbb E(\xi^-)+\mathbb E(\eta^-)
+=\mathbb E(\xi^+)+\mathbb E(\eta^+)+\mathbb E\big((\xi+\eta)^-\big).
+\]
+
+<p>所有项都有限（第一步已证可积性），可以自由移项：</p>
+
+\[
+\mathbb E\big((\xi+\eta)^+\big)-\mathbb E\big((\xi+\eta)^-\big)
+=\mathbb E(\xi^+)-\mathbb E(\xi^-)+\mathbb E(\eta^+)-\mathbb E(\eta^-),
+\]
+
+<p>即</p>
+
+\[
+\mathbb E(\xi+\eta)=\mathbb E\xi+\mathbb E\eta .\qquad\blacksquare
+\]
+
+<p>板书上这一整段最后压缩成了一行（板书 1 下半张逐字）：</p>
+
+<pre>⇒  E(ξ+η)⁺ − E(ξ+η)⁻  =  E(ξ⁺) + E(η⁺) − E(ξ⁻) − E(η⁻)  =  Eξ + Eη
+    └───── 这一整块就是 E(ξ+η) ─────┘</pre>
+
+<div class="box warn">
+<p class="label">为什么非要「移项成非负之和」，不能直接对 $\xi+\eta$ 用 (a)</p>
+<p>因为 (a) 的证明<strong>整条都建立在 MCT 上</strong>，而 MCT 只对非负递增序列成立。$\xi+\eta$ 有正有负，它的正负部分会互相抵消，根本不存在「从下方单调逼近」的序列，(a) 一步都用不了。</p>
+<p>重排的作用是把「减法」从式子内部挪到「两个非负量之间」：$(\xi+\eta)^++\xi^-+\eta^-$ 与 $\xi^++\eta^++(\xi+\eta)^-$ 各自都是非负项之和，(a) 就能分别作用在两边。减法只在最后一步出现，而那时所有量都有限，减法合法。</p>
+<p>这一步在板书上只有一个花括号和一行字，很容易被当成「显然的代数变形」跳过。它其实承担了整个证明的合法性。</p>
+</div>
+
+<h4>(c) 齐次性</h4>
+
+<p>要补上 $\mathbb E(a\xi)=a\mathbb E\xi$ 才能凑成完整的线性性 $\mathbb E(a\xi+b\eta)=a\mathbb E\xi+b\mathbb E\eta$。</p>
+
+<p>$a\ge0$ 时：对简单 $\xi$ 由定义直接读；对非负 $\xi$ 用「上确界与正数乘法可交换」$\sup(aS)=a\sup S$（$a\ge0$）；对一般 $\xi$ 用 $(a\xi)^\pm=a\xi^\pm$。</p>
+
+<p>$a\lt0$ 时：注意正负部会互换位置，</p>
+
+\[
+(a\xi)^+=(-a)\xi^-,\qquad (a\xi)^-=(-a)\xi^+,
+\]
+
+<p>而 $-a\gt0$，所以</p>
+
+\[
+\mathbb E(a\xi)=(-a)\mathbb E\xi^- -(-a)\mathbb E\xi^+=a\big(\mathbb E\xi^+-\mathbb E\xi^-\big)=a\,\mathbb E\xi .
+\]
+
+<p>这一步的坑在于<strong>符号翻转会让正负部对调</strong>。直接写 $\mathbb E(a\xi)=a\mathbb E\xi$ 不算错，但要能说清为什么 $a\lt0$ 也成立。</p>
+
+<h3 id="s32">§3.2　单调性与绝对可积估计<span class="tag a">讲义 §4.1</span><span class="tag c">教材 p.70</span></h3>
+
+<p>教材 p70 的推论 4.1.2（对可积随机变量）与讲义 p46 性质 (1)(2) 合起来是两条：</p>
+
+<p>(1) <strong>单调性：</strong>$\xi\ge\eta$（a.s.）$\Rightarrow\mathbb E\xi\ge\mathbb E\eta$。</p>
+
+<p>(2) <strong>绝对可积估计：</strong>$|\xi|\le\eta$ $\Rightarrow$ $|\mathbb E\xi|\le\mathbb E\eta$。</p>
+
+<p>(2) 的证明只有一行，但方向容易记反：由 $|\xi|\le\eta$ 得 $-\eta\le\xi\le\eta$，对两头用单调性得 $-\mathbb E\eta\le\mathbb E\xi\le\mathbb E\eta$，即 $|\mathbb E\xi|\le\mathbb E\eta$。取 $\eta=|\xi|$ 就得到最常用的特例 $|\mathbb E\xi|\le\mathbb E|\xi|$。</p>
+
+<p>这条在估计误差、证收敛时天天用：<strong>「期望的绝对值」不超过「绝对值的期望」</strong>。</p>
+
+<h3 id="s33">§3.3　独立 ⇒ 乘积期望分解（及反例）<span class="tag b">板书 10·11</span><span class="tag a">讲义 §4.1</span></h3>
+
+<p>板书 10 是课件页，结论 + 注意 + 课堂提醒三块：</p>
+
+<pre>结论：若 ξ, η 相互独立且均可积，则 E(ξη) = E(ξ)E(η).
+注意：反过来一般不成立 —— E(ξη) = E(ξ)E(η) 并不能推出 ξ 与 η 独立.
+课堂提醒：「独立 ⇒ 乘积期望分解」，但「乘积期望分解 ⇏ 独立」.</pre>
+
+<p>板书 11 上半张则是离散型独立性判定的推导（对应讲义 p36）：</p>
+
+\[
+\mathbb P(\xi_1\le x_1,\dots,\xi_n\le x_n)
+=\sum_{\substack{y_i\in R(\xi_i)\\ y_i\le x_i}}\mathbb P(\xi_1=y_1,\dots,\xi_n=y_n)
+=\sum_{\substack{y_i\in R(\xi_i)\\ y_i\le x_i}}\prod_{i=1}^{n}\mathbb P(\xi_i=y_i).
+\]
+
+<p>也就是说：<strong>离散情形下，「分布函数因子化」等价于「点概率因子化」</strong>，因为分布函数是点概率的和，而求和可以与乘积交换。这条是证乘积期望的前置工具。</p>
+
+<h4>证明（讲义 p48）</h4>
+
+<p><strong>(a) $\xi,\eta\in\mathcal F_+$。</strong> 取 <a href="#s25">§2.5</a>(3) 的显式逼近 $\xi_n\uparrow\xi$、$\eta_n\uparrow\eta$，其中</p>
+
+\[
+\xi_n=\sum_{i=1}^{n2^n}\frac{i-1}{2^n}1_{\{\frac{i-1}{2^n}\lt\xi\le\frac{i}{2^n}\}}+n\,1_{\{\xi\ge n\}} ,
+\]
+
+<p>$\eta_n$ 同构。因为 $\xi_n$ 是示性函数的线性组合，而 $\xi,\eta$ 独立 $\Rightarrow$ 这些示性函数两两独立（它们是 $\xi$ 与 $\eta$ 的「分档」事件），所以 $\xi_n$ 与 $\eta_n$ 独立。对简单随机变量可直接验证</p>
+
+\[
+\mathbb E(\xi_n\eta_n)=\mathbb E\xi_n\,\mathbb E\eta_n ,
+\]
+
+<p>于是</p>
+
+\[
+\mathbb E(\xi\eta)=\lim_{n}\mathbb E(\xi_n\eta_n)=\lim_n\mathbb E\xi_n\cdot\lim_n\mathbb E\eta_n=\mathbb E\xi\,\mathbb E\eta ,
+\]
+
+<p>中间第一个等号用 MCT（$\xi_n\eta_n\uparrow\xi\eta$，因为两边都非负递增）。</p>
+
+<p><strong>(b) 一般情形（$\xi\eta$ 可积）。</strong> 展开四个组合：</p>
+
+\[
+\xi\eta=(\xi^+-\xi^-)(\eta^+-\eta^-)=\xi^+\eta^+-\xi^+\eta^--\xi^-\eta^++\xi^-\eta^- .
+\]
+
+<p>$\xi,\eta$ 独立 $\Rightarrow$ $\xi^\pm$ 与 $\eta^\pm$ 的任意组合都独立（因为 $\xi^\pm$ 是 $\xi$ 的函数）。对每一项用 (a)：</p>
+
+\[
+\begin{aligned}
+\mathbb E(\xi\eta)
+&=\mathbb E\xi^+\mathbb E\eta^+-\mathbb E\xi^+\mathbb E\eta^--\mathbb E\xi^-\mathbb E\eta^++\mathbb E\xi^-\mathbb E\eta^-\\
+&=\big(\mathbb E\xi^+-\mathbb E\xi^-\big)\big(\mathbb E\eta^+-\mathbb E\eta^-\big)=\mathbb E\xi\,\mathbb E\eta .\qquad\blacksquare
+\end{aligned}
+\]
+
+<h4>反向不成立：一个能背下来的反例</h4>
+
+<div class="box warn">
+<p class="label">反例：$\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$ 但 $\xi,\eta$ 不独立</p>
+<p>取 $\Omega=\{-1,0,1\}$，三个点等概率 $\tfrac13$。令</p>
+\[
+\xi(\omega)=\omega,\qquad \eta(\omega)=|\omega| .
+\]
+<p>则 $\mathbb E\xi=\tfrac13(1+0-1)=0$，$\mathbb E\eta=\tfrac13(1+0+1)=\tfrac23$，而</p>
+\[
+\mathbb E(\xi\eta)=\mathbb E\big(\omega|\omega|\big)=\tfrac13\big(1+0-1\big)=0=\mathbb E\xi\,\mathbb E\eta .
+\]
+<p>但</p>
+\[
+\mathbb P(\xi=1,\eta=1)=\tfrac13\ \ne\ \mathbb P(\xi=1)\mathbb P(\eta=1)=\tfrac13\cdot\tfrac23=\tfrac29 ,
+\]
+<p>所以不独立。<strong>直观原因</strong>：$\eta$ 完全由 $\xi$ 决定（$\eta=|\xi|$），依赖关系极强，只是这种依赖「正负对称」，在乘积的期望里恰好抵消掉了。</p>
+</div>
+
+<p>教材 p70 也给了同型但更极端的例子：$\xi\eta\equiv0$ 且 $\mathbb E\xi=\mathbb E\eta=0$，于是 $\mathbb E(\xi\eta)=0=\mathbb E\xi\mathbb E\eta$，可两者明显不独立。</p>
+
+<div class="box key">
+<p class="label">顺带一个有用的推论</p>
+<p>若 $\mathbb E\xi^2,\mathbb E\eta^2\lt\infty$，定义协方差 $\mathrm{Cov}(\xi,\eta):=\mathbb E\big[(\xi-\mathbb E\xi)(\eta-\mathbb E\eta)\big]=\mathbb E(\xi\eta)-\mathbb E\xi\mathbb E\eta$。则</p>
+\[
+\xi,\eta\ \text{独立}\ \Longrightarrow\ \mathrm{Cov}(\xi,\eta)=0\ (\text{即「不相关」}),
+\]
+<p>但反过来不成立（上面那个反例就是：$\mathrm{Cov}=0$ 却不独立）。<strong>「独立」是分布层面的性质，「不相关」只是二阶矩层面的性质</strong>，后者弱得多。这条在 §4.4 方差那一节会正式讲。</p>
+</div>
+
+<h3 id="s34">§3.4　讲义里两处疑似笔误<span class="tag">我补的</span></h3>
+
+<p>按你的习惯，讲义与推导不符时先怀疑自己。这两处我用 400 dpi 裁剪放大核对过，确实是讲义原文如此，而且都能用反例证伪。</p>
+
+<div class="box warn">
+<p class="label">笔误一：讲义 p41 性质 (2)</p>
+<p><strong>原文：</strong>「(2) 如 $\xi\ge\eta$，则 $\mathbb E(\xi)\ge\mathbb E(\eta)$，$|\mathbb E(\xi)|\ge\mathbb E(|\eta|)$；」</p>
+<p><strong>问题：</strong>第二个不等式反例——取常值随机变量 $\xi\equiv1$、$\eta\equiv-2$（都是简单随机变量），有 $\xi\ge\eta$，但 $|\mathbb E\xi|=1$，$\mathbb E|\eta|=2$，$1\ge2$ 不成立。</p>
+<p><strong>应该是：</strong>$\mathbb E(|\xi|)\ge\mathbb E(|\eta|)$（即「绝对值的期望」而不是「期望的绝对值」）。在 $\xi\ge\eta\ge0$ 的条件下这就成立了。</p>
+<p><strong>另一个疑点：</strong>同一页的性质 (6) 与 (2) 前半句<em>一字不差</em>地重复。参照教材 p70 推论 4.1.2 的列表，第 (6) 条很可能是 <strong>$|\xi|\le\eta\Rightarrow|\mathbb E\xi|\le\mathbb E\eta$</strong>（即 <a href="#s32">§3.2</a> 的绝对可积估计）。这一条后面证可积性时要用，讲义正文里也确实在用，只是列表里漏了。</p>
+</div>
+
+<div class="box warn">
+<p class="label">笔误二：讲义 p46 性质 (5)</p>
+<p><strong>原文：</strong>「(5) 如 $\xi\eta$ 可积，则 $[\mathbb E(\xi\eta)]^2\ge\mathbb E(\xi^2)\mathbb E(\eta^2)$。」</p>
+<p><strong>问题：</strong>不等号方向反了，应为 $\le$。这是 Cauchy–Schwarz 不等式，讲义自己在 p49 的证明给出的正是 $\le$。反例：取 $A,B$ 独立、$\mathbb P(A)=\mathbb P(B)=\tfrac12$，令 $\xi=1_A$、$\eta=1_B$。则 $\mathbb E(\xi\eta)=\tfrac14$，$[\mathbb E(\xi\eta)]^2=\tfrac1{16}$，而 $\mathbb E(\xi^2)\mathbb E(\eta^2)=\tfrac12\cdot\tfrac12=\tfrac14$，显然 $\tfrac1{16}\lt\tfrac14$。</p>
+<p><strong>正确写法：</strong>$[\mathbb E(\xi\eta)]^2\le\mathbb E(\xi^2)\mathbb E(\eta^2)$。取等当且仅当 $\xi,\eta$ 线性相关（a.s.）。</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p4">第四部分 · 计算实例</h2>
+
+<div class="box warn">
+<p class="label">来源说明</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:150px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s41">§4.1</a> 二项分布 $\mathbb E\xi=np$</td><td><span class="tag b">板书 11</span><span class="tag a">讲义 §4.1</span></td><td>板书 11 下半张是暴力求和的完整算式。<strong>0-1 分解那条路是我补的</strong>（课上没写，但教材 p71 的例 4.1.1 用它）。</td></tr>
+<tr><td><a href="#s42">§4.2</a> 电话局 Poisson</td><td><span class="tag b">板书 1·2·5</span><span class="tag a">讲义 §4.1</span></td><td>板书 1、2、5 是同一块黑板的三个角度，写的就是这个例题。对应讲义 p45 的例题 4.1.2。</td></tr>
+<tr><td><a href="#s43">§4.3</a> 指示变量法小结</td><td><span class="tag">我补的</span></td><td>把板书和讲义里反复出现的同一个套路抽出来。</td></tr>
+</table>
+</div>
+
+<h3 id="s41">§4.1　二项分布 $\mathbb E\xi=np$：两条路<span class="tag b">板书 11</span><span class="tag a">讲义 §4.1</span></h3>
+
+<p>设 $\xi\sim b(n,p)$，即 $\mathbb P(\xi=k)=\binom nk p^kq^{n-k}$，$q=1-p$。目标是 $\mathbb E\xi=np$。</p>
+
+<h4>路线 A：暴力求和（板书原路）</h4>
+
+<p>板书 11 下半张写的是：</p>
+
+\[
+\mathbb E(\xi)=\sum_{k=0}^{n}k\binom nk p^k(1-p)^{n-k}.
+\]
+
+<p>核心是一个组合恒等式：</p>
+
+\[
+k\binom nk=k\cdot\frac{n!}{k!(n-k)!}=\frac{n!}{(k-1)!(n-k)!}=n\cdot\frac{(n-1)!}{(k-1)!\big((n-1)-(k-1)\big)!}=n\binom{n-1}{k-1}.
+\]
+
+<p>板书把中间那个分式 $\dfrac{(n-1)!}{(n-k)!\,(k-1)!}$ 直接写出来了（下标写得比较潦草，最后一行只留了个 $=np$）。代进去：</p>
+
+\[
+\begin{aligned}
+\mathbb E(\xi)
+&=\sum_{k=1}^{n}n\binom{n-1}{k-1}p^kq^{n-k}
+&&\text{（}k=0\text{ 项为 0，从 }k=1\text{ 起）}\\
+&=np\sum_{k=1}^{n}\binom{n-1}{k-1}p^{k-1}q^{n-k}
+&&\text{（提出 }np\text{）}\\
+&=np\sum_{j=0}^{n-1}\binom{n-1}{j}p^{j}q^{(n-1)-j}
+&&\text{（令 }j=k-1\text{）}\\
+&=np\,(p+q)^{n-1}=np .
+&&\text{（二项式定理，}p+q=1\text{）}
+\end{aligned}
+\]
+
+<p>这条路技术上没毛病，但每一步都要盯着下标，容易出错。</p>
+
+<h4>路线 B：0-1 分解（更值得记）</h4>
+
+<p>把第 $i$ 次试验是否成功记为 $\xi_i=1_{\{\text{第 }i\text{ 次成功}\}}$，则 $\xi_i\sim$ Bernoulli$(p)$，$\mathbb E\xi_i=p$，而且</p>
+
+\[
+\xi=\xi_1+\xi_2+\cdots+\xi_n .
+\]
+
+<p>这一步是恒等式：$n$ 次试验里成功的次数，本来就等于每次成功与否的示性函数之和。由线性性，</p>
+
+\[
+\mathbb E\xi=\sum_{i=1}^{n}\mathbb E\xi_i=np .
+\]
+
+<figure>
+<svg viewBox="0 0 680 210" width="100%" role="img" aria-labelledby="f3t f3d">
+<title id="f3t">二项分布的 0-1 分解</title>
+<desc id="f3d">把 n 次试验的成功次数写成 n 个取值为 0 或 1 的指示变量之和，期望由线性性变成 n 个 p 相加。</desc>
+<defs>
+<marker id="arwF3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<text x="60" y="52" font-size="13" fill="var(--ink2)">每次试验</text>
+
+<rect x="60" y="66" width="52" height="48" rx="7" fill="var(--accent-bg)" stroke="none"/>
+<text x="86" y="97" font-size="16" font-weight="600" fill="var(--accent)" text-anchor="middle">1</text>
+<text x="86" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξ₁</text>
+
+<rect x="130" y="66" width="52" height="48" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="156" y="97" font-size="16" font-weight="600" fill="var(--ink2)" text-anchor="middle">0</text>
+<text x="156" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξ₂</text>
+
+<rect x="200" y="66" width="52" height="48" rx="7" fill="var(--accent-bg)" stroke="none"/>
+<text x="226" y="97" font-size="16" font-weight="600" fill="var(--accent)" text-anchor="middle">1</text>
+<text x="226" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξ₃</text>
+
+<rect x="270" y="66" width="52" height="48" rx="7" fill="var(--accent-bg)" stroke="none"/>
+<text x="296" y="97" font-size="16" font-weight="600" fill="var(--accent)" text-anchor="middle">1</text>
+<text x="296" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξ₄</text>
+
+<rect x="340" y="66" width="52" height="48" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+<text x="366" y="97" font-size="16" font-weight="600" fill="var(--ink2)" text-anchor="middle">0</text>
+<text x="366" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξ₅</text>
+
+<text x="410" y="97" font-size="15" fill="var(--ink3)">⋯</text>
+<text x="440" y="97" font-size="15" fill="var(--ink3)">⋯</text>
+
+<rect x="466" y="66" width="52" height="48" rx="7" fill="var(--accent-bg)" stroke="none"/>
+<text x="492" y="97" font-size="16" font-weight="600" fill="var(--accent)" text-anchor="middle">1</text>
+<text x="492" y="130" font-size="12" fill="var(--ink3)" text-anchor="middle">ξₙ</text>
+
+<line x1="548" y1="90" x2="586" y2="90" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arwF3)"/>
+
+<rect x="592" y="66" width="56" height="48" rx="7" fill="var(--ok-bg)" stroke="none"/>
+<text x="620" y="97" font-size="16" font-weight="600" fill="var(--ok)" text-anchor="middle">ξ</text>
+<text x="620" y="130" font-size="11.5" fill="var(--ink3)" text-anchor="middle">成功次数</text>
+
+<text x="60" y="172" font-size="13" fill="var(--ink2)">Eξ = Σ Eξᵢ = p + p + ⋯ + p = np</text>
+<text x="60" y="194" font-size="12" fill="var(--ink3)">全程只用了线性性，<tspan font-weight="600">没有用到独立性</tspan></text>
+</svg>
+<figcaption>图 4 · 二项分布的 0-1 分解。每个 $\xi_i$ 的期望都是 $p$，加起来就是 $np$。</figcaption>
+</figure>
+
+<div class="box ok">
+<p class="label">路线 B 最容易被忽略的一点：它根本不需要独立性</p>
+<p>线性性 $\mathbb E(\sum\xi_i)=\sum\mathbb E\xi_i$ 是<strong>无条件成立</strong>的（<a href="#s31">§3.1</a> 的证明里从头到尾没有出现「独立」两个字）。所以哪怕 $n$ 次试验之间有复杂的相依关系，只要每次成功的概率都是 $p$，「成功次数的期望 $=np$」这个结论照样成立。</p>
+<p>独立性真正登场是在算<strong>方差</strong>的时候：$\mathrm{Var}(\xi)=\sum\mathrm{Var}(\xi_i)=npq$ 这一步需要 $\mathrm{Cov}(\xi_i,\xi_j)=0$，而独立能保证这一点。很多人把两件事混在一起，以为算期望也要独立——<strong>这是本章最常见的误解</strong>。</p>
+</div>
+
+<h3 id="s42">§4.2　电话局：Poisson 期望 $\lambda t$<span class="tag b">板书 1·2·5</span><span class="tag a">讲义 §4.1</span></h3>
+
+<p>讲义 p45 的例题 4.1.2，也就是板书 1/2/5 上那一整块。原题：</p>
+
+<p class="q">设 $\xi$ 表示在时间间隔 $(a,a+t]$ 内某电话局收到的用户呼叫的次数。$\xi$ 的可能取值为 $0,1,2,\dots$，且
+$\mathbb P(\xi=n)=e^{-\lambda t}\dfrac{(\lambda t)^n}{n!}$。
+为了估计呼叫的频率情况或等价地说需要安排多少接线员，我们需要求出 $\xi$ 的数学期望。</p>
+
+<p><strong>解（板书逐字 + 补全下标）：</strong>由题意 $\xi$ 是非负随机变量。令 $A_k$ 表示收到 $k$ 次呼叫的事件，则</p>
+
+\[
+\xi=\sum_{k=0}^{\infty}k\,1_{A_k},
+\qquad
+\xi_n=\sum_{k=0}^{n}k\,1_{A_k},
+\qquad
+\xi_n\uparrow\xi .
+\]
+
+<p>（板书在这一行右边标了个向上的箭头，并写了 $\xi_n\uparrow\xi$。）由 <a href="#s26">§2.6</a> 的定义 4.1.3（或直接用 MCT）：</p>
+
+\[
+\mathbb E(\xi)=\lim_{n\to\infty}\mathbb E(\xi_n)
+=\lim_{n\to\infty}\sum_{k=0}^{n}k\,\mathbb P(A_k)
+=\lim_{n\to\infty}\sum_{k=0}^{n}k\,\mathbb P(\xi=k).
+\]
+
+<p>代入 Poisson 分布：</p>
+
+\[
+\mathbb E(\xi)=\lim_{n\to\infty}\sum_{k=1}^{n}k\,e^{-\lambda t}\frac{(\lambda t)^k}{k!}
+=\lambda t\,e^{-\lambda t}\lim_{n\to\infty}\sum_{k=1}^{n}\frac{(\lambda t)^{k-1}}{(k-1)!}
+=\lambda t\,e^{-\lambda t}\,e^{\lambda t}=\lambda t .
+\]
+
+<p>（第一个等号：$k=0$ 项为 0；第二个：约掉 $k/k!=1/(k-1)!$ 并抽出 $\lambda t$；第三个：指数函数的 Taylor 级数。）</p>
+
+<p>结论：<strong>平均 $\lambda t$ 次呼叫，所以安排 $\lfloor\lambda t\rfloor$ 个接线员</strong>（讲义原文写的是 $[\lambda t]$，取整）。</p>
+
+<div class="box warn">
+<p class="label">这里为什么必须走 MCT，不能直接写 $\sum_{k=0}^\infty$</p>
+<p>因为<strong>「简单随机变量」的定义要求只取有限个值</strong>（<a href="#s22">§2.2</a>）。$\xi$ 取值是 $0,1,2,\dots$ 无穷多个，它<em>不是</em>简单随机变量，所以定义 4.1.1 那个 $\sum$ 不能直接套在它身上。</p>
+<p>正确流程是：先把 $\xi$ 截断成 $\xi_n$（只取 $0,\dots,n$ 有限个值，属于 $\mathcal S$，可以逐项算），再用 MCT 让 $n\to\infty$。板书那三行 $(\xi=\sum k1_{A_k},\ \xi_n\uparrow\xi,\ \mathbb E\xi=\lim\mathbb E\xi_n)$ 做的正是这件事——<strong>它不是在「化简」，而是在「合法化」</strong>。</p>
+<p>顺带一提：如果一上来就写 $\sum_{k=0}^\infty k\mathbb P(\xi=k)$，虽然答案对，但严格说跳过了「这个级数为什么就是期望」这一步。考试里如果题目要求「用定义说明」，这一步要写出来。</p>
+</div>
+
+<h3 id="s43">§4.3　指示变量法小结<span class="tag">我补的</span></h3>
+
+<p>把 §4.1 和 §4.2 抽出来看，两次用的是同一个套路：</p>
+
+<p><strong>① 把要算的量写成示性函数之和；② 用线性性把期望搬进求和号；③ 每个示性函数的期望就是概率。</strong></p>
+
+\[
+X=\sum_{i}1_{A_i}\quad\Longrightarrow\quad\mathbb E X=\sum_i\mathbb P(A_i).
+\]
+
+<p>适用范围极广，本章后面会反复见到：</p>
+
+<table>
+<tr><th style="width:200px">问题</th><th>怎么设指示变量</th></tr>
+<tr><td>二项分布</td><td>$1_{\{\text{第 }i\text{ 次成功}\}}$，$\mathbb E\xi_i=p$</td></tr>
+<tr><td>Poisson（电话局）</td><td>本例是按取值分档 $1_{\{\xi=k\}}$，属于同一个思想的变体</td></tr>
+<tr><td>Coupon 收集（P89 第 5 题）</td><td>$1_{\{\text{第 }i\text{ 种卡片已收集到}\}}$</td></tr>
+<tr><td>随机排列的不动点</td><td>$1_{\{\text{第 }i\text{ 个位置是 }i\}}$，期望 $=n\cdot\tfrac1n=1$</td></tr>
+</table>
+
+<p>它好用的原因还是那句话：<strong>线性性不需要独立性</strong>。而指示变量之间往往<em>并不</em>独立（比如 Coupon 问题里各卡片是否已收集到明显相关），如果非要走「独立 ⇒ 乘积分解」那条路就走不通了。</p>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p5">第五部分 · 作业与提示</h2>
+
+<p>板书右下角布置的页码（板书 1，逐字）：</p>
+
+<pre>P89  2、3、4
+P64  3、7、10、17、21、28</pre>
+
+<p>页码是教材《概率论》（应坚刚、何萍，第 2 版）的页码。P89 是<strong>第四章 §4.5 大数定律</strong>的章末习题，P64–P67 是<strong>第三章 §3.3</strong> 的章末习题（第 21、28 题在 p66–p67）。</p>
+
+<h3 id="s51">§5.1　第四章 P89 第 2、3、4 题</h3>
+
+<ol class="work">
+
+<li>
+<p class="stem">2. 平均地讲，掷一个硬币多少次就可以得到连续的两次正面或连续的两次反面？</p>
+<div class="hint">
+<p><b>从哪下手：</b>设 $\xi$ 为所需次数。按「当前已经攒到几个连续同面」分状态，对「距离目标还差几步」列方程。</p>
+<p>至少需要三个状态：<b>还没开始</b>（记期望 $E_0$）、<b>已有一个正面</b>（$E_H$）、<b>已有一个反面</b>（$E_T$）。由对称性 $E_H=E_T$。然后从每个状态出发看下一次投掷的两种结果，写出 $E_0$ 与 $E_H$ 的关系，联立解出。</p>
+<p><b>坑：</b>这不是「出现一次正面」的几何分布——目标是「连续两次<b>相同</b>」，而且第一次投掷是免费的起手（它同时可能是「已有一个正面」也可能是「已有一个反面」）。别直接套 $1/p$。</p>
+<p><b>自检：</b>答案是整数，而且应该比「连续两次正面」的期望（6 次）小得多——因为「相同」比「正面」容易得多。如果算出来大于 6，肯定错了。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">3. 设 $\xi$ 为非负整值随机变量，其数学期望存在，证明：$\mathbb E\xi=\sum_{n=1}^{\infty}\mathbb P(\xi\ge n)$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>关键恒等式</p>
+\[
+\xi=\sum_{n=1}^{\infty}1_{\{\xi\ge n\}}\quad(\text{逐点成立}).
+\]
+<p>验一下：若 $\xi(\omega)=m$，右边是 $m$ 个 1 相加，正好等于 $m$。这就是「$m=\sum_{n=1}^m1$」的随机版本。</p>
+<p>然后两边取期望。这里<strong>要用 §2.6 的性质 (1)（非负项可交换求和与期望）</strong>，或者等价地用 MCT：先取 $\xi\wedge N$ 证有限情形，再令 $N\to\infty$。注意题目给的是「非负整值」，正是为了让这个恒等式成立。</p>
+<p><b>顺带：</b>这条叫「尾和公式」，第 2 题也可以用它的思路交叉验证。它也解释了为什么非负整值分布的期望可以完全由尾概率决定。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">4. 设 $\xi$ 服从参数为 $n,p$ 的二项分布，证明：$\displaystyle\mathbb E\frac{1}{1+\xi}=\frac{1-(1-p)^{n+1}}{(n+1)p}$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>不要硬算 $\sum\frac{1}{1+k}\binom nk p^kq^{n-k}$，先用一个组合恒等式把 $\frac{1}{1+k}$ 吸收进二项系数：</p>
+\[
+\frac{1}{1+k}\binom nk=\frac{1}{n+1}\binom{n+1}{k+1}.
+\]
+<p>（两边都化成阶乘就能验：左边 $=\frac{n!}{(n-k)!\,(k+1)!}$，右边 $=\frac{1}{n+1}\cdot\frac{(n+1)!}{(k+1)!\,(n-k)!}=\frac{n!}{(n-k)!\,(k+1)!}$。自己动手化一遍，比看答案有用。）</p>
+<p>代进去之后，剩下的求和就是 $\sum_{j=1}^{n+1}\binom{n+1}{j}p^{j}q^{n+1-j}=1-q^{n+1}$，其中 $q=1-p$。</p>
+<p><b>坑：</b>求和从 $j=1$ 开始而不是 $j=0$，所以要<strong>从 $1$ 里减掉 $j=0$ 那一项 $q^{n+1}$</strong>。漏掉这一步就会得到 $\frac{1}{(n+1)p}$，和正确答案差一个 $(1-q^{n+1})$ 因子。</p>
+<p><b>另一种思路：</b>用 $\frac{1}{1+\xi}=\int_0^1 t^{\xi}\,\mathrm dt$，交换期望与积分。可以当作验算。</p>
+</div>
+</li>
+
+</ol>
+
+<h3 id="s52">§5.2　第三章 P64 第 3、7、10、17、21、28 题</h3>
+
+<ol class="work">
+
+<li>
+<p class="stem">3. 设 $A_1,A_2,\cdots,A_n,\cdots$ 是独立事件序列，$A:=\limsup A_n$，证明：<br>
+(a) 对任何 $n$，$A,A_1,\cdots,A_n$ 独立；<br>
+(b) $(*)$ $\mathbb P(A)$ 是 $0$ 或者 $1$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>先把 $\limsup$ 写成看得懂的形式：</p>
+\[
+A=\limsup_n A_n=\bigcap_{m\ge1}\bigcup_{k\ge m}A_k .
+\]
+<p>右边只用到 $A_m,A_{m+1},\dots$，所以 $A\in\sigma(A_m,A_{m+1},\dots)$ 对每个 $m$ 都成立。取 $m=n+1$，得 $A\in\sigma(A_{n+1},A_{n+2},\dots)$。</p>
+<p>(a) 需要一条引理：<b>若两族事件独立，则它们各自生成的 σ-代数也独立</b>（讲义 §3.3 的结论）。用它把「$A$ 与 $A_1,\dots,A_n$ 独立」从「$A$ 与 $\sigma(A_{n+1},\dots)$ 中每个成员独立」推出来。</p>
+<p>(b) 由 (a) 取 $n$ 任意大，$A$ 与 $A$ 自己独立：</p>
+\[\mathbb P(A)=\mathbb P(A\cap A)=\mathbb P(A)^2\ \Longrightarrow\ \mathbb P(A)\in\{0,1\}.\]
+<p><b>注意：</b>(b) 打了星号，是难题。核心难点全在 (a) 那条「生成 σ-代数仍独立」的引理上，把引理写清楚，(b) 只有两行。</p>
+<p><b>背景：</b>这就是 <b>Borel–Cantelli 零一律</b>的雏形——「尾事件概率只能是 0 或 1」。第 29 题（$\mathbb P(\bigcap A_n)=\prod\mathbb P(A_n)$）是它的另一面。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">7. 设 $X_1,X_2,X_3$ 是独立随机变量，$\mathbb P(X_i=x)=(1-p_i)p_i^{x-1}$，$x=1,2,\cdots$，$i=1,2,3$。<br>
+(a) 求 $\mathbb P(X_1\lt X_2\lt X_3)$；　(b) 求 $\mathbb P(X_1\le X_2\le X_3)$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>按 $X_1$ 的取值用全概率公式拆开，再用独立性把三项拆成乘积：</p>
+\[
+\mathbb P(X_1\lt X_2\lt X_3)=\sum_{x\ge1}\mathbb P(X_1=x)\cdot\mathbb P(x\lt X_2\lt X_3).
+\]
+<p>几何分布有一个特别好用的性质：<b>尾概率是干净的幂</b>。由 $\mathbb P(X_i=x)=(1-p_i)p_i^{x-1}$ 得</p>
+\[\mathbb P(X_i\gt x)=p_i^{x},\qquad \mathbb P(X_i\ge x)=p_i^{x-1}.\]
+<p>把 $X_3$ 那一层先用尾概率代替（$X_2=y$ 固定后，$X_3\gt y$ 的概率是 $p_3^{\,y}$），三重和会塌成两重，然后是一个等比级数。</p>
+<p>(b) 把 $\le$ 拆成四种互斥情形：$X_1\lt X_2\lt X_3$、$X_1=X_2\lt X_3$、$X_1\lt X_2=X_3$、$X_1=X_2=X_3$。<b>离散分布下等号的概率不为 0</b>，这是最容易漏的地方——(b) 不等于 (a)。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">10. 证明：事件 $A_1,\cdots,A_n$ 独立当且仅当指标 $1_{A_1},\cdots,1_{A_n}$ 独立。</p>
+<div class="hint">
+<p><b>从哪下手：</b>关键是把指示变量的取值翻译回事件：</p>
+\[\{1_{A_i}=1\}=A_i,\qquad\{1_{A_i}=0\}=A_i^c .\]
+<p><b>(⇒)</b> 要验独立随机变量的定义：对任意 $\varepsilon_i\in\{0,1\}$，</p>
+\[\mathbb P(1_{A_1}=\varepsilon_1,\dots,1_{A_n}=\varepsilon_n)=\prod_{i=1}^n\mathbb P(1_{A_i}=\varepsilon_i).\]
+<p>把每个 $\{1_{A_i}=\varepsilon_i\}$ 换回 $A_i$ 或 $A_i^c$。这一步要用一条性质：<b>事件独立 ⇒ 任意取补之后仍独立</b>（讲义 §3.3 性质，用 $\mathbb P(\bar AB)=\mathbb P(B)-\mathbb P(AB)$ 证）。</p>
+<p><b>(⇐)</b> 不能只取 $\varepsilon_i$ 全为 1——那只能得到 $n$ 重交的因子化，而独立性要求<strong>任意子族</strong>的交都因子化。办法是：对任意子族 $I\subset\{1,\dots,n\}$，令 $i\in I$ 时 $\varepsilon_i=1$、$i\notin I$ 时 $\varepsilon_i=0$，再用「$\{1_{A_i}=0\}=A_i^c$ 的概率是 $1-\mathbb P(A_i)$」把补集消掉。</p>
+<p><b>意义：</b>这条把「事件的独立性」和「随机变量的独立性」彻底打通，以后两种说法可以互换。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">17. 设 $\xi,\eta$ 独立且是 $1,-1$ 上等可能分布的，$\zeta:=\xi\eta$。证明：$\xi,\eta,\zeta$ 两两独立但不独立。</p>
+<div class="hint">
+<p><b>从哪下手：</b>整个样本空间只有 4 个点，<b>直接列表</b>最快，不用绕。</p>
+<table style="margin:10px 0">
+<tr><th>$\omega$</th><th>$\xi$</th><th>$\eta$</th><th>$\zeta=\xi\eta$</th><th>概率</th></tr>
+<tr><td>1</td><td>1</td><td>1</td><td>1</td><td>1/4</td></tr>
+<tr><td>2</td><td>1</td><td>−1</td><td>−1</td><td>1/4</td></tr>
+<tr><td>3</td><td>−1</td><td>1</td><td>−1</td><td>1/4</td></tr>
+<tr><td>4</td><td>−1</td><td>−1</td><td>1</td><td>1/4</td></tr>
+</table>
+<p><b>两两独立：</b>逐对验。例如 $\mathbb P(\xi=1,\zeta=1)=\frac14$（只有第 1 个点），而 $\mathbb P(\xi=1)\mathbb P(\zeta=1)=\frac12\cdot\frac12=\frac14$，相等。$\zeta$ 的边缘分布是 $\pm1$ 各 $\frac12$，所以三对都成立。</p>
+<p><b>不独立：</b>看三点同时：$\mathbb P(\xi=1,\eta=1,\zeta=1)=\frac14$（第 1 个点），而 $\mathbb P(\xi=1)\mathbb P(\eta=1)\mathbb P(\zeta=1)=\frac18$，不等。</p>
+<p><b>一句话理解：</b>$\zeta$ 由 $\xi,\eta$ 完全决定，三者之间有一条「$\zeta=\xi\eta$」的硬约束，所以不可能相互独立。但这条约束恰好让任意<em>两个</em>看起来无关——这是「两两独立 ⇏ 相互独立」的标准反例，值得记住。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">21. 设 $\xi_1,\cdots,\xi_r$ 是独立同分布随机变量，都服从几何分布，证明在 $\xi_1+\cdots+\xi_r=n$ 的条件下，$(\xi_1,\cdots,\xi_r)$ 的分布是均匀分布，即
+$\mathbb P(\xi_1=n_1,\cdots,\xi_r=n_r\mid\xi_1+\cdots+\xi_r=n)=1\Big/\dbinom{n-1}{r-1}$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>直接算条件概率，分子分母各自算。设 $\mathbb P(\xi_i=x)=(1-p)p^{x-1}$。</p>
+<p><b>分子：</b>由独立性，</p>
+\[\mathbb P(\xi_1=n_1,\dots,\xi_r=n_r)=\prod_{i=1}^r(1-p)p^{n_i-1}=(1-p)^r p^{\,n-r},\]
+<p>因为 $\sum n_i=n$。<b>关键观察：这个值与 $n_1,\dots,n_r$ 怎么分配完全无关</b>，只依赖总和 $n$。均匀性就来自这里。</p>
+<p><b>分母：</b>$\mathbb P(\xi_1+\cdots+\xi_r=n)$。把 $n$ 拆成 $r$ 个正整数之和，拆法有 $\binom{n-1}{r-1}$ 种（隔板法），每种的概率都是 $(1-p)^rp^{n-r}$，所以分母 $=\binom{n-1}{r-1}(1-p)^rp^{n-r}$。</p>
+<p>两者相除即得 $1/\binom{n-1}{r-1}$。分母里那个 $(1-p)^rp^{n-r}$ 和分子<strong>一模一样地约掉</strong>——这就是为什么结果与 $p$ 无关。</p>
+<p><b>直观：</b>$r$ 个独立几何变量之和，等于「把 $n$ 个位置切成 $r$ 段」，而每条切割线等可能——所以每种切法等概率。这个图像和负二项分布的组合意义是同一件事。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">28. 从 $\{1,\cdots,n\}$ 中独立重复地取一个数，$\xi_k$ 是第 $k$ 次取得的数。令 $\tau$ 是首次拿到偶数的时间，即
+$\tau=\inf\{k:\xi_k\text{ 是个偶数}\}$。求复合随机变量 $\xi_\tau$ 的分布。<br>
+注意：$\xi_\tau$ 的严格定义 $\xi_\tau:=\sum_{k\ge1}\xi_k\,1_{\{\tau=k\}}$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>两步。先认清 $\tau$ 是什么分布，再对每个可能的取值 $m$ 算 $\mathbb P(\xi_\tau=m)$。</p>
+<p><b>第一步：</b>每次取到偶数的概率是 $q=\dfrac{\#\{\text{偶数}\}}{n}=\dfrac{\lfloor n/2\rfloor}{n}$，且各次独立，所以 $\tau\sim$ 几何分布（参数 $q$），$\mathbb P(\tau=k)=(1-q)^{k-1}q$。</p>
+<p><b>第二步：</b>用 $\xi_\tau$ 的严格定义展开：</p>
+\[\mathbb P(\xi_\tau=m)=\sum_{k\ge1}\mathbb P(\tau=k,\ \xi_k=m)=\sum_{k\ge1}\mathbb P(\xi_1,\dots,\xi_{k-1}\text{ 全为奇数},\ \xi_k=m).\]
+<p>由独立性，右边 $=\mathbb P(\xi=m)\sum_{k\ge1}(1-q)^{k-1}=\dfrac{\mathbb P(\xi=m)}{q}$。</p>
+<p><b>结论：</b>$\xi_\tau$ 在偶数集上均匀分布（每个偶数概率 $1/\lfloor n/2\rfloor$，奇数概率 0）。</p>
+<p><b>别忘了：</b>题目问「求分布」，严格说要先说明 $\xi_\tau$ <b>是随机变量</b>——它是可数个可测函数之和，而 $\mathcal F$ 对可数并封闭（回到 <a href="#s13">§1.3</a>）。这正是教材把 $\xi_\tau=\sum\xi_k1_{\{\tau=k\}}$ 写成严格定义的原因，不是多余的谨慎。</p>
+</div>
+</li>
+
+</ol>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="pa">附录 A · 板书逐张对照</h2>
+
+<p>12 张照片，8 张黑板 + 4 张投影课件。按你给的顺序编号（与聊天里的附件编号一致）。</p>
+
+<table>
+<tr><th style="width:44px">#</th><th style="width:82px">类型</th><th>内容（摘要）</th><th style="width:150px">对应小节</th></tr>
+<tr><td>1</td><td>黑板</td><td>上半：$\xi=\sum_k k1_{A_k}$、$\xi_n\uparrow\xi$、$\mathbb E\xi=\lim\mathbb E\xi_n$（电话局例题）。下半：$\mathbb E(\xi+\eta)^+-\mathbb E(\xi+\eta)^-=\mathbb E\xi^++\mathbb E\eta^+-\mathbb E\xi^--\mathbb E\eta^-=\mathbb E\xi+\mathbb E\eta$，带花括号标 $=\mathbb E(\xi+\eta)$；右下角布置作业 P89 2·3·4 / P64 3·7·10·17·21·28</td><td><a href="#s42">§4.2</a>、<a href="#s31">§3.1</a>、<a href="#p5">第五部分</a></td></tr>
+<tr><td>2</td><td>黑板</td><td>同 #1 的上半张，更近的角度，看清了 $A_k$ 旁注「两两不相交」与「$k$ 表示呼叫次数」</td><td><a href="#s42">§4.2</a></td></tr>
+<tr><td>3</td><td>投影</td><td>讲义 p47 原文：$\mathbb E(|\xi+\eta|)\le\mathbb E|\xi|+\mathbb E|\eta|\lt\infty$；$(\xi+\eta)^+-(\xi+\eta)^-=\xi^+-\xi^-+\eta^+-\eta^-$；重排成 $(\xi+\eta)^++\xi^-+\eta^-=\xi^++\eta^++(\xi+\eta)^-$</td><td><a href="#s31">§3.1</a></td></tr>
+<tr><td>4</td><td>投影</td><td>课件「一般随机变量的期望」：正负部分分解 $\xi^\pm=\max\{\pm\xi,0\}$、$\xi=\xi^+-\xi^-$、$|\xi|=\xi^++\xi^-$；期望定义 $\mathbb E\xi=\mathbb E\xi^+-\mathbb E\xi^-$；「可积」$\mathbb E|\xi|\lt\infty$。右侧配穿过横轴的曲线图</td><td><a href="#s27">§2.7</a></td></tr>
+<tr><td>5</td><td>黑板</td><td>同 #1/#2，另一角度，主要看清 $\xi=\sum_{k=0}^\infty k1_{A_k}$ 的起始下标</td><td><a href="#s42">§4.2</a></td></tr>
+<tr><td>6</td><td>黑板</td><td>$A\in\mathcal F$，$\mathbb E(\xi;A)=\int_A\xi\,\mathrm d\mathbb P=\mathbb E(1_A\xi)=\int_\Omega1_A\xi\,\mathrm d\mathbb P$；$A=\Omega$ 时退回 $\mathbb E\xi=\int_\Omega\xi\,\mathrm d\mathbb P$。下半：性质 (1) $\mathbb E(\sum\xi_n)=\sum\mathbb E(\xi_n)$、(2) $\mathbb E(1_A)=\mathbb P(A)$，以及例题（电话局）的题面</td><td><a href="#s26">§2.6</a>、<a href="#s42">§4.2</a></td></tr>
+<tr><td>7</td><td>投影</td><td>课件「单调收敛定理」：定理陈述 + 「意义：可以把极限和期望交换」+ $\xi_1\to\xi_2\to\xi_3\to\cdots\to\xi$ 的链条图</td><td><a href="#s25">§2.5</a></td></tr>
+<tr><td>8</td><td>黑板</td><td>同 #6，另一角度（右侧多拍了「$A=\Omega$」那行）</td><td><a href="#s26">§2.6</a></td></tr>
+<tr><td>9</td><td>黑板</td><td>定理与证明：$\forall\xi\ge0,\exists\xi_n\ge0,\xi_n\in\mathcal S,\xi_n\uparrow$；定理「设 $\{\xi_n\}\subset\mathcal F_+$ 且 $\xi_n\uparrow\xi$，则 $\mathbb E(\xi)=\lim\mathbb E\xi_n$」，等号下标了 $\ge$ 与 $\le$ 两个方向；证明「只需证 $\mathbb E(\xi)\le\lim\mathbb E\xi_n$」。下半张：$A_n=\{\xi_n\ge a\eta\}$、$A_n\uparrow\Omega$</td><td><a href="#s25">§2.5</a></td></tr>
+<tr><td>10</td><td>投影</td><td>课件「独立随机变量乘积的期望」：结论 $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$；注意「反过来一般不成立」；课堂提醒「独立 ⇒ 乘积期望分解，但乘积期望分解 ⇏ 独立」。右侧三框流程图</td><td><a href="#s33">§3.3</a></td></tr>
+<tr><td>11</td><td>黑板</td><td>上半：离散型独立性判定 $\mathbb P(\xi_1\le x_1,\dots)=\sum_{y_i\le x_i}\mathbb P(\xi_1=y_1)\cdots\mathbb P(\xi_n=y_n)$，以及「$\{\xi_i\}_{i\in I}$ 一族随机变量，若 $\forall\{i_1,\dots,i_n\}\subset I$ 都……」的独立性定义。下半：二项分布 $\mathbb E\xi=\sum_{k=0}^nk\binom nk p^k(1-p)^{n-k}$ 的组合恒等式化简，末行 $=np$</td><td><a href="#s33">§3.3</a>、<a href="#s41">§4.1</a></td></tr>
+<tr><td>12</td><td>投影</td><td>课件「随机变量的独立性」：定义 $\mathbb P(\xi_1\le x_1,\dots,\xi_n\le x_n)=\prod\mathbb P(\xi_i\le x_i)$；离散型简化 $\mathbb P(\xi_1=x_1,\dots)=\prod\mathbb P(\xi_i=x_i)$；结论「任取一部分组成的新随机变量组仍相互独立」。页脚「第三章 条件概率与概率公式 24/52」</td><td><a href="#s33">§3.3</a></td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">一个容易误判的地方</p>
+<p>#12 那张课件的页脚写的是「<strong>第三章</strong> 条件概率与概率公式　24/52」，而 #4、#7、#10 的页脚是「<strong>第四章</strong> 随机变量的数字特征」。也就是说：<strong>独立性那一页属于第三章的课件，是这次课回头补的复习</strong>，不是第四章的内容。复习时如果只按「第四章」翻课件，会找不到它。</p>
+<p>另外，#3 那张「投影」其实不是课件，是<strong>讲义 PDF 的原页（p47）被投在幕布上</strong>——文字、字体、页码都和讲义一致。这说明老师上课是拿讲义直接讲的。</p>
+</div>
+
+<h2 id="pb">附录 B · 页码与材料索引</h2>
+
+<table>
+<tr><th style="width:180px">材料</th><th style="width:150px">位置</th><th>内容</th></tr>
+<tr><td rowspan="5">《概率论讲义（2026-9）》<br>（151 页 PDF）</td><td>p13–p17</td><td>§2.1 σ-代数、生成 σ-代数（定理 2.1.1）</td></tr>
+<tr><td>p18–p23</td><td>§2.2 随机变量（定义 2.2.1）、分布函数</td></tr>
+<tr><td>p31–p38</td><td>§3.3 独立性（定义 3.3.3 及性质）</td></tr>
+<tr><td>p39–p49</td><td><strong>§4.1 期望的定义和性质</strong>（本次课主线）</td></tr>
+<tr><td>p50 起</td><td>§4.2 收敛定理（<strong>还没讲</strong>）</td></tr>
+<tr><td rowspan="4">《概率论》第 2 版<br>（应坚刚、何萍）</td><td>p68–p75</td><td>§4.1 期望的定义和性质（定义 4.1.1–4.1.4、定理 4.1.1、推论 4.1.1–4.1.2、引理 4.1.1–4.1.3）</td></tr>
+<tr><td>p64–p67</td><td>第三章 §3.3 章末习题（作业 P64 那 6 题）</td></tr>
+<tr><td>p89 起</td><td>第四章 §4.5 章末习题（作业 P89 那 3 题）</td></tr>
+<tr><td>p76 起</td><td>§4.2 起（<strong>还没讲</strong>）</td></tr>
+<tr><td>课件 PPT</td><td>第四章 8/50、11/50</td><td>「独立随机变量乘积的期望」「一般随机变量的期望」（本次课实际停在这里附近）</td></tr>
+</table>
+
+<h2 id="pc">附录 C · 还没讲的</h2>
+
+<p>讲义 §4.1 到 p49 结束，后面这些这次课没讲，先列出来免得复习时误以为漏了：</p>
+
+<table>
+<tr><th style="width:130px">节</th><th>内容</th></tr>
+<tr><td>§4.2</td><td>收敛定理：控制收敛定理、Fatou 引理、有界收敛定理、a.s. 收敛、依概率收敛。<strong>这是下一次课最可能接着讲的地方</strong>（讲义 p50 起）。</td></tr>
+<tr><td>§4.3</td><td>期望的计算公式：$\mathbb E\varphi(\xi)=\sum\varphi(x)\mathbb P(\xi=x)$、$\mathbb E\varphi(\xi)=\int\varphi(x)f(x)\mathrm dx$。连续型那部分要等第五章。</td></tr>
+<tr><td>§4.4</td><td>方差、协方差、相关系数、Chebyshev 不等式、Cauchy–Schwarz / Hölder / Minkowski。</td></tr>
+<tr><td>§4.5</td><td>大数定律（作业 P89 就挂在这一节的章末）。</td></tr>
+<tr><td>第 5 章</td><td>连续型随机变量与密度函数（讲义 p65 起）。</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">下次课前值得先看的两处</p>
+<p>① <strong>讲义 §4.2 开头的控制收敛定理</strong>——它是 MCT 的直接搭档。MCT 要求「单调递增」，控制收敛定理把条件放宽成「被一个可积函数控制」，适用范围大得多。两者对照着看，能立刻明白 MCT 的局限在哪。</p>
+<p>② <strong>教材 p71–p72 关于「定理 4.1.1 的收敛条件可以减弱为 $\mathbb P(\xi=\lim\xi_n)=1$」的注</strong>——讲义 p44 也提了这句。这是从「逐点收敛」过渡到「a.s. 收敛」的入口，也是 §4.2 的起点。</p>
+</div>
+
+<div class="footnote">
+<p><strong>关于这份笔记</strong></p>
+<p>· 公式用离线 KaTeX 渲染，不依赖网络；文件路径 <code>概率论笔记-第四章期望.html</code>，配套资源在 <code>assets/katex/</code>。</p>
+<p>· <strong>来源三态已在每个小节标题标注</strong>：<span class="tag b">板书 N</span> 表示课上有照片、文字由照片逐字辨认；<span class="tag a">讲义 §x</span> 表示讲义有而课上未展开；<span class="tag c">教材 p.xx</span> 表示教材补充；无标签（<span class="tag">我补的</span>）表示上述三处都没有，是为把证明走通而补的中间步骤、反例或解释。<strong>无标签的内容不要当成老师讲过。</strong></p>
+<p>· 板书辨认的可靠性：电话局例题、单调收敛定理、$\mathbb E(\xi;A)$ 三块认得最清楚（有多个角度互相印证）；二项分布求和那一行的中间下标比较潦草，笔记里已按正确的组合恒等式写全，并在 <a href="#s41">§4.1</a> 注明「板书下标写得比较潦草」。</p>
+<p>· 讲义中发现的两处疑似笔误（p41 性质 (2) 与 p46 性质 (5)）都附了反例，见 <a href="#s34">§3.4</a>。判断依据是对照教材 p70 的推论 4.1.2、以及讲义自己 p49 的 Cauchy–Schwarz 证明——不是凭印象。</p>
+<p>· 第一部分（可测性）来自与 AI 的讨论记录，对应讲义 §2.1–§2.2，<strong>不是 10 月 8 日这次课的内容</strong>。放在前面是因为期望 = 积分，而积分要先有可测性。</p>
+</div>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body></html>
