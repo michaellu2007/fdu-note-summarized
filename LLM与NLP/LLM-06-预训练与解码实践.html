@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 06 · 预训练与解码实践 — CS40008.01 课程笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+  --purple:#5b3a8e; --purple-bg:#efe8f8;
+  --teal:#0d6b6b;  --teal-bg:#e0f2f2;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+  --purple:#b49ae0; --purple-bg:#2a1f3d;
+  --teal:#5cc9c9;  --teal-bg:#0d3030;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.85}
+.wrap{max-width:920px;margin:0 auto;padding:52px 30px 100px}
+
+h1{font-size:29px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.4;margin:56px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:17.5px;line-height:1.5;margin:34px 0 10px}
+h4{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:11px 0}
+ul,ol{padding-left:24px;margin:11px 0}
+li{margin:5px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;overflow-x:auto;margin:16px 0;line-height:1.65}
+pre code{background:none;border:none;padding:0;font-size:13.5px}
+
+.lede{font-size:16.5px;color:var(--ink2);margin:0 0 8px}
+.sub{color:var(--ink3);font-size:14px;margin:0 0 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin:0 0 6px;display:block}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+.box ul:last-child,.box ol:last-child{margin-bottom:0}
+
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;background:var(--bg2);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;
+  background:var(--gold-bg);color:var(--gold);white-space:nowrap;vertical-align:middle;font-weight:600}
+.tag.a{background:var(--purple-bg);color:var(--purple)}
+.tag.n{background:var(--ok-bg);color:var(--ok)}
+.tag.s{background:var(--accent-bg);color:var(--accent)}
+
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px}
+figcaption{font-size:13.5px;color:var(--ink3);margin-top:9px;line-height:1.7;text-align:left}
+svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+.toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
+.toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.toc ol{margin:0;padding-left:20px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc li{font-size:14.5px}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.katex{font-size:1.04em}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{font-size:13.5px;color:var(--ink3);line-height:1.85;margin-top:44px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+@media (max-width:680px){.cols{grid-template-columns:1fr}}
+.steps{counter-reset:st;list-style:none;padding-left:0}
+.steps li{counter-increment:st;position:relative;padding-left:38px;margin:10px 0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:2px;width:24px;height:24px;
+  border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.qa{border-left:3px solid var(--ok);padding-left:16px;margin:14px 0;color:var(--ink2)}
+
+/* 图 */
+.diagram{margin:24px 0;border:1px solid var(--line);border-radius:12px;
+  background:var(--bg3);padding:14px 10px}
+.diagram svg{width:100%;height:auto}
+.chart{margin:22px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:10px}
+.chart svg{width:100%;height:auto}
+
+/* 练习 */
+.ex{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;
+  padding:14px 20px;margin:22px 0;background:var(--bg3)}
+.ex .meta{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);
+  font-weight:700;margin:0 0 4px}
+.ex h4{margin:0 0 8px;font-size:16px;color:var(--ink)}
+details{margin:12px 0;border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden}
+details summary{cursor:pointer;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--accent);
+  list-style:none;user-select:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+details[open] summary::before{content:"▾ "}
+details .body{padding:2px 18px 14px;border-top:1px solid var(--line);font-size:14.5px}
+details .body p:first-child{margin-top:12px}
+
+/* 沙盒 */
+.sandbox{border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:16px 18px;margin:22px 0}
+.sandbox .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0}
+.sandbox label{font-size:13.5px;color:var(--ink2);min-width:96px}
+.sandbox input[type=range]{flex:1;min-width:180px;accent-color:var(--accent)}
+.sandbox .val{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;min-width:52px;text-align:right}
+.sandbox .stat{font-size:13.5px;color:var(--ink2);margin:8px 0 0;min-height:1.6em}
+.ibtn{font:inherit;font-size:13px;padding:6px 15px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink2)}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+.ibtn-main{background:var(--accent-bg);border-color:transparent;color:var(--accent);font-weight:600}
+
+/* 自测 */
+.quiz{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0;background:var(--bg3)}
+.quiz .q{font-weight:600;margin:0 0 6px}
+.quiz .q::before{content:"Q";display:inline-block;width:20px;height:20px;border-radius:5px;
+  background:var(--accent);color:#fff;font-size:12px;text-align:center;line-height:20px;margin-right:8px;vertical-align:1px}
+.quiz .a{color:var(--ink2);font-size:14.5px;margin:6px 0 0}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14.5px;margin:14px 0}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0}
+.small{font-size:13.5px;color:var(--ink3)}
+.nowrap{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">CS40008.01 · NLP and LLMs · Lecture 06</p>
+<h1>预训练与解码实践</h1>
+<p class="sub">Pretraining and decoding in practice · 复旦大学数据科学学院 · Baojian Zhou · 2026-10-14</p>
+
+<p class="lede">这节课回答一个问题：<strong>什么样的证据，能证明一次训练真的在起作用？</strong>
+前半段把「一个 batch 怎么变成一次参数更新」拆到每一步，并给出可以打印出来核对的检查；
+中间段讲学习率、梯度裁剪、验证损失、checkpoint 恢复——如何判断曲线和数字可信；
+后半段把模型<strong>冻住</strong>，只调解码策略，看同一份权重如何吐出不同的句子。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源标注</span>
+<p>这份笔记整理自课程公开课件（<code>baojian.github.io/llm-26-fall/slides/lecture-06/</code>），共 52 页，
+每页都带一段 <code>Note:</code> 讲者备注。标题后的标签含义：</p>
+<ul>
+<li><span class="tag s">课件</span> — 幻灯片正文里的内容（含公式、表格、示例数值）。</li>
+<li><span class="tag a">讲者备注</span> — 幻灯片 <code>Note:</code> 里的口头讲解与提醒，网页上默认不显示。</li>
+<li><span class="tag n">补充</span> — 课件只有图、或只给结论而没展开的地方，这里补的推导、验算与直觉。</li>
+</ul>
+<p>这一讲的幻灯片里有 <strong>7 张纯示意图</strong>（网页上靠 Excalidraw 绘制）和 <strong>4 张实测曲线</strong>。
+图里往往只画了流程，没写「为什么是这个顺序」「这个数怎么来的」。本笔记把它们全部重画成静态 SVG，
+并在每张图下面补齐公式推导和数值验算。老师特别提醒的易错点用<strong>橙色框</strong>标出。</p>
+</div>
+
+<div class="box key">
+<span class="label">先建立一条主线，再看细节</span>
+<p>整节课围绕一个 <strong>4608 个参数</strong>的玩具解码器（叫 Noa）转。词表只有 12 个词：</p>
+<p style="text-align:center;font-family:ui-monospace,Consolas,monospace;font-size:14.5px">
+Noa · can · be · annoying · but · she · is · a · great · cat · friend · EOS</p>
+<p>所有实验都在这 12 个词上做，所以每一步都能手算、能核对。三节课的分工是：</p>
+<ol>
+<li><strong>批次与优化器更新</strong> —— 一个窗口怎样变成 8 个损失项，8 个损失项怎样变成一次 <code>step()</code>。</li>
+<li><strong>训练证据与检查点</strong> —— 学习率、裁剪、验证损失、重启，四类证据各自能支撑什么结论。</li>
+<li><strong>生成与解码</strong> —— 权重不动，只改「怎么从 logits 里挑一个词」。</li>
+</ol>
+<p>贯穿全讲的判据只有一句：<strong>别人能不能照着你的记录，复现出同一组数字。</strong></p>
+</div>
+
+<div class="toc">
+<h3 id="toc">目录</h3>
+<ol>
+<li><a href="#p1">第一部分 · 批次与优化器更新</a>
+  <ol>
+    <li><a href="#s11">1.1 参数什么时候会变</a></li>
+    <li><a href="#s12">1.2 同一个 Noa 解码器</a></li>
+    <li><a href="#s13">1.3 数清 4608 个参数</a></li>
+    <li><a href="#s14">1.4 同一个模型，两个循环</a></li>
+    <li><a href="#s15">1.5 位移目标：哪个 token 是答案</a></li>
+    <li><a href="#s16">1.6 平均到每个预测 token 上</a></li>
+    <li><a href="#s17">1.7 为什么必须喂原始 logits</a></li>
+    <li><a href="#s18">1.8 跟着走完一次优化器更新</a></li>
+    <li><a href="#s19">1.9 计算真的到达参数了吗</a></li>
+    <li><a href="#s110">1.10 AdamW 为什么需要「记忆」</a></li>
+    <li><a href="#s111">1.11 把衰减从自适应更新里拆出来</a></li>
+    <li><a href="#s112">1.12 梯度累积：一次 step 前有多少 token</a></li>
+    <li><a href="#s113">1.13 让这次运行可被检查</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 训练证据与检查点</a>
+  <ol>
+    <li><a href="#s21">2.1 学习率调度：warmup 与余弦衰减</a></li>
+    <li><a href="#s22">2.2 梯度裁剪：只限一个全局范数</a></li>
+    <li><a href="#s23">2.3 先拟合一个已知答案的小问题</a></li>
+    <li><a href="#s24">2.4 留出集：在切窗口之前分开</a></li>
+    <li><a href="#s25">2.5 验证损失按 token 加权</a></li>
+    <li><a href="#s26">2.6 训练与验证要一起读</a></li>
+    <li><a href="#s27">2.7 看到现象，选下一个检查</a></li>
+    <li><a href="#s28">2.8 checkpoint 里到底要存什么</a></li>
+    <li><a href="#s29">2.9 恢复的顺序不能乱</a></li>
+    <li><a href="#s210">2.10 连续跑 vs 恢复跑：实测差异</a></li>
+    <li><a href="#s211">2.11 三类证据要分开</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 生成与解码</a>
+  <ol>
+    <li><a href="#s31">3.1 生成循环：每次只加一个词</a></li>
+    <li><a href="#s32">3.2 贪心：选概率最大的</a></li>
+    <li><a href="#s33">3.3 局部最优不等于全局最优</a></li>
+    <li><a href="#s34">3.4 温度：改变分布的集中程度</a></li>
+    <li><a href="#s35">3.5 top-k 与 top-p：固定个数还是固定质量</a></li>
+    <li><a href="#s36">3.6 nucleus 的准确定义</a></li>
+    <li><a href="#s37">3.7 停止条件与上下文管理</a></li>
+    <li><a href="#s38">3.8 同一个 checkpoint，不同策略</a></li>
+    <li><a href="#s39">3.9 这些检查怎么用到 A2</a></li>
+  </ol>
+</li>
+<li><a href="#ap">附录</a>
+  <ol>
+    <li><a href="#apA">A · GPT-1 到 GPT-3（可选）</a></li>
+    <li><a href="#apB">B · beam search（可选）</a></li>
+    <li><a href="#apC">C · AdamW 一步的手算（可选）</a></li>
+    <li><a href="#apD">D · 梯度被缩放过怎么办（可选）</a></li>
+    <li><a href="#apE">E · 与预训练计划的连接（可选）</a></li>
+    <li><a href="#apF">F · 速查表与自测</a></li>
+    <li><a href="#apG">G · 参考文献</a></li>
+  </ol>
+</li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="p1">第一部分 · 批次与优化器更新</h2>
+
+<p>第一节 45 分钟。目标很具体：把「一个窗口 → 8 个损失项 → 一次参数更新」这条链路走到能<strong>手算</strong>，
+并在链路的每个接口上放一个可以打印出来核对的量。</p>
+
+<h3 id="s11">1.1 参数什么时候会变 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>活动</th><th>模型收到什么</th><th>参数会更新吗</th></tr></thead>
+<tbody>
+<tr><td>预训练（pretraining）</td><td>语料样本与目标</td><td><strong>会</strong></td></tr>
+<tr><td>微调（fine-tuning）</td><td>任务样本或指令样本</td><td><strong>会</strong></td></tr>
+<tr><td>上下文内使用（in-context）</td><td>提示词里的示例</td><td><strong>不会</strong></td></tr>
+</tbody>
+</table>
+
+<p><span class="tag a">讲者备注</span> 老师让学生先回答「梯度计算发生在哪一行」。答案：只有前两行会算梯度；
+第三行里，示例改变的是<strong>激活值</strong>和预测，权重是冻结的。</p>
+
+<div class="box key">
+<span class="label">补充 · 三种「学习」的区别其实只有一条</span>
+<p>预训练和微调可以共用同一个 next-token 目标函数，区别只在<strong>数据</strong>和<strong>目的</strong>：
+预训练学「语言本身长什么样」，微调学「这个任务要求什么格式」。上下文内学习则完全不改参数——
+它把「学习」这件事挪到了<strong>前向计算的输入</strong>里。</p>
+<p>所以课件上那句判据要记牢：<strong>区分三者，看的是「使用过程中权重是否改变」。</strong></p>
+</div>
+
+<p><span class="tag a">讲者备注</span> 课件在这里压缩了一段 GPT 历史，作为动机而不是排名：</p>
+<table>
+<thead><tr><th>报告</th><th>重点在于「语言模型怎么被使用」</th></tr></thead>
+<tbody>
+<tr><td>GPT-1 · 2018</td><td>先做生成式预训练，再做有监督微调</td></tr>
+<tr><td>GPT-2 · 2019</td><td>通过<strong>语言模型提示</strong>来完成任务</td></tr>
+<tr><td>GPT-3 · 2020</td><td>把 few-shot 示例放进<strong>上下文</strong>里</td></tr>
+</tbody>
+</table>
+<p class="small">这三行是历史描述，不是「谁更强」的排名。详见 <a href="#apA">附录 A</a>。</p>
+
+<p><strong>今天要做的事：</strong>训练一个小 causal LM，存下来，再从它生成。</p>
+
+<h3 id="s12">1.2 同一个 Noa 解码器 <span class="tag s">课件</span></h3>
+
+<p>架构与 Lecture 05 完全一致，这里不重新推导注意力，只把它当成一个<strong>已知形状的黑箱</strong>来数参数。</p>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="Noa 模型结构：token 嵌入与位置嵌入相加，经过两个 pre-LN 块（四头注意力与 FFN），最终 LayerNorm 与绑定词表的读出层。">
+  <defs>
+    <marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif" font-size="13">
+    <!-- 输入 -->
+    <rect x="16" y="120" width="96" height="52" rx="8" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.2"/>
+    <text x="64" y="141" text-anchor="middle" fill="var(--accent)" font-size="12.5">输入 token id</text>
+    <text x="64" y="159" text-anchor="middle" fill="var(--accent)" font-size="12">(B, T) ≤ 10</text>
+
+    <!-- 嵌入 -->
+    <rect x="146" y="66" width="126" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="209" y="88" text-anchor="middle" fill="var(--ink)">token 嵌入</text>
+    <text x="209" y="106" text-anchor="middle" fill="var(--ink3)" font-size="12">12 × 16 = 192</text>
+
+    <rect x="146" y="176" width="126" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="209" y="198" text-anchor="middle" fill="var(--ink)">位置嵌入</text>
+    <text x="209" y="216" text-anchor="middle" fill="var(--ink3)" font-size="12">10 × 16 = 160</text>
+
+    <path d="M112 146 L128 146" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+    <path d="M128 146 L128 92 L140 92" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+    <path d="M128 146 L128 202 L140 202" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+
+    <!-- 相加 -->
+    <circle cx="300" cy="146" r="15" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.2"/>
+    <text x="300" y="151" text-anchor="middle" fill="var(--gold)" font-size="15" font-weight="700">+</text>
+    <path d="M272 92 L288 92 L288 134" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+    <path d="M272 202 L288 202 L288 158" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+
+    <!-- block -->
+    <rect x="330" y="40" width="196" height="212" rx="10" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <text x="428" y="32" text-anchor="middle" fill="var(--accent)" font-size="12.5" font-weight="600">pre-LN 块 × 2（结构相同，权重各自独立）</text>
+
+    <rect x="346" y="56" width="164" height="30" rx="6" fill="var(--accent-bg)" stroke="none"/>
+    <text x="428" y="76" text-anchor="middle" fill="var(--accent)" font-size="12.5">LayerNorm(16) · 32</text>
+    <rect x="346" y="94" width="164" height="44" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+    <text x="428" y="112" text-anchor="middle" fill="var(--ink)" font-size="12.5">4 头自注意力，每头宽 4</text>
+    <text x="428" y="129" text-anchor="middle" fill="var(--ink3)" font-size="11">Q K V O 各 16×16，无 bias</text>
+    <rect x="346" y="152" width="164" height="26" rx="6" fill="var(--ok-bg)" stroke="none"/>
+    <text x="428" y="170" text-anchor="middle" fill="var(--ok)" font-size="12.5">残差相加</text>
+    <rect x="346" y="188" width="164" height="30" rx="6" fill="var(--accent-bg)" stroke="none"/>
+    <text x="428" y="208" text-anchor="middle" fill="var(--accent)" font-size="12.5">LayerNorm(16) · 32</text>
+    <rect x="346" y="222" width="164" height="22" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+    <text x="428" y="237" text-anchor="middle" fill="var(--ink)" font-size="11">FFN 16→32→16（ReLU）</text>
+
+    <path d="M315 146 L324 146" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+    <path d="M526 146 L546 146" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+
+    <!-- 最终 LN -->
+    <rect x="552" y="120" width="86" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="595" y="141" text-anchor="middle" fill="var(--ink)" font-size="12.5">最终 LN</text>
+    <text x="595" y="159" text-anchor="middle" fill="var(--ink3)" font-size="12">32</text>
+
+    <!-- 读出 -->
+    <rect x="654" y="106" width="94" height="80" rx="8" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="1.2"/>
+    <text x="701" y="130" text-anchor="middle" fill="var(--gold)" font-size="12.5">绑定词表的</text>
+    <text x="701" y="147" text-anchor="middle" fill="var(--gold)" font-size="12.5">读出层</text>
+    <text x="701" y="167" text-anchor="middle" fill="var(--gold)" font-size="11.5">复用嵌入参数</text>
+
+    <path d="M638 146 L650 146" stroke="var(--ink3)" stroke-width="1.6" fill="none" marker-end="url(#ar1)"/>
+
+    <text x="380" y="286" text-anchor="middle" fill="var(--ink3)" font-size="12">宽度 16 · 4 头 × 4 · FFN 32 · LayerNorm ε = 1e-5 · 无 dropout · 无 Linear bias</text>
+    <text x="380" y="306" text-anchor="middle" fill="var(--ink3)" font-size="12">每个显示出来的词就是一个 token；一个窗口最多 10 个位置</text>
+  </g>
+</svg>
+<figcaption><strong>图 1 · Noa 解码器。</strong>同 Lecture 05 的教学架构。所有参数为 4608 个；
+输出层<strong>复用</strong> token 嵌入矩阵（weight tying），所以不额外产生参数。
+“pre-LN”指 LayerNorm 放在子层输入侧，残差支路保持恒等。</figcaption>
+</figure>
+
+<h3 id="s13">1.3 数清 4608 个参数 <span class="tag n">补充</span></h3>
+
+<p>课件只给了总数「两个块 4224，嵌入 192 + 160，最终归一化 32」。
+这个加法值得拆开验算一遍，因为它同时检查了你对多头、LayerNorm、FFN 的理解：</p>
+
+<table>
+<thead><tr><th>组件</th><th>形状</th><th class="num">参数</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>token 嵌入</td><td>12 × 16</td><td class="num">192</td><td>词表 12，宽度 16</td></tr>
+<tr><td>位置嵌入</td><td>10 × 16</td><td class="num">160</td><td>最多 10 个位置</td></tr>
+<tr><td>注意力 Q、K、V、O</td><td>4 × (16 × 16)</td><td class="num">1024</td><td>无 bias；多头是<strong>拼接</strong>不是相加，所以 4 个头合起来仍是 16×16</td></tr>
+<tr><td>块内 LayerNorm × 2</td><td>2 × (16 + 16)</td><td class="num">64</td><td>affine：γ 和 β 各 16</td></tr>
+<tr><td>FFN</td><td>16×32 + 32×16</td><td class="num">1024</td><td>512 + 512，无 bias</td></tr>
+<tr><td><strong>一个块合计</strong></td><td></td><td class="num"><strong>2112</strong></td><td>1024 + 64 + 1024</td></tr>
+<tr><td><strong>两个块</strong></td><td></td><td class="num"><strong>4224</strong></td><td>2 × 2112</td></tr>
+<tr><td>最终 LayerNorm</td><td>16 + 16</td><td class="num">32</td><td></td></tr>
+<tr><td><strong>总计</strong></td><td></td><td class="num"><strong>4608</strong></td><td>4224 + 192 + 160 + 32</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">易错点</span>
+<ul>
+<li><strong>多头不增加参数量。</strong>4 个头各宽 4，拼起来还是 16 维；Q/K/V/O 四个 16×16 矩阵就是全部。</li>
+<li><strong>绑定权重只算一次。</strong>读出层复用 <code>token_embedding.weight</code>，它是<strong>同一个</strong> Parameter 对象。
+写优化器参数组时如果把它列两次，梯度会被累加两遍——这是真实会发生的 bug。</li>
+<li>这个玩具刻意与 GPT-2 不同：用 ReLU 而不是 GELU，FFN 是 2 倍宽而不是 4 倍宽。目的是让参数少到能手算。</li>
+</ul>
+</div>
+
+<h3 id="s14">1.4 同一个模型，两个循环 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th></th><th>训练</th><th>生成</th></tr></thead>
+<tbody>
+<tr><td>目标从哪来</td><td>观测到的序列提供目标</td><td>已生成的 token 延长前缀</td></tr>
+<tr><td>一次前向算几个位置</td><td>一次算很多位置</td><td>只用最后一个位置的 logits</td></tr>
+<tr><td>参数</td><td>反向传播并更新权重</td><td>选一个 token，权重不动</td></tr>
+</tbody>
+</table>
+
+<p>两者共用同一条因果规则：<strong>位置 $t$ 只能看到 $t$ 及之前的输入</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 「一次算很多位置」不等于「这些预测互相独立」</span>
+<p>训练时一次前向得到 $B\times T$ 个位置的 logits，看起来像 $BT$ 个独立样本，
+其实它们共享同一组权重、同一条序列的上下文。这正是为什么梯度要<strong>求和再平均</strong>，
+而不是把每个位置当成一次独立的参数更新。</p>
+<p>另一个容易混的点：<strong>因果掩码本身不会产生位移目标</strong>。
+掩码只保证「看的位置合法」，而「预测下一个词」这个偏移是你在<strong>切数组</strong>时手工做出来的（见下一节）。
+两者缺一不可。</p>
+</div>
+
+<h3 id="s15">1.5 位移目标：哪个 token 是答案 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-label="一个含五个 token 的窗口切出四个输入和四个目标，每个目标都是它右边相邻的 token。">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--gold)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="16" y="26" font-size="13" fill="var(--ink2)">一个长度 5 的窗口（T+1 = 5）</text>
+
+    <!-- 原始窗口 -->
+    <g>
+      <rect x="16" y="40" width="132" height="44" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="82" y="68" text-anchor="middle" font-size="14" fill="var(--ink)">Noa</text>
+      <rect x="156" y="40" width="132" height="44" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="222" y="68" text-anchor="middle" font-size="14" fill="var(--ink)">can</text>
+      <rect x="296" y="40" width="132" height="44" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="362" y="68" text-anchor="middle" font-size="14" fill="var(--ink)">be</text>
+      <rect x="436" y="40" width="132" height="44" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="502" y="68" text-anchor="middle" font-size="14" fill="var(--ink)">annoying</text>
+      <rect x="576" y="40" width="132" height="44" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="642" y="68" text-anchor="middle" font-size="14" fill="var(--ink)">but</text>
+    </g>
+
+    <!-- 输入 -->
+    <text x="16" y="132" font-size="13" fill="var(--accent)">输入 x（4 个位置）</text>
+    <g>
+      <rect x="16" y="144" width="132" height="44" rx="7" fill="var(--accent-bg)" stroke="none"/>
+      <text x="82" y="172" text-anchor="middle" font-size="14" fill="var(--accent)">Noa</text>
+      <rect x="156" y="144" width="132" height="44" rx="7" fill="var(--accent-bg)" stroke="none"/>
+      <text x="222" y="172" text-anchor="middle" font-size="14" fill="var(--accent)">can</text>
+      <rect x="296" y="144" width="132" height="44" rx="7" fill="var(--accent-bg)" stroke="none"/>
+      <text x="362" y="172" text-anchor="middle" font-size="14" fill="var(--accent)">be</text>
+      <rect x="436" y="144" width="132" height="44" rx="7" fill="var(--accent-bg)" stroke="none"/>
+      <text x="502" y="172" text-anchor="middle" font-size="14" fill="var(--accent)">annoying</text>
+    </g>
+    <text x="580" y="172" font-size="12" fill="var(--ink3)">第 5 个 token 不进输入</text>
+
+    <!-- 目标 -->
+    <text x="16" y="238" font-size="13" fill="var(--gold)">目标 y（同样是 4 个位置，整体右移一格）</text>
+    <g>
+      <rect x="156" y="220" width="132" height="44" rx="7" fill="var(--gold-bg)" stroke="none"/>
+      <text x="222" y="248" text-anchor="middle" font-size="14" fill="var(--gold)">can</text>
+      <rect x="296" y="220" width="132" height="44" rx="7" fill="var(--gold-bg)" stroke="none"/>
+      <text x="362" y="248" text-anchor="middle" font-size="14" fill="var(--gold)">be</text>
+      <rect x="436" y="220" width="132" height="44" rx="7" fill="var(--gold-bg)" stroke="none"/>
+      <text x="502" y="248" text-anchor="middle" font-size="14" fill="var(--gold)">annoying</text>
+      <rect x="576" y="220" width="132" height="44" rx="7" fill="var(--gold-bg)" stroke="none"/>
+      <text x="642" y="248" text-anchor="middle" font-size="14" fill="var(--gold)">but</text>
+    </g>
+
+    <!-- 箭头 -->
+    <path d="M82 190 L214 218" stroke="var(--gold)" stroke-width="1.4" fill="none" marker-end="url(#ar2)"/>
+    <path d="M222 190 L354 218" stroke="var(--gold)" stroke-width="1.4" fill="none" marker-end="url(#ar2)"/>
+    <path d="M362 190 L494 218" stroke="var(--gold)" stroke-width="1.4" fill="none" marker-end="url(#ar2)"/>
+    <path d="M502 190 L634 218" stroke="var(--gold)" stroke-width="1.4" fill="none" marker-end="url(#ar2)"/>
+
+    <text x="380" y="288" text-anchor="middle" font-size="12" fill="var(--ink3)">箭头表示「谁预测谁」，不是注意力边</text>
+  </g>
+</svg>
+<figcaption><strong>图 2 · 位移目标。</strong>一个 $(B, T+1)$ 的窗口切出两个 $(B, T)$ 的数组。
+五个 token 只产生<strong>四个</strong>损失项——最后一个 <code>but</code> 在下一行里才成为目标。
+注意 <code>annoying</code> 这个位置的输入可以看 <code>Noa, can, be, annoying</code>，但<strong>不能</strong>看它的目标 <code>but</code>。</figcaption>
+</figure>
+
+<p>用代码写出来只有两行：</p>
+
+<pre><code>inputs  = window[:, :-1]   # 去掉最后一个
+targets = window[:, 1:]    # 去掉第一个</code></pre>
+
+<div class="ex">
+<p class="meta">Exercise E01 · 4 分钟</p>
+<h4>构造批次</h4>
+<pre><code>windows = [[0, 1, 2, 3, 4],
+           [4, 5, 6, 7, 8]]</code></pre>
+<p>每个目标都要被计分。写出输入数组、目标数组，以及损失项的个数。</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p>输入：<code>[[0,1,2,3], [4,5,6,7]]</code><br>
+目标：<code>[[1,2,3,4], [5,6,7,8]]</code></p>
+<p>$B=2$，$T=4$，共 <strong>8</strong> 个被预测的 token。</p>
+<p class="small">注意 <code>4</code>（= <code>but</code>）同时出现在第一行的目标里和第二行的输入里。这是正常的：
+它是第一个窗口的最后一个目标，也是第二个窗口的第一个输入。</p>
+</div>
+</details>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 三种常见错误</span>
+<ul>
+<li>把同一个数组用了两次（输入 = 目标），那模型学的是「复制输入」。</li>
+<li>每个窗口数 5 个预测（应该是 4 个）。</li>
+<li>把损失项个数乘上词表大小——词表大小决定的是 logits 的<strong>那一维</strong>，不是观测个数。</li>
+</ul>
+<p>另外，切完的数组在 PyTorch 里可能不连续，<code>view()</code> 之前需要 <code>contiguous()</code>，
+或者直接用 <code>reshape()</code>。</p>
+</div>
+
+<h3 id="s16">1.6 平均到每个预测 token 上 <span class="tag s">课件</span></h3>
+
+<p>$$L=-\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}\log p_\theta\left(y_{b,t}\mid x_{b,1:t}\right)$$</p>
+
+<ul>
+<li>把<strong>原始 logits</strong> 喂给交叉熵。</li>
+<li>对所有被计分的目标位置<strong>求平均</strong>。</li>
+<li>报告时要写清约定：这里是 <strong>nats per token</strong>（自然对数，每个 token 的平均负对数似然）。</li>
+</ul>
+
+<p class="small">这个 batch 没有 padding。如果用了 <code>ignore_index</code>，分母要换成<strong>实际被计分的 token 数</strong>，不是 $BT$。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个式子的三个隐含约定</span>
+<ol>
+<li><strong>分母是 token 数，不是序列数。</strong>长句子贡献的损失项多，权重就大。想让每个<strong>文档</strong>等权，
+就得按文档分别求平均再加权——课件后面 §2.6 的「按文档均匀采样」正是这件事。</li>
+<li><strong>$t$ 从 1 开始只是为了读起来顺</strong>，代码里的数组下标仍然是 0。</li>
+<li><strong>「平均」发生在 log 之后，不是之前。</strong>先平均概率再取 log 得到的是完全不同的量（几何平均 vs 算术平均）。</li>
+</ol>
+</div>
+
+<h3 id="s17">1.7 为什么必须喂原始 logits <span class="tag n">补充</span></h3>
+
+<p>课件只用一句话带过「PyTorch 的 <code>cross_entropy</code> 内部做了 log-softmax」，但这是本讲最容易写错的一行代码，
+值得把数学写清楚。设某位置的 logits 为 $z\in\mathbb{R}^{V}$，正确 token 的下标是 $y$：</p>
+
+<p>$$p(y\mid x)=\frac{e^{z_y}}{\sum_{j=1}^{V}e^{z_j}}
+\quad\Longrightarrow\quad
+\log p(y\mid x)=z_y-\log\sum_{j=1}^{V}e^{z_j}$$</p>
+
+<p>右边第二项就是 <strong>log-sum-exp</strong>。它有两个好性质：</p>
+<ul>
+<li><strong>数值稳定</strong>：实现时先减去 $\max_j z_j$，指数不会溢出：
+$\log\sum_j e^{z_j}=m+\log\sum_j e^{z_j-m}$，其中 $m=\max_j z_j$。</li>
+<li><strong>不用真的算概率</strong>：整个过程在 log 域完成，永远不会出现 $\log 0$。</li>
+</ul>
+
+<div class="box warn">
+<span class="label">易错点 · 先 softmax 再取 log</span>
+<p>如果你写成 <code>log(softmax(logits))</code>，那么当某个 logit 明显偏小时，
+<code>softmax</code> 会输出精确的 <code>0.0</code>，接着 <code>log(0) = -inf</code>，损失变成 <code>inf</code>，
+反向传播得到 <code>nan</code>。正确的写法是：</p>
+<pre><code>loss = F.cross_entropy(logits.reshape(-1, V), targets.reshape(-1))</code></pre>
+<p>一行搞定 log-softmax + 取目标 + 求平均，且全程数值稳定。</p>
+</div>
+
+<p><strong>单位换算。</strong>如果损失用自然对数，困惑度就是 $\mathrm{PPL}=e^{L}$；
+如果换成以 2 为底，则 $\mathrm{PPL}=2^{L}$。两个数不能直接比——这也是为什么课件反复强调
+「比较困惑度必须在相同的分词与计分约定下」。</p>
+
+<h3 id="s18">1.8 跟着走完一次优化器更新 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="一次优化器更新的八个有序阶段：进入训练模式并清梯度、前向得到 logits、算平均损失、反向传播、裁剪、设置学习率、优化器步进、记录完成。">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.7"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <!-- row 1 -->
+    <g>
+      <rect x="16" y="34" width="164" height="88" rx="9" fill="var(--accent-bg)" stroke="none"/>
+      <text x="98" y="62" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--accent)">1 · 训练模式</text>
+      <text x="98" y="84" text-anchor="middle" font-size="12" fill="var(--ink2)">model.train()</text>
+      <text x="98" y="104" text-anchor="middle" font-size="11" fill="var(--ink2)">zero_grad(set_to_none=True)</text>
+
+      <rect x="204" y="34" width="164" height="88" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="286" y="62" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ink)">2 · 前向</text>
+      <text x="286" y="84" text-anchor="middle" font-size="12" fill="var(--ink2)">logits: (B, T, V)</text>
+      <text x="286" y="104" text-anchor="middle" font-size="12" fill="var(--ink3)">不做 softmax</text>
+
+      <rect x="392" y="34" width="164" height="88" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="474" y="62" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ink)">3 · 平均损失</text>
+      <text x="474" y="84" text-anchor="middle" font-size="12" fill="var(--ink2)">位移目标 → 交叉熵</text>
+      <text x="474" y="104" text-anchor="middle" font-size="12" fill="var(--ink3)">标量，nats/token</text>
+
+      <rect x="580" y="34" width="164" height="88" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="662" y="62" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ink)">4 · 反向</text>
+      <text x="662" y="84" text-anchor="middle" font-size="12" fill="var(--ink2)">loss.backward()</text>
+      <text x="662" y="104" text-anchor="middle" font-size="12" fill="var(--ink3)">参数 .grad 被写</text>
+    </g>
+
+    <path d="M184 78 L198 78" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+    <path d="M372 78 L386 78" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+    <path d="M560 78 L574 78" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+
+    <!-- 下折 -->
+    <path d="M662 126 L662 152 L98 152 L98 176" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+
+    <!-- row 2 -->
+    <g>
+      <rect x="16" y="182" width="164" height="88" rx="9" fill="var(--gold-bg)" stroke="none"/>
+      <text x="98" y="210" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--gold)">5 · 裁剪</text>
+      <text x="98" y="232" text-anchor="middle" font-size="12" fill="var(--ink2)">clip_grad_norm_(1.0)</text>
+      <text x="98" y="252" text-anchor="middle" font-size="11.5" fill="var(--ink3)">返回裁剪前范数</text>
+
+      <rect x="204" y="182" width="164" height="88" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="286" y="210" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ink)">6 · 设定学习率</text>
+      <text x="286" y="232" text-anchor="middle" font-size="12" fill="var(--ink2)">scheduler → lr</text>
+      <text x="286" y="252" text-anchor="middle" font-size="11.5" fill="var(--ink3)">必须在 step 之前</text>
+
+      <rect x="392" y="182" width="164" height="88" rx="9" fill="var(--ok-bg)" stroke="none"/>
+      <text x="474" y="210" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ok)">7 · 步进</text>
+      <text x="474" y="232" text-anchor="middle" font-size="12" fill="var(--ink2)">optimizer.step()</text>
+      <text x="474" y="252" text-anchor="middle" font-size="11.5" fill="var(--ink3)">参数在这里改变</text>
+
+      <rect x="580" y="182" width="164" height="88" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="662" y="210" text-anchor="middle" font-size="13.5" font-weight="650" fill="var(--ink)">8 · 记录</text>
+      <text x="662" y="232" text-anchor="middle" font-size="12" fill="var(--ink2)">updates += 1</text>
+      <text x="662" y="252" text-anchor="middle" font-size="11.5" fill="var(--ink3)">loss / lr / 裁剪前范数</text>
+    </g>
+
+    <path d="M184 226 L198 226" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+    <path d="M372 226 L386 226" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+    <path d="M560 226 L574 226" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar3)"/>
+
+    <text x="380" y="300" text-anchor="middle" font-size="12" fill="var(--ink3)">优化器只在第 7 步改变参数；梯度在第 4 步就已经算完了</text>
+  </g>
+</svg>
+<figcaption><strong>图 3 · 一次更新的八个阶段。</strong>读法是先从左到右读第一行，再折到第二行。
+顺序里有三处<strong>不能换</strong>：清梯度必须在反向之前、裁剪必须在反向之后、学习率必须在步进之前。</figcaption>
+</figure>
+
+<p><span class="tag a">讲者备注</span> 每一步的理由：</p>
+
+<ol class="steps">
+<li><strong>清梯度。</strong>PyTorch 的 <code>.grad</code> 是<strong>累加</strong>的。不清就会把上一个 batch 的梯度混进来——
+这不是「多余的一步」，而是梯度累积（§1.12）能被复用的原因。</li>
+<li><strong>前向。</strong>得到 $(B,T,V)$ 的 logits。$V=12$ 是词表大小，它只影响 logits 的最后一维。</li>
+<li><strong>平均损失。</strong>位移目标 + 交叉熵，得到一个标量。</li>
+<li><strong>反向。</strong>只有张量还连着计算图、且 <code>requires_grad</code> 时才会写 <code>.grad</code>。
+如果中途对 loss 做了 <code>.detach()</code>，反向会直接报错。</li>
+<li><strong>裁剪。</strong>在所有 micro-batch 的反向都完成之后做，只做一次（§2.2）。</li>
+<li><strong>设定学习率。</strong>调度器给出<strong>这一次</strong>更新该用的 $\eta_s$。顺序反了，第一次更新用的就是旧值。</li>
+<li><strong>步进。</strong>参数、AdamW 的 $m$ 和 $v$、<code>step</code> 计数都在这里改变。</li>
+<li><strong>记录。</strong>在 step <strong>成功之后</strong>才把 <code>completed_updates</code> 加一。这样 checkpoint 里的计数与参数永远一致。</li>
+</ol>
+
+<p class="small">这份代码跑在 CPU float32 上，没有 gradient scaler。如果用了混合精度，裁剪前必须先 unscale——
+见 <a href="#apD">附录 D</a>。</p>
+
+<h3 id="s19">1.9 计算真的到达参数了吗 <span class="tag s">课件</span></h3>
+
+<pre><code>loss.backward()
+print(torch.isfinite(loss).item())
+print(model.token_embedding.weight.grad.norm())
+before = model.token_embedding.weight.detach().clone()
+optimizer.step()
+print((model.token_embedding.weight - before).abs().max())</code></pre>
+
+<p>四行代码，四个不同的问题：</p>
+
+<table>
+<thead><tr><th>检查</th><th>回答什么问题</th><th>失败意味着</th></tr></thead>
+<tbody>
+<tr><td><code>isfinite(loss)</code></td><td>损失是有限数吗</td><td>已经 <code>nan</code>/<code>inf</code>，后面的检查都没意义</td></tr>
+<tr><td><code>grad.norm()</code></td><td>梯度非零吗</td><td>计算图断了、目标错了、或该参数没被用到</td></tr>
+<tr><td><code>before.clone()</code></td><td>留一份参数快照</td><td>（不 clone 会拿到同一个张量的引用，差永远是 0）</td></tr>
+<tr><td><code>max(|θ−θ₀|)</code></td><td>参数真的变了吗</td><td>学习率为 0、<code>step()</code> 没调用、优化器拿错了参数</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这些检查只是局部证据</span>
+<ul>
+<li><strong>参数变化非零，不能证明方向对。</strong>AdamW 的解耦衰减本身就会让参数变化，哪怕梯度全为零。</li>
+<li><strong>某个参数没有梯度是合法的。</strong>没被这次前向用到的参数，<code>.grad</code> 就是 <code>None</code>。</li>
+<li><code>model.eval()</code> 改变的是<strong>模块行为</strong>（dropout、BatchNorm），<code>torch.no_grad()</code> 关闭的是<strong>梯度记录</strong>。
+两件事不同：Noa 没有 dropout，所以 <code>eval()</code> 对它没有数值影响，但代码里仍然应该写对。</li>
+<li><strong>模型状态与优化器状态是两个对象。</strong>只存 <code>model.state_dict()</code>，恢复后 AdamW 的记忆是空的。</li>
+</ul>
+</div>
+
+<h3 id="s110">1.10 AdamW 为什么需要「记忆」 <span class="tag s">课件</span></h3>
+
+<p>$$m_t=\beta_1 m_{t-1}+(1-\beta_1)\,g_t$$</p>
+<p>$$v_t=\beta_2 v_{t-1}+(1-\beta_2)\,g_t^{2}$$</p>
+
+<table>
+<thead><tr><th>状态</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>$m_t$</td><td>平滑后的梯度<strong>方向</strong>（一阶矩）</td></tr>
+<tr><td>$v_t$</td><td>平滑后的梯度平方<strong>尺度</strong>（二阶矩）</td></tr>
+</tbody>
+</table>
+
+<p>这两条是<strong>逐元素</strong>的递推，$t$ 数的是<strong>优化器更新次数</strong>，不是序列位置。</p>
+
+<div class="box key">
+<span class="label">补充 · 用三个数看懂「记忆」</span>
+<p>设 $\beta_1=0.9$，$m_0=0$，梯度序列 $g=+1,\,+1,\,-1$：</p>
+<ul>
+<li>$m_1=0.9\times0+0.1\times1=0.1$</li>
+<li>$m_2=0.9\times0.1+0.1\times1=0.19$</li>
+<li>$m_3=0.9\times0.19+0.1\times(-1)=0.071$</li>
+</ul>
+<p>第三步的梯度明明是 $-1$，平滑方向却<strong>仍然是正的</strong>——因为前两步的正梯度还留在 $m$ 里。
+这就是为什么恢复训练时必须把 $m$ 和 $v$ 一起恢复：<strong>下一次更新的结果依赖历史，而不只依赖当前梯度</strong>。</p>
+<p>对比一下：不带动量的 SGD 更新是 $\theta\leftarrow\theta-\eta g$，只看当前 $g$，所以它的状态只有参数本身。
+这个差别正是 §2.8 那个 checkpoint 清单的由来。</p>
+</div>
+
+<h3 id="s111">1.11 把衰减从自适应更新里拆出来 <span class="tag s">课件</span></h3>
+
+<p>$$\theta_t=(1-\eta_t\lambda)\,\theta_{t-1}-\eta_t\frac{\widehat m_t}{\sqrt{\widehat v_t}+\epsilon}$$</p>
+
+<table>
+<thead><tr><th>实验</th><th>权重衰减设置</th></tr></thead>
+<tbody>
+<tr><td>今天的 Noa 实验</td><td>所有参数 $\lambda=0$</td></tr>
+<tr><td>需要衰减的实验</td><td>记录<strong>哪些参数</strong>接受了衰减</td></tr>
+</tbody>
+</table>
+
+<p class="small">对 Adam 来说，往损失里加一个 L2 项，得到的更新一般与解耦衰减<strong>不同</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么「L2 正则」在 Adam 上不等价</span>
+<p>如果走 L2 路线，损失变成 $L+\frac{\lambda}{2}\|\theta\|^2$，梯度变成 $g_t+\lambda\theta_{t-1}$。这个 $\lambda\theta$ 会：
+<strong>①</strong> 进入一阶矩 $m$（被历史平滑）；<strong>②</strong> 进入二阶矩 $v$（改变每个坐标的缩放）。
+结果是：梯度大的坐标被衰减得<strong>少</strong>，梯度小的坐标被衰减得<strong>多</strong>——这不是我们想要的「一视同仁地缩小」。</p>
+<p>解耦衰减把 $\lambda\theta$ 直接乘在参数上，完全绕开 $m$ 和 $v$。所以公式里它写成乘法 $(1-\eta\lambda)$，而不是梯度里的一项。
+这就是 Adam<strong>W</strong> 里那个 W（decoupled <strong>W</strong>eight decay）的含义。</p>
+<p>课件特意指出「今天 $\lambda=0$」：<strong>调用 <code>torch.optim.AdamW</code> 不等于使用了衰减</strong>，
+因为默认 <code>weight_decay=0.01</code> 是可以被显式设成 0 的。这里设 0 是为了保住 Lecture 05 的拟合基线，
+把变量隔离到 checkpoint 行为上。</p>
+</div>
+
+<p>真实的训练还要额外定一条策略：<strong>bias、LayerNorm 的 $\gamma/\beta$、嵌入矩阵要不要衰减？</strong>
+常见做法是只对矩阵权重衰减，但这属于<strong>实验设置</strong>，不是普遍最优，必须在记录里写清楚。</p>
+
+<h3 id="s112">1.12 梯度累积：一次 step 前有多少 token <span class="tag s">课件</span></h3>
+
+<p>$$\text{tokens per update}=B\times T\times K$$</p>
+
+<pre><code>optimizer.zero_grad(set_to_none=True)
+for microbatch in two_equal_microbatches:
+    loss = mean_loss(microbatch)
+    (loss / 2).backward()
+clip_grad_norm_(model.parameters(), max_norm=1.0)
+optimizer.step()</code></pre>
+
+<p class="small">单进程；$K=2$ 个等大的 micro-batch；每个位置都计分。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么是 <code>loss / 2</code></span>
+<p>设两个 micro-batch 各有 $n$ 个计分 token，各自的平均损失为 $L_1,L_2$。整批的平均损失是</p>
+<p>$$L=\frac{nL_1+nL_2}{2n}=\frac{L_1+L_2}{2}$$</p>
+<p>而反向传播是<strong>线性</strong>的：$\nabla\frac{L_1+L_2}{2}=\frac{1}{2}\nabla L_1+\frac{1}{2}\nabla L_2$。
+所以对每个 $L_k$ 先除以 $K$ 再 backward，累加出来的梯度<strong>恰好</strong>等于整批的梯度。
+忘了除，梯度就是 $K$ 倍大——配合固定的裁剪阈值，效果等于把学习率悄悄放大了。</p>
+<p><strong>如果各 micro-batch 的计分 token 数不同</strong>，$1/K$ 就不对了，必须按实际 token 数加权：
+权重是 $n_k/\sum_j n_j$，而不是 $1/K$。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 累积时的三条纪律</span>
+<ul>
+<li><strong>裁剪放在所有 micro-batch 之后、step 之前</strong>，只做一次。</li>
+<li><strong>学习率调度每次<strong>优化器更新</strong>推进一格</strong>，不是每个 micro-batch 推进一格。</li>
+<li>中间那些 <code>backward()</code> 不会改变优化器状态——<code>step()</code> 才是唯一改变 $m,v$ 的地方。</li>
+</ul>
+<p>分布式训练还会多一个 world size 因子，但那要按具体协议算，超出今天单进程的范围。</p>
+</div>
+
+<div class="ex">
+<p class="meta">Exercise E02 · 4 分钟</p>
+<h4>数 token 与更新次数</h4>
+<p>micro-batch 大小 $B=4$，长度 $T=8$，累积 $K=2$。单进程完成 <strong>32 次优化器更新</strong>，没有 padding。</p>
+<ol>
+<li>一次更新有多少 token 参与？</li>
+<li>总共处理了多少个 micro-batch、多少个 token？</li>
+</ol>
+<details><summary>看答案</summary>
+<div class="body">
+<p>$4\times8\times2=64$ tokens/update。<br>
+$32\times2=64$ 个 micro-batch；$32\times64=2{,}048$ 个 token。</p>
+<p class="small">注意单位：一个 micro-batch <strong>不是</strong>一次优化器更新。
+另外，重复采样不代表这 2048 个是<strong>互不相同的</strong>语料 token——
+要数 epoch，必须先定义「怎样遍历一遍数据」。</p>
+</div>
+</details>
+</div>
+
+<h3 id="s113">1.13 让这次运行可被检查 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>记录项</th><th>例子 / 单位</th></tr></thead>
+<tbody>
+<tr><td>配置与输入</td><td>代码版本、数据与分词器的哈希、随机种子</td></tr>
+<tr><td>完成了多少工作</td><td>优化器更新次数、已处理 token 数</td></tr>
+<tr><td>优化信号</td><td>学习率、损失（nats/token）、<strong>裁剪前</strong>的梯度范数</td></tr>
+<tr><td>成本</td><td>耗时（秒）、进程峰值内存</td></tr>
+</tbody>
+</table>
+
+<p><strong>把设置和测量放在一起。</strong></p>
+
+<div class="box key">
+<span class="label">补充 · 为什么这四项缺一不可</span>
+<p>只有「吞吐 = 12k tokens/s」这一个数字，是无法解释的：不知道 batch 多大、上下文多长、什么设备、
+计时边界包不包含导入和 checkpoint I/O。<strong>数字脱离协议就没有意义。</strong></p>
+<p>同理，只报「loss = 0.51」也不行：不知道分母是 token 还是文档、不知道词表、不知道有没有 padding。
+所以课件把「配置」和「测量」绑在同一张表里——它们是同一条记录的两半。</p>
+</div>
+
+<p><span class="tag a">讲者备注</span> 这一节的示范记录在 <code>assets/evidence-summary.json</code> 里，
+课堂上只展示结构，不逐行念。另外两个容易混的点：</p>
+<ul>
+<li>重启实验用的是<strong>定长文档</strong>，而开发集那次跑的是<strong>变长文档均匀采样</strong>，所以要报实际 token 数，不能报「× 文档数」。</li>
+<li>耗时是否包含导入、checkpoint I/O、子进程启动，必须在记录里说明。</li>
+</ul>
+
+<hr>
+
+<h2 id="p2">第二部分 · 训练证据与检查点</h2>
+
+<p>第二节 45 分钟。上一节保证了「更新确实发生了」，这一节要回答「更新<strong>朝对的方向</strong>发生了吗」，
+以及「别人能不能复现出同样的更新」。四个工具：学习率调度、梯度裁剪、验证损失、checkpoint。</p>
+
+<h3 id="s21">2.1 学习率调度：warmup 与余弦衰减 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-lr"></div>
+<p class="small" style="text-align:center">图 4 · 重启实验用的调度：40 次更新，前 4 次线性 warmup，峰值 0.02，最低 0.002。</p>
+
+<p>$$\eta_s=\eta_{\max}\frac{s+1}{w}\qquad(s&lt;w)$$</p>
+
+<p>$$q=\frac{s-w+1}{N-w},\qquad
+\eta_s=\eta_{\min}+\frac{\eta_{\max}-\eta_{\min}}{2}\left(1+\cos\pi q\right)$$</p>
+
+<table>
+<thead><tr><th>更新下标</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$w-1$</td><td>warmup 的峰值</td></tr>
+<tr><td>$N-1$</td><td>最后一次更新，学习率降到最低</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 两个端点各验算一次</span>
+<p>取 $N=40,\ w=4,\ \eta_{\max}=0.02,\ \eta_{\min}=0.002$（就是图 4 那条曲线）：</p>
+<ul>
+<li><strong>$s=0$：</strong>$\eta_0=0.02\times\frac{1}{4}=0.005$ ✔ 图上的第一个点。</li>
+<li><strong>$s=3=w-1$：</strong>$\eta_3=0.02\times\frac{4}{4}=0.02$ ✔ 峰值。</li>
+<li><strong>$s=4$：</strong>$q=\frac{4-4+1}{36}=\frac{1}{36}$，$\cos\frac{\pi}{36}\approx0.9962$，
+$\eta=0.002+0.009\times1.9962\approx0.01997$ ✔ 曲线刚从峰值开始下滑。</li>
+<li><strong>$s=39=N-1$：</strong>$q=\frac{39-4+1}{36}=1$，$\cos\pi=-1$，$\eta=\eta_{\min}=0.002$ ✔ 正好落在最低点。</li>
+</ul>
+<p>注意 $s=4$ 时 $\cos$ 的宗量<strong>不是</strong> 0，所以曲线在峰值后立刻有一点下折；
+这是这套约定的特点，不是画错了。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 三个提醒</span>
+<ul>
+<li><strong>横轴是「将要使用这个学习率的那次更新的下标」</strong>（从 0 开始）。读图时别看错半格。</li>
+<li>warmup 和余弦都是<strong>实验设置</strong>，不是「稳定优化」的保证。</li>
+<li><strong>重启时必须从下一个位置继续。</strong>存了 $k$ 次更新，恢复后第一次用的是 $\eta_k$，不是 $\eta_0$。</li>
+<li>老版 Spring 课件里的动态学习率脚本端点约定不同，<strong>不能原样搬</strong>到今天的协议里。</li>
+</ul>
+</div>
+
+<p><span class="tag n">补充</span> 为什么要有 warmup？在训练最开始，$m$ 和 $v$ 都还是 0 附近的小数，
+偏差修正后的比值 $\widehat m/\sqrt{\widehat v}$ 对<strong>单个 batch</strong> 的噪声极其敏感。
+如果此时学习率已经很大，一步就可能把参数推到坏区域。warmup 的作用是「先小步走，等统计量稳了再放大」。</p>
+
+<div class="ex">
+<p class="meta">Exercise E03 · 5 分钟（前半）</p>
+<h4>学习率与裁剪</h4>
+<p>$N=8$，$w=2$，$\eta_{\max}=0.001$，$\eta_{\min}=0.0001$。求从 0 开始计数的第 <strong>0、1、7</strong> 次更新各自的学习率。
+然后把梯度 $(3,4)$ 裁剪到全局范数 <strong>1</strong>。</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p><strong>学习率：</strong>0.0005、0.001、0.0001。</p>
+<p>$s=0$：$0.001\times\frac{1}{2}=0.0005$；$s=1$：$0.001\times\frac{2}{2}=0.001$；
+$s=7$：$q=\frac{7-2+1}{8-2}=1$，$\cos\pi=-1$，得 $\eta_{\min}=0.0001$。</p>
+<p><strong>裁剪：</strong>原范数 $\sqrt{3^2+4^2}=5$，缩放因子 $\frac{1}{5}$，结果 $(0.6,\,0.8)$。</p>
+<p class="small">常见错误：warmup 从 0 开始（应该是 $\eta_{\max}/w$）；余弦最小值晚一次更新才到；
+把每个坐标<strong>分别</strong>裁到 1（那会得到 $(1,1)$，方向都变了）。</p>
+</div>
+</details>
+</div>
+
+<h3 id="s22">2.2 梯度裁剪：只限一个全局范数 <span class="tag s">课件</span></h3>
+
+<p>$$r=\sqrt{\sum_j\|g_j\|_2^2},\qquad
+g_j\leftarrow g_j\min\left(1,\frac{c}{r}\right)$$</p>
+
+<ul>
+<li>把所有参数的梯度<strong>合起来</strong>算一个范数。</li>
+<li>记录<strong>裁剪前</strong>的 $r$。</li>
+<li>在反向之后、优化器步进之前裁剪。</li>
+</ul>
+
+<p class="small">这是理想公式，假设 $r&gt;0$。数值实现要处理 $r=0$，并引入一个 epsilon。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么这样裁能保住方向</span>
+<p>所有梯度乘的是<strong>同一个正标量</strong> $\min(1,c/r)$。向量乘以正数不改变方向，只改变长度。
+所以裁剪后的梯度 $\tilde g$ 与原来的 $g$ 平行，只是长度被压到 $c$ 以内。</p>
+<p>反过来，如果按坐标分别裁剪（<code>clamp(g, -c, c)</code>），$(3,4)$ 会变成 $(1,1)$——
+方向从 $53^\circ$ 变成 $45^\circ$，这就是<strong>改变了更新方向</strong>。</p>
+<p><strong>但要注意：</strong>裁剪只约束<strong>梯度</strong>的范数，<strong>不</strong>直接约束 AdamW 的参数更新量。
+因为 AdamW 的更新是 $\widehat m/(\sqrt{\widehat v}+\epsilon)$，它依赖历史矩和衰减，
+即使梯度被压到 1，那一步的参数改变也可能更大或更小。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<ul>
+<li>PyTorch 的 <code>clip_grad_norm_</code> <strong>返回裁剪前的总范数</strong>，正好就是你要记录的那个数。</li>
+<li>它有一个 <code>error_if_nonfinite</code> 选项，本课的 helper 里是打开的——遇到 <code>nan</code> 直接报错，而不是悄悄继续。</li>
+<li><strong>裁剪不是修复手段。</strong>如果损失算错了、目标泄漏了，裁剪只会让错误更隐蔽地继续。</li>
+<li>梯度被缩放（混合精度）过时，必须先 unscale 再比较阈值（<a href="#apD">附录 D</a>）。</li>
+</ul>
+</div>
+
+<h3 id="s23">2.3 先拟合一个已知答案的小问题 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-tiny"></div>
+<p class="small" style="text-align:center">图 5 · 两文档拟合实验的实测平均负对数似然（200 次更新，纵轴对数刻度）。虚线是解析下界 $\ln 2/10\approx0.069315$。</p>
+
+<p>实测最终 NLL：<strong>0.069822</strong>。两文档下界 $\ln(2)/10\approx0.069315$。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个下界怎么来的（这是本讲最值得亲手推一遍的式子）</span>
+<p>这两个文档只有一处不同：<code>great</code> 之后一个是 <code>cat</code>，一个是 <code>friend</code>。
+其余位置在给定前缀后都是<strong>确定</strong>的，理论上可以让 $p\to1$、损失 $\to0$。</p>
+<p>但有两个位置（两个文档各一处）的<strong>前缀完全相同</strong>，目标却不同。模型只能给出一个折中的分布，
+最优解是把概率<strong>各分一半</strong>：$p=0.5$，于是每个这样的位置贡献</p>
+<p>$$-\log 0.5=\ln 2\approx0.6931$$</p>
+<p>整个 batch 有 $B\times T=2\times10=20$ 个计分 token，其中 2 个是这种模糊位置，其余 18 个可以趋近 0。所以</p>
+<p>$$L_{\text{floor}}=\frac{2\ln 2}{20}=\frac{\ln 2}{10}\approx0.069315$$</p>
+<p>实测 0.069822 比下界高 0.0005，说明<strong>模型几乎把能学的都学了</strong>，剩下的是不可约的熵。
+注意这是<strong>下确界</strong>而不是「一定能达到的值」：softmax 只有有限权重，$p$ 只能逼近 0.5。</p>
+</div>
+
+<p><span class="tag a">讲者备注</span> 这套设置（刻意与 40 次更新的重启实验不同）：</p>
+<dl class="kv">
+<dt>精度 / 设备</dt><dd>CPU float32，种子 7</dd>
+<dt>批次</dt><dd>$B=2$，$T=10$，<strong>全批</strong>更新 200 次</dd>
+<dt>优化器</dt><dd>AdamW，$\eta=0.02$，$\beta=(0.9,0.999)$，$\epsilon=10^{-8}$，$\lambda=0$</dd>
+<dt>其他</dt><dd>无裁剪、无调度、无 dropout</dd>
+<dt>处理量</dt><dd>4000 个计分 token</dd>
+</dl>
+
+<div class="box warn">
+<span class="label">怎么读这张图</span>
+<p>纵轴是<strong>对数刻度</strong>：从 2.5 降到 0.07 跨了一个半数量级，线性刻度会把后半段压成一条贴地的线。
+对数刻度下，<strong>等距下降 = 等比例下降</strong>，所以「前期陡、后期平」在这里读起来才准确。</p>
+<p>这条曲线回答的问题只有一个：<strong>实现对不对</strong>。它<strong>不</strong>说明模型有语言能力——
+只有两个文档，也没有开发集。</p>
+</div>
+
+<h3 id="s24">2.4 留出集：在切窗口之前分开 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>玩具数据划分</th><th class="num">文档数</th><th class="num">每次评估的计分目标数</th></tr></thead>
+<tbody>
+<tr><td>训练集</td><td class="num">16</td><td class="num">82</td></tr>
+<tr><td>开发集</td><td class="num">8</td><td class="num">48</td></tr>
+</tbody>
+</table>
+
+<p><strong>先划分文档，再切窗口。</strong>分词器和划分一旦定下就<strong>冻结</strong>。</p>
+<p>评估时用 eval 模式并关闭梯度记录，评估完再恢复训练模式。</p>
+
+<div class="box key">
+<span class="label">补充 · 「文档不重叠」不等于「没有共享语言」</span>
+<p>两个划分里的<strong>文档字符串</strong>是完全不相交的，但<strong>词</strong>和一些前缀必然重复——
+这是正常的，也不叫泄漏。泄漏指的是<strong>同一条样本</strong>（或它的近重复）同时出现在两边。</p>
+<p>另外注意两种平均的区别：训练时每次更新<strong>均匀抽一个文档</strong>，所以目标函数是「每文档等权」；
+而报告的全量评估是「<strong>每 token 等权</strong>」。这两个数不是同一个量，比较时要说明用的是哪个。</p>
+<p>还有一个纪律：这个玩具的结论<strong>只适用于这些模板</strong>，不能推广成「模型会语言」。
+更大的数据污染问题属于 Lecture 07。</p>
+</div>
+
+<h3 id="s25">2.5 验证损失按 token 加权 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>评估块</th><th class="num">目标数</th><th class="num">平均 NLL</th></tr></thead>
+<tbody>
+<tr><td>A</td><td class="num">8</td><td class="num">1.0</td></tr>
+<tr><td>B</td><td class="num">2</td><td class="num">3.0</td></tr>
+</tbody>
+</table>
+
+<p>$$L_{\mathrm{dev}}=\frac{8(1)+2(3)}{10}=1.4,\qquad
+\mathrm{PPL}=e^{L_{\mathrm{dev}}}\approx4.06$$</p>
+
+<p class="small">只有在分词与计分约定一致时，才能比较困惑度。</p>
+
+<div class="box warn">
+<span class="label">易错点 · 直接把两个平均值再平均</span>
+<p>$\frac{1+3}{2}=2$ 是<strong>错的</strong>：它让只有 2 个 token 的 B 块和 8 个 token 的 A 块一样重。
+正确做法是<strong>先把 token 损失求和，再除以总 token 数</strong>：$\frac{8+6}{10}=1.4$。</p>
+<p>这也是 §1.6 那条「分母是 token 数」的式子在评估端的同一件事。</p>
+</div>
+
+<p><span class="tag n">补充</span> 顺便把困惑度的直觉说清楚：$\mathrm{PPL}=e^{1.4}\approx4.06$ 可以读成
+「模型平均在 <strong>约 4 个等概率候选</strong>之间犹豫」。$L=0$ 时 PPL $=1$（完全确定），
+$L=\ln V$ 时 PPL $=V$（等于瞎猜）。所以 PPL 天然依赖词表大小，跨分词器比较毫无意义。</p>
+
+<h3 id="s26">2.6 训练与验证要一起读 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-dev"></div>
+<p class="small" style="text-align:center">图 6 · 16 文档训练集与 8 文档开发集上的实测 NLL（按 token 加权，每 10 次更新做一次全量评估）。第 200 次更新时：训练 0.5153，开发 1.4027 nats/token。</p>
+
+<p><span class="tag a">讲者备注</span> 这些是<strong>实测</strong>曲线，不是「过拟合示意图」：</p>
+<dl class="kv">
+<dt>采样</dt><dd>按文档均匀采样，$B=1$，长度可变；200 次更新共处理 1021 个 token</dd>
+<dt>模型</dt><dd>同一个小架构</dd>
+<dt>优化</dt><dd>AdamW 峰值 $\eta=0.02$，warmup 20 次，最低比率 0.1，裁剪 1，$\lambda=0$，采样器种子 17</dd>
+</dl>
+
+<div class="box key">
+<span class="label">补充 · 三条读数纪律</span>
+<ol>
+<li><strong>两条线都是「全量评估」，不是训练时的 minibatch 损失。</strong>
+训练 batch 的损失天然更抖，直接和开发集比会得出错误结论。</li>
+<li><strong>不要平滑掉波动。</strong>图里 40–60 次更新处训练线往上跳，那是真实发生的；抹平就看不见「不稳定」的信号。</li>
+<li><strong>训练/开发有差距，只说明「需要问问题」，不说明原因。</strong>
+可能是过拟合、可能是分布不同、也可能是评估本身有问题。下一步是<strong>做检查</strong>，不是直接下结论。</li>
+</ol>
+<p>配套的 notebook 把损失、学习率、裁剪前范数三条曲线<strong>对齐到同一个更新轴</strong>上画——
+这样「学习率跳到峰值」和「损失抖动」是不是同时发生，一眼就能看出来。</p>
+</div>
+
+<h3 id="s27">2.7 看到现象，选下一个检查 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>观察到的现象</th><th>一个有用的检查</th></tr></thead>
+<tbody>
+<tr><td>连玩具数据都拟合不了</td><td>检查目标、掩码、梯度、更新</td></tr>
+<tr><td>损失变成非有限值</td><td>找到第一个坏 batch，看学习率和范数</td></tr>
+<tr><td>开发集分数好得不像话</td><td>审计划分 ID 与预处理</td></tr>
+<tr><td>训练变好、开发变差</td><td>重跑固定评估；比较不同 checkpoint</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">讲者备注 · 每一行只给「检查」，不给「诊断」</span>
+<ul>
+<li>比较两次运行，<strong>一次只改一个因素</strong>。</li>
+<li>降低学习率可能缓解不稳定，但<strong>修不了目标泄漏</strong>。</li>
+<li>先找<strong>第一个</strong>出现非有限值的位置，再假设它是梯度引起的——也可能损失本身就已经坏了。</li>
+<li>固定全量评估在这个玩具上应当是<strong>确定性</strong>的；评估不应该从训练采样器里取数据。</li>
+</ul>
+</div>
+
+<div class="ex">
+<p class="meta">Exercise E05 · 5 分钟</p>
+<h4>诊断证据</h4>
+<table>
+<thead><tr><th>记录</th><th>观察</th></tr></thead>
+<tbody>
+<tr><td>A</td><td>训练损失下降；固定的开发损失上升</td></tr>
+<tr><td>B</td><td>梯度范数尖峰之后，损失变成非有限值</td></tr>
+<tr><td>C</td><td>开发损失极小；训练/开发文档 ID 有重叠</td></tr>
+</tbody>
+</table>
+<p>对每一种，说出<strong>一个假设</strong>和<strong>一个下一步检查</strong>。</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p><strong>A：</strong>过拟合，或训练/开发分布不匹配。检查：重跑固定评估，看具体样本和不同 checkpoint。</p>
+<p><strong>B：</strong>优化或数值不稳定。检查：定位第一个坏 batch，看当时的学习率和梯度范数，然后做一次<strong>受控的</strong>低学习率实验。</p>
+<p><strong>C：</strong>ID 重叠直接指向泄漏。检查：审计划分，重建一个不相交的评估集，再谈泛化。</p>
+<p class="small">其他有依据的假设也算对。注意 C 里「开发损失极小」本身不是问题，
+<strong>ID 重叠</strong>才是问题——所以不能只看数字就下结论。</p>
+</div>
+</details>
+</div>
+
+<h3 id="s28">2.8 checkpoint 里到底要存什么 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="checkpoint 的六类内容：模型权重、优化器矩与步数、完成更新数与 token 数、配置、RNG 状态、数据与词表身份。">
+  <defs>
+    <marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <rect x="286" y="24" width="188" height="282" rx="12" fill="var(--accent-bg)" stroke="none"/>
+    <text x="380" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent)">checkpoint</text>
+    <text x="380" y="84" text-anchor="middle" font-size="11.5" fill="var(--ink2)">在一次完整更新之后写入</text>
+    <text x="380" y="104" text-anchor="middle" font-size="11.5" fill="var(--ink2)">不含半累积的梯度</text>
+    <line x1="308" y1="120" x2="452" y2="120" stroke="var(--accent)" stroke-width="1" opacity="0.4"/>
+    <text x="380" y="146" text-anchor="middle" font-size="11.5" fill="var(--ink2)">能预测 ≠ 能继续训练</text>
+    <text x="380" y="170" text-anchor="middle" font-size="11.5" fill="var(--ink3)">前者只要权重</text>
+    <text x="380" y="190" text-anchor="middle" font-size="11.5" fill="var(--ink3)">后者要全部训练状态</text>
+    <text x="380" y="236" text-anchor="middle" font-size="11.5" fill="var(--ink2)">恢复后第一个 batch、</text>
+    <text x="380" y="256" text-anchor="middle" font-size="11.5" fill="var(--ink2)">第一个学习率、下一次更新</text>
+    <text x="380" y="276" text-anchor="middle" font-size="11.5" fill="var(--ink2)">都必须与不中断时一致</text>
+
+    <!-- 左三 -->
+    <rect x="16" y="44" width="252" height="62" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="32" y="68" font-size="12.5" font-weight="650" fill="var(--ink)">模型权重</text>
+    <text x="32" y="88" font-size="11.5" fill="var(--ink3)">state_dict()：嵌入、块、LN</text>
+
+    <rect x="16" y="122" width="252" height="62" rx="9" fill="var(--gold-bg)" stroke="none"/>
+    <text x="32" y="146" font-size="12.5" font-weight="650" fill="var(--gold)">优化器状态</text>
+    <text x="32" y="166" font-size="11.5" fill="var(--ink2)">exp_avg · exp_avg_sq · step</text>
+
+    <rect x="16" y="200" width="252" height="62" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="32" y="224" font-size="12.5" font-weight="650" fill="var(--ink)">完成的工作量</text>
+    <text x="32" y="244" font-size="11.5" fill="var(--ink3)">已完成更新数 · 已处理 token 数</text>
+
+    <!-- 右三 -->
+    <rect x="492" y="44" width="252" height="62" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="508" y="68" font-size="12.5" font-weight="650" fill="var(--ink)">配置</text>
+    <text x="508" y="88" font-size="11.5" fill="var(--ink3)">宽度、头数、层数、优化器超参</text>
+
+    <rect x="492" y="122" width="252" height="62" rx="9" fill="var(--ok-bg)" stroke="none"/>
+    <text x="508" y="146" font-size="12.5" font-weight="650" fill="var(--ok)">随机数状态</text>
+    <text x="508" y="166" font-size="11.5" fill="var(--ink2)">python · torch CPU · 采样器 Generator</text>
+
+    <rect x="492" y="200" width="252" height="62" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="508" y="224" font-size="12.5" font-weight="650" fill="var(--ink)">数据身份</text>
+    <text x="508" y="244" font-size="11.5" fill="var(--ink3)">数据与词表的哈希</text>
+
+    <path d="M268 75 L282 75" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+    <path d="M268 153 L282 153" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+    <path d="M268 231 L282 231" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+    <path d="M492 75 L478 75" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+    <path d="M492 153 L478 153" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+    <path d="M492 231 L478 231" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar4)"/>
+
+    <text x="380" y="322" text-anchor="middle" font-size="11.5" fill="var(--ink3)">只存权重 = 能生成，但不能接着训练</text>
+  </g>
+</svg>
+<figcaption><strong>图 7 · checkpoint 的六类内容。</strong>左边三项决定「参数是什么」，右边三项决定「下一步会算成什么」。
+这个玩具没有 dropout，但因为<strong>按文档随机采样</strong>，RNG 的恢复仍然是可以观察到的。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 为什么优化器状态是「参数之外的第二份参数」</span>
+<p>AdamW 对每个参数坐标都额外存两个同形状的张量（$\widehat m$ 与 $\widehat v$ 的未修正版本），
+外加一个标量 <code>step</code>。对 Noa 来说：</p>
+<p>$$4608\times2+1=9217$$</p>
+<p>个额外数值——<strong>优化器状态比模型本身还大</strong>。真实的大模型上这个比例更夸张
+（全量微调时优化器状态通常是参数量的 2–8 倍），这也是为什么 checkpoint 动辄几十 GB。</p>
+<p>而「只存权重」能做什么？能<strong>预测</strong>（生成、评估）。不能做什么？<strong>接着训练</strong>——
+因为下一次更新的方向和步长都依赖那份历史。</p>
+</div>
+
+<h3 id="s29">2.9 恢复的顺序不能乱 <span class="tag s">课件</span></h3>
+
+<ol class="steps">
+<li>构造<strong>兼容</strong>的模型与优化器对象。</li>
+<li>校验配置、数据身份、软件/设备假设。</li>
+<li>载入模型、优化器，以及已完成的更新次数。</li>
+<li>在<strong>抽取下一个 batch 之前</strong>恢复 RNG 状态。</li>
+<li>用<strong>下一次更新该用的学习率</strong>继续。</li>
+</ol>
+
+<p class="small">在完成 20 次更新后存的 checkpoint，恢复后从「下标 20 的更新」继续。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 第 4 步为什么必须放在这个位置</span>
+<p><strong>构造函数本身可能消耗随机数</strong>（初始化权重时就会）。所以 RNG 的恢复要放在
+「构造 + 载入」<strong>之后</strong>、「继续训练」<strong>之前</strong>——顺序错了，第一个 batch 就换了一个。</p>
+<p>另外，采样器有<strong>自己独立的</strong> <code>torch.Generator</code>，它的状态要单独存、单独恢复。
+只恢复全局 RNG 是不够的。</p>
+<p>载入时用 <code>weights_only=True</code>；本课的 checkpoint 还会校验 torch 版本、CPU float32、线程数、
+模型标识、配置、数据与词表哈希——<strong>身份不匹配就在应用状态之前报错</strong>，而不是静默加载。</p>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 这套协议能保证什么，不能保证什么</span>
+<p><strong>能：</strong>同一环境下、同一份数据顺序、同一份代码，恢复后的轨迹与不中断完全一致。</p>
+<p><strong>不能：</strong>跨设备、跨 PyTorch 版本、跨不同数据顺序的<strong>逐位相等</strong>。
+浮点归约顺序一变，最后几位就会变；这不是 bug，是浮点加法的结合律不成立。</p>
+</div>
+
+<h3 id="s210">2.10 连续跑 vs 恢复跑：实测差异 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-label="三条时间线：连续跑完 40 次更新；20 次后保存并在新进程恢复；对照组恢复权重但重置 AdamW 状态。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <!-- 标尺 -->
+    <g font-size="11.5" fill="var(--ink3)">
+      <text x="120" y="26">0</text>
+      <text x="410" y="26" text-anchor="middle">20</text>
+      <text x="716" y="26" text-anchor="end">40</text>
+    </g>
+    <line x1="120" y1="34" x2="716" y2="34" stroke="var(--line)" stroke-width="1"/>
+    <line x1="120" y1="28" x2="120" y2="40" stroke="var(--ink3)"/>
+    <line x1="418" y1="28" x2="418" y2="40" stroke="var(--ink3)"/>
+    <line x1="716" y1="28" x2="716" y2="40" stroke="var(--ink3)"/>
+
+    <!-- A -->
+    <text x="16" y="82" font-size="12.5" font-weight="650" fill="var(--ink)">A · 连续</text>
+    <rect x="120" y="64" width="596" height="28" rx="6" fill="var(--accent-bg)" stroke="none"/>
+    <text x="418" y="83" text-anchor="middle" font-size="11.5" fill="var(--accent)">一个进程，40 次更新</text>
+
+    <!-- B -->
+    <text x="16" y="152" font-size="12.5" font-weight="650" fill="var(--ink)">B · 保存后重启</text>
+    <rect x="120" y="134" width="298" height="28" rx="6" fill="var(--accent-bg)" stroke="none"/>
+    <text x="269" y="153" text-anchor="middle" font-size="11.5" fill="var(--accent)">进程 1：0 → 20</text>
+    <rect x="418" y="134" width="298" height="28" rx="6" fill="var(--ok-bg)" stroke="none"/>
+    <text x="567" y="153" text-anchor="middle" font-size="11.5" fill="var(--ok)">进程 2：20 → 40</text>
+    <line x1="418" y1="128" x2="418" y2="170" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="418" y="184" text-anchor="middle" font-size="11" fill="var(--gold)">存盘</text>
+
+    <!-- C -->
+    <text x="16" y="228" font-size="12.5" font-weight="650" fill="var(--ink)">C · 对照</text>
+    <rect x="120" y="210" width="298" height="28" rx="6" fill="var(--accent-bg)" stroke="none"/>
+    <text x="269" y="229" text-anchor="middle" font-size="11.5" fill="var(--accent)">进程 1：0 → 20</text>
+    <rect x="418" y="210" width="298" height="28" rx="6" fill="var(--warn-bg)" stroke="none"/>
+    <text x="567" y="229" text-anchor="middle" font-size="11.5" fill="var(--warn)">进程 2：只恢复权重，AdamW 清零</text>
+    <line x1="418" y1="204" x2="418" y2="246" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 3"/>
+
+    <text x="380" y="278" text-anchor="middle" font-size="11.5" fill="var(--ink3)">三条线用同一个初始化、同一个种子 17 的采样器、同样的调度</text>
+  </g>
+</svg>
+<figcaption><strong>图 8 · 恢复实验的三条时间线。</strong>B 与 A 应当在每个可比较的量上都相同。
+C 是<strong>受控对照</strong>：它保留权重、batch 顺序和调度，只把优化器的历史抹掉，用来证明「优化器状态确实在起作用」。</figcaption>
+</figure>
+
+<p><span class="tag a">讲者备注</span> 实验设置：$B=1$，每次 10 个计分位置，40 次更新，共 400 个目标 token，模型种子 7；
+峰值 $\eta=0.02$，warmup 4，最低比率 0.1，裁剪 1，$\lambda=0$。<strong>每一段都跑在一个全新的操作系统进程里。</strong></p>
+
+<table>
+<thead><tr><th>与连续跑相比</th><th class="num">完整恢复</th><th class="num">重置 AdamW</th></tr></thead>
+<tbody>
+<tr><td>后续 batch 与学习率</td><td class="num">相同</td><td class="num">相同</td></tr>
+<tr><td>第一次前向损失之差</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>第二次前向损失之差</td><td class="num">0</td><td class="num">0.02846</td></tr>
+<tr><td>最终参数的最大差异</td><td class="num">0</td><td class="num">0.12780</td></tr>
+</tbody>
+</table>
+
+<p class="small">实测于 CPU float32；参数容差为绝对 $10^{-7}$、相对 0。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么第一次损失相同，第二次才分叉</span>
+<p>在恢复的那一刻，C 组和 A 组的<strong>权重完全一样</strong>，所以第一次前向算出的损失必然一样——
+优化器还没机会动手。</p>
+<p>分歧出现在<strong>第一次 step</strong>：A 组的 AdamW 有 $m,v$ 的历史，C 组的 $m=v=0$。
+第一次 step 之后权重就不同了，于是<strong>第二次</strong>前向损失差 0.02846，40 步累积下来参数差 0.12780。</p>
+<p>这个设计很关键：如果只看第一次损失，会误以为「重置优化器没影响」。<strong>检查点必须放在能区分两者的位置上。</strong></p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 「0」的边界</span>
+<p>表里的 0 是<strong>这一台机器、这一套版本</strong>上的最大绝对差，容差 $10^{-7}$。
+它<strong>不</strong>证明跨硬件也相等。另外，检查的是<strong>全部</strong>后续 batch 与学习率，不只是第一个。</p>
+<p>可以追问一句：还有什么改动会让这个等价性失效？——换数据、换模型、改调度的下标约定，任何一条都够。</p>
+</div>
+
+<h3 id="s211">2.11 三类证据要分开 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>证据</th><th>它能支撑什么结论</th></tr></thead>
+<tbody>
+<tr><td>玩具数据能拟合</td><td>实现是<strong>基本正确</strong>的（一个有用的 sanity check）</td></tr>
+<tr><td>留出集 NLL 下降</td><td>在<strong>那个评估集</strong>上预测得更好</td></tr>
+<tr><td>受控的生成样本</td><td>在<strong>声明过的设置</strong>下观察到的行为</td></tr>
+</tbody>
+</table>
+
+<p><strong>训练损失低，不能推出后两条。</strong></p>
+
+<div class="box key">
+<span class="label">补充 · 三种证据各自会怎么骗你</span>
+<ul>
+<li><strong>拟合测试</strong>会漏 bug：模型可以靠「记住两个文档」把损失压到下界，而实现仍然是错的
+（比如掩码方向反了，但在两个文档上看不出来）。</li>
+<li><strong>留出集</strong>会漏覆盖：8 个文档的开发集只覆盖了极少数模板。</li>
+<li><strong>几个生成样本</strong>会以偏概全：两次抽样的结果不能说明「这个策略更好」。</li>
+</ul>
+<p>所以课件那句「让证据与主张成比例」是这一节的落点：说多大话，拿多大证据。</p>
+</div>
+
+<p>接下来把 checkpoint <strong>冻住</strong>，只改解码策略。同一个模型、同一份权重，可以吐出不同的句子——
+这正好把第二节和第三节接起来，而且<strong>不需要任何额外训练</strong>。</p>
+
+<hr>
+
+<h2 id="p3">第三部分 · 生成与解码</h2>
+
+<p>第三节 45 分钟。从这里开始<strong>不再有训练</strong>：权重固定，只改「怎么从 logits 里挑一个词」。
+同一个 checkpoint、同一个提示词，换一个策略就换一种输出——这是解码的全部内容。</p>
+
+<h3 id="s31">3.1 生成循环：每次只加一个词 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" role="img" aria-label="生成循环：前缀送入因果模型，取最后位置的 logits，按策略选一个 token，追加到前缀，检查是否停止，未停止则重复。">
+  <defs>
+    <marker id="ar5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.7"/>
+    </marker>
+    <marker id="ar6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--gold)" stroke-width="1.7"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <rect x="16" y="60" width="150" height="76" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="91" y="88" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ink)">前缀 prefix</text>
+    <text x="91" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink3)">已观测 + 已生成</text>
+    <text x="91" y="124" text-anchor="middle" font-size="11.5" fill="var(--ink3)">最多 10 个位置</text>
+
+    <rect x="196" y="60" width="150" height="76" rx="9" fill="var(--accent-bg)" stroke="none"/>
+    <text x="271" y="88" text-anchor="middle" font-size="13" font-weight="650" fill="var(--accent)">因果模型</text>
+    <text x="271" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink2)">权重冻结</text>
+    <text x="271" y="124" text-anchor="middle" font-size="11.5" fill="var(--ink2)">前向一次</text>
+
+    <rect x="376" y="60" width="160" height="76" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="456" y="84" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ink)">最后一个位置的</text>
+    <text x="456" y="102" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ink)">logits（12 维）</text>
+    <text x="456" y="122" text-anchor="middle" font-size="11.5" fill="var(--ink3)">前面的位置都不要</text>
+
+    <rect x="566" y="60" width="160" height="76" rx="9" fill="var(--gold-bg)" stroke="none"/>
+    <text x="646" y="84" text-anchor="middle" font-size="13" font-weight="650" fill="var(--gold)">解码策略</text>
+    <text x="646" y="102" text-anchor="middle" font-size="11.5" fill="var(--ink2)">贪心 / 温度 / top-p</text>
+    <text x="646" y="122" text-anchor="middle" font-size="11.5" fill="var(--ink2)">选出一个 token</text>
+
+    <path d="M166 98 L190 98" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar5)"/>
+    <path d="M346 98 L370 98" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar5)"/>
+    <path d="M536 98 L560 98" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar5)"/>
+
+    <!-- 追加 -->
+    <rect x="566" y="196" width="160" height="60" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="646" y="220" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ink)">追加到前缀</text>
+    <text x="646" y="240" text-anchor="middle" font-size="11.5" fill="var(--ink3)">超过 10 个就裁掉最左</text>
+    <path d="M646 136 L646 190" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar5)"/>
+
+    <!-- 回环 -->
+    <path d="M566 226 L91 226 L91 142" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#ar5)"/>
+    <text x="330" y="248" text-anchor="middle" font-size="11.5" fill="var(--accent)">循环：直到 EOS 或达到长度预算</text>
+
+    <!-- 停止 -->
+    <rect x="566" y="284" width="160" height="0" rx="0" fill="none"/>
+    <text x="646" y="284" text-anchor="middle" font-size="11.5" fill="var(--gold)">↑ 每一步之后检查停止条件</text>
+
+    <text x="300" y="290" text-anchor="middle" font-size="11.5" fill="var(--ink3)">每一步都要重新做一次前向——KV cache 属于 Lecture 13</text>
+  </g>
+</svg>
+<figcaption><strong>图 9 · 生成循环。</strong>关键点是「<strong>只取最后一个位置</strong>的 logits」：
+前面的位置在训练时有用，在生成时用不上。每一步都要把选出的 token 追加回前缀，再重新前向一次。</figcaption>
+</figure>
+
+<p><span class="tag a">讲者备注</span> 这个循环的五个动作：</p>
+<ol>
+<li><strong>必要时裁剪。</strong>前缀超过 10 个 token 时，保留最后 10 个，位置编号<strong>从 0 重新开始</strong>。</li>
+<li><strong>前向。</strong>用当前前缀跑一次模型。</li>
+<li><strong>取最后位置的 logits。</strong>形状是 $V=12$。</li>
+<li><strong>选一个 token。</strong>用哪种策略由你定。</li>
+<li><strong>追加并检查停止。</strong>追加到前缀末尾，检查是否 EOS 或超出预算。</li>
+</ol>
+
+<div class="box warn">
+<span class="label">易错点 · 位置编号的重置规则是<strong>本课的约定</strong></span>
+<p>「保留最后 10 个、位置从 0 重新编号」是一个<strong>显式声明</strong>的策略，与 A2 公开的上下文规则一致。
+它<strong>不是</strong>所有语言模型推理系统的通用做法——有的系统用滑动窗口但保持绝对位置，有的用 RoPE 外推。
+写报告时必须把这个规则写出来，否则别人复现不出同一段文本。</p>
+</div>
+
+<h3 id="s32">3.2 贪心：选概率最大的 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>token</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th></tr></thead>
+<tbody>
+<tr><td>概率</td><td class="num">0.4</td><td class="num">0.3</td><td class="num">0.2</td><td class="num">0.1</td></tr>
+</tbody>
+</table>
+
+<p>$$\text{greedy token}=\arg\max_i z_i=A$$</p>
+
+<p>用一条<strong>固定的平局规则</strong>：选 token ID 最小的那个。</p>
+
+<p class="small">贪心选的是 argmax；采样是从概率分布里抽。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么 logits 的 argmax 等于概率的 argmax</span>
+<p>softmax 是<strong>单调</strong>的：$z_i&gt;z_j \iff \frac{e^{z_i}}{\sum e^{z_k}}&gt;\frac{e^{z_j}}{\sum e^{z_k}}$。
+分母对所有坐标相同，所以比较大小只需比较分子，而 $e^x$ 严格递增。因此</p>
+<p>$$\arg\max_i z_i=\arg\max_i p_i$$</p>
+<p>这也说明：<strong>贪心根本不需要真的算 softmax</strong>。但如果你要记录概率值（比如算对数似然），那就得算。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 课件纠正了 Spring 版的一处措辞</span>
+<p>旧课件把「从分布里抽一个」也标成 greedy，但描述里写的是「抽取」。<strong>贪心是确定性的</strong>：
+它不做随机抽样，所以同一个模型、同一段前缀，永远给同一个输出。</p>
+<p>（严格说，前向计算本身仍需声明环境：不同的浮点归约顺序理论上可能改变极小的概率差，
+所以「确定性」也要在声明过的执行环境下成立。）</p>
+</div>
+
+<h3 id="s33">3.3 局部最优不等于全局最优 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" role="img" aria-label="两步生成树：第一个 token A 概率 0.6、B 概率 0.4；A 的两条后续各 0.5，B 的两条后续为 0.9 和 0.1；四条完整路径的联合概率分别是 0.30、0.30、0.36、0.04。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <!-- 边 -->
+    <path d="M96 160 L236 92" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <path d="M96 160 L236 228" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <text x="150" y="108" font-size="12" fill="var(--accent)">0.6</text>
+    <text x="150" y="212" font-size="12" fill="var(--accent)">0.4</text>
+
+    <path d="M356 80 L446 44" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <path d="M356 96 L446 128" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <text x="372" y="52" font-size="12" fill="var(--ink3)">0.5</text>
+    <text x="372" y="126" font-size="12" fill="var(--ink3)">0.5</text>
+
+    <path d="M356 216 L446 180" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <path d="M356 232 L446 268" stroke="var(--ink3)" stroke-width="1.5" fill="none"/>
+    <text x="372" y="188" font-size="12" fill="var(--ink3)">0.9</text>
+    <text x="372" y="262" font-size="12" fill="var(--ink3)">0.1</text>
+
+    <!-- 节点 -->
+    <circle cx="76" cy="160" r="20" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="76" y="165" text-anchor="middle" font-size="12" fill="var(--ink2)">起始</text>
+
+    <circle cx="296" cy="80" r="22" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.4"/>
+    <text x="296" y="86" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)">A</text>
+
+    <circle cx="296" cy="216" r="22" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="296" y="222" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink2)">B</text>
+
+    <!-- 叶子 -->
+    <rect x="452" y="28" width="128" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="516" y="50" text-anchor="middle" font-size="12.5" fill="var(--ink2)">A → X　0.30</text>
+
+    <rect x="452" y="112" width="128" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="516" y="134" text-anchor="middle" font-size="12.5" fill="var(--ink2)">A → Y　0.30</text>
+
+    <rect x="452" y="164" width="128" height="34" rx="7" fill="var(--ok-bg)" stroke="none"/>
+    <text x="516" y="186" text-anchor="middle" font-size="12.5" font-weight="650" fill="var(--ok)">B → X　0.36</text>
+
+    <rect x="452" y="252" width="128" height="34" rx="7" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="516" y="274" text-anchor="middle" font-size="12.5" fill="var(--ink3)">B → Y　0.04</text>
+
+    <text x="600" y="60" font-size="11.5" fill="var(--ink3)">每一步的分支条件概率之和为 1</text>
+    <text x="600" y="82" font-size="11.5" fill="var(--ink3)">沿路径相乘得联合概率</text>
+    <text x="600" y="186" font-size="11.5" fill="var(--ok)">贪心拿不到这条</text>
+    <text x="600" y="208" font-size="11.5" fill="var(--ok)">0.36 &gt; 0.30</text>
+
+    <text x="380" y="308" text-anchor="middle" font-size="11.5" fill="var(--ink3)">只生成 2 个 token、固定长度、不含 EOS；四个联合概率之和为 1</text>
+  </g>
+</svg>
+<figcaption><strong>图 10 · 两步反例。</strong>第一步 $0.6&gt;0.4$，贪心选 A，最终联合概率 $0.6\times0.5=0.30$。
+但 B 之后走 X 的路径概率是 $0.4\times0.9=0.36$，<strong>更高</strong>。
+所以「每步都选最大」不等于「整句概率最大」。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 这个例子精确说明了什么，以及没说明什么</span>
+<p><strong>说明了：</strong>贪心是<strong>局部</strong>最优。它最大化的是「给定当前前缀，下一个词的条件概率」，
+而我们要的常常是整条序列的联合概率 $p(y_1,\dots,y_T\mid x)=\prod_t p(y_t\mid y_{&lt;t},x)$。</p>
+<p><strong>没说明：</strong>「B→X 更好」。这只在<strong>固定长度、只看联合概率</strong>的判据下成立。
+如果考虑文本质量、是否生成 EOS、长度归一化，结论可能完全不同——这是后面要反复强调的边界。</p>
+<p>顺便验算一下概率守恒：$0.30+0.30+0.36+0.04=1.00$ ✔。因为每层的分支分布各自归一。</p>
+</div>
+
+<p><span class="tag a">讲者备注</span> 想「多留几条候选」的思路就是 beam search——见 <a href="#apB">附录 B</a>。
+但课件明确删掉了旧版里「beam 一定比贪心好」的说法：更宽的 beam 在一般情况下仍然只是启发式。</p>
+
+<h3 id="s34">3.4 温度：改变分布的集中程度 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-temp"></div>
+<p class="small" style="text-align:center">图 11 · 固定 logits 为 $\ln(0.4,0.3,0.2,0.1)$，在 $\tau=0.5,\,1,\,2$ 下的概率。没有为此训练任何模型。</p>
+
+<p>$$p_i=\frac{\exp(z_i/\tau)}{\sum_j\exp(z_j/\tau)},\qquad \tau&gt;0$$</p>
+
+<p>正的温度<strong>不改变 argmax</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 三组数是怎么算出来的</span>
+<p>取 $z=(\ln0.4,\ln0.3,\ln0.2,\ln0.1)$，注意 $\exp(z_i)=p_i$ 本身。</p>
+<p><strong>$\tau=1$：</strong>原样，$(0.4,0.3,0.2,0.1)$。</p>
+<p><strong>$\tau=0.5$：</strong>$\exp(z_i/0.5)=p_i^{2}=(0.16,0.09,0.04,0.01)$，和为 $0.30$，归一化得</p>
+<p>$$(0.533,\ 0.300,\ 0.133,\ 0.033)$$</p>
+<p><strong>$\tau=2$：</strong>$\exp(z_i/2)=\sqrt{p_i}=(0.632,0.548,0.447,0.316)$，和为 $1.944$，归一化得</p>
+<p>$$(0.325,\ 0.282,\ 0.230,\ 0.163)$$</p>
+<p>规律很干净：<strong>$\tau&lt;1$ 是把概率「取幂次 $1/\tau&gt;1$」→ 更尖；$\tau&gt;1$ 是「开方」→ 更平。</strong></p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 两个极限要说清楚</span>
+<ul>
+<li>$\tau\to0^{+}$ 时分布趋向 one-hot，看起来像贪心，但<strong>有并列最大值的退化情况</strong>：
+本课的贪心规则是「选最小 ID」，而极限本身不指定平局处理。</li>
+<li><strong>不要用 $\tau=0$ 去实现贪心</strong>（除以零）。贪心要单独写一个分支。</li>
+<li>比较不同温度时，<strong>logits 必须固定</strong>，否则你比的是两个模型。</li>
+</ul>
+</div>
+
+<h3 id="s35">3.5 top-k 与 top-p：固定个数还是固定质量 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>排序后的分布</th><th>top-k，$k=2$</th><th>top-p，$p=0.6$</th></tr></thead>
+<tbody>
+<tr><td>$(0.80,\,0.10,\,0.06,\,0.04)$</td><td>前两个 token</td><td><strong>只有第一个</strong></td></tr>
+<tr><td>$(0.40,\,0.30,\,0.20,\,0.10)$</td><td>前两个 token</td><td>前两个 token</td></tr>
+</tbody>
+</table>
+
+<p>top-p 让候选<strong>个数</strong>随当前分布自适应。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么第一行两者不同</span>
+<p><strong>top-k = 2：</strong>永远保留 2 个，不管第一个占多大。所以保留 $(0.80,0.10)$，重归一化后是 $(0.889,0.111)$。</p>
+<p><strong>top-p = 0.6：</strong>第一个 token 的累积质量就已经是 $0.80\ge0.6$，<strong>只保留它</strong>，重归一化后是 $(1,0,0,0)$——
+这一步等价于贪心。</p>
+<p>第二行里，累积到第二个才是 $0.70\ge0.6$，所以保留两个。这就是「自适应」：
+分布很尖时 top-p 收得很紧，分布很平时它放得宽。</p>
+<p><strong>两者都需要重归一化</strong>，否则「保留的概率」加起来不等于 1，抽样就错了。
+顺序上也要注意：<strong>先调温度，再按阈值筛</strong>，因为阈值要作用在真正被采样的那个分布上。</p>
+</div>
+
+<h3 id="s36">3.6 nucleus 的准确定义 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240" role="img" aria-label="累积质量条形图：A 占 0.4、B 占 0.3、C 占 0.2、D 占 0.1；p 等于 0.6 的阈值落在 B 内部，因此保留 A 与 B。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="16" y="28" font-size="12.5" fill="var(--ink2)">按概率降序排列，累加直到首次达到 p = 0.6</text>
+
+    <!-- 条 -->
+    <rect x="60" y="56" width="240" height="46" fill="var(--accent-bg)" stroke="var(--bg)"/>
+    <text x="180" y="85" text-anchor="middle" font-size="14" fill="var(--accent)">A · 0.40</text>
+
+    <rect x="300" y="56" width="180" height="46" fill="var(--accent-bg)" stroke="var(--bg)"/>
+    <text x="390" y="85" text-anchor="middle" font-size="14" fill="var(--accent)">B · 0.30</text>
+
+    <rect x="480" y="56" width="120" height="46" fill="var(--bg2)" stroke="var(--bg)"/>
+    <text x="540" y="85" text-anchor="middle" font-size="14" fill="var(--ink3)">C · 0.20</text>
+
+    <rect x="600" y="56" width="60" height="46" fill="var(--bg2)" stroke="var(--bg)"/>
+    <text x="630" y="85" text-anchor="middle" font-size="14" fill="var(--ink3)">D · 0.10</text>
+
+    <!-- 累积刻度 -->
+    <g font-size="11.5" fill="var(--ink3)">
+      <line x1="60" y1="112" x2="60" y2="120" stroke="var(--ink3)"/>
+      <text x="60" y="136" text-anchor="middle">0</text>
+      <line x1="300" y1="112" x2="300" y2="120" stroke="var(--ink3)"/>
+      <text x="300" y="136" text-anchor="middle">0.40</text>
+      <line x1="480" y1="112" x2="480" y2="120" stroke="var(--ink3)"/>
+      <text x="480" y="136" text-anchor="middle">0.70</text>
+      <line x1="600" y1="112" x2="600" y2="120" stroke="var(--ink3)"/>
+      <text x="600" y="136" text-anchor="middle">0.90</text>
+      <line x1="660" y1="112" x2="660" y2="120" stroke="var(--ink3)"/>
+      <text x="660" y="136" text-anchor="middle">1.00</text>
+    </g>
+
+    <!-- 阈值 -->
+    <line x1="420" y1="42" x2="420" y2="150" stroke="var(--gold)" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="420" y="34" text-anchor="middle" font-size="12" fill="var(--gold)">p = 0.6</text>
+    <text x="420" y="172" text-anchor="middle" font-size="11.5" fill="var(--gold)">阈值落在 B 内部 → B 必须保留</text>
+
+    <text x="60" y="204" font-size="12" fill="var(--ink2)">保留 A、B；保留质量 = 0.70（不是 0.60）</text>
+    <text x="60" y="226" font-size="12" fill="var(--ink2)">重归一化：(0.40, 0.30) / 0.70 = (4/7, 3/7) ≈ (0.571, 0.429)</text>
+  </g>
+</svg>
+<figcaption><strong>图 12 · nucleus 的边界。</strong>算法是「<strong>包含</strong>那个让累积质量越过 $p$ 的 token」，而不是「把累积超过 $p$ 的都删掉」。
+这一格之差就是本节最常见的 bug。</figcaption>
+</figure>
+
+<p>精确的步骤（四条，按顺序）：</p>
+<ol>
+<li><strong>按概率降序排序</strong>；概率相同时，token ID 小的在前。</li>
+<li>累加，找到<strong>第一个</strong>累积质量 $\ge p$ 的位置。</li>
+<li><strong>保留</strong>这一项及它之前的<strong>所有</strong>项。</li>
+<li>用这些项的<strong>原始概率</strong>重新归一化。</li>
+</ol>
+
+<p class="small">$p=1$ 时保留全部；阈值作用在<strong>温度调整之后</strong>的概率上。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 一个高频 bug</span>
+<p>把「越过阈值的那个 token」删掉。这样 $p=0.6$ 时只留 A，实际保留质量是 $0.40$，
+<strong>根本没到 $0.6$</strong>——你以为在按核采样，其实是在做贪心。</p>
+<p>边界情况：累积恰好等于 $p$（比如 $p=0.5$ 而累积正好 0.5）时，<strong>第一个达到 $p$ 的前缀就够了</strong>，不用再多取一个。</p>
+</div>
+
+<div class="ex">
+<p class="meta">Exercise E06 · 5 分钟</p>
+<h4>算一个 nucleus</h4>
+<p>温度调整之后，概率为 $(0.4,0.3,0.2,0.1)$。取 top-p $=0.6$。</p>
+<ol>
+<li>哪些 token 被保留？</li>
+<li>它们重归一化后的概率是多少？</li>
+<li>贪心会选哪个？</li>
+</ol>
+<details><summary>看答案</summary>
+<div class="body">
+<p>保留 A 和 B；保留质量 $0.7$。<br>
+新分布 $(4/7,\ 3/7,\ 0,\ 0)$。贪心选 A。</p>
+<p class="small"><strong>分母是保留质量 0.7，不是阈值 0.6。</strong>这是最容易错的一步：
+用 0.6 当分母会得到 $(0.667,0.5)$，加起来 1.167，明显不合法。</p>
+</div>
+</details>
+</div>
+
+<div class="sandbox">
+<p style="margin:0 0 4px;font-weight:650">动手试：改一个采样设置</p>
+<p class="small" style="margin:0">固定 logits 为 $\ln(0.4,0.3,0.2,0.1)$。拖动滑块看分布怎么变，再抽一次看看落在哪。</p>
+<div class="row">
+  <label for="tau">温度 τ</label>
+  <input type="range" id="tau" min="0.2" max="2" step="0.05" value="1">
+  <span class="val" id="tau-v">1.00</span>
+</div>
+<div class="row">
+  <label for="topp">top-p</label>
+  <input type="range" id="topp" min="0.05" max="1" step="0.01" value="0.6">
+  <span class="val" id="topp-v">0.60</span>
+</div>
+<div id="sb-bars"></div>
+<p class="stat" id="sb-stat"></p>
+<div class="row">
+  <button class="ibtn ibtn-main" id="sb-draw">抽一个 token</button>
+  <button class="ibtn" id="sb-reset">重置为 τ=1, p=0.6</button>
+</div>
+</div>
+
+<h3 id="s37">3.7 停止条件与上下文管理 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>事件</th><th>本课的玩具策略</th></tr></thead>
+<tbody>
+<tr><td>生成了 EOS</td><td>返回它，并以 <code>eos</code> 为原因停止</td></tr>
+<tr><td>token 预算用尽</td><td>以 <code>length</code> 为原因停止</td></tr>
+<tr><td>前缀超过 10 个 token</td><td>保留最后 10 个；位置编号从 0 重新开始</td></tr>
+<tr><td>生成结束</td><td>恢复调用方原来的 train/eval 模式</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 为什么要记录「停止原因」</span>
+<p>看到一段重复的文本，你可能想判断「模型陷入了循环」。但如果它是<strong>被长度预算截断</strong>的，
+那这段重复只是「还没说完」；如果它是<strong>自己生成 EOS</strong> 停下的，那重复就是模型的选择。
+两者含义完全不同，靠的就是这个字段。</p>
+<p>另外两个边界：预算为 0 时应当返回<strong>空的新增</strong>，且原因为 <code>length</code>；
+被裁剪过的提示词也要能正常生成。这些都在 notebook 的测试里。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<p>「裁剪到 10 个、位置从 0 重排」是本课与 A2 公开协议一致的<strong>显式约定</strong>，
+不是对所有语言模型推理系统的普适描述。KV cache 与显存复用留给 Lecture 13。</p>
+</div>
+
+<h3 id="s38">3.8 同一个 checkpoint，不同策略 <span class="tag s">课件</span></h3>
+
+<p>前缀：<strong>Noa can be annoying but she is a great</strong></p>
+
+<table>
+<thead><tr><th>策略</th><th>新增 token</th><th>停止原因</th></tr></thead>
+<tbody>
+<tr><td>贪心</td><td><code>friend</code> <code>EOS</code></td><td><code>eos</code></td></tr>
+<tr><td>$\tau=0.7,\ p=0.9$</td><td><code>cat</code> <code>EOS</code></td><td><code>eos</code></td></tr>
+<tr><td>$\tau=1,\ p=1$</td><td><code>cat</code> <code>EOS</code></td><td><code>eos</code></td></tr>
+</tbody>
+</table>
+
+<p class="small">实测的 200 次更新拟合 checkpoint；采样种子 29；预算 12 个新 token。</p>
+
+<div class="box key">
+<span class="label">补充 · 这张表能说明什么，不能说明什么</span>
+<p><strong>能说明：</strong>在同一个 checkpoint、同一个提示词、同一个种子下，<strong>改变解码策略可以改变输出</strong>。
+这是受控对比，变量只有一个。</p>
+<p><strong>不能说明：</strong>哪种策略更好。这里只有两个 token 的补全，谈重复、谈长程连贯、谈「语言质量」都没有依据。</p>
+<p>还有一处值得注意：模型在这个位置学到的 <code>cat</code> / <code>friend</code> 几乎是<strong>等概率</strong>的
+（就是 §2.3 那个 $\ln 2$ 的来源），所以贪心的 argmax 可能依赖一个<strong>极小的差值</strong>。
+两种采样设置都抽到 <code>cat</code>，并不代表它们等价——只是这一次抽到了同一个。</p>
+<p><strong>记录时必须带上：</strong>checkpoint 标识、提示词、解码策略、种子、预算。少一样就复现不了。</p>
+</div>
+
+<h3 id="s39">3.9 这些检查怎么用到 A2 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>今天的证据</th><th>对应的 A2 部分</th></tr></thead>
+<tbody>
+<tr><td>位移、更新、学习率、裁剪</td><td>Part 2：训练</td></tr>
+<tr><td>恢复对比</td><td>Part 2：checkpoint 证据</td></tr>
+<tr><td>固定 checkpoint 的解码</td><td>Part 3：生成</td></tr>
+</tbody>
+</table>
+
+<p><strong>A2：</strong>10 月 31 日 23:59 · 通过 eLearning 私下提交。</p>
+<p class="small">下一讲：Lecture 07 数据质量。项目提案：10 月 21 日 23:59。所有时间均为 Asia/Shanghai。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 别把课堂玩具当成作业基线</span>
+<p>课上的 $\ln2/10$ 和两文档数据<strong>不是</strong> A2 的拟合夹具。A2 的接口、预算、数据约定、提交格式
+以它自己的 README 为准；课堂演示<strong>不替代</strong>作业要求的运行。A2 的 Part 4（去重研究）由 Lecture 07 支撑。</p>
+</div>
+
+<hr>
+
+<h2 id="ap">附录</h2>
+
+<h3 id="apA">A · GPT-1 到 GPT-3（可选） <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>历史报告</th><th>重点在于「语言模型怎么被使用」</th></tr></thead>
+<tbody>
+<tr><td>GPT-1 · 2018</td><td>预训练之后做有监督微调</td></tr>
+<tr><td>GPT-2 · 2019</td><td>通过语言模型提示（prompting）表现任务能力</td></tr>
+<tr><td>GPT-3 · 2020</td><td>把 few-shot 示例放进上下文</td></tr>
+</tbody>
+</table>
+
+<p>§1.1 那个区分的判据是：<strong>使用过程中权重是否改变</strong>。</p>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<p>这一页在计时路线之外。它是历史描述，<strong>不是</strong>「谁更强」的排名：三者的模型规模、数据、评测协议都不同，
+把它们混成一个排行榜没有意义。原始章节：GPT-1 §3.1–3.2、GPT-2 §2–3、GPT-3 §2.1。
+数据集清单属于 Lecture 07，规模与算力属于 Lecture 08。</p>
+</div>
+
+<h3 id="apB">B · beam search（可选） <span class="tag s">课件</span></h3>
+
+<p>在 §3.3 那棵两步树上，宽度为 2 的 beam 会同时保留 <strong>A</strong> 和 <strong>B</strong>。第二步把四条完整路径排序：</p>
+
+<p>$$P(BX)=0.36&gt;P(AX)=P(AY)=0.30&gt;P(BY)=0.04$$</p>
+
+<p>使用 beam 时必须声明四件事：<strong>beam 宽度、序列打分方式、长度规则、停止规则</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么 beam 在这道题上「赢」了，但这不能推广</span>
+<p>因为这里<strong>固定长度、只有两步、判据就是联合概率</strong>——搜索空间小到 beam 可以穷尽。
+一旦长度变长、加入长度归一化（否则 beam 天然偏好短序列）、或者加入 EOS 停止规则，排序就可能改变。</p>
+<p>更宽的 beam 在一般情况下仍然只是<strong>启发式</strong>。旧课件里「beam 一定优于贪心」的说法被删掉了，
+换成了一句更准确的：序列似然高，<strong>不等于</strong>主观质量好。</p>
+</div>
+
+<h3 id="apC">C · AdamW 一步的手算（可选） <span class="tag s">课件</span></h3>
+
+<p>$$\widehat m_t=\frac{m_t}{1-\beta_1^{t}},\qquad
+\widehat v_t=\frac{v_t}{1-\beta_2^{t}}$$</p>
+
+<p>第一次更新，$m_0=v_0=0$，$g=0.5$：$\widehat m_1=0.5$，$\widehat v_1=0.25$。</p>
+<p>取 $\theta_0=1$，$\eta=0.1$，$\lambda=0.01$，忽略 $\epsilon$：</p>
+
+<p>$$\theta_1=(1-0.1\times0.01)\times1-0.1\frac{0.5}{0.5}=0.899$$</p>
+
+<div class="box key">
+<span class="label">补充 · 四步拆开看</span>
+<ol>
+<li><strong>一阶矩：</strong>$m_1=0.9\times0+0.1\times0.5=0.05$。</li>
+<li><strong>偏差修正：</strong>$\widehat m_1=\dfrac{0.05}{1-0.9^{1}}=0.5$。正好把「初始化为 0 造成的偏小」补回来。</li>
+<li><strong>二阶矩：</strong>$v_1=0.999\times0+0.001\times0.25=0.00025$，$\widehat v_1=\dfrac{0.00025}{1-0.999}=0.25$，
+于是 $\sqrt{\widehat v_1}=0.5$，恰好等于 $|g|$。所以自适应项 $\widehat m/\sqrt{\widehat v}=1$，
+<strong>第一步的更新量约等于 $\eta$ 本身</strong>——这就是 Adam 的「步长自适应」直觉。</li>
+<li><strong>解耦衰减：</strong>$(1-\eta\lambda)\theta_0=0.999$，减去 $0.1\times1=0.1$，得 $0.899$。</li>
+</ol>
+<p>注意：这不是朴素 SGD（那会是 $1-0.1\times0.5=0.95$）。$\epsilon&gt;0$ 会让自适应项略小于 1，
+实际更新略小一点。Noa 的真实运行用 $\epsilon=10^{-8}$、$\lambda=0$。</p>
+</div>
+
+<h3 id="apD">D · 梯度被缩放过怎么办（可选） <span class="tag s">课件</span></h3>
+
+<pre><code>scaler.scale(loss).backward()
+scaler.unscale_(optimizer)
+clip_grad_norm_(model.parameters(), 1.0)
+scaler.step(optimizer)
+scaler.update()</code></pre>
+
+<p>在把梯度范数与裁剪阈值比较<strong>之前</strong>，必须先 unscale。</p>
+<p class="small">今天所有实测实验都在 CPU float32 上，没有 gradient scaler。</p>
+
+<div class="box key">
+<span class="label">补充 · 顺序为什么是这个顺序</span>
+<p>混合精度训练为了防下溢，会把损失<strong>放大</strong> $2^{k}$ 倍再反向，于是所有梯度也大了 $2^{k}$ 倍。
+如果直接拿这个放大的范数和阈值 $c$ 比，等于把阈值缩小了 $2^{k}$ 倍——梯度会被过度裁剪。</p>
+<p>所以要 <code>unscale_</code> 还原。注意三点：<strong>每次优化器更新只 unscale 一次</strong>；
+必须在<strong>所有</strong>累积的 backward 之后；有些精度配置根本不需要 scaler。</p>
+<p>如果做完整重启，<strong>scaler 的状态也要存</strong>——它同样是「下一步会算成什么」的一部分。</p>
+</div>
+
+<h3 id="apE">E · 与预训练计划的连接（可选） <span class="tag s">课件</span></h3>
+
+<ol>
+<li>先建立一个<strong>正确、可复现</strong>的小基线。</li>
+<li>在<strong>声明过的协议</strong>下测吞吐与显存。</li>
+<li>在<strong>相同预算</strong>下比较受控改动。</li>
+<li>在更大规模启动前，先用留出的运行<strong>检验 scaling 预测</strong>。</li>
+</ol>
+
+<p class="small">课程仓库：<a href="https://github.com/baojian/llm-26-fall/issues/272">Baseline and profiling · #272</a> ·
+<a href="https://github.com/baojian/llm-26-fall/issues/279">Validate the scaling ladder · #279</a></p>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<p>这是<strong>未来的课程研究计划</strong>，不是「scaling ladder 已经验证过」的结论。
+玩具数据拟合成功是调试的<strong>必要</strong>证据，但<strong>不能</strong>预测大模型的质量。
+提出更大规模的实验时，要写明每卡显存与总 GPU 小时。本讲不需要任何 GPU。</p>
+</div>
+
+<h3 id="apF">F · 速查表与自测</h3>
+
+<h4>F.1 一页公式</h4>
+
+<table>
+<thead><tr><th>量</th><th>式子</th><th>约定 / 陷阱</th></tr></thead>
+<tbody>
+<tr><td>平均 token 损失</td><td>$L=-\frac{1}{BT}\sum_b\sum_t\log p(y_{b,t}\mid x_{b,1:t})$</td><td>分母是<strong>计分 token 数</strong></td></tr>
+<tr><td>log 概率</td><td>$\log p(y)=z_y-\log\sum_j e^{z_j}$</td><td>喂<strong>原始 logits</strong>，别先 softmax</td></tr>
+<tr><td>困惑度</td><td>$\mathrm{PPL}=e^{L}$</td><td>自然对数配 $e$；只在同分词下可比</td></tr>
+<tr><td>tokens/update</td><td>$B\times T\times K$</td><td>micro-batch ≠ 一次更新</td></tr>
+<tr><td>warmup</td><td>$\eta_s=\eta_{\max}\frac{s+1}{w}$</td><td>$s=0$ 时是 $\eta_{\max}/w$，不是 0</td></tr>
+<tr><td>余弦</td><td>$\eta_{\min}+\frac{\eta_{\max}-\eta_{\min}}{2}(1+\cos\pi q)$，$q=\frac{s-w+1}{N-w}$</td><td>$s=N-1$ 时正好到最低</td></tr>
+<tr><td>全局梯度范数</td><td>$r=\sqrt{\sum_j\|g_j\|^2}$</td><td>记<strong>裁剪前</strong>的 $r$</td></tr>
+<tr><td>裁剪</td><td>$g_j\leftarrow g_j\min(1,c/r)$</td><td>同一标量 → 保方向</td></tr>
+<tr><td>AdamW</td><td>$\theta_t=(1-\eta\lambda)\theta_{t-1}-\eta\frac{\widehat m_t}{\sqrt{\widehat v_t}+\epsilon}$</td><td>衰减<strong>不</strong>经过矩</td></tr>
+<tr><td>温度</td><td>$p_i\propto\exp(z_i/\tau)$</td><td>$\tau&gt;0$；不改 argmax</td></tr>
+<tr><td>top-p</td><td>$\min\{k:\sum_{i\le k}p_{(i)}\ge p\}$</td><td><strong>包含</strong>第 $k$ 个，再重归一化</td></tr>
+</tbody>
+</table>
+
+<h4>F.2 一页数字（都可以手算核对）</h4>
+
+<dl class="kv">
+<dt>Noa 参数量</dt><dd>4608 = 4224（两块）+ 192（token 嵌入）+ 160（位置嵌入）+ 32（最终 LN）</dd>
+<dt>优化器状态</dt><dd>$4608\times2+1=9217$ 个数值</dd>
+<dt>E01</dt><dd>$B=2,T=4$ → 8 个损失项</dd>
+<dt>E02</dt><dd>$4\times8\times2=64$ tokens/update；32 次更新 → 64 个 micro-batch、2048 个 token</dd>
+<dt>E03</dt><dd>LR = 0.0005 / 0.001 / 0.0001；$(3,4)$ → $(0.6,0.8)$</dd>
+<dt>两文档下界</dt><dd>$\ln 2/10\approx0.069315$，实测 0.069822</dd>
+<dt>开发集加权</dt><dd>$(8\times1+2\times3)/10=1.4$，$\mathrm{PPL}\approx4.06$</dd>
+<dt>第 200 次更新</dt><dd>train 0.5153，dev 1.4027 nats/token</dd>
+<dt>重启对比</dt><dd>完整恢复：全 0；重置 AdamW：第二次损失差 0.02846，最终参数差 0.12780</dd>
+<dt>E06</dt><dd>保留 A、B；$(4/7,3/7,0,0)$</dd>
+</dl>
+
+<h4>F.3 自测十题</h4>
+
+<div class="quiz">
+<p class="q">一个 $(B,T+1)=(2,5)$ 的窗口能产生几个损失项？</p>
+<details><summary>答案</summary><div class="body"><p>$(2,4)$ → <strong>8</strong> 个。窗口长 $T+1$，输入和目标各 $T$ 个。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">如果先把 logits 做 softmax 再取 log，最坏会发生什么？</p>
+<details><summary>答案</summary><div class="body"><p>小概率被压成精确的 <code>0.0</code>，<code>log(0)=-inf</code>，损失变 <code>inf</code>，反向得到 <code>nan</code>。
+应当直接用 <code>F.cross_entropy</code>（内部 log-softmax + logsumexp）。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">梯度累积 $K=2$ 时，为什么每个 micro-batch 的损失要除以 2？</p>
+<details><summary>答案</summary><div class="body"><p>因为反向是线性的：两个等权平均损失之和的一半，其梯度正好等于整批平均损失的梯度。
+不除，梯度就是 2 倍，等效于悄悄放大学习率。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">学习率调度 $N=8,w=2,\eta_{\max}=10^{-3}$，第 1 次更新的学习率是多少？</p>
+<details><summary>答案</summary><div class="body"><p>$s=1&lt;w$，$\eta_1=10^{-3}\times\frac{2}{2}=10^{-3}$，正好是峰值。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">梯度 $(3,4)$ 被裁到范数 1 之后方向变了吗？按坐标各自 clamp 到 1 呢？</p>
+<details><summary>答案</summary><div class="body"><p>整体裁剪：$(0.6,0.8)$，方向<strong>不变</strong>（同一正标量缩放）。
+按坐标 clamp：$(1,1)$，方向<strong>变了</strong>。这是两种不同的操作。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">两文档拟合的损失为什么降不到 0？</p>
+<details><summary>答案</summary><div class="body"><p>有一处前缀相同、目标不同（<code>cat</code> / <code>friend</code>），最优只能各给 0.5，
+两个这样的位置各贡献 $\ln2$，20 个 token 平均后是 $\ln2/10$。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">只保存 <code>model.state_dict()</code> 就恢复训练，会发生什么？</p>
+<details><summary>答案</summary><div class="body"><p>权重对了，但 AdamW 的 $m,v$ 是空的，第一次 step 之后轨迹就分叉（实测第二次损失差 0.02846）。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">为什么 RNG 的恢复要放在「构造模型 + 载入状态」之后？</p>
+<details><summary>答案</summary><div class="body"><p>构造函数本身可能消耗随机数。先恢复 RNG 再构造，等于让初始化把恢复好的状态又推进了若干步。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">贪心在两步树上拿到 0.30，为什么不是最优？</p>
+<details><summary>答案</summary><div class="body"><p>贪心只看每步的条件概率（0.6 &gt; 0.4），但联合概率要沿路径相乘：$0.4\times0.9=0.36&gt;0.6\times0.5=0.30$。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">top-p = 0.6，概率 $(0.4,0.3,0.2,0.1)$，重归一化的分母是多少？</p>
+<details><summary>答案</summary><div class="body"><p><strong>0.7</strong>，即实际保留的质量，不是阈值 0.6。结果 $(4/7,3/7,0,0)$。</p></div></details>
+</div>
+
+<h3 id="apG">G · 参考文献</h3>
+
+<ul>
+<li>Loshchilov &amp; Hutter, <em>Decoupled Weight Decay Regularization</em>（AdamW），§2 ·
+<a href="https://arxiv.org/abs/1711.05101">arXiv:1711.05101</a></li>
+<li>Holtzman et al., <em>The Curious Case of Neural Text Degeneration</em>（nucleus sampling）·
+<a href="https://arxiv.org/abs/1904.09751">arXiv:1904.09751</a></li>
+<li>PyTorch, <em>Saving and Loading a General Checkpoint</em> ·
+<a href="https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html#saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training">官方教程</a></li>
+<li>PyTorch, <code>torch.optim.AdamW</code> · <a href="https://docs.pytorch.org/docs/2.14/generated/torch.optim.AdamW.html">API</a>；
+<code>clip_grad_norm_</code> · <a href="https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.clip_grad_norm_.html">API</a></li>
+<li>PyTorch, <em>AMP examples · gradient clipping</em> ·
+<a href="https://docs.pytorch.org/docs/2.14/notes/amp_examples.html#gradient-clipping">文档</a></li>
+<li>GPT-1 §3.1–3.2 · <a href="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf">PDF</a>；
+GPT-2 §2–3 · <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">PDF</a>；
+GPT-3 §2.1 · <a href="https://arxiv.org/abs/2005.14165">arXiv:2005.14165</a></li>
+<li>课程课件与练习本：<a href="https://baojian.github.io/llm-26-fall/slides/lecture-06/">slides/lecture-06</a> ·
+<a href="https://github.com/baojian/llm-26-fall">课程仓库</a></li>
+</ul>
+
+<div class="footnote">
+<p><strong>关于图。</strong>图 1–3、7–10、12 为依据课件内容重绘的静态 SVG（颜色用 CSS 变量，深浅色自动适配）；
+图 4–6、11 依据课件给出的实测数据重绘。课件原图是 Excalidraw / Plotly 现场绘制，静态打开时为空白。</p>
+<p><strong>关于数值。</strong>文中所有示例数字（4608、9217、$\ln2/10$、1.4、0.02846、0.12780 等）均按课件与讲者备注给出的定义独立复算过一遍；
+实测曲线数据取自课件 <code>assets/*.json</code>。</p>
+<p><strong>关于标注。</strong><span class="tag s">课件</span> 是幻灯片正文；<span class="tag a">讲者备注</span> 是 <code>Note:</code> 里的口头讲解；
+<span class="tag n">补充</span> 是课件只有图或只有结论时补的推导与验算。</p>
+<p>课程内容版权归<strong>复旦大学</strong>及授课教师所有，本笔记仅收录自己整理的笔记与补充推导。</p>
+</div>
+
+<script>
+(function(){
+  var LNR = [0.005,0.01,0.015,0.02,0.01997,0.01986,0.01969,0.01946,0.01916,0.01879,0.01837,0.01789,0.01736,0.01679,0.01616,0.0155,0.0148,0.01408,0.01333,0.01256,0.01178,0.011,0.01022,0.00944,0.00867,0.00792,0.0072,0.0065,0.00584,0.00521,0.00464,0.00411,0.00363,0.00321,0.00284,0.00254,0.00231,0.00214,0.00203,0.002];
+  var TINY = [2.5092,2.2725,2.0356,1.8541,1.6075,1.4091,1.2204,1.0474,0.8851,0.7421,0.6212,0.5142,0.423,0.3489,0.2893,0.2411,0.2029,0.1732,0.1504,0.1333,0.1201,0.1098,0.1018,0.0956,0.0909,0.0873,0.0844,0.082,0.0802,0.0787,0.0775,0.0765,0.0757,0.075,0.0744,0.0739,0.0735,0.0732,0.0729,0.0726,0.0724,0.0722,0.072,0.0719,0.0718,0.0716,0.0715,0.0714,0.0714,0.0713,0.0712,0.0711,0.0711,0.071,0.071,0.071,0.0709,0.0709,0.0708,0.0708,0.0708,0.0708,0.0707,0.0707,0.0707,0.0707,0.0706,0.0706,0.0706,0.0706,0.0706,0.0706,0.0705,0.0705,0.0705,0.0705,0.0705,0.0705,0.0705,0.0705,0.0705,0.0705,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0704,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0703,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0702,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.0701,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0699,0.0698,0.0698,0.0698,0.0698,0.0698,0.0698,0.0698,0.0698,0.0698,0.0698];
+  var TRAIN = [2.5242,2.0924,1.3738,1.1849,0.9335,1.0399,0.7628,0.8089,0.665,0.7971,0.657,0.6796,0.564,0.6185,0.6081,0.5883,0.5496,0.538,0.5076,0.5046,0.5153];
+  var DEV = [2.5142,2.1635,1.5011,1.2918,1.2962,1.5333,1.3414,1.4009,1.2677,1.6271,1.3887,1.471,1.3304,1.3136,1.3413,1.2284,1.2314,1.2936,1.3421,1.3753,1.4027];
+
+  function range(a,b,step){var r=[];for(var v=a;v<=b+1e-9;v+=step)r.push(Math.round(v*1e6)/1e6);return r;}
+
+  function lineChart(id,cfg){
+    var host=document.getElementById(id); if(!host) return;
+    var W=760,H=cfg.h||330,P={l:66,r:24,t:26,b:54};
+    var iw=W-P.l-P.r, ih=H-P.t-P.b;
+    var xs=cfg.x, xmin=xs[0], xmax=xs[xs.length-1];
+    var logy=!!cfg.logy, T=function(v){return logy?Math.log10(v):v;};
+    var vals=[]; cfg.series.forEach(function(s){s.y.forEach(function(v){vals.push(v);});});
+    (cfg.hlines||[]).forEach(function(h){vals.push(h.y);});
+    var lo=Math.min.apply(null,vals), hi=Math.max.apply(null,vals);
+    var tlo=T(lo), thi=T(hi), pd=(thi-tlo)*0.07; tlo-=pd; thi+=pd;
+    var X=function(v){return P.l+(v-xmin)/(xmax-xmin)*iw;};
+    var Y=function(v){return P.t+ih-(T(v)-tlo)/(thi-tlo)*ih;};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">';
+    (cfg.yticks||[]).forEach(function(t){
+      s+='<line x1="'+P.l+'" y1="'+Y(t).toFixed(1)+'" x2="'+(P.l+iw)+'" y2="'+Y(t).toFixed(1)+'" stroke="var(--line)" stroke-width="1"/>';
+      s+='<text x="'+(P.l-9)+'" y="'+(Y(t)+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="var(--ink3)">'+cfg.ytickfmt(t)+'</text>';
+    });
+    (cfg.xticks||[]).forEach(function(t){
+      s+='<line x1="'+X(t).toFixed(1)+'" y1="'+(P.t+ih)+'" x2="'+X(t).toFixed(1)+'" y2="'+(P.t+ih+5)+'" stroke="var(--ink3)" stroke-width="1"/>';
+      s+='<text x="'+X(t).toFixed(1)+'" y="'+(P.t+ih+20)+'" text-anchor="middle" font-size="11.5" fill="var(--ink3)">'+t+'</text>';
+    });
+    s+='<line x1="'+P.l+'" y1="'+(P.t+ih)+'" x2="'+(P.l+iw)+'" y2="'+(P.t+ih)+'" stroke="var(--ink3)" stroke-width="1.2"/>';
+    (cfg.hlines||[]).forEach(function(h){
+      var y=Y(h.y);
+      s+='<line x1="'+P.l+'" y1="'+y.toFixed(1)+'" x2="'+(P.l+iw)+'" y2="'+y.toFixed(1)+'" stroke="'+(h.color||'var(--warn)')+'" stroke-width="1.4" stroke-dasharray="6 4"/>';
+      s+='<text x="'+(P.l+iw-4)+'" y="'+(y-7).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="'+(h.color||'var(--warn)')+'">'+h.label+'</text>';
+    });
+    (cfg.vlines||[]).forEach(function(v){
+      var x=X(v.x);
+      s+='<line x1="'+x.toFixed(1)+'" y1="'+P.t+'" x2="'+x.toFixed(1)+'" y2="'+(P.t+ih)+'" stroke="var(--gold)" stroke-width="1.3" stroke-dasharray="5 4"/>';
+      s+='<text x="'+(x+5).toFixed(1)+'" y="'+(P.t+13)+'" font-size="11.5" fill="var(--gold)">'+v.label+'</text>';
+    });
+    cfg.series.forEach(function(se){
+      var pts=se.y.map(function(v,i){return X(xs[i]).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+      s+='<polyline points="'+pts+'" fill="none" stroke="'+(se.color||'var(--accent)')+'" stroke-width="'+(se.w||1.9)+'" stroke-linejoin="round"/>';
+      if(cfg.dots!==false){
+        var r=se.y.length>60?1.5:3.2;
+        se.y.forEach(function(v,i){s+='<circle cx="'+X(xs[i]).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="'+r+'" fill="'+(se.color||'var(--accent)')+'"/>';});
+      }
+    });
+    if(cfg.series.length>1){
+      var lx=P.l+8;
+      cfg.series.forEach(function(se,i){
+        var yy=P.t+8+i*18;
+        s+='<line x1="'+lx+'" y1="'+yy+'" x2="'+(lx+18)+'" y2="'+yy+'" stroke="'+(se.color||'var(--accent)')+'" stroke-width="2.4"/>';
+        s+='<text x="'+(lx+24)+'" y="'+(yy+4)+'" font-size="11.5" fill="var(--ink2)">'+se.name+'</text>';
+      });
+    }
+    s+='<text x="'+(P.l+iw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="var(--ink3)">'+cfg.xlabel+'</text>';
+    s+='<text x="14" y="'+(P.t+ih/2)+'" text-anchor="middle" font-size="12" fill="var(--ink3)" transform="rotate(-90 14 '+(P.t+ih/2)+')">'+cfg.ylabel+'</text>';
+    s+='</svg>';
+    host.innerHTML=s;
+  }
+
+  lineChart('c-lr',{
+    x:range(0,39,1), series:[{y:LNR,color:'var(--accent)'}],
+    yticks:[0.002,0.005,0.01,0.015,0.02], ytickfmt:function(v){return v.toFixed(3);},
+    xticks:[0,4,8,12,16,20,24,28,32,36,39],
+    xlabel:'优化器更新下标 s（从 0 开始）', ylabel:'学习率', h:320,
+    vlines:[{x:3,label:'warmup 峰值 s=w-1'}]
+  });
+
+  lineChart('c-tiny',{
+    x:range(0,199,1), series:[{y:TINY,color:'var(--accent)'}], logy:true,
+    yticks:[0.07,0.1,0.2,0.5,1,2,2.5], ytickfmt:function(v){return v<0.1?v.toFixed(3):v.toFixed(1);},
+    xticks:[0,20,40,60,80,100,120,140,160,180,199],
+    xlabel:'已完成的优化器更新次数', ylabel:'平均 NLL（nats/token，对数刻度）', h:330,
+    hlines:[{y:0.069315,label:'下界 ln2/10 ≈ 0.0693'}]
+  });
+
+  lineChart('c-dev',{
+    x:range(0,200,10),
+    series:[{y:TRAIN,color:'var(--accent)',name:'train（16 文档）'},{y:DEV,color:'var(--gold)',name:'dev（8 文档）'}],
+    yticks:[0.5,1,1.5,2,2.5], ytickfmt:function(v){return v.toFixed(1);},
+    xticks:[0,20,40,60,80,100,120,140,160,180,200],
+    xlabel:'已完成的优化器更新次数', ylabel:'NLL（nats/token，按 token 加权）', h:330
+  });
+
+  // 温度分组柱状图
+  (function(){
+    var host=document.getElementById('c-temp'); if(!host) return;
+    var cats=['A','B','C','D'];
+    var series=[
+      {name:'τ = 0.5',y:[0.5333,0.3000,0.1333,0.0333],color:'var(--accent)'},
+      {name:'τ = 1',  y:[0.4000,0.3000,0.2000,0.1000],color:'var(--ink3)'},
+      {name:'τ = 2',  y:[0.3254,0.2818,0.2301,0.1627],color:'var(--gold)'}
+    ];
+    var W=760,H=320,P={l:66,r:24,t:44,b:54};
+    var iw=W-P.l-P.r, ih=H-P.t-P.b, ymax=0.6;
+    var X=function(i){return P.l+(i+0.5)*(iw/cats.length);};
+    var Y=function(v){return P.t+ih-v/ymax*ih;};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">';
+    [0,0.1,0.2,0.3,0.4,0.5,0.6].forEach(function(t){
+      s+='<line x1="'+P.l+'" y1="'+Y(t).toFixed(1)+'" x2="'+(P.l+iw)+'" y2="'+Y(t).toFixed(1)+'" stroke="var(--line)" stroke-width="1"/>';
+      s+='<text x="'+(P.l-9)+'" y="'+(Y(t)+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="var(--ink3)">'+t.toFixed(1)+'</text>';
+    });
+    var gw=(iw/cats.length)*0.62, bw=gw/series.length;
+    cats.forEach(function(c,i){
+      s+='<text x="'+X(i).toFixed(1)+'" y="'+(P.t+ih+20)+'" text-anchor="middle" font-size="12.5" fill="var(--ink2)">'+c+'</text>';
+      series.forEach(function(se,j){
+        var x=X(i)-gw/2+j*bw, y=Y(se.y[i]), hh=(P.t+ih)-y;
+        s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-3).toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="2" fill="'+se.color+'"/>';
+        if(j===0) s+='<text x="'+(x+(bw-3)/2).toFixed(1)+'" y="'+(y-5).toFixed(1)+'" text-anchor="middle" font-size="10" fill="var(--ink3)">'+se.y[i].toFixed(2)+'</text>';
+      });
+    });
+    s+='<line x1="'+P.l+'" y1="'+(P.t+ih)+'" x2="'+(P.l+iw)+'" y2="'+(P.t+ih)+'" stroke="var(--ink3)" stroke-width="1.2"/>';
+    series.forEach(function(se,i){
+      var lx=P.l+8+i*110, yy=P.t-20;
+      s+='<rect x="'+lx+'" y="'+(yy-8)+'" width="11" height="11" rx="2" fill="'+se.color+'"/>';
+      s+='<text x="'+(lx+17)+'" y="'+(yy+2)+'" font-size="11.5" fill="var(--ink2)">'+se.name+'</text>';
+    });
+    s+='<text x="'+(P.l+iw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="var(--ink3)">玩具 token</text>';
+    s+='<text x="14" y="'+(P.t+ih/2)+'" text-anchor="middle" font-size="12" fill="var(--ink3)" transform="rotate(-90 14 '+(P.t+ih/2)+')">概率</text>';
+    s+='</svg>';
+    host.innerHTML=s;
+  })();
+
+  // 交互沙盒
+  (function(){
+    var bars=document.getElementById('sb-bars'); if(!bars) return;
+    var tauEl=document.getElementById('tau'), pEl=document.getElementById('topp');
+    var tauV=document.getElementById('tau-v'), pV=document.getElementById('topp-v');
+    var stat=document.getElementById('sb-stat');
+    var names=['A','B','C','D'];
+    var logits=[Math.log(0.4),Math.log(0.3),Math.log(0.2),Math.log(0.1)];
+    var last='';
+
+    function compute(){
+      var tau=parseFloat(tauEl.value), p=parseFloat(pEl.value);
+      var ex=logits.map(function(z){return Math.exp(z/tau);});
+      var sum=ex.reduce(function(a,b){return a+b;},0);
+      var probs=ex.map(function(v){return v/sum;});
+      var idx=probs.map(function(v,i){return i;}).sort(function(a,b){return probs[b]-probs[a]||a-b;});
+      var cum=0, keep=[];
+      for(var k=0;k<idx.length;k++){
+        cum+=probs[idx[k]]; keep.push(idx[k]);
+        if(cum>=p-1e-12) break;
+      }
+      var kept=probs.map(function(v,i){return keep.indexOf(i)>=0?v:0;});
+      var mass=kept.reduce(function(a,b){return a+b;},0);
+      var norm=kept.map(function(v){return v/mass;});
+      return {tau:tau,p:p,probs:probs,keep:keep,norm:norm,mass:mass};
+    }
+
+    function draw(){
+      var r=compute();
+      tauV.textContent=r.tau.toFixed(2);
+      pV.textContent=r.p.toFixed(2);
+      var html='<div style="display:flex;gap:10px;align-items:flex-end;height:140px;margin:12px 0 4px">';
+      var mx=Math.max.apply(null,r.probs);
+      r.probs.forEach(function(v,i){
+        var on=r.keep.indexOf(i)>=0;
+        var h=Math.max(3,v/mx*112);
+        html+='<div style="flex:1;text-align:center">'
+            +'<div style="font-size:11.5px;color:var(--ink3);margin-bottom:3px">'+(on?(r.norm[i]).toFixed(3):'—')+'</div>'
+            +'<div style="height:'+h.toFixed(0)+'px;background:'+(on?'var(--accent)':'var(--line)')+';border-radius:4px 4px 0 0"></div>'
+            +'<div style="font-size:12.5px;color:'+(on?'var(--ink)':'var(--ink3)')+';margin-top:4px">'+names[i]+'</div>'
+            +'</div>';
+      });
+      html+='</div>';
+      bars.innerHTML=html;
+      var keptNames=r.keep.map(function(i){return names[i];}).join('、');
+      stat.innerHTML='保留：<strong>'+keptNames+'</strong>（'+r.keep.length+' 个），保留质量 '+r.mass.toFixed(3)
+        +'；柱顶数字为重归一化后的概率。'+(last?'　上一次抽到：<strong>'+last+'</strong>':'');
+    }
+
+    tauEl.addEventListener('input',draw);
+    pEl.addEventListener('input',draw);
+    document.getElementById('sb-draw').addEventListener('click',function(){
+      var r=compute(), u=Math.random(), acc=0, pick=r.keep[0];
+      for(var k=0;k<r.keep.length;k++){
+        acc+=r.norm[r.keep[k]];
+        if(u<=acc){pick=r.keep[k];break;}
+      }
+      last=names[pick]; draw();
+    });
+    document.getElementById('sb-reset').addEventListener('click',function(){
+      tauEl.value=1; pEl.value=0.6; last=''; draw();
+    });
+    draw();
+  })();
+})();
+</script>
+
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if(typeof renderMathInElement!=='function') return;
+    renderMathInElement(document.body,{delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'\\(',right:'\\)',display:false},
+      {left:'$',right:'$',display:false}
+    ],throwOnError:false,errorColor:'#c0392b'});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+</body>
+</html>
