@@ -4,7 +4,7 @@
 
 - 授课教师：**Baojian Zhou**
 - 课件来源：<https://baojian.github.io/llm-26-fall/>
-- 本目录整理的是 **Lecture 04** 与 **Lecture 05** 两讲
+- 本目录整理的是 **Lecture 04**、**Lecture 05** 与 **Lecture 06** 三讲
 
 ## 笔记
 
@@ -12,10 +12,12 @@
 |---|---|---|
 | Lecture 04 | **神经语言模型与循环注意力**：bigram 的上下文限制、定长窗口前馈 LM、张量与损失（含数值稳定性）、循环状态与 BPTT 梯度、LSTM 门控、RNN 编码器–解码器与 Bahdanau 加性注意力 | [LLM-04-神经语言模型与循环注意力.html](./LLM-04-神经语言模型与循环注意力.html) |
 | Lecture 05 | **注意力与 Transformer**：自注意力八步、Q/K/V 投影、正弦位置编码、RoPE（旋转、复数、相对偏移）、缩放点积注意力与因果掩码、多头注意力、残差 / LayerNorm / pre-LN / FFN、可运行的小模型与参数计数、原始论文的实验证据 | [LLM-05-注意力与Transformer.html](./LLM-05-注意力与Transformer.html) |
+| Lecture 06 | **预训练与解码实践**：位移目标与平均 token 损失（log-sum-exp 数值稳定性）、一次优化器更新的八个阶段、AdamW 的矩与解耦衰减、梯度累积、warmup + 余弦调度、全局梯度裁剪、玩具拟合的解析下界 ln2/10、按 token 加权的验证损失与困惑度、checkpoint 的六类状态与恢复顺序（含实测重启差异）、贪心 / 温度 / top-k / nucleus 解码与可交互沙盒 | [LLM-06-预训练与解码实践.html](./LLM-06-预训练与解码实践.html) |
 
 **渲染版（推荐）**：
 [Lecture 04](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-04-神经语言模型与循环注意力.html) ·
-[Lecture 05](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-05-注意力与Transformer.html)
+[Lecture 05](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-05-注意力与Transformer.html) ·
+[Lecture 06](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-06-预训练与解码实践.html)
 
 > 表格里的相对路径链接在 **github.com 的文件页**点开只会看到**源码** —— GitHub 只渲染 Markdown，不渲染 HTML。
 > 要看渲染后的页面请用上面的 Pages 链接，或克隆到本地直接双击 `.html`。
@@ -31,14 +33,17 @@
 | 讲者备注 | 幻灯片 `Note:` 里的讲者备注，相当于老师课堂上的口头讲解与提醒 |
 | 补充 | 课件**只有图或只有结论、没有展开**的地方，由本笔记补的推导、验算与几何直觉 |
 
-> **为什么要补这么多「补充」？** 这两讲的幻灯片里有大量**交互式示意图**
-> （网页上靠 JavaScript 现场绘制，静态打开时是空白的）。本笔记把它们**重画成静态 SVG**，
+> **为什么要补这么多「补充」？** 这三讲的幻灯片里有大量**交互式示意图**
+> （网页上靠 JavaScript / Excalidraw 现场绘制，静态打开时是空白的）。本笔记把它们**重画成静态 SVG**，
 > 并在每张图下面补齐课件没有写出来的公式推导和数字验算——
 > 缺课时光看图是看不懂「这一步到底怎么算出来的」。
 >
 > 另外，课件里凡是**只给结论**的地方（例如「除以 √d_k 是为了控制方差」「FFN 占 2/3 参数」
-> 「玩具批次的损失下界是 log2/10」），笔记里都把推导和验算过程写全了。
+> 「玩具批次的损失下界是 log2/10」「AdamW 的衰减要和自适应更新拆开」），笔记里都把推导和验算过程写全了。
 > 所有示例数值均独立复算过一遍。
+>
+> Lecture 06 还多给了一个**可交互的解码沙盒**（温度 / top-p 两个滑块 + 抽一个 token），
+> 用来亲手验证「阈值越过哪一个 token 就保留到哪一个」这条边界。
 
 ## 勘误
 
@@ -51,6 +56,10 @@
 | L05 §3.18 | 「比 ConvS2S 快 50 倍」 | 该说法把算力与时间混为一谈，且比较对象不明确；笔记改为按 Table 2 算出 6.5× / 52× 的训练 FLOPs 比 |
 | L05 §2.9 | 图示为 post-LN，但代码截图实为 pre-LN | 指出这处不一致，并说明两者雅可比不同 |
 | L05 §3.17 | 该参数计数容易被当成「BERT 参数量」 | 明确列出计入与排除的项，声明这不是精确的 BERT 计数 |
+| L06 §1.6 / §1.10 | 两处都用字母 $t$ | 损失式里的 $t$ 是**序列位置**，AdamW 递推里的 $t$ 是**优化器更新次数**；笔记里分开写并注明 |
+| L06 §2.1 | 余弦调度在 $s=w$ 时 $q=1/(N-w)\neq0$ | 曲线在 warmup 峰值后会**立刻**下折，不是「保持峰值到 warmup 结束」；笔记里用 $s=4$ 的数值验算说明这是约定而非画错 |
+| L06 §3.1 | 「前缀超过 10 个就裁掉最左、位置从 0 重排」 | 这是**本课与 A2 的显式协议**，不是所有语言模型推理系统的通用行为，笔记里标注为约定并要求写进报告 |
+| L06 §3.5 | top-k 只作为过渡 | 课件明确说「学生实现的是公开协议里的 top-p」，top-k 仅用于对比；笔记里没有把它写成推荐做法 |
 
 ## 关于图
 
@@ -58,8 +67,12 @@
   `L04-recurrent-state.svg`、`L04-encoder-bottleneck.png`、`L04-rnn-attention.png`、
   `L05-rope-complex-plane.svg`、`L05-rope-pair-frequencies.svg`、`L05-decoder-model.svg`、
   `L05-causal-mask.svg`、`L05-ffn-parameter-share.svg`
-- 其余示意图（共 16 张）为按课件内容与数据**重绘的静态 SVG**，颜色使用 CSS 变量，深浅色自动适配
-- 两张曲线图（玩具训练损失、pre-LN vs post-LN）依据课件给出的实测数据重绘
+- L04 / L05 的其余示意图（共 16 张）为按课件内容与数据**重绘的静态 SVG**，颜色使用 CSS 变量，深浅色自动适配
+- L04 / L05 的两张曲线图（玩具训练损失、pre-LN vs post-LN）依据课件给出的实测数据重绘
+- Lecture 06 的 12 张图全部为重绘：8 张静态 SVG（Noa 架构、位移目标、八个更新阶段、
+  checkpoint 六类状态、恢复时间线、生成循环、两步贪心树、nucleus 边界），
+  4 张曲线/柱状图依据课件 `assets/*.json` 的实测数据重绘（学习率调度、玩具拟合、
+  训练/开发损失、温度对比）；另外有一个纯前端交互的解码沙盒
 
 ## 打开方式
 

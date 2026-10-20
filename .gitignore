@@ -8,3 +8,10 @@ desktop.ini
 .DS_Store
 *.tmp
 *~
+
+# 本地产出目录：KaTeX npm 包解包残留、渲染截图等中间产物
+/assets/
+/tmp/
+
+# 原始教材与讲义 PDF —— 版权原因不转载，笔记里只引用页码
+*.pdf
