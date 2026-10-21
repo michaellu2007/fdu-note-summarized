@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 07 · 算力预算与扩展律 — CS40008.01 课程笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+  --purple:#5b3a8e; --purple-bg:#efe8f8;
+  --teal:#0d6b6b;  --teal-bg:#e0f2f2;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+  --purple:#b49ae0; --purple-bg:#2a1f3d;
+  --teal:#5cc9c9;  --teal-bg:#0d3030;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.85}
+.wrap{max-width:920px;margin:0 auto;padding:52px 30px 100px}
+
+h1{font-size:29px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.4;margin:56px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:17.5px;line-height:1.5;margin:34px 0 10px}
+h4{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:11px 0}
+ul,ol{padding-left:24px;margin:11px 0}
+li{margin:5px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;overflow-x:auto;margin:16px 0;line-height:1.65}
+pre code{background:none;border:none;padding:0;font-size:13.5px}
+
+.lede{font-size:16.5px;color:var(--ink2);margin:0 0 8px}
+.sub{color:var(--ink3);font-size:14px;margin:0 0 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin:0 0 6px;display:block}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+.box ul:last-child,.box ol:last-child{margin-bottom:0}
+
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;background:var(--bg2);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;
+  background:var(--gold-bg);color:var(--gold);white-space:nowrap;vertical-align:middle;font-weight:600}
+.tag.a{background:var(--purple-bg);color:var(--purple)}
+.tag.n{background:var(--ok-bg);color:var(--ok)}
+.tag.s{background:var(--accent-bg);color:var(--accent)}
+
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px}
+figcaption{font-size:13.5px;color:var(--ink3);margin-top:9px;line-height:1.7;text-align:left}
+svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+.toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
+.toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.toc ol{margin:0;padding-left:20px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc li{font-size:14.5px}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.katex{font-size:1.04em}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{font-size:13.5px;color:var(--ink3);line-height:1.85;margin-top:44px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+@media (max-width:680px){.cols{grid-template-columns:1fr}}
+.steps{counter-reset:st;list-style:none;padding-left:0}
+.steps li{counter-increment:st;position:relative;padding-left:38px;margin:10px 0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:2px;width:24px;height:24px;
+  border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.qa{border-left:3px solid var(--ok);padding-left:16px;margin:14px 0;color:var(--ink2)}
+
+.diagram{margin:24px 0;border:1px solid var(--line);border-radius:12px;
+  background:var(--bg3);padding:14px 10px}
+.diagram svg{width:100%;height:auto}
+.chart{margin:22px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:10px}
+.chart svg{width:100%;height:auto}
+
+.ex{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;
+  padding:14px 20px;margin:22px 0;background:var(--bg3)}
+.ex .meta{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);
+  font-weight:700;margin:0 0 4px}
+.ex h4{margin:0 0 8px;font-size:16px;color:var(--ink)}
+details{margin:12px 0;border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden}
+details summary{cursor:pointer;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--accent);
+  list-style:none;user-select:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+details[open] summary::before{content:"▾ "}
+details .body{padding:2px 18px 14px;border-top:1px solid var(--line);font-size:14.5px}
+details .body p:first-child{margin-top:12px}
+
+.demo{border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:12px 16px;margin:14px 0}
+.demo .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.demo .stat{font-size:13.5px;color:var(--ink2);margin:10px 0 0;min-height:1.6em}
+.ibtn{font:inherit;font-size:13px;padding:6px 15px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink2)}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+.ibtn-main{background:var(--accent-bg);border-color:transparent;color:var(--accent);font-weight:600}
+
+.quiz{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0;background:var(--bg3)}
+.quiz .q{font-weight:600;margin:0 0 6px}
+.quiz .q::before{content:"Q";display:inline-block;width:20px;height:20px;border-radius:5px;
+  background:var(--accent);color:#fff;font-size:12px;text-align:center;line-height:20px;margin-right:8px;vertical-align:1px}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14.5px;margin:14px 0}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0}
+.small{font-size:13.5px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">CS40008.01 · NLP and LLMs · Lecture 07</p>
+<h1>算力预算与扩展律</h1>
+<p class="sub">Compute budgets and scaling · 复旦大学数据科学学院 · Baojian Zhou · 2026-10-21</p>
+
+<p class="lede">这节课回答一个问题：<strong>小规模的实验，凭什么能指导一个更大的训练预算？</strong>
+前半段把一次训练压缩成四个数字 $(N,D,C,L)$，并算清「六倍」「十六倍」这两个常数从哪来；
+后半段把损失写成 $N$ 与 $D$ 的函数，求它在固定算力下的最优分配，
+然后——也是最重要的——用一个<strong>故意失败</strong>的外推例子说明：曲线拟合得很漂亮，不代表它敢预测下一次。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源标注</span>
+<p>整理自课程公开课件（<code>baojian.github.io/llm-26-fall/slides/lecture-07/</code>），共 32 页，每页带 <code>Note:</code> 讲者备注。
+标题后的标签：<span class="tag s">课件</span> 正文 · <span class="tag a">讲者备注</span> 口头讲解 ·
+<span class="tag n">补充</span> 课件只给图或只给结论处补的推导与验算。</p>
+<p><strong>这一讲有一个特别需要注意的地方：</strong>课件里<strong>所有曲线都是作者编的合成数据</strong>，
+不是任何真实模型的测量结果。公式 $L=1.5+0.8/\sqrt{N/10^8}+0.8/\sqrt{D/2\times10^9}$ 是人为设定的曲面，
+目的是让代数、拟合、以及「外推失败」三件事在没有 GPU 的情况下也能完整复现。
+读图时不要把它当成某个模型家族的证据——课件本身反复强调了这一点。</p>
+</div>
+
+<div class="box key">
+<span class="label">主线：从一次训练到一条预测</span>
+<ol>
+<li><strong>记账。</strong>一次训练 = 一个四元组 $(N,D,C,L)$；算力 $C\approx 6ND$，持久状态 $\approx 16N$ 字节。</li>
+<li><strong>分配。</strong>预算固定时，$N$ 和 $D$ 是此消彼长的；损失曲面 $E+A/N^\alpha+B/D^\beta$ 有一个唯一最优解，
+$N_{\text{opt}}\propto C^{\beta/(\alpha+\beta)}$。</li>
+<li><strong>外推。</strong>在几个小预算上拟合幂律，冻结参数，写下对更大预算的预测，<strong>然后才</strong>揭晓保留的那次运行。</li>
+</ol>
+<p>第三步是本讲的落点：前两步都能算对，第三步仍然可能错得离谱。</p>
+</div>
+
+<div class="toc">
+<h3 id="toc">目录</h3>
+<ol>
+<li><a href="#p1">第一部分 · 算力预算</a>
+  <ol>
+    <li><a href="#s11">1.1 今天的三段时间</a></li>
+    <li><a href="#s12">1.2 一次训练变成一个数据点</a></li>
+    <li><a href="#s13">1.3 六倍从哪来</a></li>
+    <li><a href="#s14">1.4 哪次训练更贵（E01）</a></li>
+    <li><a href="#s15">1.5 持久训练状态：16 字节每参数</a></li>
+    <li><a href="#s16">1.6 FLOPs 与墙钟时间</a></li>
+    <li><a href="#s17">1.7 等算力，不同分配</a></li>
+    <li><a href="#s18">1.8 给这个权衡写一个模型</a></li>
+    <li><a href="#s19">1.9 怎么读一条幂律</a></li>
+    <li><a href="#s110">1.10 Chinchilla 改变了什么</a></li>
+    <li><a href="#s111">1.11 训练协议本身会改变拟合</a></li>
+    <li><a href="#s112">1.12 两个真实的模型，放在一起看</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 分配与外推</a>
+  <ol>
+    <li><a href="#s21">2.1 固定预算下的最优分配</a></li>
+    <li><a href="#s22">2.2 四倍预算怎么花（E02）</a></li>
+    <li><a href="#s23">2.3 把预算往上推</a></li>
+    <li><a href="#s24">2.4 实验必须分离变量</a></li>
+    <li><a href="#s25">2.5 我们在预测什么</a></li>
+    <li><a href="#s26">2.6 固定的 warmup 会改变比较</a></li>
+    <li><a href="#s27">2.7 可比测量的四条契约</a></li>
+    <li><a href="#s28">2.8 在更大规模运行之前冻结预测</a></li>
+    <li><a href="#s29">2.9 拟合一条合成前沿</a></li>
+    <li><a href="#s210">2.10 先预测，再揭晓（E03）</a></li>
+    <li><a href="#s211">2.11 诊断一次失败的预测</a></li>
+    <li><a href="#s212">2.12 这条定律的适用范围</a></li>
+    <li><a href="#s213">2.13 更低的损失不等于有用的能力</a></li>
+    <li><a href="#s214">2.14 写一个十二次运行的小实验（E04）</a></li>
+  </ol>
+</li>
+<li><a href="#ap">附录</a>
+  <ol>
+    <li><a href="#apA">A · 嘉宾讲座：Jiaxuan Zou</a></li>
+    <li><a href="#apB">B · 公式速查</a></li>
+    <li><a href="#apC">C · 一页数字</a></li>
+    <li><a href="#apD">D · 自测十题</a></li>
+    <li><a href="#apE">E · 参考文献</a></li>
+  </ol>
+</li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="p1">第一部分 · 算力预算</h2>
+
+<p>第一节课（13:45–14:15）。三件事：把训练记成一个四元组、把 FLOPs 算对、把内存算对。
+全部是算术，不需要 GPU。</p>
+
+<h3 id="s11">1.1 今天的三段时间 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>时间</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>13:30–14:15</td><td>Quiz 3，然后进入算力预算</td></tr>
+<tr><td>14:25–15:10</td><td>扩展律与预测</td></tr>
+<tr><td>15:25–16:10</td><td>Jiaxuan Zou：科学扩展阶梯</td></tr>
+</tbody>
+</table>
+
+<p class="small">下周：数据准备与质量。所有时间均为 Asia/Shanghai。</p>
+
+<p><span class="tag a">讲者备注</span> 与 Lecture 08 交换了主题顺序；两次课间休息保留；
+项目提案今晚（10 月 21 日 23:59）截止，A2 仍是 10 月 31 日 23:59 通过 eLearning 提交。
+不要让 notebook 的环境配置吃掉嘉宾的时间。</p>
+
+<h3 id="s12">1.2 一次训练变成一个数据点 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>记录</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>$N$</td><td>声明的模型参数量</td></tr>
+<tr><td>$D$</td><td>训练中处理的 token 数</td></tr>
+<tr><td>$C$</td><td>估计或实测的训练 FLOPs</td></tr>
+<tr><td>$L$</td><td>固定评估语料上的损失</td></tr>
+</tbody>
+</table>
+
+<p><strong>分词器、数据划分、架构、训练配方都要留在记录里。</strong></p>
+
+<div class="box key">
+<span class="label">补充 · 这四个数字各自有多少种「说法」</span>
+<p>看起来只是四个字母，实际上每一个都有歧义，写报告时必须挑一个并声明：</p>
+<ul>
+<li><strong>$N$</strong>：算不算嵌入表？算不算绑定权重（只算一次）？MoE 算总参数还是激活参数？</li>
+<li><strong>$D$</strong>：处理过的 token、被计分的 token、<strong>不重复</strong>的 token，还是含 padding 的 token？
+重复采样时，「处理过 4 万亿」可能只对应 1 万亿条唯一文本。</li>
+<li><strong>$C$</strong>：用 $6ND$ 估的，还是实测的算子 FLOPs？后者还要算 attention、重计算、通信。</li>
+<li><strong>$L$</strong>：nats 还是 bits？按 token 平均还是按文档？在哪个语料上？</li>
+</ul>
+<p>课件给的约定是：<strong>所有处理过的 token 都被计分</strong>，$L$ 是 token 加权的留出 NLL（nats/token）。
+这与 Lecture 06 的记法一致。</p>
+</div>
+
+<h3 id="s13">1.3 六倍从哪来 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="一个线性层的前向与两个反向矩阵乘法：前向 m×d 乘 d×h，输入梯度 m×h 乘 h×d，权重梯度 d×m 乘 m×h，各自约 2mdh FLOPs。">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="16" y="26" font-size="12.5" fill="var(--ink3)">m 个 token 位置 · 输入宽 d · 输出宽 h · 这一层有 dh 个权重</text>
+
+    <!-- 前向 -->
+    <g>
+      <rect x="16" y="46" width="86" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/>
+      <text x="59" y="68" text-anchor="middle" font-size="12.5" fill="var(--accent)">X  m×d</text>
+      <text x="110" y="68" font-size="12" fill="var(--ink3)">×</text>
+      <rect x="124" y="46" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="167" y="68" text-anchor="middle" font-size="12.5" fill="var(--ink)">W  d×h</text>
+      <text x="218" y="68" font-size="12" fill="var(--ink3)">=</text>
+      <rect x="232" y="46" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="275" y="68" text-anchor="middle" font-size="12.5" fill="var(--ink)">Y  m×h</text>
+      <text x="336" y="68" font-size="12.5" fill="var(--accent)" font-weight="650">≈ 2mdh FLOPs</text>
+      <text x="470" y="68" font-size="12" fill="var(--ink3)">前向：乘加各算一次运算</text>
+    </g>
+
+    <!-- 输入梯度 -->
+    <g>
+      <rect x="16" y="118" width="86" height="34" rx="5" fill="var(--gold-bg)" stroke="none"/>
+      <text x="59" y="140" text-anchor="middle" font-size="12.5" fill="var(--gold)">G  m×h</text>
+      <text x="110" y="140" font-size="12" fill="var(--ink3)">×</text>
+      <rect x="124" y="118" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="167" y="140" text-anchor="middle" font-size="12.5" fill="var(--ink)">Wᵀ  h×d</text>
+      <text x="218" y="140" font-size="12" fill="var(--ink3)">=</text>
+      <rect x="232" y="118" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="275" y="140" text-anchor="middle" font-size="12.5" fill="var(--ink)">∂L/∂X  m×d</text>
+      <text x="336" y="140" font-size="12.5" fill="var(--accent)" font-weight="650">≈ 2mdh FLOPs</text>
+      <text x="470" y="140" font-size="12" fill="var(--ink3)">输入梯度：还是同一个 W</text>
+    </g>
+
+    <!-- 权重梯度 -->
+    <g>
+      <rect x="16" y="190" width="86" height="34" rx="5" fill="var(--gold-bg)" stroke="none"/>
+      <text x="59" y="212" text-anchor="middle" font-size="12.5" fill="var(--gold)">Xᵀ  d×m</text>
+      <text x="110" y="212" font-size="12" fill="var(--ink3)">×</text>
+      <rect x="124" y="190" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="167" y="212" text-anchor="middle" font-size="12.5" fill="var(--ink)">G  m×h</text>
+      <text x="218" y="212" font-size="12" fill="var(--ink3)">=</text>
+      <rect x="232" y="190" width="86" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="275" y="212" text-anchor="middle" font-size="12.5" fill="var(--ink)">∂L/∂W  d×h</text>
+      <text x="336" y="212" font-size="12.5" fill="var(--accent)" font-weight="650">≈ 2mdh FLOPs</text>
+      <text x="470" y="212" font-size="12" fill="var(--ink3)">权重梯度：沿 m 求和</text>
+    </g>
+
+    <line x1="16" y1="250" x2="744" y2="250" stroke="var(--line)" stroke-width="1"/>
+    <text x="16" y="276" font-size="12.5" fill="var(--ink2)">三项相加：6mdh；对所有稠密层求和，Σ dh ≈ N，Σ m = D，于是 C ≈ 6ND</text>
+    <text x="16" y="300" font-size="11.5" fill="var(--ink3)">G = ∂L/∂Y 是上游传进来的梯度，不是又一个可学习矩阵；它的大小与 Y 相同（m×h）</text>
+  </g>
+</svg>
+<figcaption><strong>图 1 · 一个线性层的三次矩阵乘法。</strong>把 batch 和序列压平成 $m$ 个 token 位置。
+前向、输入梯度、权重梯度各约 $2mdh$ 次运算——「乘」和「加」各算一次，所以一个 $m\times d$ 乘 $d\times h$ 的矩阵乘法是 $2mdh$，不是 $mdh$。</figcaption>
+</figure>
+
+<p>$$\text{前向}\ 2mdh\;+\;\text{输入梯度}\ 2mdh\;+\;\text{权重梯度}\ 2mdh\;=\;6mdh
+\qquad\Longrightarrow\qquad C\approx 6ND$$</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么「六倍」这么稳</span>
+<p>反向传播是前向的<strong>两倍</strong>，这是深度学习里最常用的经验法则，而它在这里有一个干净的解释：
+一次反向要算两个东西——<strong>传给上一层的梯度</strong>（$\partial L/\partial X$）和<strong>这一层权重的梯度</strong>
+（$\partial L/\partial W$）。两者各自是一次与权重同规模的矩阵乘法，所以</p>
+<p>$$\underbrace{1}_{\text{前向}}+\underbrace{2}_{\text{反向}}=3\ \text{次}\times 2mdh=6mdh$$</p>
+<p>而「2」这个因子来自「乘 + 加」。于是三层账都清楚：<strong>3 次乘法、每次 2 个运算</strong>。</p>
+<p>求和时用了两个近似：$\sum_{\text{稠密层}}dh\approx N$（忽略 bias 与逐元素运算），
+$\sum_{\text{所有 token}}m = D$。这两个近似正是后面所有数字的误差来源。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 6ND 漏掉了什么</span>
+<ul>
+<li><strong>token 查表</strong>不乘整张嵌入矩阵（只取一行），所以这部分远小于 $6ND$；但<strong>绑定词表的输出投影</strong>要对整个词表做一次乘法，不算小。</li>
+<li><strong>注意力</strong>的 $O(T^2)$ 项、<strong>激活重计算</strong>（checkpointing）、<strong>通信</strong>都会额外增加 FLOPs。</li>
+<li>这是<strong>算力</strong>模型，不是<strong>时间</strong>模型：它不告诉你 MFU 是多少，也不告诉你显存够不够。</li>
+<li>「$N$ 的口径」必须写清楚：算不算嵌入、MoE 是总参数还是激活参数。</li>
+</ul>
+</div>
+
+<h3 id="s14">1.4 哪次训练更贵（E01） <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>运行</th><th class="num">参数 $N$</th><th class="num">训练 token $D$</th></tr></thead>
+<tbody>
+<tr><td>A</td><td class="num">50M</td><td class="num">4B</td></tr>
+<tr><td>B</td><td class="num">200M</td><td class="num">1B</td></tr>
+</tbody>
+</table>
+
+<div class="ex">
+<p class="meta">Exercise E01 · 4 分钟</p>
+<h4>用 $6ND$ 估一估</h4>
+<p>分别估算两次运行的算力。算力相同是否意味着内存相同、损失相同？</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p>A：$6\times50\times10^{6}\times4\times10^{9}=1.2\times10^{18}$ FLOPs。<br>
+B：$6\times200\times10^{6}\times1\times10^{9}=1.2\times10^{18}$ FLOPs。</p>
+<p><strong>两者相同。</strong>但 B 的参数是 A 的 4 倍、token 只有 1/4，
+所以<strong>内存不同</strong>（见下一节：0.8 GB vs 3.2 GB），<strong>损失也不同</strong>（容量项 vs 数据项此消彼长）。</p>
+<p class="small">常见错误：把 billion 当成 $10^{6}$；用优化器更新次数代替 $D$；以为等 FLOPs 就等于等效果。</p>
+</div>
+</details>
+</div>
+
+<h3 id="s15">1.5 持久训练状态：16 字节每参数 <span class="tag s">课件</span></h3>
+
+<p><strong>教学假设：</strong>FP32 的参数、梯度、Adam 两个矩。</p>
+
+<table>
+<thead><tr><th>状态</th><th class="num">字节</th></tr></thead>
+<tbody>
+<tr><td>参数与梯度</td><td class="num">$8N$</td></tr>
+<tr><td>两个 Adam 矩数组</td><td class="num">$8N$</td></tr>
+<tr><td><strong>持久数组合计</strong></td><td class="num"><strong>$16N$</strong></td></tr>
+</tbody>
+</table>
+
+<p class="small">50M → 0.8 GB；200M → 3.2 GB。十进制 GB；不含激活与临时缓冲。</p>
+
+<div class="box key">
+<span class="label">补充 · 四份数组，各 4 字节</span>
+<p>$$\underbrace{4}_{\theta}+\underbrace{4}_{\nabla\theta}+\underbrace{4}_{m}+\underbrace{4}_{v}=16\ \text{字节/参数}$$</p>
+<p>这就是 Lecture 06 里那张「优化器状态比模型还大」的账在字节层面的写法：</p>
+<ul>
+<li>$50\times10^{6}\times16=8\times10^{8}$ B $=0.8$ GB（十进制，$10^9$）</li>
+<li>$200\times10^{6}\times16=3.2\times10^{9}$ B $=3.2$ GB</li>
+</ul>
+<p><strong>注意这不是显存峰值。</strong>真实峰值还要加上：保存的激活（随 batch × 序列长度增长）、logits
+（$m\times V$，词表大时很可观）、临时 workspace、分配器碎片、框架开销。
+所以「等 FLOPs」完全不能推出「等显存」——B 的持久状态就是 A 的 4 倍。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<p>精度选择（bf16 参数 + fp32 主权重）、优化器实现（8-bit Adam）、分片（ZeRO / FSDP）都会改变这本账。
+<strong>上下文变长</strong>会显著抬高 attention 的算力与激活显存。
+这页是「在声明假设下的算术」，不是 GPU 测量，也不是分配承诺。</p>
+</div>
+
+<h3 id="s16">1.6 FLOPs 与墙钟时间 <span class="tag s">课件</span></h3>
+
+<p>$$t\approx\frac{C}{\text{有效 FLOPs/s}}$$</p>
+
+<p>对上面那个 $1.2\times10^{18}$ FLOPs 的例子：</p>
+<ul>
+<li>假设单卡<strong>持续 100 TFLOP/s</strong>；</li>
+<li>估算计算时间 $\dfrac{1.2\times10^{18}}{10^{14}}=1.2\times10^{4}$ 秒 $\approx$ <strong>3.33 小时</strong>；</li>
+<li>评估、checkpoint、数据停顿都会再加时间。</li>
+</ul>
+
+<div class="box key">
+<span class="label">补充 · 「有效」两个字最贵</span>
+<p>$100$ TFLOP/s 是<strong>有效</strong>吞吐，不是峰值。两者的比值就是 MFU（模型 FLOPs 利用率）。
+小模型、短序列、大量通信的并行配置，MFU 都会掉下来——所以<strong>更小的模型可能更不划算</strong>：
+它的 FLOPs 少，但硬件吃不满，实际墙钟时间反而可能不短。</p>
+<p>多卡时用<strong>聚合实测吞吐</strong>，并且把总 GPU-小时按「所有设备 × 所有尝试次数」计。
+另外，<strong>FLOP 最优和墙钟最优可以不是同一个选择</strong>。</p>
+<p>还有一个记账陷阱：如果吞吐的测量区间已经包含了评估与 checkpoint 的开销，
+就不要在时间估算里再把这些开销加一遍——<strong>同一份开销只能扣一次</strong>。</p>
+</div>
+
+<h3 id="s17">1.7 等算力，不同分配 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-iso"></div>
+<p class="small" style="text-align:center">图 2 · 固定预算 $C=1.2\times10^{18}$ FLOPs 时，损失随参数量的变化（合成数据）。横轴对数，纵轴为线性刻度。</p>
+
+<p>$$L=1.5+\frac{0.8}{\sqrt{N/10^{8}}}+\frac{0.8}{\sqrt{D/2\times10^{9}}},\qquad D=\frac{C}{6N}$$</p>
+
+<p>课件原话：「合成示例：$D=C/(6N)$。最优分配落在测试范围内。」</p>
+
+<div class="box key">
+<span class="label">补充 · 这个 U 形可以手算出来</span>
+<p>把 $D=C/(6N)$ 代进去，$N$ 变大会让第一项下降、第二项上升：</p>
+<ul>
+<li><strong>左边（模型太小）：</strong>第一项 $0.8/\sqrt{N/10^8}$ 主导，参数不够，装不下要学的东西。</li>
+<li><strong>右边（训练太少）：</strong>$D$ 被压小，第二项主导，同样的预算喂给了一个「吃不饱」的大模型。</li>
+</ul>
+<p>最小值处两项相等（因为系数与指数都相同）：</p>
+<p>$$\frac{0.8}{\sqrt{N/10^{8}}}=\frac{0.8}{\sqrt{D/2\times10^{9}}}
+\quad\Longrightarrow\quad \frac{N}{10^{8}}=\frac{D}{2\times10^{9}}
+\quad\Longrightarrow\quad D=20N$$</p>
+<p>再联立 $6ND=1.2\times10^{18}$：</p>
+<p>$$6N\cdot20N=1.2\times10^{18}\ \Longrightarrow\ N^{2}=10^{16}\ \Longrightarrow\ N=10^{8},\quad D=2\times10^{9}$$</p>
+<p>正好是图上那个最低点：<strong>1 亿参数、20 亿 token</strong>。而 $D/N=20$ 这个比例，
+就是后面 §2.12 提到的「每参数 20 个 token」启发式的出处——它来自<strong>这套系数与指数</strong>，
+不是自然常数。</p>
+</div>
+
+<div class="box warn">
+<span class="label">读图前先看轴</span>
+<p>横轴是<strong>参数量（百万，对数刻度）</strong>，纵轴是<strong>合成评估 NLL（nats/token，线性刻度）</strong>。
+图上的点由上面那个公式生成，<strong>不是从论文或真实训练里取出来的</strong>。</p>
+<p>这个 U 形的实验设计来自 Hoffmann et al. §3.2 的 IsoFLOP 剖面：
+固定算力，扫不同的模型大小，看损失在哪里最低。</p>
+</div>
+
+<h3 id="s18">1.8 给这个权衡写一个模型 <span class="tag s">课件</span></h3>
+
+<p>$$L(N,D)=E+\frac{A}{N^{\alpha}}+\frac{B}{D^{\beta}}$$</p>
+
+<table>
+<thead><tr><th>项</th><th>解释</th></tr></thead>
+<tbody>
+<tr><td>$E$</td><td>该设定下拟合出的损失下界</td></tr>
+<tr><td>$A/N^{\alpha}$</td><td>模型规模的贡献</td></tr>
+<tr><td>$B/D^{\beta}$</td><td>训练 token 的贡献</td></tr>
+</tbody>
+</table>
+
+<p class="small">Hoffmann et al. (2022) §3.3。这是<strong>指定区间内的经验拟合模型</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 五个数都是「拟合量」，不是物理常数</span>
+<p>玩具曲面里用的无量纲变量是 $n=N/10^{8}$、$d=D/2\times10^{9}$，参数为
+$E=1.5$、$A=B=0.8$、$\alpha=\beta=0.5$。把它们带进公式就得到 §1.7 那个式子。</p>
+<p><strong>单位会改变系数。</strong>如果把 $N$ 换成「十亿参数」为单位，$A$ 就不再是 0.8——
+所以 $A,B$ 只在声明的单位与区间里有意义，不能跨论文直接比较。</p>
+<p>更要紧的是：这个函数形式<strong>假设</strong>了「规模」和「数据」两个可分离的幂律项。
+重复数据、架构改动、优化器变好、领域切换，任何一条都可能让这个形式失效。
+而且<strong>拟合出的 $E$ 不能证明它等于语言的真实熵</strong>——它只是这个函数形式在这个区间里最好的常数项。</p>
+</div>
+
+<h3 id="s19">1.9 怎么读一条幂律 <span class="tag s">课件</span></h3>
+
+<p>$$L(C)-E=K\left(\frac{C}{C_0}\right)^{-\gamma},
+\qquad
+\log(L-E)=\log K-\gamma\log\left(\frac{C}{C_0}\right)$$</p>
+
+<ul>
+<li>相同的算力<strong>倍数</strong>，给出相同的<strong>超出损失</strong>倍数。</li>
+<li>双对数图上的斜率就是 $-\gamma$。</li>
+<li>下界 $E$ 未知会让拟合变难。</li>
+</ul>
+
+<p class="small">本课的参考预算：$C_0=1.2\times10^{18}$ FLOPs。</p>
+
+<div class="box key">
+<span class="label">补充 · 两个数字是怎么从玩具曲面里出来的</span>
+<p>在最优分配下，两项相等，所以超出损失</p>
+<p>$$L-E=\frac{0.8}{\sqrt{N/10^{8}}}+\frac{0.8}{\sqrt{D/2\times10^{9}}}=2\cdot\frac{0.8}{\sqrt{N/10^{8}}}$$</p>
+<p>而 §2.1 会证明 $N_{\text{opt}}\propto C^{1/2}$，于是 $\sqrt{N}\propto C^{1/4}$，
+超出损失 $\propto C^{-1/4}$。所以 <strong>$\gamma=0.25$</strong>。</p>
+<p>在 $C=C_0$ 处，$N=10^{8}$，上式给出 $L-E=1.6$，于是 <strong>$K=1.6$</strong>。</p>
+<p>验算一次「四倍算力」：</p>
+<p>$$4^{-0.25}=\frac{1}{\sqrt{2}}\approx0.7071$$</p>
+<p>即超出损失降到原来的 <strong>70.7%</strong>。但<strong>总损失不会降同样的比例</strong>——
+因为它还要加上那个不动的 $E=1.5$。这正是「指数好读、绝对量难读」的原因。</p>
+</div>
+
+<div class="box warn">
+<span class="label">讲者备注 · 直线 ≠ 可以外推</span>
+<ul>
+<li><strong>「前沿」有特定含义</strong>：在声明协议下，每个算力水平能拿到的最好分配，而不是「任意一次训练」。</li>
+<li>在一个<strong>有限区间</strong>里看到漂亮的直线，完全可能在区间外失效——§2.10 就是这种情形。</li>
+<li>$E$ 未知时不能直接做 $\log(L-E)$ 的线性回归；研究里通常要联合拟合或做敏感性分析。</li>
+<li>Kaplan et al. §§1–3 是「幂律」这个经验的<strong>动机来源</strong>，不是理论保证。</li>
+</ul>
+</div>
+
+<h3 id="s110">1.10 Chinchilla 改变了什么 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>研究</th><th>$N_{\mathrm{opt}}$ 随算力</th><th>$D_{\mathrm{opt}}$ 随算力</th></tr></thead>
+<tbody>
+<tr><td>Kaplan et al. (2020)</td><td>$\propto C^{0.73}$</td><td>$\propto C^{0.27}$</td></tr>
+<tr><td>Hoffmann et al. (2022)，IsoFLOP 拟合</td><td>$\propto C^{0.49}$</td><td>$\propto C^{0.51}$</td></tr>
+</tbody>
+</table>
+
+<p>后来的估计把每一次预算增长中<strong>更大的一份分给训练 token</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 0.73/0.27 与 0.49/0.51 差在哪</span>
+<p>两组指数的和都约等于 1（$0.73+0.27=1.00$，$0.49+0.51=1.00$），这不是巧合：
+由 §2.1 的 $N\propto C^{\beta/(\alpha+\beta)}$、$D\propto C^{\alpha/(\alpha+\beta)}$，
+两个指数之和恒等于 1。所以差别只在<strong>怎么分</strong>：</p>
+<ul>
+<li><strong>0.73 / 0.27：</strong>预算涨 10 倍，参数涨 $10^{0.73}\approx5.4$ 倍，token 只涨 $10^{0.27}\approx1.9$ 倍。
+这是「大模型优先」的结论。</li>
+<li><strong>0.49 / 0.51：</strong>预算涨 10 倍，参数和 token 各涨约 $10^{0.5}\approx3.2$ 倍。这是「等比例扩张」。</li>
+</ul>
+<p>两组都是在<strong>各自的实验协议</strong>下得到的估计，不是两条互相排斥的真理。
+课件只取了 Hoffmann 表里的 IsoFLOP 方法那一列（他们三种拟合方法给出的指数略有不同）。</p>
+</div>
+
+<h3 id="s111">1.11 训练协议本身会改变拟合 <span class="tag s">课件</span></h3>
+
+<p>Porian et al. 重新审视了 Kaplan–Chinchilla 的分歧：</p>
+<ul>
+<li>把<strong>最后一层词表投影</strong>的算力算进去；</li>
+<li>把 <strong>warmup 时长</strong>纳入考虑；</li>
+<li>在每个规模上<strong>调好优化器超参</strong>。</li>
+</ul>
+
+<p class="small">Porian et al. (2024) §§3–4。这些修正之后，他们的结果接近 Chinchilla 的分配规则。</p>
+
+<div class="box key">
+<span class="label">补充 · 这条比指数本身更重要</span>
+<p>如果「小模型没调好、大模型调好了」，那么拟合出来的曲线里就混进了<strong>训练水平的差异</strong>，
+而不只是「模型规模」的效应。这时你测到的斜率，有一部分是在测<strong>你的调参流程</strong>。</p>
+<p>这也解释了为什么「同样 3 个点、换个人拟合，指数就不一样」——不是数学不严谨，而是数据生成过程不同。</p>
+<p><strong>一个常见的过度解读要避免：</strong>Porian 发现「仔细的学习率衰减」对恢复分配规则<strong>不是必需的</strong>，
+所以不能说「余弦调度单独解释了当年的分歧」。</p>
+</div>
+
+<h3 id="s112">1.12 两件真实的模型，放在一起看 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>报告中的模型</th><th class="num">参数</th><th class="num">训练 token</th></tr></thead>
+<tbody>
+<tr><td>Gopher</td><td class="num">280B</td><td class="num">300B</td></tr>
+<tr><td>Chinchilla</td><td class="num">70B</td><td class="num">1.4T</td></tr>
+</tbody>
+</table>
+
+<p>在可比的训练预算下，Chinchilla 在论文评估的任务上表现更好。</p>
+
+<div class="box key">
+<span class="label">补充 · 把这两行代进 6ND</span>
+<p>Gopher：$6\times280\times10^{9}\times300\times10^{9}=5.04\times10^{23}$ FLOPs。<br>
+Chinchilla：$6\times70\times10^{9}\times1.4\times10^{12}=5.88\times10^{23}$ FLOPs。</p>
+<p>两个数<strong>并不严格相等</strong>（差 17%）。所以只能说「可比的训练预算」，不能说「完全相同的算力」——
+论文附录 F 有更细的 FLOP 记账，四舍五入后的头条数字代入 $6ND$ 本来就会有偏差。</p>
+<p>另外，这个对比<strong>没有把「分配」隔离成唯一变量</strong>：论文同时改了训练配方。
+它是<strong>动机</strong>，不是受控实验。也不要把它拟合出的系数搬进我们的玩具曲面。</p>
+</div>
+
+<hr>
+
+<h2 id="p2">第二部分 · 分配与外推</h2>
+
+<p>第二节课（14:25–15:10）。先把 §1.8 的曲面求导求出最优分配，再讲怎么设计实验去<strong>检验</strong>这个预测。</p>
+
+<h3 id="s21">2.1 固定预算下的最优分配 <span class="tag s">课件</span></h3>
+
+<p>把 $D=C/(6N)$ 代进损失模型：</p>
+
+<p>$$L(N)=E+AN^{-\alpha}+B\left(\frac{6N}{C}\right)^{\beta}$$</p>
+
+<p>在最小值处：</p>
+
+<p>$$\alpha AN^{-\alpha}=\beta BD^{-\beta}$$</p>
+
+<p>$$N_{\mathrm{opt}}\propto C^{\frac{\beta}{\alpha+\beta}},
+\qquad
+D_{\mathrm{opt}}\propto C^{\frac{\alpha}{\alpha+\beta}}$$</p>
+
+<div class="box key">
+<span class="label">补充 · 三步求导，一个容易踩的坑</span>
+<p><strong>第一步：对 $\log N$ 求导。</strong>用 $\log$ 而不是 $N$，是因为所有项都是幂函数，取对数后变成线性，求导更干净。
+记 $u=\log N$，则 $\dfrac{d}{du}N^{-\alpha}=-\alpha N^{-\alpha}$，$\dfrac{d}{du}N^{\beta}=+\beta N^{\beta}$：</p>
+<p>$$\frac{dL}{du}=-\alpha AN^{-\alpha}+\beta B\left(\frac{6}{C}\right)^{-\beta}N^{\beta}=0$$</p>
+<p><strong>第二步：两边乘 $N$</strong>，第一项回到 $-\alpha AN^{-\alpha}$，第二项变成 $\beta B(6N/C)^{\beta}=\beta BD^{-\beta}$：</p>
+<p>$$\alpha AN^{-\alpha}=\beta BD^{-\beta}$$</p>
+<p>读法：<strong>两项的「边际收益」相等</strong>。注意只有当 $\alpha=\beta$ 时，才等价于「两项贡献相等」。</p>
+<p><strong>第三步：解出指数。</strong>把 $D=C/(6N)$ 代回，整理得</p>
+<p>$$N^{\alpha+\beta}=\frac{\alpha A}{\beta B}\left(\frac{C}{6}\right)^{\beta}
+\quad\Longrightarrow\quad N_{\mathrm{opt}}\propto C^{\frac{\beta}{\alpha+\beta}}$$</p>
+<p>再用 $D=C/(6N)$ 得 $D_{\mathrm{opt}}\propto C^{1-\frac{\beta}{\alpha+\beta}}=C^{\frac{\alpha}{\alpha+\beta}}$。
+<strong>两个指数之和恒为 1</strong>，这就是 §1.10 那张表里两组指数都加起来等于 1 的原因。</p>
+<p class="small">坑：直接对 $N$（而不是 $\log N$）求导也能做，但会多出 $N^{-1}$ 因子，容易漏项。
+另外，只有在系数与指数都为正时，这个驻点才是<strong>唯一</strong>最小值。</p>
+</div>
+
+<p><span class="tag a">讲者备注</span> 常数依赖单位与拟合系数。当 $\alpha=\beta$ 时，$N$ 与 $D$ 都按 $\sqrt{C}$ 增长，
+<strong>比例 $D/N$ 固定</strong>。但不要声称真实拟合里一定有 $\alpha=\beta$——
+课件明说了「没有这个主张」。</p>
+
+<h3 id="s22">2.2 四倍预算怎么花（E02） <span class="tag s">课件</span></h3>
+
+<div class="ex">
+<p class="meta">Exercise E02 · 4 分钟</p>
+<h4>四倍训练预算</h4>
+<p>玩具模型 $\alpha=\beta=0.5$。在 $C_0$ 处的最优解是 <strong>100M 参数、2B token</strong>。</p>
+<ol>
+<li>在 $4C_0$ 处，模型预测怎么分配？</li>
+<li>如果把增加的部分全花在参数上，会怎样？</li>
+</ol>
+<details><summary>看答案</summary>
+<div class="body">
+<p><strong>等比扩张：200M 参数、4B token。</strong>因为 $\alpha=\beta$，两个轴都按 $C^{1/2}$ 增长，$\sqrt{4}=2$。</p>
+<p><strong>全给参数：400M 参数、2B token</strong>（$N$ 涨 4 倍，$D$ 不变）。</p>
+<p>两种花法的损失（用 $n=N/10^8$、$d=D/2\times10^9$）：</p>
+<ul>
+<li>等比：$1.5+\dfrac{0.8}{\sqrt{2}}+\dfrac{0.8}{\sqrt{2}}=1.5+1.1314=2.6314$</li>
+<li>全给参数：$1.5+\dfrac{0.8}{\sqrt{4}}+\dfrac{0.8}{\sqrt{1}}=1.5+0.4+0.8=2.7000$</li>
+</ul>
+<p>差 <strong>0.0686 nats/token</strong>。两者算力都是 $4.8\times10^{18}$（$=4C_0$），
+所以<strong>同样的钱，分配不同，结果不同</strong>。</p>
+<p class="small">注意这是这套合成曲面的结论。真实模型里 $\alpha\ne\beta$，最优比例会随预算漂移。</p>
+</div>
+</details>
+</div>
+
+<h3 id="s23">2.3 把预算往上推 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-budget"></div>
+<div class="demo">
+  <div class="row">
+    <button class="ibtn ibtn-main" id="b1">预算 1×</button>
+    <button class="ibtn" id="b4">预算 4×</button>
+    <button class="ibtn" id="b16">预算 16×</button>
+    <button class="ibtn" id="breset">重置</button>
+  </div>
+  <p class="stat" id="bstat">合成最优：1 亿参数、20 亿 token；损失 3.100。</p>
+</div>
+<p class="small" style="text-align:center">图 3 · 交互式等算力剖面。切换预算，看最低点往右移。</p>
+
+<div class="box key">
+<span class="label">补充 · 这条曲线的三个最低点</span>
+<table>
+<thead><tr><th class="num">预算</th><th class="num">$C$</th><th class="num">$N_{\text{opt}}$</th><th class="num">$D_{\text{opt}}$</th><th class="num">最低损失</th></tr></thead>
+<tbody>
+<tr><td class="num">1×</td><td class="num">$1.2\times10^{18}$</td><td class="num">100M</td><td class="num">2B</td><td class="num">3.100</td></tr>
+<tr><td class="num">4×</td><td class="num">$4.8\times10^{18}$</td><td class="num">200M</td><td class="num">4B</td><td class="num">2.631</td></tr>
+<tr><td class="num">16×</td><td class="num">$1.92\times10^{19}$</td><td class="num">400M</td><td class="num">8B</td><td class="num">2.366</td></tr>
+</tbody>
+</table>
+<p>每一格都能手算：$N=\sqrt{C/120}$，$D=20N$，损失 $=1.5+1.6/\sqrt{N/10^8}$。
+注意<strong>每次最低点只降一点点</strong>（3.100 → 2.631 → 2.366），
+因为超出损失按 $C^{-0.25}$ 缩，而 $E=1.5$ 是搬不动的。</p>
+<p>横轴单位是<strong>百万参数</strong>；读数时先看状态行里的总预算，别看错轴。</p>
+</div>
+
+<h3 id="s24">2.4 实验必须分离变量 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-grid"></div>
+<p class="small" style="text-align:center">图 4 · 建议的实验设计：$3\times3$ 的拟合网格，外加一个更大的保留验证点。两轴均为对数。</p>
+
+<p>拟合网格：$N\in\{25,50,100\}$M，$D\in\{0.5,1,2\}$B；验证点：$N=200$M、$D=4$B。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么必须「两个轴都动」</span>
+<p>如果只沿一条线扫（比如固定 $D/N=20$，只放大规模），那么 $N$ 和 $D$ 是<strong>共线</strong>的，
+你无法区分「是参数起作用」还是「是 token 起作用」——两个解释给出完全相同的预测。
+交叉网格让两个方向的信息<strong>分开</strong>，才有可能估出 $\alpha$ 和 $\beta$ 两个指数。</p>
+<p>但也要说清楚边界：<strong>$3\times3$ 九个点不足以可靠地确定五个非线性系数</strong>，
+更不足以估不确定性。课堂里只做<strong>一维</strong>的前沿拟合，而且 $E$ 是给定的——
+这是教学简化，不是研究做法。</p>
+<p>另外，这是<strong>设计图，不是已完成的训练</strong>；每个候选点的算力都要先算出来记进预算。</p>
+</div>
+
+<h3 id="s25">2.5 我们在预测什么 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>目标</th><th>该做的实验</th></tr></thead>
+<tbody>
+<tr><td>预测某个<strong>指定配方</strong>的表现</td><td>直接套用它声明的扩展规则</td></tr>
+<tr><td>估计<strong>最好的分配</strong></td><td>比较<strong>都调好了</strong>的候选</td></tr>
+</tbody>
+</table>
+
+<p>已测试运行里最低的那个损失，只是一个<strong>测量到的包络</strong>；没试过的选择可能更好。</p>
+
+<div class="box key">
+<span class="label">补充 · 两个问题，两套证据</span>
+<p>「这个配方在更大规模上会是多少损失」和「哪种分配在更大规模上最好」是<strong>不同的问题</strong>：</p>
+<ul>
+<li>前者只需要<strong>忠实</strong>：配方不变，规模变。哪怕这个配方不是最优，也值得预测。</li>
+<li>后者需要<strong>公平</strong>：每个候选都要被调到它自己的最好状态，否则你测的是「谁的默认超参更幸运」。</li>
+</ul>
+<p>把一条<strong>没调好</strong>的小模型曲线拿去决定算力分配，是最常见、也最贵的错误。
+而且<strong>调参运行、重复种子、验证运行都要计入实验预算</strong>——它们不是免费的。</p>
+</div>
+
+<h3 id="s26">2.6 固定的 warmup 会改变比较 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" role="img" aria-label="两条等长条形代表两次运行，各含 200 步 warmup：在 1000 步的运行里占 20%，在 10000 步的运行里只占 2%。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="16" y="26" font-size="12.5" fill="var(--ink3)">同样 200 步 warmup，在两个长度不同的运行里含义完全不同</text>
+
+    <!-- bar 1 -->
+    <text x="16" y="72" font-size="12.5" fill="var(--ink2)">1,000 次更新</text>
+    <rect x="130" y="52" width="118" height="34" rx="4" fill="var(--gold-bg)" stroke="none"/>
+    <text x="189" y="74" text-anchor="middle" font-size="11.5" fill="var(--gold)">warmup 200</text>
+    <rect x="248" y="52" width="472" height="34" rx="4" fill="var(--accent-bg)" stroke="none"/>
+    <text x="484" y="74" text-anchor="middle" font-size="11.5" fill="var(--accent)">剩余 800 次</text>
+    <text x="732" y="74" font-size="12" fill="var(--gold)" font-weight="650">20%</text>
+
+    <!-- bar 2 -->
+    <text x="16" y="142" font-size="12.5" fill="var(--ink2)">10,000 次更新</text>
+    <rect x="130" y="122" width="12" height="34" rx="3" fill="var(--gold-bg)" stroke="none"/>
+    <rect x="142" y="122" width="578" height="34" rx="4" fill="var(--accent-bg)" stroke="none"/>
+    <text x="431" y="144" text-anchor="middle" font-size="11.5" fill="var(--accent)">剩余 9,800 次</text>
+    <text x="720" y="104" text-anchor="end" font-size="11.5" fill="var(--gold)">warmup 200</text>
+    <text x="732" y="144" font-size="12" fill="var(--gold)" font-weight="650">2%</text>
+
+    <line x1="130" y1="184" x2="720" y2="184" stroke="var(--line)" stroke-width="1"/>
+    <text x="130" y="206" font-size="11.5" fill="var(--ink3)">每条横条 = 一次完整运行，长度都归一化为同一宽度</text>
+    <text x="130" y="228" font-size="11.5" fill="var(--ink3)">横条不是按真实步数成比例的；只有 warmup 占比是有意义的</text>
+  </g>
+</svg>
+<figcaption><strong>图 5 · warmup 占比的混淆。</strong>固定 <em>步数</em>的 warmup，在短运行里占 20%、在长运行里只占 2%。
+如果两边的 warmup 步数一样，你比较的其实是<strong>两种不同的训练配方</strong>。</figcaption>
+</figure>
+
+<p class="small">玩具算术。相同的 warmup 步数可以代表不同的训练区间。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 这页只指出混杂，不给处方</span>
+<ul>
+<li>如果同时改变 batch size，<strong>更新数占比</strong>与 <strong>token 数占比</strong>会不一样。</li>
+<li>课件<strong>没有</strong>规定一个通用的 warmup 比例；它只说明这是一个必须<strong>控制</strong>或<strong>刻意研究</strong>的变量。</li>
+<li>muP 之类的超参迁移（Tensor Programs V）是有用的可选阅读，但它<strong>不保证</strong>所有超参都能跨深度、数据、训练时长迁移。</li>
+</ul>
+</div>
+
+<h3 id="s27">2.7 可比测量的四条契约 <span class="tag s">课件</span></h3>
+
+<ul>
+<li>相同的<strong>留出文本</strong>与领域权重。</li>
+<li>相同的<strong>分词方式</strong>与计分位置。</li>
+<li>相同的<strong>损失聚合方式</strong>与报告单位。</li>
+<li>记录精度、调度、随机种子。</li>
+</ul>
+
+<p>改数据混合，也同时改掉了它的训练损失分布。</p>
+
+<div class="box key">
+<span class="label">补充 · 换分词器之后，nats/token 就不再是同一个单位</span>
+<p>假设分词器 A 把一句话切成 20 个 token，B 切成 18 个。同一个模型的
+「每 token 损失」看起来可能变好或变坏，但这<strong>不是模型的差别</strong>，是分母变了。</p>
+<p>跨分词器比较的常用办法是换成<strong>每字节</strong>（bits per byte）：</p>
+<p>$$\text{bits/byte}=\frac{L_{\text{nats/token}}\times n_{\text{token}}}{n_{\text{byte}}\times\ln 2}$$</p>
+<p>分母是原始文本的字节数，与分词方式无关，所以可以跨分词器比。</p>
+<p>另外，验证有<strong>两个层次</strong>，别混：</p>
+<ul>
+<li><strong>运行内</strong>的留出文本 → 衡量泛化；</li>
+<li><strong>跨运行</strong>的留出规模 → 检验一条拟合出来的预测。</li>
+</ul>
+<p>后者如果要用作「最终检查」，就必须<strong>排除在配方选择与曲线拟合之外</strong>。</p>
+</div>
+
+<h3 id="s28">2.8 在更大规模运行之前冻结预测 <span class="tag s">课件</span></h3>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-label="四个阶段：小规模运行并拟合曲线、冻结配方与容差、写下更大预算的预测、揭晓保留运行并比较误差。">
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.7"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <rect x="10" y="40" width="164" height="104" rx="9" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="92" y="66" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ink)">1 · 小规模运行</text>
+    <text x="92" y="88" text-anchor="middle" font-size="11.5" fill="var(--ink2)">拟合曲线</text>
+    <text x="92" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink2)">调配方</text>
+    <text x="92" y="128" text-anchor="middle" font-size="11" fill="var(--ink3)">只用拟合集的行</text>
+
+    <rect x="202" y="40" width="164" height="104" rx="9" fill="var(--gold-bg)" stroke="none"/>
+    <text x="284" y="66" text-anchor="middle" font-size="13" font-weight="650" fill="var(--gold)">2 · 冻结</text>
+    <text x="284" y="88" text-anchor="middle" font-size="11.5" fill="var(--ink2)">配方 + 曲线</text>
+    <text x="284" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink2)">误差容差</text>
+    <text x="284" y="128" text-anchor="middle" font-size="11" fill="var(--ink3)">先写下来，再揭晓</text>
+
+    <rect x="394" y="40" width="164" height="104" rx="9" fill="var(--accent-bg)" stroke="none"/>
+    <text x="476" y="66" text-anchor="middle" font-size="13" font-weight="650" fill="var(--accent)">3 · 预测</text>
+    <text x="476" y="88" text-anchor="middle" font-size="11.5" fill="var(--ink2)">写下更大预算</text>
+    <text x="476" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink2)">处的损失</text>
+    <text x="476" y="128" text-anchor="middle" font-size="11" fill="var(--ink3)">一个具体的数</text>
+
+    <rect x="586" y="40" width="164" height="104" rx="9" fill="var(--ok-bg)" stroke="none"/>
+    <text x="668" y="66" text-anchor="middle" font-size="13" font-weight="650" fill="var(--ok)">4 · 检查</text>
+    <text x="668" y="88" text-anchor="middle" font-size="11.5" fill="var(--ink2)">揭晓保留的运行</text>
+    <text x="668" y="108" text-anchor="middle" font-size="11.5" fill="var(--ink2)">比较误差</text>
+    <text x="668" y="128" text-anchor="middle" font-size="11" fill="var(--ink3)">与容差对照</text>
+
+    <path d="M174 92 L196 92" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#a2)"/>
+    <path d="M366 92 L388 92" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#a2)"/>
+    <path d="M558 92 L580 92" stroke="var(--accent)" stroke-width="1.7" fill="none" marker-end="url(#a2)"/>
+
+    <rect x="10" y="176" width="740" height="46" rx="8" fill="var(--warn-bg)" stroke="none"/>
+    <text x="380" y="197" text-anchor="middle" font-size="12" fill="var(--warn)">保留的那次更大规模运行，必须同时排除在「曲线拟合」和「配方选择」之外</text>
+    <text x="380" y="215" text-anchor="middle" font-size="11" fill="var(--ink2)">如果这次运行反过来改变了配方或曲线，那它就已经变成开发数据，需要再留一次新的运行</text>
+  </g>
+</svg>
+<figcaption><strong>图 6 · 冻结再揭晓。</strong>第 2 步是整条流程的支点：容差必须在看到结果<strong>之前</strong>写下来。
+否则「误差多大算失败」就变成了事后解释。</figcaption>
+</figure>
+
+<div class="box key">
+<span class="label">补充 · 揭晓之前必须写下来的五件事</span>
+<ol>
+<li>拟合出的系数（这里 $K$ 与 $\gamma$）；</li>
+<li>评估约定（语料、分词、计分位置、聚合方式）；</li>
+<li>目标预算（例如 $C/C_0=64$）；</li>
+<li>预测值（一个具体的数，不是区间）；</li>
+<li>接受规则（例如绝对残差 $&lt;0.05$ nats/token）。</li>
+</ol>
+<p>少写任何一条，第 4 步都会退化成「看图说话」。</p>
+</div>
+
+<h3 id="s29">2.9 拟合一条合成前沿 <span class="tag s">课件</span></h3>
+
+<div class="chart" id="c-frontier"></div>
+<p class="small" style="text-align:center">图 7 · 四个拟合预算下的合成平均超出损失（双对数）。下界 $E=1.5$ 已知；每个预算三个合成重复。</p>
+
+<p>数据生成器：$L=1.5+1.6\,(C/C_0)^{-0.25}$，重复偏移 $-0.01,\,0,\,+0.01$。</p>
+
+<div class="box key">
+<span class="label">补充 · 拟合的完整步骤（能用手算核对）</span>
+<p>四个预算的 $C/C_0$ 是 $0.25,\,1,\,4,\,16$，平均损失为 $3.7627,\,3.1000,\,2.6314,\,2.3000$。先减下界：</p>
+<table>
+<thead><tr><th class="num">$C/C_0$</th><th class="num">平均 $L$</th><th class="num">$L-E$</th><th class="num">$\log(C/C_0)$</th><th class="num">$\log(L-E)$</th></tr></thead>
+<tbody>
+<tr><td class="num">0.25</td><td class="num">3.7627</td><td class="num">2.2627</td><td class="num">−1.386</td><td class="num">0.8168</td></tr>
+<tr><td class="num">1</td><td class="num">3.1000</td><td class="num">1.6000</td><td class="num">0</td><td class="num">0.4700</td></tr>
+<tr><td class="num">4</td><td class="num">2.6314</td><td class="num">1.1314</td><td class="num">1.386</td><td class="num">0.1234</td></tr>
+<tr><td class="num">16</td><td class="num">2.3000</td><td class="num">0.8000</td><td class="num">2.773</td><td class="num">−0.2231</td></tr>
+</tbody>
+</table>
+<p>斜率：$\dfrac{-0.2231-0.8168}{2.773-(-1.386)}=\dfrac{-1.0399}{4.159}=-0.250$，所以 $\gamma=0.25$。<br>
+截距（$C/C_0=1$ 处）：$\log K=0.4700\Rightarrow K=e^{0.4700}=1.600$。</p>
+<p><strong>为什么先取平均再取对数？</strong>因为模型是对<strong>均值</strong>写的。先对每个重复取对数再平均，
+得到的量不是 $\log(\text{平均})$，会有偏差。</p>
+<p><strong>为什么这一步这么干净？</strong>因为 $E$ 是<strong>给定的</strong>。研究里 $E$ 未知，
+必须联合拟合三个量（$E$、$K$、$\gamma$），那是一个非线性最小二乘问题，还要做敏感性分析。</p>
+</div>
+
+<h3 id="s210">2.10 先预测，再揭晓（E03） <span class="tag s">课件</span></h3>
+
+<div class="ex">
+<p class="meta">Exercise E03 · 7 分钟</p>
+<h4>在揭晓更大运行之前做预测</h4>
+<ol>
+<li>用 $E=1.5$ 拟合四个预算的平均值。</li>
+<li>预测 $C/C_0=64$ 处的损失。</li>
+<li>揭晓合成保留集，比较误差。</li>
+</ol>
+<p>本练习预先声明的容差是 <strong>0.05 nats/token</strong>。</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p><strong>拟合：</strong>$K=1.6$、$\gamma=0.25$（与 §2.9 相同）。</p>
+<p><strong>预测：</strong></p>
+<p>$$L(64)=1.5+1.6\times64^{-0.25}=1.5+\frac{1.6}{2.8284}=1.5+0.5657=2.0657\approx2.066$$</p>
+<p><strong>揭晓：</strong>保留集均值 $2.226$。</p>
+<p><strong>误差：</strong>$|2.226-2.066|=0.160$。</p>
+<p>$0.160&gt;0.05$，所以<strong>这次预测没有通过检查</strong>——尽管它对四个小预算点拟合得<strong>分毫不差</strong>。</p>
+<p class="small">这就是本讲的核心：<strong>拟合得好，不等于外推得对</strong>。
+保留集上的 0.16 是<strong>故意加上去的偏移</strong>（三个重复偏移不变），用来制造一个干净的失败案例。
+它不是置信区间，0.05 也不是通用阈值。</p>
+</div>
+</details>
+</div>
+
+<div class="chart" id="c-holdout"></div>
+<p class="small" style="text-align:center">图 8 · 外推失败。虚线是外推，红点是保留的更大预算。注意这里纵轴换成了<strong>线性刻度的总 NLL</strong>，不是对数超出损失。</p>
+
+<div class="box warn">
+<span class="label">补充 · 一次失败的检查该怎么办</span>
+<p>失败的检查<strong>要求诊断和新证据</strong>，而不是「调一下容差」。</p>
+<p>更关键的一条：一旦你用这个点去<strong>修改曲线或选配方</strong>，它就变成了<strong>开发数据</strong>，
+不再具备「独立最终检查」的资格——你必须<strong>再留一个新点</strong>。</p>
+<p>图里那个 0.16 的偏移是<strong>人为加的</strong>，它<strong>不指向任何物理原因</strong>。
+所以从这张图里读不出「是因为优化变差了还是数据变了」。</p>
+</div>
+
+<h3 id="s211">2.11 诊断一次失败的预测 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>可能的问题</th><th>下一步要什么证据</th></tr></thead>
+<tbody>
+<tr><td>优化随规模变化</td><td>损失曲线、学习率扫描、稳定性日志</td></tr>
+<tr><td>数据或记账变了</td><td>语料、token、FLOP 的审计</td></tr>
+<tr><td>曲线形式在这个区间失效</td><td>中间规模的运行 + 另一种拟合形式</td></tr>
+<tr><td>运行间的波动本来就大</td><td>独立重复 + 配对差值</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 四行是<strong>竞争假设</strong>，不是清单</span>
+<p>它们互相排斥也互相重叠；只凭一个失败的合成点，<strong>一个都选不出来</strong>。</p>
+<p>还有两条纪律：</p>
+<ul>
+<li><strong>先审计测量，再重拟合。</strong>如果 $D$ 数错了，重拟合只会把错误固化进系数。</li>
+<li><strong>报告残差与敏感性。</strong>「$R^2=0.999$」只在拟合区间内成立，
+对区间外<strong>什么也没说</strong>。要把不确定度传播到决策上——比如「该训多大的模型」这个决定对 $\gamma$ 有多敏感。</li>
+</ul>
+<p>最后一句要记住：<strong>残差小，不等于找到了最优分配。</strong></p>
+</div>
+
+<h3 id="s212">2.12 这条定律的适用范围 <span class="tag s">课件</span></h3>
+
+<table>
+<thead><tr><th>额外的约束</th><th>什么变了</th></tr></thead>
+<tbody>
+<tr><td>唯一数据有限</td><td>更多 token 可能意味着<strong>重复</strong>曝光</td></tr>
+<tr><td>推理需求很大</td><td>训练成本与<strong>服务</strong>成本都要算</td></tr>
+<tr><td>稀疏专家（MoE）</td><td><strong>总参数</strong>与<strong>激活参数</strong>不是一回事</td></tr>
+</tbody>
+</table>
+
+<p>「每参数 20 个 token」是一个<strong>与特定训练设定绑定的起始启发式</strong>。</p>
+
+<div class="box key">
+<span class="label">补充 · 20 这个数字的来历与失效条件</span>
+<p>它来自 §1.7 那个曲面：$\alpha=\beta$、$A=B$、且单位取 $N/10^8$ 与 $D/2\times10^9$ 时，
+最优点满足 $D/N=2\times10^9/10^8=20$。所以它是<strong>这套系数的产物</strong>，
+被 Chinchilla 的实际拟合「大致」印证，然后被当成经验法则流传。</p>
+<p>它会在三种情况下失效：</p>
+<ul>
+<li><strong>数据受限</strong>：唯一 token 不够时，重复数据的边际收益会衰减（Muennighoff et al.），
+此时「多给 token」不等于「多给信息」。</li>
+<li><strong>推理主导</strong>：如果模型要服务几十亿次请求，<strong>小模型 + 多训练</strong>往往更划算，
+因为推理成本按参数量付（Sardana et al.）。这时最优 $D/N$ 会远高于 20。</li>
+<li><strong>MoE</strong>：$N$ 用总参数还是激活参数，会直接改变结论；实际的算子与通信成本也不是一个数字能概括的。</li>
+</ul>
+<p>课件把这页定位成「词汇桥」：知道这些方向存在，但完整的 MoE 优化不在今天的核心范围。</p>
+</div>
+
+<h3 id="s213">2.13 更低的损失不等于有用的能力 <span class="tag s">课件</span></h3>
+
+<p>留出 NLL 衡量的是<strong>平均预测质量</strong>。而任务是否成功还取决于：</p>
+<ul>
+<li>任务测的是<strong>哪些样本、哪些领域</strong>；</li>
+<li>提示词、解码策略、打分方式的选择；</li>
+<li>这个指标<strong>能不能区分</strong>小模型之间的差别。</li>
+</ul>
+
+<p class="small">一条损失预测，需要针对<strong>预期用途</strong>再做一次单独检验。</p>
+
+<div class="box warn">
+<span class="label">讲者备注 · 三种「分数不动」的情形</span>
+<p>平均 NLL 在降，但准确率可能：<strong>停在随机水平</strong>（任务太难或格式不对）、
+<strong>已经饱和</strong>（任务太简单）、或者<strong>分辨率不够</strong>（样本太少，噪声盖过差别）。</p>
+<p>代理指标必须<strong>针对目标比较</strong>被验证过，不能假设它的排序会自动保持到更大规模。
+Hoffmann et al. §4.2 报告的是「预训练损失更低、下游评测更好」这类<strong>相关性</strong>，
+不是「某个损失阈值必然带来某种能力」。</p>
+</div>
+
+<h3 id="s214">2.14 写一个十二次运行的小实验（E04） <span class="tag s">课件</span></h3>
+
+<div class="ex">
+<p class="meta">Exercise E04 · 3 分钟</p>
+<h4>一个可执行的小实验提案</h4>
+<p>你有 <strong>12 次运行</strong>的预算。请指定：一个比较、一个固定评估集、一份运行分配。
+其中要包含<strong>重复</strong>与<strong>一个更大规模的验证条件</strong>。</p>
+<p>什么样的结果会让你<strong>推迟</strong>那次大规模运行？</p>
+<details><summary>看答案</summary>
+<div class="body">
+<p><strong>一种可行分配（8 + 4）：</strong></p>
+<ul>
+<li><strong>拟合区：</strong>2 个候选配方 × 2 个小规模 × 2 个种子 = $8$ 次运行；</li>
+<li><strong>验证区：</strong>2 个候选配方 × 2 个种子，在<strong>更大规模</strong> = $4$ 次运行。</li>
+</ul>
+<p>合计 12 次。注意<strong>「12 个槽位」不等于「12 份等量的算力」</strong>——
+每一行都要先报价再签字，大规模那 4 次可能吃掉大部分预算。</p>
+<p><strong>推迟的条件（事先声明）：</strong>两个配方在拟合区的小规模上差异小于种子间波动，
+或者两者的预测区间在目标预算上重叠——这时做大规模运行只是在放大噪声。</p>
+<p class="small">两个拟合规模只是课堂简化，<strong>不足以</strong>稳健地确定五参数曲面，也不足以估不确定度。
+「证据太弱，拒绝宣布赢家」是<strong>可接受的答案</strong>。</p>
+</div>
+</details>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 一个实验提案必须写清的六件事</span>
+<ol>
+<li>它要支持<strong>哪个决定</strong>（比如「A2 用哪个配方」）；</li>
+<li><strong>比较</strong>是什么、<strong>控制</strong>是什么（一次只改一个因素）；</li>
+<li>算力估计，以及<strong>更小的退路</strong>；</li>
+<li>冻结的<strong>数据与分词器</strong>；</li>
+<li>损失约定与聚合方式；</li>
+<li>什么证据会<strong>改变结论</strong>（事先写好的判据）。</li>
+</ol>
+<p>这六条正好对应项目提案里要写的内容——课件把它接在提案截止的同一天，不是巧合。</p>
+</div>
+
+<hr>
+
+<h2 id="ap">附录</h2>
+
+<h3 id="apA">A · 嘉宾讲座：Jiaxuan Zou <span class="tag s">课件</span></h3>
+
+<p><strong>How to Build a Scientific Scaling Ladder</strong><br>
+Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
+
+<p class="small">嘉宾场次：10 月 21 日 15:25–16:10 ·
+<a href="https://jiaxuanzou0714.github.io/">讲者主页</a> ·
+<a href="https://jiaxuanzou0714.github.io/blog/2026/how-to-build-scientific-scaling-ladder/">讲前阅读</a></p>
+
+<p>带进会场的问题（课件给的讨论提示，<strong>不是</strong>已商定的议程）：</p>
+<ul>
+<li>哪些小规模实验信息量最大？</li>
+<li>超参迁移在什么时候失效？</li>
+<li>怎么为「检验外推」预留预算？</li>
+<li>什么样的证据会让你<strong>取消</strong>一次已经计划好的大规模运行？</li>
+</ul>
+
+<div class="box warn">
+<span class="label">讲者备注</span>
+<p>四个问题是<strong>教师准备的讨论提示</strong>，不是讲者承诺的提纲；链接文章是讲前阅读，
+也是教师认定的讲座基础。<strong>不要把本讲的玩具例子和课堂阈值归到讲者名下。</strong></p>
+</div>
+
+<h3 id="apB">B · 公式速查</h3>
+
+<table>
+<thead><tr><th>量</th><th>式子</th><th>约定 / 陷阱</th></tr></thead>
+<tbody>
+<tr><td>训练算力</td><td>$C\approx6ND$</td><td>3 次矩阵乘法 × 2 运算；忽略 attention 与重计算</td></tr>
+<tr><td>单层单次矩阵乘法</td><td>$2mdh$</td><td>「乘 + 加」各算一次</td></tr>
+<tr><td>持久状态</td><td>$16N$ 字节</td><td>FP32 四份数组；<strong>不含</strong>激活与 logits</td></tr>
+<tr><td>墙钟时间</td><td>$t\approx C/\text{有效 FLOPs/s}$</td><td>有效 ≠ 峰值；别把开销扣两次</td></tr>
+<tr><td>损失曲面</td><td>$L(N,D)=E+A/N^{\alpha}+B/D^{\beta}$</td><td>区间内的经验拟合</td></tr>
+<tr><td>最优分配</td><td>$\alpha AN^{-\alpha}=\beta BD^{-\beta}$</td><td>边际收益相等</td></tr>
+<tr><td>分配指数</td><td>$N\propto C^{\frac{\beta}{\alpha+\beta}}$，$D\propto C^{\frac{\alpha}{\alpha+\beta}}$</td><td>两指数之和恒为 1</td></tr>
+<tr><td>幂律</td><td>$L-E=K(C/C_0)^{-\gamma}$</td><td>双对数斜率 $=-\gamma$</td></tr>
+<tr><td>玩具系数</td><td>$E=1.5,\ K=1.6,\ \gamma=0.25$</td><td>由 $\alpha=\beta=0.5$、$A=B=0.8$ 导出</td></tr>
+<tr><td>四倍算力</td><td>$4^{-0.25}\approx0.7071$</td><td>只对<strong>超出损失</strong>成立</td></tr>
+<tr><td>跨分词器比较</td><td>$\text{bits/byte}=\dfrac{L\cdot n_{\text{tok}}}{n_{\text{byte}}\ln2}$</td><td>nats/token 换分词器就换单位</td></tr>
+</tbody>
+</table>
+
+<h3 id="apC">C · 一页数字</h3>
+
+<dl class="kv">
+<dt>E01</dt><dd>$6\times50\text{M}\times4\text{B}=6\times200\text{M}\times1\text{B}=1.2\times10^{18}$ FLOPs</dd>
+<dt>内存</dt><dd>50M → 0.8 GB；200M → 3.2 GB（$16N$ 字节，十进制）</dd>
+<dt>墙钟</dt><dd>$1.2\times10^{18}/10^{14}=1.2\times10^{4}$ s ≈ 3.33 h</dd>
+<dt>玩具最优</dt><dd>$C_0=1.2\times10^{18}$ → 100M 参数、2B token、$L=3.100$</dd>
+<dt>E02</dt><dd>4×：200M / 4B，$L=2.6314$；全给参数 400M / 2B，$L=2.7000$</dd>
+<dt>16×</dt><dd>400M / 8B，$L=2.366$</dd>
+<dt>幂律</dt><dd>$K=1.6$，$\gamma=0.25$；$4^{-0.25}=0.7071$</dd>
+<dt>E03</dt><dd>预测 2.066，保留 2.226，误差 0.160 &gt; 容差 0.05</dd>
+<dt>Chinchilla 对照</dt><dd>Gopher 5.04e23 vs Chinchilla 5.88e23 FLOPs（$6ND$ 近似）</dd>
+<dt>指数</dt><dd>Kaplan 0.73 / 0.27；Hoffmann 0.49 / 0.51</dd>
+<dt>E04</dt><dd>$2\times2\times2=8$ 拟合 + $2\times2=4$ 验证 = 12 次</dd>
+</dl>
+
+<h3 id="apD">D · 自测十题</h3>
+
+<div class="quiz">
+<p class="q">一次矩阵乘法 $m\times d$ 乘 $d\times h$，为什么是 $2mdh$ 而不是 $mdh$？</p>
+<details><summary>答案</summary><div class="body"><p>每个输出元素要 $d$ 次乘法和 $d-1$ 次加法；把「乘」和「加」各算一次运算，就是 $2d$，共 $mh$ 个输出。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">$C=6ND$ 里的「6」拆开是哪三件事？</p>
+<details><summary>答案</summary><div class="body"><p>前向 $2mdh$ + 输入梯度 $2mdh$ + 权重梯度 $2mdh$。反向是前向的两倍，所以是 $3\times2$。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">50M 参数的模型，FP32 + Adam，持久状态多少？</p>
+<details><summary>答案</summary><div class="body"><p>$50\times10^6\times16=0.8$ GB。四个数组：参数、梯度、$m$、$v$。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">两次训练 $6ND$ 相同，能推出什么？不能推出什么？</p>
+<details><summary>答案</summary><div class="body"><p>能推出：算力估计相同。不能推出：显存相同（$16N$ 差 4 倍）、损失相同、墙钟时间相同。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">$\alpha=\beta$ 时，$N_{\text{opt}}$ 和 $D_{\text{opt}}$ 各自随 $C$ 怎么长？</p>
+<details><summary>答案</summary><div class="body"><p>都按 $C^{1/2}$。因为 $\frac{\beta}{\alpha+\beta}=\frac{1}{2}$。于是 $D/N$ 固定——这就是「每参数 20 token」的来源。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">算力翻四倍，总损失会降到 70.7% 吗？</p>
+<details><summary>答案</summary><div class="body"><p>不会。只有<strong>超出损失</strong> $L-E$ 降到 70.7%，因为 $E$ 是搬不动的常数项。总损失 $=E+0.707(L_0-E)$。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">为什么 E03 拟合得完美却仍然失败？</p>
+<details><summary>答案</summary><div class="body"><p>四个拟合点都在同一个区间、由同一条幂律生成；保留点在区间外，且被人为加了 0.16 的偏移。区间内的完美拟合对区间外没有任何保证。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">一次外推检查失败后，能不能直接用它改曲线？</p>
+<details><summary>答案</summary><div class="body"><p>能改，但改完它就变成<strong>开发数据</strong>，不再是独立检查；要再做一次独立验证，必须<strong>另留一个点</strong>。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">换分词器之后，怎么比较两个模型的损失？</p>
+<details><summary>答案</summary><div class="body"><p>换成 bits/byte（用原始字节数作分母），因为 nats/token 的分母已经变了。</p></div></details>
+</div>
+
+<div class="quiz">
+<p class="q">「每参数 20 token」在什么情况下会明显不适用？</p>
+<details><summary>答案</summary><div class="body"><p>数据受限（重复数据收益衰减）、推理需求大（小模型多训练更划算，最优比例远高于 20）、MoE（总参数与激活参数不同）。</p></div></details>
+</div>
+
+<h3 id="apE">E · 参考文献</h3>
+
+<ul>
+<li>Kaplan et al. (2020), <em>Scaling Laws for Neural Language Models</em>, §§1–3 与附录 A ·
+<a href="https://arxiv.org/abs/2001.08361">arXiv:2001.08361</a></li>
+<li>Hoffmann et al. (2022), <em>Training Compute-Optimal Large Language Models</em>（Chinchilla），§3、§4、表 1–2 与附录 F ·
+<a href="https://arxiv.org/html/2203.15556v1">HTML 版</a></li>
+<li>Porian et al. (2024), <em>Resolving Discrepancies in Compute-Optimal Scaling</em>, §§3–4 ·
+<a href="https://arxiv.org/html/2406.19146v4">HTML 版</a></li>
+<li>Jiaxuan Zou, <em>How to Build a Scientific Scaling Ladder</em>, §§1–3、8、10 ·
+<a href="https://jiaxuanzou0714.github.io/blog/2026/how-to-build-scientific-scaling-ladder/">文章</a></li>
+<li>可选：Yang et al., <em>Tensor Programs V</em>（muP 与超参迁移）·
+<a href="https://arxiv.org/abs/2203.03466">arXiv:2203.03466</a></li>
+<li>可选：Muennighoff et al., <em>Scaling Data-Constrained Language Models</em>（重复数据）·
+<a href="https://arxiv.org/abs/2305.16264">arXiv:2305.16264</a></li>
+<li>可选：Sardana et al., <em>Beyond Chinchilla-Optimal</em>（推理感知的分配）·
+<a href="https://arxiv.org/abs/2401.00448">arXiv:2401.00448</a></li>
+</ul>
+
+<div class="footnote">
+<p><strong>关于图。</strong>图 1（三次矩阵乘法）、图 5（warmup 占比）、图 6（冻结再揭晓）为依据课件内容重绘的静态 SVG；
+图 2–3（等算力剖面）由课件给出的生成公式实时计算，图 4、7、8 依据课件 <code>assets/*.json</code> 重绘。
+颜色用 CSS 变量，深浅色自动适配。课件原图是 Excalidraw / Plotly 现场绘制，静态打开时为空白。</p>
+<p><strong>关于数值。</strong>文中所有示例数字（$1.2\times10^{18}$、0.8 GB、3.33 h、2.6314 vs 2.7000、2.066 / 2.226 / 0.160 等）
+均按课件与讲者备注给出的定义独立复算过一遍。</p>
+<p><strong>关于「合成」。</strong>本讲所有损失曲线都是<strong>作者编的</strong>，不是真实模型的测量结果。
+课件的意图是让代数、拟合、外推失败三件事在没有 GPU 的条件下可复现，<strong>不是</strong>提供某个模型家族的证据。</p>
+<p>课程内容版权归<strong>复旦大学</strong>及授课教师所有，本笔记仅收录自己整理的笔记与补充推导。</p>
+</div>
+
+<script>
+(function(){
+  var C0 = 1.2e18;
+
+  function ticksLin(a,b,n){var r=[],s=(b-a)/(n-1);for(var i=0;i<n;i++)r.push(a+i*s);return r;}
+
+  function mkChart(host,cfg){
+    if(!host) return;
+    var W=760,H=cfg.h||340,P={l:74,r:26,t:cfg.t||26,b:58};
+    var iw=W-P.l-P.r, ih=H-P.t-P.b;
+    var xs=[]; cfg.series.forEach(function(s){s.x.forEach(function(v){xs.push(v);});});
+    var ys=[]; cfg.series.forEach(function(s){s.y.forEach(function(v){ys.push(v);});});
+    var lx=!!cfg.logx, ly=!!cfg.logy;
+    var TX=function(v){return lx?Math.log10(v):v;};
+    var TY=function(v){return ly?Math.log10(v):v;};
+    var xmin=cfg.xmin!==undefined?cfg.xmin:Math.min.apply(null,xs);
+    var xmax=cfg.xmax!==undefined?cfg.xmax:Math.max.apply(null,xs);
+    var ymin=cfg.ymin!==undefined?cfg.ymin:Math.min.apply(null,ys);
+    var ymax=cfg.ymax!==undefined?cfg.ymax:Math.max.apply(null,ys);
+    var X=function(v){return P.l+(TX(v)-TX(xmin))/(TX(xmax)-TX(xmin))*iw;};
+    var Y=function(v){return P.t+ih-(TY(v)-TY(ymin))/(TY(ymax)-TY(ymin))*ih;};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">';
+
+    (cfg.yticks||[]).forEach(function(t){
+      var y=Y(t);
+      s+='<line x1="'+P.l+'" y1="'+y.toFixed(1)+'" x2="'+(P.l+iw)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-width="1"/>';
+      s+='<text x="'+(P.l-9)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="var(--ink3)">'+cfg.ytickfmt(t)+'</text>';
+    });
+    (cfg.xticks||[]).forEach(function(t){
+      var x=X(t);
+      s+='<line x1="'+x.toFixed(1)+'" y1="'+(P.t+ih)+'" x2="'+x.toFixed(1)+'" y2="'+(P.t+ih+5)+'" stroke="var(--ink3)" stroke-width="1"/>';
+      s+='<text x="'+x.toFixed(1)+'" y="'+(P.t+ih+20)+'" text-anchor="middle" font-size="11.5" fill="var(--ink3)">'+cfg.xtickfmt(t)+'</text>';
+    });
+    s+='<line x1="'+P.l+'" y1="'+(P.t+ih)+'" x2="'+(P.l+iw)+'" y2="'+(P.t+ih)+'" stroke="var(--ink3)" stroke-width="1.2"/>';
+
+    cfg.series.forEach(function(se){
+      var pts=se.y.map(function(v,i){return X(se.x[i]).toFixed(1)+','+Y(v).toFixed(1);}).join(' ');
+      if(se.line!==false){
+        s+='<polyline points="'+pts+'" fill="none" stroke="'+se.color+'" stroke-width="'+(se.w||2)+'"'
+          +(se.dash?' stroke-dasharray="'+se.dash+'"':'')+' stroke-linejoin="round"/>';
+      }
+      if(se.marker){
+        se.x.forEach(function(v,i){
+          s+='<circle cx="'+X(v).toFixed(1)+'" cy="'+Y(se.y[i]).toFixed(1)+'" r="'+(se.r||3.4)+'" fill="'+se.color+'"/>';
+        });
+      }
+    });
+
+    (cfg.notes||[]).forEach(function(n){
+      s+='<text x="'+X(n.x).toFixed(1)+'" y="'+Y(n.y).toFixed(1)+'" text-anchor="'+(n.anchor||'middle')+'" font-size="'+(n.size||11.5)+'" fill="'+(n.color||'var(--ink3)')+'">'+n.text+'</text>';
+    });
+
+    if(cfg.legend){
+      var lxx=P.l+10, lyy=P.t+6;
+      cfg.legend.forEach(function(it,i){
+        s+='<line x1="'+lxx+'" y1="'+(lyy+i*18)+'" x2="'+(lxx+18)+'" y2="'+(lyy+i*18)+'" stroke="'+it.color+'" stroke-width="2.6"'
+          +(it.dash?' stroke-dasharray="'+it.dash+'"':'')+'/>';
+        s+='<text x="'+(lxx+24)+'" y="'+(lyy+i*18+4)+'" font-size="11.5" fill="var(--ink2)">'+it.name+'</text>';
+      });
+    }
+
+    s+='<text x="'+(P.l+iw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="var(--ink3)">'+cfg.xlabel+'</text>';
+    s+='<text x="15" y="'+(P.t+ih/2)+'" text-anchor="middle" font-size="12" fill="var(--ink3)" transform="rotate(-90 15 '+(P.t+ih/2)+')">'+cfg.ylabel+'</text>';
+    s+='</svg>';
+    host.innerHTML=s;
+  }
+
+  // ---- 等算力剖面 ----
+  function isoSeries(mult){
+    var C=C0*mult, x=[], y=[];
+    for(var i=0;i<=80;i++){
+      var N=Math.pow(10,7+i*2/80);
+      var D=C/(6*N);
+      var L=1.5+0.8/Math.sqrt(N/1e8)+0.8/Math.sqrt(D/2e9);
+      x.push(N/1e6); y.push(L);
+    }
+    var Nopt=Math.sqrt(C/120);
+    return {x:x,y:y,Nopt:Nopt,Dopt:C/(6*Nopt),Lopt:1.5+1.6/Math.sqrt(Nopt/1e8)};
+  }
+
+  function drawIso(host,mult,withPoint){
+    var d=isoSeries(mult);
+    var series=[{x:d.x,y:d.y,color:'var(--accent)',w:2.1}];
+    if(withPoint){
+      series.push({x:[d.Nopt/1e6],y:[d.Lopt],color:'var(--gold)',marker:true,line:false,r:5});
+    }
+    mkChart(host,{
+      series:series, logx:true, xmin:10, xmax:1000, ymin:1.8, ymax:4.6,
+      xticks:[10,25,50,100,200,400,1000], xtickfmt:function(v){return v;},
+      yticks:[2.0,2.5,3.0,3.5,4.0,4.5], ytickfmt:function(v){return v.toFixed(1);},
+      xlabel:'模型参数量（百万，对数刻度）', ylabel:'合成 NLL（nats/token）',
+      notes:[{x:d.Nopt/1e6,y:d.Lopt-0.18,text:'最优 '+Math.round(d.Nopt/1e6)+'M / '+(d.Dopt/1e9).toFixed(0)+'B',color:'var(--gold)',anchor:'middle',size:11}],
+      h:350
+    });
+  }
+
+  var isoHost=document.getElementById('c-iso');
+  if(isoHost) drawIso(isoHost,1,true);
+
+  var bHost=document.getElementById('c-budget'), bstat=document.getElementById('bstat');
+  function setBudget(mult){
+    drawIso(bHost,mult,true);
+    var d=isoSeries(mult);
+    bstat.innerHTML='预算 '+mult+'×　C = '+(C0*mult).toExponential(2)+' FLOPs　·　合成最优：'
+      +'<strong>'+Math.round(d.Nopt/1e6)+'M 参数 / '+(d.Dopt/1e9).toFixed(0)+'B token</strong>'
+      +'，损失 <strong>'+d.Lopt.toFixed(3)+'</strong>';
+  }
+  if(bHost){
+    setBudget(1);
+    document.getElementById('b1').onclick=function(){setBudget(1);};
+    document.getElementById('b4').onclick=function(){setBudget(4);};
+    document.getElementById('b16').onclick=function(){setBudget(16);};
+    document.getElementById('breset').onclick=function(){setBudget(1);};
+  }
+
+  // ---- 前沿拟合 ----
+  var frHost=document.getElementById('c-frontier');
+  if(frHost){
+    var fx=[0.25,1,4,16], fy=[2.2627,1.6,1.1314,0.8];
+    var lineX=[],lineY=[];
+    for(var i=0;i<=40;i++){
+      var c=Math.pow(10,Math.log10(0.25)+i*(Math.log10(16)-Math.log10(0.25))/40);
+      lineX.push(c); lineY.push(1.6*Math.pow(c,-0.25));
+    }
+    mkChart(frHost,{
+      series:[
+        {x:lineX,y:lineY,color:'var(--accent)',w:1.6,dash:'5 4'},
+        {x:fx,y:fy,color:'var(--gold)',marker:true,line:false,r:4.6}
+      ],
+      logx:true, logy:true, xmin:0.25, xmax:16, ymin:0.5, ymax:2.4,
+      xticks:[0.25,1,4,16], xtickfmt:function(v){return v;},
+      yticks:[0.5,0.8,1.2,1.6,2.4], ytickfmt:function(v){return v.toFixed(1);},
+      xlabel:'训练算力 / C₀（对数刻度）', ylabel:'L − 1.5（nats/token，对数刻度）',
+      notes:[{x:1,y:1.78,text:'斜率 = −0.25',color:'var(--accent)',anchor:'start',size:11}],
+      h:340
+    });
+  }
+
+  // ---- 外推与保留点 ----
+  var hoHost=document.getElementById('c-holdout');
+  if(hoHost){
+    mkChart(hoHost,{
+      series:[
+        {x:[0.25,1,4,16],y:[3.7627,3.1,2.6314,2.3],color:'var(--accent)',w:2.1,marker:true,r:4.4},
+        {x:[16,64],y:[2.3,2.0657],color:'var(--accent)',w:2,dash:'6 4'},
+        {x:[64],y:[2.2257],color:'var(--warn)',marker:true,line:false,r:5.6}
+      ],
+      logx:true, xmin:0.25, xmax:64, ymin:2.0, ymax:4.0,
+      xticks:[0.25,1,4,16,64], xtickfmt:function(v){return v;},
+      yticks:[2.0,2.5,3.0,3.5,4.0], ytickfmt:function(v){return v.toFixed(1);},
+      xlabel:'训练算力 / C₀（对数刻度）', ylabel:'合成 NLL（nats/token）',
+      legend:[{name:'拟合均值（4 个预算）',color:'var(--accent)'},{name:'外推',color:'var(--accent)',dash:'6 4'},{name:'保留的更大预算',color:'var(--warn)'}],
+      notes:[{x:64,y:2.29,text:'误差 0.160',color:'var(--warn)',anchor:'end',size:11}],
+      h:350
+    });
+  }
+
+  // ---- 实验网格 ----
+  var gHost=document.getElementById('c-grid');
+  if(gHost){
+    var gx=[],gy=[];
+    [25,50,100].forEach(function(n){[0.5,1,2].forEach(function(d){gx.push(n);gy.push(d);});});
+    mkChart(gHost,{
+      series:[
+        {x:gx,y:gy,color:'var(--accent)',marker:true,line:false,r:4.6},
+        {x:[200],y:[4],color:'var(--gold)',marker:true,line:false,r:6}
+      ],
+      logx:true, logy:true, xmin:20, xmax:250, ymin:0.4, ymax:5,
+      xticks:[25,50,100,200], xtickfmt:function(v){return v;},
+      yticks:[0.5,1,2,4], ytickfmt:function(v){return v;},
+      xlabel:'模型参数量（百万，对数刻度）', ylabel:'训练 token（十亿，对数刻度）',
+      legend:[{name:'拟合网格 3×3',color:'var(--accent)'},{name:'保留的更大条件',color:'var(--gold)'}],
+      h:330
+    });
+  }
+})();
+</script>
+
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if(typeof renderMathInElement!=='function') return;
+    renderMathInElement(document.body,{delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'\\(',right:'\\)',display:false},
+      {left:'$',right:'$',display:false}
+    ],throwOnError:false,errorColor:'#c0392b'});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+</body>
+</html>
