@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 03 · 快速排序与线性时间排序 — 学习笔记</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>数据结构（与算法）· 第三讲 快速排序 · 排序下界 · 线性时间排序</h1>
+    <div class="sub">复旦大学 数据科学学院 · Zengfeng Huang &nbsp;|&nbsp; 学习笔记整理</div>
+    <div class="meta">
+      <span class="pill">教材：CLRS《算法导论》(3rd)</span>
+      <span class="pill">语言：Python</span>
+      <span class="pill">来源：03lecture.pdf（59 页）</span>
+      <span class="pill">主线：快排 → 平均分析 → 决策树下界 → 计数 / 基数排序</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">快速排序：分治的另一种写法</a></li>
+      <li><a href="#s2">Partition：两种经典写法</a></li>
+      <li><a href="#s3">最坏与最好</a></li>
+      <li><a href="#s4">平均情况：直觉 + 代换法</a></li>
+      <li><a href="#s5">指示器随机变量的直接分析</a></li>
+      <li><a href="#s6">四种排序算法总览</a></li>
+      <li><a href="#s7">比较排序的下界：决策树</a></li>
+      <li><a href="#s8">计数排序</a></li>
+      <li><a href="#s9">基数排序</a></li>
+      <li><a href="#s10">本讲速查</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note" style="margin-top:0">
+      <strong>来源标注：</strong>本讲整理自第三讲讲义 <code>03lecture.pdf</code>（59 页）。
+      第 1 页是归并排序的复习，第 2–33 页讲快速排序（含两套平均情况分析），
+      第 34–45 页给比较排序下界，第 46–59 页讲计数排序与基数排序。
+      小节标题后的页码对应原幻灯片。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 快速排序：分治的另一种写法 <span class="tag t-blue">p1–p3</span></h2>
+
+      <p>讲义开头先把归并排序的分治三步再摆一遍：<strong>分</strong>（对半切）、<strong>递归</strong>（各排一半）、<strong>合</strong>（merge）。
+      快速排序（quicksort）前两步一样，但<strong>把「分」和「合」合并成了一步</strong>：</p>
+
+      <table>
+        <thead><tr><th style="width:120px">步骤</th><th>归并排序</th><th>快速排序</th></tr></thead>
+        <tbody>
+          <tr><td><strong>分</strong></td><td>按<strong>位置</strong>对半切（$n/2$）</td><td>按<strong>值</strong>切成两堆（partition）</td></tr>
+          <tr><td><strong>递归</strong></td><td>排两半</td><td>排两堆</td></tr>
+          <tr><td><strong>合</strong></td><td><strong>必须</strong> merge，$\Theta(n)$</td><td><strong>不需要</strong> —— 切的时候就已经分好了</td></tr>
+        </tbody>
+      </table>
+
+      <p>这是理解快排的第一把钥匙：<strong>归并的「分」不花钱但「合」要花钱；快排的「分」花钱（$O(n)$ 的 partition），但「合」免费。</strong>
+      两边都是 $O(n\log n)$，只是把成本挪到了不同的位置。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 230" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>partition 之后数组的三段结构</title>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <rect x="60" y="70" width="150" height="44" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="210" y="70" width="52" height="44" fill="#FAEEDA" stroke="#854F0B" stroke-width="2"/>
+            <rect x="262" y="70" width="230" height="44" fill="#E1F5EE" stroke="#0F6E56"/>
+            <text x="135" y="92" fill="#0C447C">≤ A[q]</text>
+            <text x="236" y="92" fill="#633806">A[q]</text>
+            <text x="377" y="92" fill="#085041">≥ A[q]</text>
+            <text x="135" y="132" font-size="11.5" fill="#5F5E5A">A[p..q-1]</text>
+            <text x="236" y="132" font-size="11.5" fill="#5F5E5A">pivot</text>
+            <text x="377" y="132" font-size="11.5" fill="#5F5E5A">A[q+1..r]</text>
+            <text x="60" y="52" font-size="11.5" fill="#888780">p</text>
+            <text x="492" y="52" font-size="11.5" fill="#888780">r</text>
+          </g>
+          <g stroke="#888780" stroke-width="1" stroke-dasharray="3 3">
+            <line x1="60" y1="56" x2="60" y2="68"/><line x1="492" y1="56" x2="492" y2="68"/>
+            <line x1="210" y1="46" x2="210" y2="68"/><line x1="262" y1="46" x2="262" y2="68"/>
+          </g>
+          <text x="340" y="176" font-size="12.5" fill="#1F1F1D" text-anchor="middle">不变式：左边全部 ≤ pivot，右边全部 ≥ pivot</text>
+          <text x="340" y="200" font-size="12" fill="#5F5E5A" text-anchor="middle">所以 pivot 已在最终位置；两堆各自递归，拼起来自然有序 —— 无需 merge</text>
+        </svg>
+        <div class="cap">partition 一次就「钉死」了一个元素的最终位置</div>
+      </div>
+
+<pre>Quicksort(A, p, r)
+{
+    if (p &lt; r)
+    {
+        q = Partition(A, p, r);      <span class="c"># 分：返回 pivot 的最终位置</span>
+        Quicksort(A, p, q-1);        <span class="c"># 递归左堆</span>
+        Quicksort(A, q+1, r);        <span class="c"># 递归右堆</span>
+    }
+}</pre>
+
+      <div class="note">
+        <strong>基例藏在 <code>if (p &lt; r)</code> 里：</strong>当区间只剩 0 或 1 个元素时 $p\ge r$，什么也不做 —— 长度 0/1 的数组天然有序。
+        这是全讲唯一一处「基例不用显式 return」的写法。
+      </div>
+
+      <div class="ok">
+        <strong>为什么不需要 merge：</strong>归并排序切的是<strong>位置</strong>，左半和右半的值域是混着的，所以必须 merge 才能合并有序性；
+        快排切的是<strong>值域</strong>，左半的每个元素都 $\le$ 右半的每个元素，所以「左半有序 + 右半有序」直接就是整体有序。
+        <strong>切的方式决定了要不要合。</strong>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · Partition：全部功夫都在这一个函数 <span class="tag t-blue">p4–p7</span></h2>
+
+      <p>讲义原话：<em>Clearly, all the action takes place in the partition() function</em>。
+      它要干三件事：<strong>原地重排</strong>子数组、<strong>分成两堆</strong>（左 ≤ 右）、<strong>返回 pivot 的下标</strong>。</p>
+
+      <h3>写法一：讲义版（双指针，Hoare 思路）</h3>
+      <p>思路是「从两端往中间挤」：左指针找<strong>不该在左边</strong>的大元素，右指针找<strong>不该在右边</strong>的小元素，然后交换。</p>
+
+<pre>Partition(A, p, r)
+    x = A[p];              <span class="c"># 取第一个元素作 pivot</span>
+    i = p;
+    j = r + 1;
+    while (TRUE)
+        repeat j--; until A[j] &lt;= x;      <span class="c"># 从右往左找 &lt;= pivot 的</span>
+        repeat i++; until A[i] &gt;= x;      <span class="c"># 从左往右找 &gt;= pivot 的</span>
+        if (i &lt; j)
+            Swap(A, i, j);                <span class="c"># 两个都错位了，交换</span>
+        else
+            Swap(A, p, j);                <span class="c"># 交叉了：pivot 归位</span>
+            return j;</pre>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>Hoare 式 partition 的双指针走位</title>
+          <defs>
+            <marker id="d3a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+            <marker id="d3b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#993C1D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="60" y="60" width="46" height="40"/><rect x="106" y="60" width="46" height="40"/>
+              <rect x="152" y="60" width="46" height="40"/><rect x="198" y="60" width="46" height="40"/>
+              <rect x="244" y="60" width="46" height="40"/><rect x="290" y="60" width="46" height="40"/>
+              <rect x="336" y="60" width="46" height="40"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="83" y="80">7</text><text x="129" y="80">3</text><text x="175" y="80">8</text>
+              <text x="221" y="80">4</text><text x="267" y="80">2</text><text x="313" y="80">9</text><text x="359" y="80">1</text>
+            </g>
+            <g fill="#888780" font-size="10.5">
+              <text x="83" y="114">p</text><text x="359" y="114">r</text>
+            </g>
+          </g>
+          <text x="83" y="46" font-size="11.5" fill="#854F0B" text-anchor="middle">pivot = 7</text>
+
+          <text x="60" y="146" font-size="12" fill="#185FA5">① j 从右往左找 ≤ 7：停在 A[7]=1</text>
+          <line x1="352" y1="152" x2="352" y2="132" stroke="#185FA5" stroke-width="1.5" marker-end="url(#d3a)"/>
+          <text x="60" y="172" font-size="12" fill="#993C1D">② i 从左往右找 ≥ 7：停在 A[3]=8</text>
+          <line x1="175" y1="178" x2="175" y2="196" stroke="#993C1D" stroke-width="1.5" marker-end="url(#d3b)"/>
+
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="60" y="204" width="46" height="40"/><rect x="106" y="204" width="46" height="40"/>
+              <rect x="152" y="204" width="46" height="40"/><rect x="198" y="204" width="46" height="40"/>
+              <rect x="244" y="204" width="46" height="40"/><rect x="290" y="204" width="46" height="40"/>
+              <rect x="336" y="204" width="46" height="40"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="83" y="224">7</text><text x="129" y="224">3</text><text x="175" y="224">1</text>
+              <text x="221" y="224">4</text><text x="267" y="224">2</text><text x="313" y="224">9</text><text x="359" y="224">8</text>
+            </g>
+          </g>
+          <text x="400" y="210" font-size="11.5" fill="#5F5E5A">③ 交换 i、j 位置的元素</text>
+          <text x="400" y="228" font-size="11.5" fill="#5F5E5A">继续挤，直到 i ≥ j</text>
+          <text x="400" y="262" font-size="11.5" fill="#854F0B">最后 Swap(A,p,j)：pivot 归位</text>
+          <text x="400" y="280" font-size="11.5" fill="#854F0B">返回 j，左 ≤7、右 ≥7</text>
+        </svg>
+        <div class="cap">两个指针各自只往一个方向走，所以整个 partition 是 $O(n)$</div>
+      </div>
+
+      <p>用 $A=[7,3,8,4,2,9,1]$ 完整走一遍：</p>
+      <table>
+        <thead><tr><th style="width:44px">轮</th><th>$j$ 停在</th><th>$i$ 停在</th><th>动作</th><th>数组</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td colspan="2">初值 $i=1,\ j=8$，$x=7$</td><td>—</td><td>7,3,8,4,2,9,1</td></tr>
+          <tr><td>1</td><td>$j=7$（值 1）</td><td>$i=3$（值 8）</td><td>$i\lt j$ → 交换 3↔7</td><td>7,3,<strong>1</strong>,4,2,9,<strong>8</strong></td></tr>
+          <tr><td>2</td><td>$j=5$（值 2）</td><td>$i=6$（值 9）</td><td>$i\lt j$ 不成立 → 交换 $A[p]$ 与 $A[j]$</td><td><strong>2</strong>,3,1,4,<strong>7</strong>,9,8</td></tr>
+          <tr><td>—</td><td colspan="2">返回 $j=5$</td><td>左 $[2,3,1,4]\le 7$，右 $[9,8]\ge 7$</td><td>2,3,1,4,7,9,8</td></tr>
+        </tbody>
+      </table>
+
+      <h3>写法二：CLRS 版（单指针，Lomuto 思路）</h3>
+      <p>讲义 p7 单独用一页给出了课本的写法 —— 结构更简单，只有<strong>一个指针 $j$ 扫描、一个边界 $i$</strong>：</p>
+
+<pre>PARTITION(A, p, r)
+1  x = A[r]                    <span class="c"># 取最后一个元素作 pivot</span>
+2  i = p - 1                   <span class="c"># i = 「≤ 区」的右边界</span>
+3  for j = p to r - 1
+4      if A[j] &lt;= x
+5          i = i + 1
+6          exchange A[i] with A[j]
+7  exchange A[i + 1] with A[r]
+8  return i + 1</pre>
+
+      <div class="note">
+        <strong>不变式（CLRS 的精髓）：</strong>循环每一轮开始时，区间被分成四段 ——
+        $A[p..i]\le x$、$A[i+1..j-1]\gt x$、$A[j..r-1]$ 未处理、$A[r]=x$。
+        每次 $A[j]\le x$ 就把「≤ 区」扩一格（第 5–6 行），否则只让 $j$ 前进。
+        循环结束时把 pivot 换到 $i+1$，正好卡在两段中间。
+      </div>
+
+      <p>用 CLRS 的经典例子 $A=[2,8,7,1,3,5,6,4]$，$x=A[8]=4$：</p>
+      <table>
+        <thead><tr><th style="width:44px">$j$</th><th>$A[j]$</th><th>$\le 4$?</th><th>$i$</th><th>动作</th><th>数组</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>2</td><td>是</td><td>1</td><td>自己换自己</td><td>2,8,7,1,3,5,6,4</td></tr>
+          <tr><td>2</td><td>8</td><td>否</td><td>1</td><td>跳过</td><td>2,8,7,1,3,5,6,4</td></tr>
+          <tr><td>3</td><td>7</td><td>否</td><td>1</td><td>跳过</td><td>2,8,7,1,3,5,6,4</td></tr>
+          <tr><td>4</td><td>1</td><td>是</td><td>2</td><td>换 2↔4</td><td>2,<strong>1</strong>,7,<strong>8</strong>,3,5,6,4</td></tr>
+          <tr><td>5</td><td>3</td><td>是</td><td>3</td><td>换 3↔5</td><td>2,1,<strong>3</strong>,8,<strong>7</strong>,5,6,4</td></tr>
+          <tr><td>6</td><td>5</td><td>否</td><td>3</td><td>跳过</td><td>2,1,3,8,7,5,6,4</td></tr>
+          <tr><td>7</td><td>6</td><td>否</td><td>3</td><td>跳过</td><td>2,1,3,8,7,5,6,4</td></tr>
+          <tr><td>—</td><td colspan="2">换 $A[4]$ 与 $A[8]$</td><td>—</td><td>pivot 归位</td><td>2,1,3,<strong>4</strong>,7,5,6,8</td></tr>
+        </tbody>
+      </table>
+      <p>返回 $q=4$：左边 $[2,1,3]$ 全 $\le 4$，右边 $[7,5,6,8]$ 全 $\gt 4$。</p>
+
+      <div class="warn">
+        <strong>两种写法的区别（考试常问）：</strong>
+        <ul style="margin:6px 0 0">
+          <li><strong>pivot 位置</strong>：讲义版取<strong>第一个</strong>，CLRS 版取<strong>最后一个</strong>。</li>
+          <li><strong>指针数</strong>：讲义版两个指针从两端挤，交换次数少（约 $n/2$ 次）；CLRS 版一个指针扫，交换次数多。</li>
+          <li><strong>返回值的含义</strong>：讲义版 $A[j]$ 是 pivot 本身的位置；CLRS 版 $A[q]$ 也是 pivot 的位置，两半分别是 $A[p..q-1]$ 与 $A[q+1..r]$。</li>
+          <li><strong>递归写法完全一样</strong> —— 因为两者都满足同一个不变式。</li>
+        </ul>
+      </div>
+
+      <p><strong>复杂度：</strong>两个指针都只单调移动，总共最多扫 $2n$ 步，所以 <code>partition</code> 是 $O(n)$（讲义 p6 直接给了结论）。
+      注意这是<strong>每一层</strong>的代价，不是整个算法的代价。</p>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 最坏与最好：差一个 $n$ <span class="tag t-blue">p8–p10</span></h2>
+
+      <p>快排的复杂度完全取决于<strong>partition 切得均不均</strong>。讲义用三个问题把这件事问透了。</p>
+
+      <h3>最坏情况：每次切出 1 : n−1</h3>
+      <p>如果每次 partition 都把数组切成「1 个 + 剩下全部」，递归式是</p>
+      $$T(1)=\Theta(1),\qquad T(n)=T(n-1)+\Theta(n)$$
+      <p>展开就是 $\Theta(n)+\Theta(n-1)+\cdots+\Theta(1)=\Theta(n^2)$。
+      递归树是一条<strong>斜线</strong>，每层只少一个元素，但每层都要付 $O(n)$。</p>
+
+      <div class="warn">
+        <strong>最要命的一点：</strong>讲义问 <em>Will any particular input elicit the worst case?</em>
+        答案是 <strong>Yes: already-sorted input</strong>。
+        如果 pivot 取首元素，那么<strong>已经排好序的输入</strong>（和完全逆序的输入）恰好是最坏情况 ——
+        每个元素都比后面的都小，pivot 永远是最小值，切出来就是 1 : n−1。
+        <br>这就是 p11 说的 <em>the real liability of quicksort</em>：<strong>最坏情况不是随机的坏运气，而是可预测的、常见的输入</strong>。
+      </div>
+
+      <h3>最好情况：每次正好对半分</h3>
+      $$T(n)=2T(n/2)+\Theta(n)\;\Longrightarrow\;T(n)=\Theta(n\log n)$$
+      <p>和归并排序的递归式一模一样 —— 这就是第 6 节主定理的情形 2。</p>
+
+      <h3>哪个更可能？</h3>
+      <p>讲义在这里故意不回答，留到后面两节。直觉上「完美对半」几乎不可能发生，但真正的问题是：
+      <strong>只要切得「不太歪」，就还是 $O(n\log n)$</strong>。下一节用 9 : 1 的分割来说明这一点。</p>
+
+      <table>
+        <thead><tr><th style="width:120px">情况</th><th>切分</th><th>递归式</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>最坏</td><td>$1 : n-1$（已排序输入）</td><td>$T(n-1)+\Theta(n)$</td><td>$\Theta(n^2)$</td></tr>
+          <tr><td>最好</td><td>$n/2 : n/2$</td><td>$2T(n/2)+\Theta(n)$</td><td>$\Theta(n\log n)$</td></tr>
+          <tr><td>「很差」</td><td>$1 : 9$（9 : 1 分割）</td><td>$T(9n/10)+T(n/10)+\Theta(n)$</td><td>仍是 $\Theta(n\log n)$（下一节）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 平均情况：先看直觉，再上代换法 <span class="tag t-blue">p11–p28</span></h2>
+
+      <h3>第一步：随机化，把「最坏输入」消灭掉</h3>
+      <p>既然最坏情况来自「特定输入 + 固定 pivot」，讲义给了两个解法：</p>
+      <ul>
+        <li><strong>先把输入数组随机打乱</strong>，再跑普通快排；</li>
+        <li><strong>随机选 pivot</strong>（randomized-partition）。</li>
+      </ul>
+      <p>两者效果相同：<strong>没有任何特定输入能构造出最坏情况</strong>了 —— 因为算法本身带了随机性，
+      对任何输入，坏切分的概率都只和随机选择有关，而不再由输入决定。讲义的原话是
+      <em>By ensuring that no particular input can be chosen to make quicksort run in $O(n^2)$ time</em>。</p>
+
+      <h3>第二步：9 : 1 分割的直觉 —— 歪得离谱也还是 $n\log n$</h3>
+      <p>讲义让你「draw it」，即画出 $T(n)=T(9n/10)+T(n/10)+n$ 的递归树：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 330" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>9:1 分割的递归树：每层代价不超过 n，但深度是 log_{10/9} n</title>
+          <defs>
+            <marker id="d8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="11.5" text-anchor="middle" dominant-baseline="central">
+            <rect x="290" y="24" width="72" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="326" y="38" fill="#0C447C">n</text>
+
+            <rect x="210" y="84" width="82" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="400" y="84" width="82" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="251" y="98" fill="#0C447C">9n/10</text><text x="441" y="98" fill="#0C447C">n/10</text>
+
+            <rect x="140" y="144" width="86" height="26" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="240" y="144" width="76" height="26" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="356" y="144" width="76" height="26" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="450" y="144" width="76" height="26" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <g fill="#0C447C" font-size="10.5">
+              <text x="183" y="157">81n/100</text><text x="278" y="157">9n/100</text>
+              <text x="394" y="157">9n/100</text><text x="488" y="157">n/100</text>
+            </g>
+            <text x="330" y="196" font-size="14" fill="#888780">⋮</text>
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="120" y="222" width="40" height="24" rx="4"/><rect x="180" y="222" width="40" height="24" rx="4"/>
+              <rect x="250" y="222" width="40" height="24" rx="4"/><rect x="330" y="222" width="40" height="24" rx="4"/>
+              <rect x="420" y="222" width="40" height="24" rx="4"/><rect x="480" y="222" width="40" height="24" rx="4"/>
+            </g>
+            <g fill="#27500A" font-size="9.5">
+              <text x="140" y="234">Θ(1)</text><text x="200" y="234">Θ(1)</text><text x="270" y="234">Θ(1)</text>
+              <text x="350" y="234">Θ(1)</text><text x="440" y="234">Θ(1)</text><text x="500" y="234">Θ(1)</text>
+            </g>
+          </g>
+          <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d8)" fill="none">
+            <line x1="310" y1="52" x2="255" y2="82"/><line x1="345" y1="52" x2="438" y2="82"/>
+            <line x1="230" y1="112" x2="186" y2="142"/><line x1="272" y1="112" x2="280" y2="142"/>
+            <line x1="420" y1="112" x2="392" y2="142"/><line x1="460" y1="112" x2="486" y2="142"/>
+          </g>
+          <g font-size="11.5" fill="#5F5E5A">
+            <text x="560" y="30">每层和 ≤ n</text>
+            <text x="560" y="48">（只有部分分支</text>
+            <text x="560" y="64">还没到底）</text>
+            <text x="560" y="120" fill="#854F0B">最浅路径：</text>
+            <text x="560" y="136" fill="#854F0B">log₁₀ n</text>
+            <text x="560" y="170" fill="#854F0B">最深路径：</text>
+            <text x="560" y="186" fill="#854F0B">log₁₀⁄₉ n ≈ 21.8 lg n</text>
+          </g>
+          <rect x="60" y="272" width="470" height="32" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+          <text x="295" y="288" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#27500A">层数 ×21.8、每层 ≤ n ⇒ 仍是 O(n lg n)，只差一个常数因子</text>
+        </svg>
+        <div class="cap">$\log_{10/9}n=\dfrac{\lg n}{\lg(10/9)}\approx 21.8\lg n$ —— 常数很大，但阶不变</div>
+      </div>
+
+      <p>这就是快排「实战很快」的理论依据：<strong>即使每次都切成 9 : 1 这种很歪的比例，复杂度仍然是 $O(n\log n)$</strong>。
+      只要分割比例是<strong>固定的常数比</strong>（$c:(1-c)$，$0\lt c\lt 1$），递归深度就是 $\log_{1/c}n=\Theta(\log n)$，每层代价 $\le n$。</p>
+
+      <div class="note">
+        <strong>只有一种情况会退化：</strong>切分比例<strong>随 $n$ 变化</strong>（比如每次只切掉常数个元素），
+        那时深度变成 $\Theta(n)$，总代价 $\Theta(n^2)$。所以「平均情况好」的关键不是「切得均匀」，
+        而是「切分比例不依赖 $n$」。
+      </div>
+
+      <h3>第三步：随机化下的精确平均 —— 递归式怎么来</h3>
+      <p>假设所有元素互不相同，且 pivot 是<strong>等概率随机</strong>选的。那么 split 有 $n$ 种可能
+      $(0:n-1),\ (1:n-2),\ \dots,\ (n-1:0)$，每种概率 $1/n$。于是</p>
+
+      $$T(n)=\frac{1}{n}\sum_{k=0}^{n-1}\Big[T(k)+T(n-1-k)\Big]+\Theta(n)$$
+
+      <p>求和里 $T(k)$ 和 $T(n-1-k)$ 各出现一遍，把下标翻转一下，两者是同一个和，于是合并成</p>
+
+      $$T(n)=\frac{2}{n}\sum_{k=0}^{n-1}T(k)+\Theta(n)$$
+
+      <div class="note">
+        <strong>两个细节：</strong>
+        ① 求和到 $n-1$ 而不是 $n$，因为 pivot 自己<strong>不属于任何一个子数组</strong>（讲义特意强调 <em>which is not included in subarrays</em>）；
+        ② 那个 $\Theta(n)$ 就是<strong>这一层 partition 的代价</strong>，不是递归项。
+      </div>
+
+      <h3>第四步：代换法证明 $T(n)=O(n\log n)$</h3>
+      <p>讲义称之为 <em>the dreaded substitution method</em>（让人头疼的代换法），步骤固定三步：</p>
+      <ol>
+        <li><strong>猜答案</strong>：$T(n)=O(n\log n)$；</li>
+        <li><strong>写归纳假设</strong>：$T(n)\le an\lg n+b$（注意多了个 $b$，用来吸收边界）；</li>
+        <li><strong>代入小于 $n$ 的情形</strong>，证明对 $n$ 也成立。</li>
+      </ol>
+
+      <p>代入：</p>
+      $$T(n)\le\frac{2}{n}\sum_{k=1}^{n-1}\big(ak\lg k+b\big)+\Theta(n)
+           =\frac{2a}{n}\sum_{k=1}^{n-1}k\lg k+\frac{2b}{n}(n-1)+\Theta(n)
+           \le\frac{2a}{n}\sum_{k=1}^{n-1}k\lg k+2b+\Theta(n)$$
+
+      <p>剩下的就是把那个求和压住。讲义 p24–p28 用了整整五页来「tightly bound the key summation」，结论是</p>
+      $$\sum_{k=1}^{n-1}k\lg k\;\le\;\frac{1}{2}n^2\lg n-\frac{1}{8}n^2$$
+
+      <p>代回去：</p>
+      $$T(n)\le\frac{2a}{n}\left(\frac{1}{2}n^2\lg n-\frac{1}{8}n^2\right)+2b+\Theta(n)
+           =an\lg n-\frac{a}{4}n+2b+\Theta(n)$$
+
+      <p>只要 $a$ 取得足够大，让 $\dfrac{a}{4}n$ 吃掉 $\Theta(n)$ 那部分，就得到 $T(n)\le an\lg n+b$，归纳成立，
+      于是 $T(n)=O(n\log n)$。<strong>快排平均 $O(n\log n)$。</strong></p>
+
+      <div class="warn">
+        <strong>为什么归纳假设里要加 $b$：</strong>因为递归式里有 $\Theta(n)$ 这样的低阶项，
+        单纯假设 $T(n)\le an\lg n$ 在 $n$ 很小时不成立（$n=1$ 时 $\lg n=0$，右边是 0）。
+        加一个常数 $b$ 把「小规模 + 低阶项」全兜住，是代换法的标准技巧。
+      </div>
+
+      <h4>附：关键求和的紧界（讲义 p24–p28）</h4>
+      <p>这一串不等式本身值得看一遍，它示范了「怎么用『每项都不超过最大值』+『配对』来夹住一个和」：</p>
+      $$\sum_{k=1}^{n-1}k\lg k
+        \;\le\;\frac{(n-1)n}{2}\lg n-\sum_{k=1}^{\lceil n/2\rceil-1}k
+        \;\le\;\frac{1}{2}n(n-1)\lg n-\sum_{k=1}^{n/2-1}k$$
+      $$\le\;\frac{1}{2}n(n-1)\lg n-\frac{1}{2}\left(\frac{n}{2}\right)\left(\frac{n}{2}-1\right)
+        \;\le\;\frac{1}{2}\left(n^2\lg n-n\lg n\right)-\frac{1}{8}n^2+\frac{n}{4}$$
+
+      <p>思路拆解：</p>
+      <ul>
+        <li>把 $\lg k$ 全部放大成 $\lg n$，前 $n-1$ 项的和是 $\frac{(n-1)n}{2}$；</li>
+        <li>但后一半的 $\lg k$ 其实接近 $\lg n$，前一半差得远，所以要<strong>扣掉</strong>一部分 ——
+        扣掉的正好是 $\sum_{k\le n/2}k$，也就是前一半那些「被高估太多」的项；</li>
+        <li>最后用等差数列求和得到 $-\frac{1}{8}n^2$ 这一项。</li>
+      </ul>
+      <p>结论的量级是 $\frac{1}{2}n^2\lg n-\Theta(n^2)$ —— 首项主导，足够用了。</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 换个算法算平均：指示器随机变量 <span class="tag t-blue">p29–p33</span></h2>
+
+      <p>上一节的代换法能证明结论，但要先「猜」对答案，还要处理一个麻烦的求和。
+      讲义 p29 开始给了<strong>第二条路</strong>：不写递归式，<strong>直接数「一共做了多少次比较」</strong>。
+      这条路的工具是<strong>指示器随机变量</strong>（indicator random variable），也是概率论在算法分析里最漂亮的一次应用。</p>
+
+      <h3>把运行时间变成「比较次数」</h3>
+      <p>快排里除了比较之外都是常数时间操作，所以：设 $X$ 为 QUICKSORT 在 $n$ 元数组上做的比较次数，则运行时间是 $O(X)$。
+      于是问题变成：<strong>求 $\mathbb{E}[X]$</strong>。</p>
+
+      <h3>关键观察：每一对元素最多比较一次</h3>
+      <p>这是全节的支点。为什么？因为元素只在<strong>被选作 pivot 的那一刻</strong>和别的元素比较，
+      而一旦某个元素成了 pivot，它就<strong>退出</strong>后续所有递归（不再出现在任何子数组里）。
+      所以任意两个元素 $z_i,z_j$ 之间，<strong>要么比一次，要么一次都不比</strong>。</p>
+
+      <h3>重命名 + 指示器</h3>
+      <p>把数组元素<strong>按大小重新命名</strong>为 $z_1\lt z_2\lt\cdots\lt z_n$（这是分析技巧，不是真的排序），
+      并记 $Z_{ij}=\{z_i,z_{i+1},\dots,z_j\}$ 为「第 $i$ 小到第 $j$ 小」这一段。</p>
+
+      <p>定义指示器随机变量</p>
+      $$X_{ij}=\mathbf{1}\{z_i\ \text{is compared to}\ z_j\}=
+        \begin{cases}1 & z_i,z_j\ \text{比较过}\\ 0 & \text{否则}\end{cases}$$
+
+      <p>因为每对最多比一次，总比较次数就是所有指示器之和：</p>
+      $$X=\sum_{i=1}^{n-1}\sum_{j=i+1}^{n}X_{ij}$$
+
+      <h3>核心引理：$\Pr\{z_i\ \text{与}\ z_j\ \text{比较}\}=\dfrac{2}{j-i+1}$</h3>
+      <p>为什么？考虑集合 $Z_{ij}$（共 $j-i+1$ 个元素）里<strong>谁最先被选为 pivot</strong>：</p>
+      <ul>
+        <li>如果最先选中的是 $z_i$ 或 $z_j$ 本身 → 它俩<strong>会</strong>被比较（另一个此刻还在同一段里，必然和 pivot 比一次）；</li>
+        <li>如果最先选中的是中间某个 $z_k$（$i\lt k\lt j$）→ 一旦 $z_k$ 成为 pivot，
+        $z_i$ 被分到左边、$z_j$ 被分到右边，<strong>从此再也不会同处一个子数组</strong>，永远不会比较。</li>
+      </ul>
+      <p>而 $Z_{ij}$ 里每个元素被最先选中的概率相同（随机 pivot），所以</p>
+      $$\Pr\{z_i\ \text{与}\ z_j\ \text{比较}\}=\frac{2}{j-i+1}$$
+
+      <div class="note">
+        <strong>这个引理为什么漂亮：</strong>它把「两个元素会不会比较」这个<strong>全局的、依赖整个递归过程</strong>的问题，
+        压缩成了「一个区间里谁先被选中」这个<strong>局部的、只看一个区间</strong>的问题。
+        指示器随机变量的价值就在这里 —— 把复杂事件拆成简单事件的求和。
+      </div>
+
+      <h3>求和</h3>
+      <p>由期望的线性性（<strong>不需要独立性</strong>，这是线性性最大的好处）：</p>
+      $$\mathbb{E}[X]=\mathbb{E}\left[\sum_{i\lt j}X_{ij}\right]=\sum_{i\lt j}\mathbb{E}[X_{ij}]=\sum_{i\lt j}\Pr\{z_i\ \text{与}\ z_j\ \text{比较}\}$$
+
+      <p>代入引理，令 $k=j-i$：</p>
+      $$\mathbb{E}[X]=\sum_{i=1}^{n-1}\sum_{j=i+1}^{n}\frac{2}{j-i+1}
+        =\sum_{i=1}^{n-1}\sum_{k=1}^{n-i}\frac{2}{k+1}
+        \lt\sum_{i=1}^{n-1}\sum_{k=1}^{n}\frac{2}{k}
+        =2(n-1)\sum_{k=1}^{n}\frac{1}{k}$$
+
+      <p>而调和级数 $\sum_{k=1}^{n}\frac{1}{k}=H_n=\ln n+O(1)$，所以</p>
+      $$\mathbb{E}[X]\lt 2(n-1)\big(\ln n+O(1)\big)=O(n\log n)$$
+
+      <div class="ok">
+        <strong>更精确的常数：</strong>把求和算紧一点可得 $\mathbb{E}[X]=2nH_n-O(n)\approx 2n\ln n\approx 1.39\,n\lg n$。
+        这个常数比归并排序的「约 $n\lg n$ 次比较」大一点，但快排的<strong>内层循环常数小得多</strong>（不需要额外数组、缓存友好），
+        所以实战反而更快 —— 这正是讲义 p34–37 反复强调的「渐进相同，常数不同」。
+      </div>
+
+      <table>
+        <thead><tr><th style="width:130px">方法</th><th>思路</th><th>代价</th><th>优点</th></tr></thead>
+        <tbody>
+          <tr><td>递归式 + 代换法</td><td>写出 $T(n)=\frac{2}{n}\sum T(k)+\Theta(n)$，猜 $an\lg n+b$，归纳证</td><td>要猜、要证求和</td><td>能给出严格的 $O$ 界</td></tr>
+          <tr><td>指示器随机变量</td><td>直接数比较次数，用线性性拆开</td><td>要证一个概率引理</td><td>不用猜，直觉清晰</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 四种排序算法总览 <span class="tag t-blue">p34–p37</span></h2>
+
+      <p>讲义在进入「下界」之前，先把已经学过的四种排序摆在一起对比 —— 这张表是期中期末的高频考点。</p>
+
+      <table>
+        <thead><tr><th style="width:110px">算法</th><th>核心机制</th><th>最坏</th><th>平均</th><th>就地</th><th>稳定</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>插入排序</strong></td>
+            <td>把每个元素插到前面已排序段的正确位置</td>
+            <td>$\Theta(n^2)$</td><td>$\Theta(n^2)$</td><td>是</td><td>是</td>
+          </tr>
+          <tr>
+            <td><strong>归并排序</strong></td>
+            <td>按位置对半切，递归排序，线性 merge</td>
+            <td>$\Theta(n\log n)$</td><td>$\Theta(n\log n)$</td><td><strong>否</strong>（需 $O(n)$ 辅助）</td><td>是</td>
+          </tr>
+          <tr>
+            <td><strong>堆排序</strong></td>
+            <td>建堆 + 反复取堆顶，Heapify 恢复堆序</td>
+            <td>$\Theta(n\log n)$</td><td>$\Theta(n\log n)$</td><td>是</td><td><strong>否</strong></td>
+          </tr>
+          <tr>
+            <td><strong>快速排序</strong></td>
+            <td>partition 按值切两堆，递归，无需 merge</td>
+            <td>$\Theta(n^2)$</td><td>$\Theta(n\log n)$</td><td>是</td><td><strong>否</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>讲义对每种算法的评价</h3>
+      <ul>
+        <li><strong>插入排序</strong>：好写；小输入（$\lesssim 50$ 个元素）快；<strong>近乎有序时极快</strong>；但最坏 / 平均 / 逆序都是 $O(n^2)$。</li>
+        <li><strong>归并排序</strong>：最坏 $O(n\log n)$，代价是<strong>不就地</strong>（要额外 $O(n)$ 空间）。</li>
+        <li><strong>堆排序</strong>：最坏 $O(n\log n)$ 且<strong>就地</strong>，把归并和插入的优点都拿到了。</li>
+        <li><strong>快速排序</strong>：平均 $O(n\log n)$，实战最快；但朴素实现<strong>在已排序输入上退化成 $O(n^2)$</strong>，必须随机化。</li>
+      </ul>
+
+      <div class="note">
+        <strong>工程上的真实用法：</strong>工业级排序（如 C++ <code>std::sort</code>、Java 对象排序）通常是<strong>混合</strong>的 ——
+        小数组（$\le 16$ 左右）用插入排序，中段用快排，递归太深时切堆排序防止 $O(n^2)$ 退化（introsort）。
+        理论上的四种算法，在工程里是<strong>按规模分工</strong>的。
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 比较排序的下界：决策树 <span class="tag t-blue">p38–p45</span></h2>
+
+      <p>到这里，四种排序里有三种都达到了 $O(n\log n)$。自然要问：<strong>还能更快吗？</strong>
+      讲义的回答分两步 —— 先给下界，再「打破」它。</p>
+
+      <div class="note">
+        <strong>观察：</strong>前面所有排序都属于<strong>比较排序</strong>（comparison sort）——
+        它们获取「顺序信息」的唯一手段是<strong>两两比较</strong>。这个限制就是下界的来源。
+      </div>
+
+      <h3>决策树：把「比较」抽象成树</h3>
+      <p>任何比较排序算法，对固定的 $n$，都可以画成一棵<strong>决策树</strong>：</p>
+      <ul>
+        <li>每个<strong>内部节点</strong>是一次比较，例如「$a_1:a_2$」；</li>
+        <li>两条出边是两种结果（$\le$ 或 $\gt$）；</li>
+        <li>每个<strong>叶子</strong>是一个输出排列。</li>
+      </ul>
+      <p>讲义用插入排序排 3 个元素 $\langle a_1,a_2,a_3\rangle$ 举例，这棵树有 6 个叶子：</p>
+
+<svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>插入排序 3 个元素的决策树</title>
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="340" y1="30" x2="200" y2="84"/><line x1="340" y1="30" x2="480" y2="84"/>
+            <line x1="200" y1="84" x2="110" y2="196"/><line x1="200" y1="84" x2="290" y2="138"/>
+            <line x1="290" y1="138" x2="250" y2="196"/><line x1="290" y1="138" x2="340" y2="196"/>
+            <line x1="480" y1="84" x2="430" y2="196"/><line x1="480" y1="84" x2="550" y2="138"/>
+            <line x1="550" y1="138" x2="520" y2="196"/><line x1="550" y1="138" x2="610" y2="196"/>
+          </g>
+          <g font-family="ui-monospace,monospace" font-size="11.5" text-anchor="middle" dominant-baseline="central">
+            <ellipse cx="340" cy="30" rx="30" ry="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="340" y="30" fill="#0C447C">1:2</text>
+            <ellipse cx="200" cy="84" rx="30" ry="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="200" y="84" fill="#0C447C">2:3</text>
+            <ellipse cx="480" cy="84" rx="30" ry="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="480" y="84" fill="#0C447C">1:3</text>
+            <ellipse cx="290" cy="138" rx="30" ry="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="290" y="138" fill="#0C447C">1:3</text>
+            <ellipse cx="550" cy="138" rx="30" ry="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="550" y="138" fill="#0C447C">2:3</text>
+
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="72" y="196" width="76" height="26" rx="4"/>
+              <rect x="212" y="196" width="76" height="26" rx="4"/>
+              <rect x="302" y="196" width="76" height="26" rx="4"/>
+              <rect x="392" y="196" width="76" height="26" rx="4"/>
+              <rect x="482" y="196" width="76" height="26" rx="4"/>
+              <rect x="572" y="196" width="76" height="26" rx="4"/>
+            </g>
+            <g fill="#27500A" font-size="10.5">
+              <text x="110" y="209">1,2,3</text><text x="250" y="209">1,3,2</text><text x="340" y="209">3,1,2</text>
+              <text x="430" y="209">2,1,3</text><text x="520" y="209">2,3,1</text><text x="610" y="209">3,2,1</text>
+            </g>
+          </g>
+          <g font-size="11" fill="#5F5E5A" font-family="ui-monospace,monospace" text-anchor="middle">
+            <text x="262" y="52">≤</text><text x="418" y="52">&gt;</text>
+            <text x="146" y="134">≤</text><text x="254" y="108">&gt;</text>
+            <text x="258" y="170">≤</text><text x="326" y="170">&gt;</text>
+            <text x="444" y="134">≤</text><text x="524" y="108">&gt;</text>
+            <text x="522" y="170">≤</text><text x="592" y="170">&gt;</text>
+          </g>
+          <text x="40" y="252" font-size="11.5" fill="#5F5E5A">内部节点 = 一次比较；叶子 = 一个输出排列；根到叶的路径长度 = 这次执行的比较次数</text>
+          <text x="40" y="272" font-size="11.5" fill="#5F5E5A">n = 3 时叶子恰好 3! = 6 个，且没有两个叶子给出同一个排列 —— 排序算法必须「区分」全部 n! 种情况</text>
+        </svg>
+        <div class="cap">决策树把「算法」抽象成了「一条从根到叶的路径」—— 路径长度就是这次执行做的比较次数</div>
+      </div>
+
+      <h3>下界的三步推导</h3>
+      <p>讲义 p42 用三个设问把证明拆开：</p>
+      <ol>
+        <li><strong>叶子最少要几个？</strong>—— $n$ 个元素有 $n!$ 种排列，每种都必须能被<strong>某种输入</strong>产生，
+        所以叶子至少 $n!$ 个。</li>
+        <li><strong>高度 $h$ 的二叉树最多几个叶子？</strong>—— $2^h$ 个。</li>
+        <li>「最少需要的叶子」$\le$「最多可能的叶子」，于是</li>
+      </ol>
+      $$n!\le 2^h$$
+
+      <p>取对数：$\lg(n!)\le h$。再用 Stirling 近似 $n!\gt\left(\dfrac{n}{e}\right)^n$：</p>
+      $$h\ge\lg\left(\frac{n}{e}\right)^{n}=n\lg n-n\lg e=\Omega(n\log n)$$
+
+      <div class="ok">
+        <strong>结论：</strong>任何比较排序，最坏情况下至少要做 $\Omega(n\log n)$ 次比较。
+        <br><strong>推论（讲义 p45）：</strong>堆排序和归并排序是<strong>渐近最优</strong>的比较排序 —— 它们达到了这个下界。
+        <br>注意这个下界说的是<strong>最坏情况</strong>（决策树的高度 = 最长路径）。平均情况的下界还要更强一些（约 $\lg(n!)=\Theta(n\log n)$ 同样成立）。
+      </div>
+
+      <div class="warn">
+        <strong>常见的表述错误：</strong>「决策树有 $n!$ 个叶子」—— 错，是<strong>至少</strong> $n!$ 个。
+        有些算法（比如带重复元素的比较）可能有更多叶子。下界用的是「至少」，所以 $n!\le 2^h$ 成立。
+        反过来如果写成 $2^h\le n!$，方向就全错了。
+      </div>
+
+      <p>于是问题变成：<strong>能不能不靠比较？</strong>讲义 p46 的回答是「能，但要看数据长什么样」——
+      这就是下面两节的计数排序和基数排序。</p>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2>8 · 计数排序：不用比较也能排序 <span class="tag t-blue">p46–p52</span></h2>
+
+      <p>下界 $\Omega(n\log n)$ 只约束<strong>比较排序</strong>。如果换一种「获取顺序信息」的方式 ——
+      比如<strong>直接利用元素的值</strong> —— 就能突破这个下界。</p>
+
+      <h3>前提条件（不能忽略）</h3>
+      <ul>
+        <li>待排序的 $n$ 个数都落在 $[1,k]$ 这个<strong>小范围</strong>内；</li>
+        <li>用三个数组：输入 $A[1..n]$、输出 $B[1..n]$、辅助计数 $C[1..k]$；</li>
+        <li><strong>不做任何元素间的比较</strong>。</li>
+      </ul>
+
+      <h3>算法：四步</h3>
+<pre>CountingSort(A, B, k)
+1  for i = 1 to k
+2      C[i] = 0;                    <span class="c"># ① 清零，O(k)</span>
+3  for j = 1 to n
+4      C[A[j]] += 1;                <span class="c"># ② 统计每个值出现几次，O(n)</span>
+5  for i = 2 to k
+6      C[i] = C[i] + C[i-1];        <span class="c"># ③ 前缀和 → 「≤i 的数共有几个」</span>
+7  for j = n downto 1
+8      B[C[A[j]]] = A[j];           <span class="c"># ④ 从后往前，放到该在的位置</span>
+9      C[A[j]] -= 1;</pre>
+
+      <div class="note">
+        <strong>第 ③ 步是灵魂：</strong>前缀和之后，$C[i]$ 表示「值 $\le i$ 的元素一共有多少个」。
+        这正好是<strong>值为 $i$ 的元素在输出数组里的「右边界下标」</strong>。
+        所以 $B[C[A[j]]] = A[j]$ 就是「把它放到自己那一组的最后一个空位」。
+      </div>
+
+      <h3>走一遍：$A=[2,5,3,0,2,3,0,3]$，$k=5$</h3>
+      <p>（这里为了与讲义一致，下标从 0 开始取到 $k=5$。）</p>
+
+      <table>
+        <thead><tr><th style="width:74px">阶段</th><th>$C[0]$</th><th>$C[1]$</th><th>$C[2]$</th><th>$C[3]$</th><th>$C[4]$</th><th>$C[5]$</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td>② 统计后</td><td>2</td><td>0</td><td>2</td><td>3</td><td>0</td><td>1</td><td>0 出现 2 次，3 出现 3 次……</td></tr>
+          <tr><td>③ 前缀和后</td><td>2</td><td>2</td><td>4</td><td>7</td><td>7</td><td>8</td><td>$\le 3$ 的有 7 个 → 3 占位置 5,6,7</td></tr>
+        </tbody>
+      </table>
+
+      <p>然后从 $j=8$ 倒着往前扫，每个元素「落到自己组的最后一个空位」：</p>
+      <table>
+        <thead><tr><th style="width:44px">$j$</th><th>$A[j]$</th><th>放到</th><th>$B$ 的变化</th><th>$C$</th></tr></thead>
+        <tbody>
+          <tr><td>8</td><td>3</td><td>$B[7]$</td><td>… , 3, _</td><td>2,2,4,<strong>6</strong>,7,8</td></tr>
+          <tr><td>7</td><td>0</td><td>$B[2]$</td><td>_, 0, … , 3</td><td><strong>1</strong>,2,4,6,7,8</td></tr>
+          <tr><td>6</td><td>3</td><td>$B[6]$</td><td>_, 0, _, _, _, 3, 3</td><td>1,2,4,<strong>5</strong>,7,8</td></tr>
+          <tr><td>5</td><td>2</td><td>$B[4]$</td><td>_, 0, _, 2, _, 3, 3</td><td>1,2,<strong>3</strong>,5,7,8</td></tr>
+          <tr><td>4</td><td>0</td><td>$B[1]$</td><td>0, 0, _, 2, _, 3, 3</td><td><strong>0</strong>,2,3,5,7,8</td></tr>
+          <tr><td>3</td><td>3</td><td>$B[5]$</td><td>0, 0, _, 2, 3, 3, 3</td><td>0,2,3,<strong>4</strong>,7,8</td></tr>
+          <tr><td>2</td><td>5</td><td>$B[8]$</td><td>0, 0, _, 2, 3, 3, 3, 5</td><td>0,2,3,4,7,<strong>7</strong></td></tr>
+          <tr><td>1</td><td>2</td><td>$B[3]$</td><td><strong>0, 0, 2, 2, 3, 3, 3, 5</strong></td><td>0,2,<strong>2</strong>,4,7,7</td></tr>
+        </tbody>
+      </table>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 180" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>计数排序的输入、辅助数组与输出</title>
+          <g font-family="ui-monospace,monospace" font-size="12.5" text-anchor="middle" dominant-baseline="central">
+            <text x="30" y="34" font-size="11.5" fill="#5F5E5A" text-anchor="start">A（输入）</text>
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="110" y="20" width="40" height="28"/><rect x="150" y="20" width="40" height="28"/>
+              <rect x="190" y="20" width="40" height="28"/><rect x="230" y="20" width="40" height="28"/>
+              <rect x="270" y="20" width="40" height="28"/><rect x="310" y="20" width="40" height="28"/>
+              <rect x="350" y="20" width="40" height="28"/><rect x="390" y="20" width="40" height="28"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="130" y="34">2</text><text x="170" y="34">5</text><text x="210" y="34">3</text><text x="250" y="34">0</text>
+              <text x="290" y="34">2</text><text x="330" y="34">3</text><text x="370" y="34">0</text><text x="410" y="34">3</text>
+            </g>
+
+            <text x="30" y="90" font-size="11.5" fill="#5F5E5A" text-anchor="start">C（前缀和）</text>
+            <g fill="#FAEEDA" stroke="#854F0B">
+              <rect x="110" y="76" width="40" height="28"/><rect x="150" y="76" width="40" height="28"/>
+              <rect x="190" y="76" width="40" height="28"/><rect x="230" y="76" width="40" height="28"/>
+              <rect x="270" y="76" width="40" height="28"/><rect x="310" y="76" width="40" height="28"/>
+            </g>
+            <g fill="#633806">
+              <text x="130" y="90">2</text><text x="170" y="90">2</text><text x="210" y="90">4</text>
+              <text x="250" y="90">7</text><text x="290" y="90">7</text><text x="330" y="90">8</text>
+            </g>
+            <g fill="#888780" font-size="10.5">
+              <text x="130" y="118">0</text><text x="170" y="118">1</text><text x="210" y="118">2</text>
+              <text x="250" y="118">3</text><text x="290" y="118">4</text><text x="330" y="118">5</text>
+            </g>
+
+            <text x="30" y="150" font-size="11.5" fill="#5F5E5A" text-anchor="start">B（输出）</text>
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="110" y="136" width="40" height="28"/><rect x="150" y="136" width="40" height="28"/>
+              <rect x="190" y="136" width="40" height="28"/><rect x="230" y="136" width="40" height="28"/>
+              <rect x="270" y="136" width="40" height="28"/><rect x="310" y="136" width="40" height="28"/>
+              <rect x="350" y="136" width="40" height="28"/><rect x="390" y="136" width="40" height="28"/>
+            </g>
+            <g fill="#27500A">
+              <text x="130" y="150">0</text><text x="170" y="150">0</text><text x="210" y="150">2</text><text x="250" y="150">2</text>
+              <text x="290" y="150">3</text><text x="330" y="150">3</text><text x="370" y="150">3</text><text x="410" y="150">5</text>
+            </g>
+          </g>
+          <text x="450" y="90" font-size="11.5" fill="#854F0B">C[i] = 「值 ≤ i 的元素个数」</text>
+          <text x="450" y="108" font-size="11.5" fill="#854F0B">= 值为 i 的那组的右边界</text>
+          <text x="450" y="150" font-size="11.5" fill="#27500A">最终 B 升序</text>
+        </svg>
+        <div class="cap">$A$ 只被读了两遍，$C$ 只被扫了两遍 —— 全程没有比较任何两个元素</div>
+      </div>
+
+      <h3>为什么是稳定的？为什么必须倒着扫？</h3>
+      <p>第 ④ 步写的是 <code>for j = n downto 1</code>，<strong>从后往前</strong>。这不是随意的：</p>
+      <ul>
+        <li>$C[A[j]]$ 是「值 $\le A[j]$ 的元素个数」，也就是这一组在输出里的<strong>最右空位</strong>；</li>
+        <li>从后往前扫，<strong>后出现的元素先被放到靠右的位置</strong>，于是相同值的元素在 $B$ 里保持了原来的相对顺序 ——
+        这就是<strong>稳定性</strong>（stable）。</li>
+        <li>如果从前往后扫，相同值的元素顺序会<strong>反转</strong>，算法就不稳定了。</li>
+      </ul>
+
+      <div class="ok">
+        <strong>稳定性不是装饰品：</strong>下一节的基数排序<strong>必须</strong>用稳定排序来排每一位，否则整个算法就错了。
+        计数排序的价值有一半在 $O(n)$，另一半在「它天然稳定」。
+      </div>
+
+      <h3>复杂度与它的边界</h3>
+      <p>四步分别是 $O(k)$、$O(n)$、$O(k)$、$O(n)$，合计</p>
+      $$T(n,k)=O(n+k)$$
+      <p>当 $k=O(n)$ 时就是 $O(n)$ —— <strong>线性时间排序</strong>。</p>
+
+      <div class="warn">
+        <strong>「排序不是 $\Omega(n\log n)$ 吗？」不矛盾。</strong>
+        那个下界只对<strong>比较排序</strong>成立，而计数排序<strong>一次比较都没做</strong>，
+        它靠的是「元素值可以直接当下标」这个额外信息。
+        <br>代价是<strong>前提变强了</strong>：值域必须是 $[1,k]$ 且 $k$ 不能太大。
+        用它排 32 位整数就不行了 —— $k=2^{32}\approx 4.29\times10^9$，光清零 $C$ 就要几十亿次操作，
+        比 $n\log n$ 慢得多。
+      </div>
+
+      <table>
+        <thead><tr><th style="width:130px">场景</th><th>合适吗</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td>年龄、成绩、百分制分数</td><td><strong>合适</strong></td><td>$k$ 很小且固定</td></tr>
+          <tr><td>32 位整数</td><td>不合适</td><td>$k=2^{32}$，$O(k)$ 直接爆掉</td></tr>
+          <tr><td>浮点数</td><td>不合适</td><td>值域不是有限小整数集</td></tr>
+          <tr><td>作为基数排序的子程序</td><td><strong>非常合适</strong></td><td>每一「位」的值域只有 $k$（如 $2^8$ 或 $2^{16}$）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2>9 · 基数排序：把大值域拆成小位 <span class="tag t-blue">p53–p59</span></h2>
+
+      <p>计数排序的瓶颈是 $k$ 太大。基数排序（radix sort）的思路是：<strong>把一个大数拆成若干「位」，逐位做计数排序</strong>，
+      这样每一位的值域都很小。</p>
+
+      <p>讲义的引入很生活化：<em>Sort papers according to student number</em> —— 一叠学生试卷要按学号排序。</p>
+
+      <h3>关键决策：从最低位开始</h3>
+      <p>直觉上你可能想「先按最高位分堆，再按次高位……」—— <strong>这是错的</strong>（或者说，要递归地分很多堆）。
+      正确的做法是<strong>从最低位（least significant digit）开始</strong>：</p>
+
+<pre>RadixSort(A, d)
+    for i = 1 to d
+        StableSort(A) on digit i        <span class="c"># 第 i 位（从最低位算起）</span></pre>
+
+      <h3>走一遍：$329, 457, 657, 839, 436, 720, 355$</h3>
+      <table>
+        <thead><tr><th style="width:96px">趟</th><th>排序依据</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>初始</td><td>—</td><td>329, 457, 657, 839, 436, 720, 355</td></tr>
+          <tr><td>第 1 趟</td><td>个位</td><td>72<strong>0</strong>, 35<strong>5</strong>, 43<strong>6</strong>, 45<strong>7</strong>, 65<strong>7</strong>, 32<strong>9</strong>, 83<strong>9</strong></td></tr>
+          <tr><td>第 2 趟</td><td>十位</td><td>7<strong>2</strong>0, 3<strong>2</strong>9, 4<strong>3</strong>6, 8<strong>3</strong>9, 3<strong>5</strong>5, 4<strong>5</strong>7, 6<strong>5</strong>7</td></tr>
+          <tr><td>第 3 趟</td><td>百位</td><td><strong>3</strong>29, <strong>3</strong>55, <strong>4</strong>36, <strong>4</strong>57, <strong>6</strong>57, <strong>7</strong>20, <strong>8</strong>39</td></tr>
+        </tbody>
+      </table>
+      <p>第一趟按个位排完，顺序看起来「乱七八糟」；但第二趟按十位排完，<strong>十位相同的那些元素之间，个位已经是有序的</strong>；
+      第三趟按百位排完，<strong>百位相同的那些元素之间，后两位已经是有序的</strong> —— 于是整体有序。</p>
+
+      <div class="note">
+        <strong>为什么必须从低位开始：</strong>因为高位是<strong>决定性</strong>的。最后一趟按最高位排，
+        它的结果会<strong>覆盖</strong>之前所有趟的排序 —— 所以最后一趟必须是「最重要」的那一位。
+        如果从高位开始，最后按低位排完，高位的顺序就被打乱了，前功尽弃。
+        <br>换句话说：<strong>排序的趟数越靠后，权重越大</strong>。低位先排，才能把它的信息「保留」在高位相同的组内部。
+      </div>
+
+      <h3>正确性证明（归纳）</h3>
+      <p>讲义 p56 给了一个归纳论证，对「趟数」做归纳：</p>
+      <ol>
+        <li><strong>归纳假设</strong>：做完前 $i-1$ 趟后，数组已经<strong>按低 $i-1$ 位有序</strong>；</li>
+        <li>现在按第 $i$ 位做一次<strong>稳定</strong>排序，证明数组变成按低 $i$ 位有序。</li>
+      </ol>
+      <p>考察任意两个元素 $x,y$，比较它们<strong>低 $i$ 位</strong>组成的数：</p>
+      <ul>
+        <li><strong>第 $i$ 位不同</strong>：排序后 $x,y$ 的相对顺序由第 $i$ 位决定，这正是正确的 ——
+        低 $i-1$ 位再怎么不同也不影响（因为第 $i$ 位权重更高）。</li>
+        <li><strong>第 $i$ 位相同</strong>：它们的相对顺序应该由低 $i-1$ 位决定，而由归纳假设，
+        排序前它们<strong>已经按低 $i-1$ 位有序</strong>了；又因为用的是<strong>稳定</strong>排序，
+        第 $i$ 位相同的元素<strong>保持原有相对顺序</strong> —— 所以仍然正确。</li>
+      </ul>
+
+      <div class="ok">
+        <strong>这就是「必须稳定」的地方：</strong>第二种情况完全依赖稳定性。
+        如果第 $i$ 位的排序不稳定，相同第 $i$ 位的元素会被打乱，低位的排序成果就丢了。
+      </div>
+
+      <h3>复杂度</h3>
+      <p>每一位用计数排序，值域是 $1..k$，一趟 $O(n+k)$；共 $d$ 趟：</p>
+      $$T(n)=O(dn+dk)$$
+      <p>当 $d$ 是常数、$k=O(n)$ 时，$T(n)=O(n)$。</p>
+
+      <div class="note">
+        <strong>讲义 p58 的例子：排 100 万个 64 位数。</strong>
+        把它看成 4 个「$2^{16}$ 进制」的位（$4\times16=64$），于是 $d=4$、$k=2^{16}=65536$。
+        基数排序只要 <strong>4 趟</strong>；而典型的 $O(n\log n)$ 比较排序需要约 $\lg n=20$ 次操作<strong>每个元素</strong>。
+        4 趟 vs 20 趟，差距明显。
+      </div>
+
+      <h3>那为什么还需要别的排序？</h3>
+      <p>讲义最后留了一个开放问题：<em>Can radix sort be used on floating-point numbers?</em>
+      以及「既然基数排序这么快、这么简单，为什么还用别的？」几点现实考虑：</p>
+      <ul>
+        <li><strong>常数因子</strong>：每一趟都要遍历、分配、回写，内存访问模式不如快排的顺序扫描友好；</li>
+        <li><strong>依赖数据形态</strong>：$d$ 和 $k$ 由数据决定，通用库没法预设；</li>
+        <li><strong>浮点数</strong>：不能直接按十进制位拆。理论上可以按 IEEE 754 的<strong>位模式</strong>排序
+        （把负数部分取反、正数部分翻转符号位后当成无符号整数），但实现复杂、收益有限，
+        实际中很少这么做；</li>
+        <li><strong>比较排序更通用</strong>：只要能比较大小就能排，不要求「值可分解成位」。</li>
+      </ul>
+
+      <div class="warn">
+        <strong>浮点数的坑（补充）：</strong>如果直接按位模式当无符号整数排，负数的顺序会<strong>整体反掉</strong>
+        （因为 IEEE 754 用符号-移码表示，负数的位模式越大值越小）。要正确处理，得对负数的位取反。
+        这是「看起来能用、其实有陷阱」的典型例子。
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2>10 · 本讲速查 <span class="tag t-green">复习用</span></h2>
+
+      <h3>排序算法全景</h3>
+      <table>
+        <thead><tr><th style="width:104px">算法</th><th>最坏</th><th>平均</th><th>就地</th><th>稳定</th><th>关键前提</th></tr></thead>
+        <tbody>
+          <tr><td>插入排序</td><td>$\Theta(n^2)$</td><td>$\Theta(n^2)$</td><td>是</td><td>是</td><td>无</td></tr>
+          <tr><td>归并排序</td><td>$\Theta(n\log n)$</td><td>$\Theta(n\log n)$</td><td>否</td><td>是</td><td>无</td></tr>
+          <tr><td>堆排序</td><td>$\Theta(n\log n)$</td><td>$\Theta(n\log n)$</td><td>是</td><td>否</td><td>无</td></tr>
+          <tr><td>快速排序</td><td>$\Theta(n^2)$</td><td>$\Theta(n\log n)$</td><td>是</td><td>否</td><td>随机化才能保证平均</td></tr>
+          <tr><td>计数排序</td><td>$\Theta(n+k)$</td><td>$\Theta(n+k)$</td><td>否</td><td>是</td><td>值域 $[1,k]$，$k$ 要小</td></tr>
+          <tr><td>基数排序</td><td>$\Theta(d(n+k))$</td><td>$\Theta(d(n+k))$</td><td>否</td><td>是</td><td>可按位分解；子排序必须稳定</td></tr>
+        </tbody>
+      </table>
+
+      <h3>关键结论</h3>
+      <table>
+        <thead><tr><th style="width:34%">结论</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>快排最坏 $\Theta(n^2)$</td><td>$T(n)=T(n-1)+\Theta(n)$；<strong>已排序输入 + 首元素 pivot</strong> 就触发</td></tr>
+          <tr><td>快排最好 / 平均 $\Theta(n\log n)$</td><td>平衡分割 $2T(n/2)+\Theta(n)$；平均用代换法或指示器随机变量</td></tr>
+          <tr><td>9 : 1 分割仍是 $O(n\log n)$</td><td>深度 $\log_{10/9}n\approx21.8\lg n$，每层 $\le n$</td></tr>
+          <tr><td>平均比较次数 $\approx 2n\ln n$</td><td>$\mathbb{E}[X]=\sum_{i\lt j}\frac{2}{j-i+1}=2nH_n-O(n)$</td></tr>
+          <tr><td>比较排序下界 $\Omega(n\log n)$</td><td>决策树：$n!\le 2^h$，Stirling 近似</td></tr>
+          <tr><td>计数排序 $O(n+k)$</td><td>无比较，靠值当下标；$k=O(n)$ 时线性</td></tr>
+          <tr><td>基数排序 $O(d(n+k))$</td><td>$d$ 趟稳定计数排序；从低位开始</td></tr>
+        </tbody>
+      </table>
+
+      <h3>五个最容易错的地方</h3>
+      <ol>
+        <li><strong>以为快排「平均快」所以「最坏也不差」</strong> —— 已排序输入就是 $O(n^2)$，必须随机化。</li>
+        <li><strong>pivot 不计入子数组</strong> —— 递归是 $T(q-p)$ 和 $T(r-q)$，求和到 $n-1$ 不是 $n$。</li>
+        <li><strong>决策树写成 $2^h\le n!$</strong> —— 方向反了。是「叶子至少 $n!$」→ $n!\le 2^h$。</li>
+        <li><strong>计数排序从前往后扫</strong> —— 相同元素顺序反转，失去稳定性，基数排序随之失效。</li>
+        <li><strong>基数排序从高位开始</strong> —— 最后一趟必须是最高位，否则前面的排序全被覆盖。</li>
+      </ol>
+
+      <div class="ok">
+        <strong>本讲的一句话主线：</strong>
+        快排和归并是「分治」的两种成本分配方式 —— 归并把钱花在<strong>合</strong>（merge），快排把钱花在<strong>分</strong>（partition），
+        总账都是 $n\log n$。<br>
+        而「$n\log n$ 到底是不是极限」取决于<strong>算法能拿到什么信息</strong>：
+        只能比较 → 决策树给出 $\Omega(n\log n)$ 的硬下界；能直接把值当下标 → 计数排序 $O(n)$ 突破它，代价是前提变强、值域要小；
+        值域大就拆位 → 基数排序用「多趟稳定排序」把大值域摊平。
+        <br><strong>复杂度不是算法的属性，而是「算法 + 它能利用的信息」的属性。</strong>
+      </div>
+    </section>
+
+
+    <footer>
+整理自 03lecture.pdf · 复旦大学《数据结构（与算法）》第三讲 · 共 59 页<br>
+      小节标题后的页码标注对应原幻灯片；公式与推导按讲义内容重排，凡属补充内容均已单独标注
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>

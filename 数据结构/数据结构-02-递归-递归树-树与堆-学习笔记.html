@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 02 · 递归 — 学习笔记</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>数据结构（与算法）· 第二讲 递归</h1>
+    <div class="sub">复旦大学 数据科学学院 · Zengfeng Huang &nbsp;|&nbsp; 学习笔记整理</div>
+    <div class="meta">
+      <span class="pill">教材：CLRS《算法导论》(3rd)</span>
+      <span class="pill">语言：Python</span>
+      <span class="pill">来源：02lecture.pdf（108 页）</span>
+      <span class="pill">主线：递归 → 递归树 → 主定理 → 树 → 堆</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">递归的三要素</a></li>
+      <li><a href="#s2">二分查找</a></li>
+      <li><a href="#s3">幂运算：两种递归</a></li>
+      <li><a href="#s4">Fibonacci 的指数陷阱</a></li>
+      <li><a href="#s5">归并排序</a></li>
+      <li><a href="#s6">递归树</a></li>
+      <li><a href="#s7">主定理</a></li>
+      <li><a href="#s8">树</a></li>
+      <li><a href="#s9">堆与堆排序</a></li>
+      <li><a href="#s10">本讲速查</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note" style="margin-top:0">
+      <strong>来源标注：</strong>本讲全部内容整理自第二讲讲义 <code>02lecture.pdf</code>（108 页），
+      每个小节标题后标注了对应页码，方便对照原幻灯片。
+      讲义本身没有「板书」，因此不区分「讲义 / 板书」，只有<strong>讲义内容</strong>与<strong>补充推导</strong>两种。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 递归的三要素 <span class="tag t-blue">p2–p4</span></h2>
+
+      <p>递归（recursion）就一句话：<strong>一个方法调用它自己</strong>。听起来像循环，但两者的思维方式完全不同 ——
+      循环是「一步步往前走」，递归是「把大问题交给一个规模更小的同类问题」。</p>
+
+      <h3>从阶乘看递归的写法</h3>
+      <p>数学定义 $n! = 1\cdot 2\cdot 3\cdots (n-1)\cdot n$ 是<strong>连乘</strong>，但把它写成递归定义只要两行：</p>
+
+      $$f(n)=\begin{cases}1 & \text{if } n=0\\ n\cdot f(n-1) & \text{else}\end{cases}$$
+
+      <p>翻成 Python 就是讲义上的三行：</p>
+<pre>def recursiveFactorial(n):
+    if n == 0:
+        return 1                      <span class="c"># base case：不再递归</span>
+    else:
+        return n * recursiveFactorial(n - 1)   <span class="c"># recursive call</span></pre>
+
+      <div class="warn">
+        <strong>递归方法必须有两个部件：</strong>
+        <ol style="margin:6px 0 0">
+          <li><strong>Base case（基例）</strong>：输入取这些值时<strong>不做任何递归调用</strong>，直接返回。至少要有一个。</li>
+          <li><strong>Recursive call（递归调用）</strong>：调用自己，但<strong>必须让问题朝基例靠近</strong>（这里是 $n\to n-1$）。</li>
+        </ol>
+        讲义原话是两条硬性要求：每一条递归调用链最终<strong>必须</strong>到达基例；每一次递归调用都<strong>必须</strong>在朝基例推进。
+        少了第一条，栈会一直涨到 <code>RecursionError</code>；少了第二条，即使有基例也永远走不到。
+      </div>
+
+      <h3>递归轨迹（recursion trace）</h3>
+      <p>看递归最有效的方式是把<strong>每一次调用画成一个盒子</strong>：向下是调用，向上是返回值。以 <code>recursiveFactorial(4)</code> 为例：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 430" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>recursiveFactorial(4) 的递归轨迹</title>
+          <defs>
+            <marker id="d1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+            <marker id="u1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#0F6E56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+
+          <g font-family="ui-monospace,monospace" font-size="13">
+            <rect x="120" y="34" width="210" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="225" y="53" text-anchor="middle" dominant-baseline="central" fill="#0C447C">recursiveFactorial(4)</text>
+            <rect x="120" y="104" width="210" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="225" y="123" text-anchor="middle" dominant-baseline="central" fill="#0C447C">recursiveFactorial(3)</text>
+            <rect x="120" y="174" width="210" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="225" y="193" text-anchor="middle" dominant-baseline="central" fill="#0C447C">recursiveFactorial(2)</text>
+            <rect x="120" y="244" width="210" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="225" y="263" text-anchor="middle" dominant-baseline="central" fill="#0C447C">recursiveFactorial(1)</text>
+            <rect x="120" y="314" width="210" height="38" rx="6" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+            <text x="225" y="333" text-anchor="middle" dominant-baseline="central" fill="#27500A">recursiveFactorial(0)</text>
+          </g>
+
+          <g stroke="#888780" stroke-width="1.5" marker-end="url(#d1)">
+            <line x1="180" y1="72" x2="180" y2="100"/>
+            <line x1="180" y1="142" x2="180" y2="170"/>
+            <line x1="180" y1="212" x2="180" y2="240"/>
+            <line x1="180" y1="282" x2="180" y2="310"/>
+          </g>
+          <g font-size="11" fill="#888780" font-family="ui-monospace,monospace">
+            <text x="188" y="89">call</text><text x="188" y="159">call</text>
+            <text x="188" y="229">call</text><text x="188" y="299">call</text>
+          </g>
+
+          <g stroke="#0F6E56" stroke-width="1.5" marker-end="url(#u1)">
+            <line x1="392" y1="123" x2="392" y2="76"/>
+            <line x1="392" y1="193" x2="392" y2="146"/>
+            <line x1="392" y1="263" x2="392" y2="216"/>
+            <line x1="392" y1="333" x2="392" y2="286"/>
+          </g>
+          <g font-size="12" fill="#085041" font-family="ui-monospace,monospace">
+            <text x="402" y="103">return 6</text>
+            <text x="402" y="173">return 2</text>
+            <text x="402" y="243">return 1</text>
+            <text x="402" y="313">return 1</text>
+          </g>
+
+          <text x="120" y="372" font-size="11.5" fill="#5F5E5A">最深一层 n = 0 命中基例，栈深度 = n + 1 = 5</text>
+          <rect x="120" y="386" width="430" height="30" rx="6" fill="#FAEEDA" stroke="#854F0B"/>
+          <text x="335" y="401" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#633806">f(4) 收到 6 → 4×6 = 24（最终答案在「回程」上算出）</text>
+        </svg>
+        <div class="cap">向下 4 次 call，向上 4 次 return；乘法全部发生在返回途中</div>
+      </div>
+
+      <div class="note">
+        <strong>关键直觉：</strong>递归的「计算」发生在<strong>回程</strong>，不是去程。去程只负责把问题拆小、压栈；
+        真正做乘法的是每一层拿到子结果之后。这也是为什么递归函数总是「先递归到底，再往上算」。
+      </div>
+
+      <h3>递归 vs 迭代</h3>
+      <table>
+        <thead><tr><th style="width:120px">维度</th><th>递归</th><th>迭代（循环）</th></tr></thead>
+        <tbody>
+          <tr><td>代码形态</td><td>函数调用自己，接近数学定义</td><td>显式循环变量</td></tr>
+          <tr><td>额外空间</td><td>$O(\text{递归深度})$ 的调用栈</td><td>通常 $O(1)$</td></tr>
+          <tr><td>常数因子</td><td>大（每次调用有压栈开销）</td><td>小</td></tr>
+          <tr><td>适合场景</td><td>问题本身递归（树、分治、回溯）</td><td>线性推进、尾递归可改写</td></tr>
+        </tbody>
+      </table>
+      <p>阶乘这种「线性递归」改成循环是平凡的，所以它只是教学例子；真正非递归不可的是<strong>树</strong>和<strong>分治</strong> ——
+      这两类问题的结构本身就是递归的。</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · 二分查找：递归的第一个实战 <span class="tag t-blue">p5–p7</span></h2>
+
+      <p>问题：在<strong>已排序</strong>的列表里找 <code>target</code>。线性扫描是 $O(n)$，二分查找把它压到 $O(\log n)$。</p>
+
+      <h3>三个分支</h3>
+      <p>设当前搜索区间是 <code>data[low..high]</code>，取中点 <code>mid = (low+high)//2</code>，只需比较一次：</p>
+      <ul>
+        <li><code>target == data[mid]</code> → 找到了，返回 <code>mid</code>；</li>
+        <li><code>target &lt; data[mid]</code> → 目标只可能在<strong>左半</strong>，递归 <code>(low, mid-1)</code>；</li>
+        <li><code>target &gt; data[mid]</code> → 目标只可能在<strong>右半</strong>，递归 <code>(mid+1, high)</code>。</li>
+      </ul>
+      <p>区间为空（<code>low &gt; high</code>）就是基例：返回 <code>False</code>。</p>
+
+<pre>def binarySearch(data, target, low, high):
+    if low &gt; high:
+        return False                       <span class="c"># base case：区间空</span>
+    mid = (low + high) // 2
+    if target == data[mid]:
+        return True
+    elif target &lt; data[mid]:
+        return binarySearch(data, target, low, mid - 1)    <span class="c"># 左半</span>
+    else:
+        return binarySearch(data, target, mid + 1, high)   <span class="c"># 右半</span></pre>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>二分查找区间收缩示意</title>
+          <defs>
+            <marker id="d2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="13">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="60" y="46" width="46" height="38"/><rect x="106" y="46" width="46" height="38"/>
+              <rect x="152" y="46" width="46" height="38"/><rect x="198" y="46" width="46" height="38"/>
+              <rect x="244" y="46" width="46" height="38"/><rect x="290" y="46" width="46" height="38"/>
+              <rect x="336" y="46" width="46" height="38"/><rect x="382" y="46" width="46" height="38"/>
+              <rect x="428" y="46" width="46" height="38"/><rect x="474" y="46" width="46" height="38"/>
+              <rect x="520" y="46" width="46" height="38"/>
+            </g>
+            <g fill="#0C447C" text-anchor="middle" dominant-baseline="central">
+              <text x="83" y="65">2</text><text x="129" y="65">3</text><text x="175" y="65">5</text>
+              <text x="221" y="65">7</text><text x="267" y="65">11</text><text x="313" y="65">13</text>
+              <text x="359" y="65">17</text><text x="405" y="65">19</text><text x="451" y="65">23</text>
+              <text x="497" y="65">29</text><text x="543" y="65">31</text>
+            </g>
+            <g fill="#888780" font-size="11" text-anchor="middle" dominant-baseline="central">
+              <text x="83" y="96">0</text><text x="129" y="96">1</text><text x="175" y="96">2</text>
+              <text x="221" y="96">3</text><text x="267" y="96">4</text><text x="313" y="96">5</text>
+              <text x="359" y="96">6</text><text x="405" y="96">7</text><text x="451" y="96">8</text>
+              <text x="497" y="96">9</text><text x="543" y="96">10</text>
+            </g>
+          </g>
+
+          <rect x="290" y="40" width="46" height="50" fill="none" stroke="#854F0B" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="313" y="30" text-anchor="middle" font-size="11.5" fill="#854F0B" font-family="ui-monospace,monospace">mid</text>
+
+          <line x1="60" y1="118" x2="336" y2="118" stroke="#185FA5" stroke-width="1.5" marker-end="url(#d2)"/>
+          <text x="60" y="134" font-size="11.5" fill="#185FA5">low = 0</text>
+          <text x="344" y="134" font-size="11.5" fill="#185FA5">target &lt; 13 → 只看左半 [0..4]</text>
+
+          <line x1="60" y1="170" x2="198" y2="170" stroke="#185FA5" stroke-width="1.5" marker-end="url(#d2)"/>
+          <text x="60" y="186" font-size="11.5" fill="#185FA5">再看 [0..4]，mid = 2，data[2] = 5</text>
+
+          <line x1="60" y1="222" x2="106" y2="222" stroke="#185FA5" stroke-width="1.5" marker-end="url(#d2)"/>
+          <text x="60" y="238" font-size="11.5" fill="#185FA5">区间只剩 1 个元素 → 再比一次就结束</text>
+          <text x="400" y="238" font-size="11.5" fill="#888780">11 → 5 → 2 → 1：规模每次减半</text>
+        </svg>
+        <div class="cap">每一步都扔掉一半，所以最多 $\lceil \log_2 n\rceil$ 次比较</div>
+      </div>
+
+      <h3>为什么是 $O(\log n)$</h3>
+      <p>讲义给的论证分两步，注意它的写法比「每次都减半」更严谨：</p>
+      <ul>
+        <li>当前剩余区间长度是 $high-low+1$；</li>
+        <li>一次比较之后，它变成 $\dfrac{high-low+1}{2}$ 左右（左半或右半）；</li>
+        <li>于是<strong>每次递归都把搜索区间折半</strong>，最多 $\log n$ 层。</li>
+      </ul>
+      <p>写成递推就是 $T(n)=T(n/2)+O(1)$，由主定理情形 2 得 $T(n)=\Theta(\log n)$。
+      每一层只做常数次比较（求中点、比一次），层数 $\log n$，乘起来就是 $O(\log n)$。</p>
+
+      <div class="warn">
+        <strong>前提不能丢：</strong>二分查找<strong>只对有序数据有效</strong>。如果数据没排序，先排序是 $O(n\log n)$，
+        一次查找反而亏；只有在<strong>多次查找</strong>同一份静态数据时，排序 + 二分的总账才划算。
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 幂运算：同一道题的两种递归 <span class="tag t-blue">p8–p10</span></h2>
+
+      <p>这一节是全讲最重要的<strong>方法论</strong>示范：<strong>同一个问题，递归式写得不一样，复杂度差一个数量级</strong>。
+      两个版本都正确、都是递归、都有基例，但一个 $O(n)$、一个 $O(\log n)$。</p>
+
+      <h3>版本一：线性递归（$O(n)$）</h3>
+      <p>$p(x,n)=x^n$ 最直白的递归定义：</p>
+      $$p(x,n)=\begin{cases}1 & \text{if } n=0\\ x\cdot p(x,n-1) & \text{else}\end{cases}$$
+      <p>它做 $n$ 次递归调用，所以是 $O(n)$。讲义紧接着说：<strong>we can do better</strong>。</p>
+
+      <h3>版本二：递归平方（$O(\log n)$）</h3>
+      <p>关键在于<strong>不要一次只削掉 1</strong>，而是一次削掉一半 —— 用「平方」把指数翻倍的性质反过来用：</p>
+
+      $$x^n=\begin{cases}1 & \text{if } n=0\\[2pt] \left(x^{\lfloor n/2\rfloor}\right)^2 & \text{if } n\ \text{is even}\\[2pt] x\cdot\left(x^{\lfloor (n-1)/2\rfloor}\right)^2 & \text{if } n\ \text{is odd}\end{cases}$$
+
+      <p>讲义用它算了四个例子，值得逐行看一遍（注意奇偶分支的差别）：</p>
+      <table>
+        <thead><tr><th style="width:80px">幂</th><th>展开</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>$2^4$</td><td>$(2^{4/2})^2=(2^2)^2=4^2$</td><td>16</td></tr>
+          <tr><td>$2^5$</td><td>$2\cdot(2^{4/2})^2=2\cdot(2^2)^2=2\cdot 4^2$</td><td>32</td></tr>
+          <tr><td>$2^6$</td><td>$(2^{6/2})^2=(2^3)^2=8^2$</td><td>64</td></tr>
+          <tr><td>$2^7$</td><td>$2\cdot(2^{6/2})^2=2\cdot(2^3)^2=2\cdot 8^2$</td><td>128</td></tr>
+        </tbody>
+      </table>
+
+      <p>伪代码（讲义原文，注意奇数分支<strong>只算一次</strong> <code>Power</code> 然后乘两次）：</p>
+<pre>Algorithm Power(x, n):
+    Input:  A number x and integer n ≥ 0
+    Output: The value x^n
+    if n = 0 then
+        return 1
+    if n is odd then
+        y = Power(x, (n - 1) / 2)
+        return x · y · y
+    else
+        y = Power(x, n / 2)
+        return y · y</pre>
+
+      <div class="ok">
+        <strong>为什么是 $O(\log n)$：</strong>参数序列是 $n\to\lfloor n/2\rfloor\to\lfloor n/4\rfloor\to\cdots\to 0$，
+        长度约 $\lfloor\lg n\rfloor+1$，每层常数次乘法。递推 $T(n)=T(n/2)+\Theta(1)\Rightarrow T(n)=\Theta(\log n)$。
+        <br>顺带一提：这段代码里的 <code>y = ...; return y·y</code> <strong>不能</strong>写成 <code>return Power(...)*Power(...)</code> ——
+        那会算两遍，退化成指数级（和第 4 节 Fibonacci 犯的是同一个错）。
+      </div>
+
+      <div class="note">
+        <strong>补充（按 CLRS 补）：</strong>这个算法本质就是<strong>快速幂 / 二进制幂</strong>。
+        把 $n$ 写成二进制，$x^n$ 就是「按位平方、遇 1 再乘」——递归版和迭代版是同一件事的两种写法。
+        迭代版把递归栈省掉，常数更小，工程上更常用。
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 二分递归：Fibonacci 的指数陷阱 <span class="tag t-blue">p11–p13</span></h2>
+
+      <p>前面两个例子每次只递归<strong>一次</strong>（线性递归）。Fibonacci 每次递归<strong>两次</strong>，这是「二分递归」，
+      复杂度会突然跳档 —— 这一节是整门课关于「递归不能乱写」最直观的教训。</p>
+
+      <h3>定义与第一版算法</h3>
+      $$F_0=0,\quad F_1=1,\quad F_i=F_{i-1}+F_{i-2}\ \ (i\gt 1)$$
+
+<pre>Algorithm BinaryFib(k):
+    Input:  Nonnegative integer k
+    Output: The k-th Fibonacci number F_k
+    if k = 1 then
+        return k
+    else
+        return BinaryFib(k - 1) + BinaryFib(k - 2)</pre>
+
+      <p>数学定义几乎逐字翻过来，正确性毫无问题。问题在<strong>代价</strong>。</p>
+
+      <h3>调用次数为什么爆炸</h3>
+      <p>设 $n_k$ 为 <code>BinaryFib(k)</code> 引发的递归调用次数，讲义逐个算了出来：</p>
+      <table>
+        <thead><tr><th>$k$</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+        <tbody>
+          <tr><td>$n_k$</td><td>1</td><td>1</td><td>3</td><td>5</td><td>9</td><td>15</td><td>25</td><td>41</td><td>67</td></tr>
+        </tbody>
+      </table>
+      <p>递推关系是 $n_k=n_{k-1}+n_{k-2}+1$（自己这一层 + 两个子调用）。讲义给了一句很精炼的结论：
+      <strong>$n_k$ 大约每两步翻一倍</strong>，即 $n_k\gt 2^{k/2}$ —— <strong>指数级</strong>。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>BinaryFib(5) 的调用树，F(3) 被算了两遍</title>
+          <defs>
+            <marker id="d4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="12" text-anchor="middle">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="300" y="20" width="72" height="30" rx="5"/>
+              <rect x="180" y="90" width="72" height="30" rx="5"/>
+              <rect x="420" y="90" width="72" height="30" rx="5"/>
+            </g>
+            <g fill="#0C447C" dominant-baseline="central">
+              <text x="336" y="35">F(5)</text><text x="216" y="105">F(4)</text><text x="456" y="105">F(3)</text>
+            </g>
+            <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d4)" fill="none">
+              <line x1="316" y1="50" x2="240" y2="88"/>
+              <line x1="356" y1="50" x2="432" y2="88"/>
+            </g>
+          </g>
+
+          <g font-family="ui-monospace,monospace" font-size="11.5" text-anchor="middle">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="110" y="160" width="62" height="28" rx="5"/>
+              <rect x="212" y="160" width="62" height="28" rx="5"/>
+              <rect x="330" y="160" width="62" height="28" rx="5"/>
+              <rect x="432" y="160" width="62" height="28" rx="5"/>
+            </g>
+            <g fill="#0C447C" dominant-baseline="central">
+              <text x="141" y="174">F(3)</text><text x="243" y="174">F(2)</text>
+              <text x="361" y="174">F(2)</text><text x="463" y="174">F(1)</text>
+            </g>
+            <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d4)" fill="none">
+              <line x1="196" y1="120" x2="160" y2="158"/>
+              <line x1="236" y1="120" x2="262" y2="158"/>
+              <line x1="436" y1="120" x2="372" y2="158"/>
+              <line x1="476" y1="120" x2="500" y2="158"/>
+            </g>
+          </g>
+
+          <g font-family="ui-monospace,monospace" font-size="11" text-anchor="middle">
+            <g fill="#FAECE7" stroke="#993C1D">
+              <rect x="60" y="226" width="56" height="26" rx="5"/>
+              <rect x="150" y="226" width="56" height="26" rx="5"/>
+              <rect x="216" y="226" width="56" height="26" rx="5"/>
+              <rect x="300" y="226" width="56" height="26" rx="5"/>
+            </g>
+            <g fill="#712B13" dominant-baseline="central">
+              <text x="88" y="239">F(2)</text><text x="178" y="239">F(1)</text>
+              <text x="244" y="239">F(1)</text><text x="328" y="239">F(0)</text>
+            </g>
+            <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d4)" fill="none">
+              <line x1="126" y1="188" x2="100" y2="224"/>
+              <line x1="156" y1="188" x2="170" y2="224"/>
+              <line x1="228" y1="188" x2="228" y2="224"/>
+              <line x1="258" y1="188" x2="272" y2="224"/>
+              <line x1="346" y1="188" x2="320" y2="224"/>
+              <line x1="376" y1="188" x2="360" y2="224"/>
+            </g>
+          </g>
+
+          <text x="60" y="278" font-size="11.5" fill="#993C1D">F(3)、F(2) 各被重复计算多次 —— 蓝色框里算过的东西，红色框里又算一遍</text>
+          <text x="60" y="294" font-size="11.5" fill="#5F5E5A">调用树呈「扇出 2」的形状，节点数随 k 指数增长；而不同的子问题其实只有 k 个</text>
+        </svg>
+        <div class="cap">$k=5$ 就已经 15 次调用；$k=40$ 是十几亿次</div>
+      </div>
+
+      <div class="warn">
+        <strong>根因：</strong>递归树里有大量<strong>重复子问题</strong>。<code>F(3)</code> 在左子树算了一遍，在右子树又算一遍。
+        朴素的二分递归<strong>不做记忆化</strong>，所以同一个子问题被反复重算。
+        <br>解决方向有两条：<strong>改写递归式</strong>（下面的线性版）、或<strong>记忆化 / 动态规划</strong>（后面课程会讲）。
+      </div>
+
+      <h3>第二版：返回一对数，改回线性递归</h3>
+      <p>讲义的思路非常漂亮 —— 让每次递归<strong>多返回一个信息</strong>，就不需要分叉了：</p>
+
+<pre>Algorithm LinearFibonacci(k):
+    Input:  Nonnegative integer k
+    Output: Pair of Fibonacci numbers (F_k, F_{k-1})
+    if k = 1 then
+        return (k, 0)                  <span class="c"># (F_1, F_0) = (1, 0)</span>
+    else
+        (i, j) = LinearFibonacci(k - 1)   <span class="c"># i = F_{k-1}, j = F_{k-2}</span>
+        return (i + j, i)                 <span class="c"># (F_k, F_{k-1})</span></pre>
+
+      <p>只做 $k-1$ 次递归调用，$O(k)$。核心技巧：<strong>递归的返回值不必是答案本身，可以是一个「打包」的中间状态</strong>。
+      多带一个 $F_{k-2}$ 出去，就不用为了它再开一个分支。</p>
+
+      <table>
+        <thead><tr><th>版本</th><th>递归形状</th><th>递归调用次数</th><th>复杂度</th></tr></thead>
+        <tbody>
+          <tr><td><code>BinaryFib</code></td><td>二分递归（扇出 2）</td><td>$n_k=n_{k-1}+n_{k-2}+1$，$\gt 2^{k/2}$</td><td>$O(2^{k/2})$ 指数</td></tr>
+          <tr><td><code>LinearFibonacci</code></td><td>线性递归（扇出 1）</td><td>$k-1$</td><td>$O(k)$ 线性</td></tr>
+        </tbody>
+      </table>
+
+      <div class="ok">
+        <strong>这一节的通用教训：</strong>看到「递归里出现两个自己的调用」，先问一句 ——
+        这两个子问题<strong>真的不相交吗</strong>？如果重叠，要么合并信息（本节的招），要么记忆化。
+        否则一定是指数级。
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 归并排序：分治的样板 <span class="tag t-blue">p14–p30</span></h2>
+
+      <p>归并排序（merge sort）是本讲第一个真正的分治算法，也是后面所有复杂度分析的<strong>参照物</strong>。三步走：</p>
+
+<pre>MERGE-SORT A[1 .. n]
+1. If n = 1, done.                              <span class="c"># 基例：单个元素天然有序</span>
+2. Recursively sort A[1 .. ⌈n/2⌉] and A[⌈n/2⌉+1 .. n].
+3. "Merge" the 2 sorted lists.                  <span class="c"># 关键子程序 MERGE</span></pre>
+
+      <p>第 1 步是基例，第 2 步是递归（<strong>两个</strong>子问题，规模各半），第 3 步是合并。
+      「分」几乎不要钱，全部难度都在「合」。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 320" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>归并排序的递归树（讲义 p15 的例子）</title>
+          <defs>
+            <marker id="d5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <rect x="120" y="270" width="436" height="34" fill="#F1EFE8" stroke="#B4B2A9"/>
+            <g fill="#1F1F1D">
+              <text x="142" y="287">20</text><text x="198" y="287">12</text><text x="254" y="287">7</text>
+              <text x="310" y="287">9</text><text x="366" y="287">11</text><text x="422" y="287">13</text>
+              <text x="478" y="287">2</text><text x="534" y="287">1</text>
+            </g>
+
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="120" y="212" width="100" height="34"/><rect x="232" y="212" width="100" height="34"/>
+              <rect x="344" y="212" width="100" height="34"/><rect x="456" y="212" width="100" height="34"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="170" y="229">20 12</text><text x="282" y="229">7 9</text>
+              <text x="394" y="229">11 13</text><text x="506" y="229">2 1</text>
+            </g>
+
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="120" y="154" width="212" height="34"/><rect x="344" y="154" width="212" height="34"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="226" y="171">12 20 | 7 9</text><text x="450" y="171">11 13 | 1 2</text>
+            </g>
+
+            <g fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5">
+              <rect x="120" y="96" width="212" height="34"/><rect x="344" y="96" width="212" height="34"/>
+            </g>
+            <g fill="#085041">
+              <text x="226" y="113">7 9 12 20</text><text x="450" y="113">1 2 11 13</text>
+            </g>
+
+            <rect x="120" y="34" width="436" height="38" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.8"/>
+            <text x="338" y="53" fill="#27500A" font-size="14">1 2 7 9 11 12 13 20</text>
+          </g>
+
+          <g stroke="#185FA5" stroke-width="1.5" marker-end="url(#d5)" fill="none">
+            <line x1="142" y1="270" x2="142" y2="248"/><line x1="198" y1="270" x2="198" y2="248"/>
+            <line x1="254" y1="270" x2="254" y2="248"/><line x1="310" y1="270" x2="310" y2="248"/>
+            <line x1="366" y1="270" x2="366" y2="248"/><line x1="422" y1="270" x2="422" y2="248"/>
+            <line x1="478" y1="270" x2="478" y2="248"/><line x1="534" y1="270" x2="534" y2="248"/>
+            <line x1="170" y1="212" x2="170" y2="190"/><line x1="282" y1="212" x2="282" y2="190"/>
+            <line x1="394" y1="212" x2="394" y2="190"/><line x1="506" y1="212" x2="506" y2="190"/>
+            <line x1="226" y1="154" x2="226" y2="132"/><line x1="450" y1="154" x2="450" y2="132"/>
+            <line x1="226" y1="96" x2="226" y2="74"/><line x1="450" y1="96" x2="450" y2="74"/>
+          </g>
+          <text x="584" y="120" font-size="11.5" fill="#185FA5" text-anchor="middle">merge</text>
+          <text x="584" y="138" font-size="11.5" fill="#185FA5" text-anchor="middle">向上</text>
+        </svg>
+        <div class="cap">自底向上：先切成 8 个单元素，再一层层 merge 回去。共 $\lg n$ 层</div>
+      </div>
+
+      <h3>MERGE：两个有序数组的归并</h3>
+      <p>讲义用了 8 张幻灯片逐帧演示合并过程。它其实是<strong>两只手指着两个数组的当前最前端，每次取较小的那个</strong>：</p>
+
+      <table>
+        <thead><tr><th style="width:56px">步</th><th>比较</th><th>输出</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>2 vs 1</td><td>1</td><td>取右数组首元素</td></tr>
+          <tr><td>2</td><td>2 vs 9</td><td>2</td><td>取左数组首元素</td></tr>
+          <tr><td>3</td><td>7 vs 9</td><td>7</td><td></td></tr>
+          <tr><td>4</td><td>13 vs 9</td><td>9</td><td></td></tr>
+          <tr><td>5</td><td>13 vs 11</td><td>11</td><td></td></tr>
+          <tr><td>6</td><td>13 vs 12</td><td>12</td><td></td></tr>
+          <tr><td>7</td><td>13 vs —</td><td>13</td><td>右数组空了，剩下整段直接接上</td></tr>
+          <tr><td>8</td><td>20 vs —</td><td>20</td><td></td></tr>
+        </tbody>
+      </table>
+      <p>左数组 $A=[2,7,13,20]$，右数组 $B=[1,9,11,12]$，输出 $1,2,7,9,11,12,13,20$。</p>
+
+      <div class="note">
+        <strong>为什么 MERGE 是 $\Theta(n)$：</strong>每输出一个元素，指针就前进一格，指针只进不退；
+        一共输出 $n$ 个元素，所以循环体执行 $n$ 次，每次常数时间。比较次数最多 $2n-1$（一个数组先耗尽，另一个直接接上）。
+        讲义在 p28 明确写了：<em>Time = Θ(n) to merge a total of n elements (linear time)</em>。
+      </div>
+
+      <h3>递归式：把三步的代价加起来</h3>
+      <p>讲义在 p29 把每行的代价标在右边，直接读出递归式：</p>
+      <table>
+        <thead><tr><th style="width:52%">MERGE-SORT 的一行</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td>1. If n = 1, done</td><td>$\Theta(1)$</td></tr>
+          <tr><td>2. 递归排序两半</td><td>$2T(n/2)$</td></tr>
+          <tr><td>3. Merge 两个有序表</td><td>$\Theta(n)$</td></tr>
+        </tbody>
+      </table>
+
+      $$T(n)=\begin{cases}\Theta(1) & \text{if } n=1\\ 2T(n/2)+\Theta(n) & \text{if } n\gt 1\end{cases}$$
+
+      <div class="note">
+        <strong>讲义的「sloppiness」提醒：</strong>严格写应该是 $T(\lceil n/2\rceil)+T(\lfloor n/2\rfloor)$，
+        因为 $n$ 为奇数时两半不等。但讲义说 <em>it turns out not to matter asymptotically</em> ——
+        上下取整只差常数，不影响渐进解。做作业时写 $2T(n/2)$ 是可以的，但<strong>要知道自己在偷懒</strong>。
+      </div>
+
+      <p>另外讲义还提到一个实用约定：当 $T(n)=\Theta(1)$ 对足够小的 $n$ 成立时，<strong>通常省略基例</strong>，
+      前提是它不影响渐进解。后面写递归式一律只写 $T(n)=2T(n/2)+\Theta(n)$。</p>
+
+      <div class="ok">
+        <strong>结论先行：</strong>$T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n)$。
+        p42 给了实践意义：$\Theta(n\log n)$ 比 $\Theta(n^2)$ 增长慢，所以<strong>归并排序在渐近意义上打败插入排序</strong>；
+        实测 $n\gtrsim 30$ 时归并就已经更快（小数组上插入排序常数小，反而赢）。
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 递归树：把递归式画开 <span class="tag t-blue">p31–p53</span></h2>
+
+      <p>递归式写出来了，怎么解？讲义先教<strong>递归树（recursion tree）</strong> ——
+      它不严格，但能让你<strong>一眼看出答案</strong>，之后再用代换法补严格性。</p>
+
+      <h3>例一：$T(n)=2T(n/2)+cn$</h3>
+      <p>把「$2T(n/2)$」画成两个子节点，「$+cn$」写在这个节点旁边（表示<strong>这一层自己的代价</strong>）：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 360" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>T(n)=2T(n/2)+cn 的递归树</title>
+          <defs>
+            <marker id="d6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+
+          <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d6)" fill="none">
+            <line x1="255" y1="56" x2="160" y2="90"/><line x1="255" y1="56" x2="350" y2="90"/>
+            <line x1="155" y1="126" x2="90" y2="160"/><line x1="155" y1="126" x2="172" y2="160"/>
+            <line x1="355" y1="126" x2="338" y2="160"/><line x1="355" y1="126" x2="428" y2="160"/>
+          </g>
+
+          <g font-family="ui-monospace,monospace" font-size="12.5" text-anchor="middle" dominant-baseline="central">
+            <rect x="210" y="26" width="90" height="30" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="255" y="41" fill="#0C447C">cn</text>
+            <rect x="110" y="96" width="90" height="30" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="310" y="96" width="90" height="30" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="155" y="111" fill="#0C447C">cn/2</text><text x="355" y="111" fill="#0C447C">cn/2</text>
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="44" y="166" width="64" height="28" rx="5"/><rect x="140" y="166" width="64" height="28" rx="5"/>
+              <rect x="306" y="166" width="64" height="28" rx="5"/><rect x="396" y="166" width="64" height="28" rx="5"/>
+            </g>
+            <g fill="#0C447C" font-size="11.5">
+              <text x="76" y="180">cn/4</text><text x="172" y="180">cn/4</text>
+              <text x="338" y="180">cn/4</text><text x="428" y="180">cn/4</text>
+            </g>
+            <text x="255" y="222" font-size="14" fill="#888780">⋮</text>
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="40" y="248" width="44" height="26" rx="5"/><rect x="108" y="248" width="44" height="26" rx="5"/>
+              <rect x="176" y="248" width="44" height="26" rx="5"/><rect x="244" y="248" width="44" height="26" rx="5"/>
+              <rect x="330" y="248" width="44" height="26" rx="5"/><rect x="398" y="248" width="44" height="26" rx="5"/>
+              <rect x="466" y="248" width="44" height="26" rx="5"/><rect x="534" y="248" width="44" height="26" rx="5"/>
+            </g>
+            <g fill="#27500A" font-size="10">
+              <text x="62" y="261">Θ(1)</text><text x="130" y="261">Θ(1)</text><text x="198" y="261">Θ(1)</text><text x="266" y="261">Θ(1)</text>
+              <text x="352" y="261">Θ(1)</text><text x="420" y="261">Θ(1)</text><text x="488" y="261">Θ(1)</text><text x="556" y="261">Θ(1)</text>
+            </g>
+            <text x="311" y="290" font-size="11.5" fill="#5F5E5A">共 n 个叶子，每个 Θ(1)</text>
+          </g>
+
+          <g stroke="#888780" stroke-width="1" stroke-dasharray="3 3">
+            <line x1="24" y1="41" x2="34" y2="41"/><line x1="24" y1="41" x2="24" y2="261"/><line x1="24" y1="261" x2="34" y2="261"/>
+          </g>
+          <text x="16" y="151" font-size="11" fill="#854F0B" text-anchor="middle" transform="rotate(-90 16 151)">h = lg n</text>
+
+          <g font-size="11.5" text-anchor="middle">
+            <text x="620" y="16" fill="#5F5E5A">每层代价</text>
+            <text x="620" y="41" font-family="ui-monospace,monospace" fill="#0C447C">cn</text>
+            <text x="620" y="111" font-family="ui-monospace,monospace" fill="#0C447C">cn</text>
+            <text x="620" y="180" font-family="ui-monospace,monospace" fill="#0C447C">cn</text>
+            <text x="620" y="261" font-family="ui-monospace,monospace" fill="#27500A">Θ(n)</text>
+          </g>
+          <g stroke="#B4B2A9" stroke-width="1" fill="none">
+            <path d="M586 33 Q596 33 596 41 L596 261 Q596 269 586 269"/>
+          </g>
+
+          <rect x="150" y="306" width="380" height="34" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+          <text x="340" y="323" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#27500A">总代价 = cn × (lg n + 1) = Θ(n lg n)</text>
+        </svg>
+        <div class="cap">「每层和相等」是这类树最漂亮的性质，也是 $\Theta(n\log n)$ 的来源</div>
+      </div>
+
+      <p>读树的方法，讲义分三步：</p>
+      <ol>
+        <li><strong>每层的和</strong>：第 0 层 $cn$，第 1 层 $cn/2+cn/2=cn$，第 2 层 $cn/4\times4=cn$ …… 每一层都恰好 $cn$。</li>
+        <li><strong>树的层数</strong>：规模每次除 2，从 $n$ 到 $1$ 要除 $\lg n$ 次，所以高度 $h=\lg n$，共 $\lg n+1$ 层。</li>
+        <li><strong>叶子的代价</strong>：叶子共 $n$ 个（每个规模 1），每个 $\Theta(1)$，合计 $\Theta(n)$ —— 正好等于最后一层的「$cn$」。</li>
+      </ol>
+      $$T(n)=\underbrace{cn+cn+\cdots+cn}_{\lg n+1\ \text{层}}=\Theta(n\log n)$$
+
+      <h3>例二：$T(n)=T(n/3)+T(2n/3)+cn$</h3>
+      <p>这棵树<strong>不对称</strong>：左边缩到 $1/3$，右边只缩到 $2/3$。不对称会带来两个新问题，讲义都用图回答了：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 340" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>T(n)=T(n/3)+T(2n/3)+cn 的不对称递归树</title>
+          <defs>
+            <marker id="d7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="12" text-anchor="middle" dominant-baseline="central">
+            <rect x="300" y="24" width="76" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="338" y="38" fill="#0C447C">cn</text>
+
+            <rect x="200" y="92" width="76" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="400" y="92" width="76" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="238" y="106" fill="#0C447C">cn/3</text><text x="438" y="106" fill="#0C447C">2cn/3</text>
+
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="150" y="158" width="66" height="26" rx="5"/><rect x="236" y="158" width="66" height="26" rx="5"/>
+              <rect x="330" y="158" width="66" height="26" rx="5"/><rect x="416" y="158" width="66" height="26" rx="5"/>
+            </g>
+            <g fill="#0C447C" font-size="11">
+              <text x="183" y="171">cn/9</text><text x="269" y="171">2cn/9</text>
+              <text x="363" y="171">2cn/9</text><text x="449" y="171">4cn/9</text>
+            </g>
+            <text x="338" y="210" font-size="14" fill="#888780">⋮</text>
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="140" y="236" width="40" height="24" rx="4"/><rect x="196" y="236" width="40" height="24" rx="4"/>
+              <rect x="252" y="236" width="40" height="24" rx="4"/><rect x="330" y="236" width="40" height="24" rx="4"/>
+              <rect x="386" y="236" width="40" height="24" rx="4"/><rect x="442" y="236" width="40" height="24" rx="4"/>
+            </g>
+            <g fill="#27500A" font-size="9.5">
+              <text x="160" y="248">Θ(1)</text><text x="216" y="248">Θ(1)</text><text x="272" y="248">Θ(1)</text>
+              <text x="350" y="248">Θ(1)</text><text x="406" y="248">Θ(1)</text><text x="462" y="248">Θ(1)</text>
+            </g>
+          </g>
+
+          <g stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#d7)" fill="none">
+            <line x1="322" y1="52" x2="252" y2="88"/><line x1="354" y1="52" x2="426" y2="88"/>
+            <line x1="222" y1="120" x2="190" y2="154"/><line x1="252" y1="120" x2="266" y2="154"/>
+            <line x1="426" y1="120" x2="366" y2="154"/><line x1="446" y1="120" x2="452" y2="154"/>
+          </g>
+
+          <g font-size="11.5">
+            <text x="500" y="30" fill="#5F5E5A">每层和</text>
+            <text x="500" y="46" font-family="ui-monospace,monospace" fill="#0C447C">cn</text>
+            <text x="500" y="106" font-family="ui-monospace,monospace" fill="#0C447C">cn/3+2cn/3 = cn</text>
+            <text x="500" y="172" font-family="ui-monospace,monospace" fill="#0C447C">cn</text>
+            <text x="500" y="188" fill="#5F5E5A">（≤ cn，有时更小）</text>
+            <text x="500" y="248" fill="#854F0B">最深路径：n → 2n/3 → (2/3)²n → …</text>
+            <text x="500" y="266" fill="#854F0B">深度 = log₃ᐟ₂ n</text>
+          </g>
+
+          <rect x="60" y="292" width="470" height="34" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+          <text x="295" y="309" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#27500A">每层 ≤ cn，层数 log₃ᐟ₂ n ⇒ 上界 O(n lg n)；又 ≥ cn·log₃n ⇒ 下界 Ω(n lg n)</text>
+        </svg>
+        <div class="cap">分支比例 $1/3+2/3=1$，所以每层和不会超过 $cn$</div>
+      </div>
+
+      <div class="note">
+        <strong>两个关键观察（也是这类题的通用套路）：</strong>
+        <ol style="margin:6px 0 0">
+          <li><strong>每层和 ≤ 根代价</strong>：因为子问题规模之和 $\frac{1}{3}n+\frac{2}{3}n=n$，不会「膨胀」。
+              于是总代价 ≤ $cn\times$（层数）。</li>
+          <li><strong>层数看最深的那条路径</strong>：一直沿 $2n/3$ 走，$(2/3)^k n=1\Rightarrow k=\log_{3/2}n$。
+              注意不是 $\log_3 n$，也不是 $\log_2 n$ —— <strong>看最坏的那条分支</strong>。</li>
+        </ol>
+        结果 $T(n)=\Theta(n\log n)$。虽然树很歪，但和平衡时的阶一样：$\log_{3/2}n$ 与 $\lg n$ 只差常数倍。
+      </div>
+
+      <div class="warn">
+        <strong>常见错误：</strong>把「层数」算成 $\log_3 n$（沿最短路径），得到偏小的上界。
+        递归树的层数必须取<strong>最长路径</strong>；叶子数则要数<strong>全部</strong>叶子，两者不是一回事。
+      </div>
+
+      <h3>递归树的适用边界</h3>
+      <table>
+        <thead><tr><th style="width:100px">方法</th><th>优点</th><th>缺点</th></tr></thead>
+        <tbody>
+          <tr><td>递归树</td><td>直观，能猜出答案；对不等分也有用</td><td>不是证明，画错一个和就全错</td></tr>
+          <tr><td>代换法</td><td>严格（归纳证明）</td><td>得先知道答案（通常靠递归树猜）</td></tr>
+          <tr><td>主定理</td><td>套公式，最快</td><td>只适用 $aT(n/b)+f(n)$ 形式，且要满足条件</td></tr>
+        </tbody>
+      </table>
+      <p>实际解题的标准流程是：<strong>递归树猜答案 → 主定理验证（能套则套）→ 套不上再代换法硬证</strong>。</p>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 主定理：分治递归式的万能公式 <span class="tag t-blue">p54–p56</span></h2>
+
+      <p>分治算法的递归式几乎都长这样：</p>
+      $$T(n)=aT(n/b)+f(n)$$
+      <p>其中 $a$ 是子问题个数，$n/b$ 是每个子问题的规模，$f(n)$ 是「分解 + 合并」这一层自己的代价。
+      主定理（Master Theorem）直接给出三种情形的答案。</p>
+
+      <h3>三种情形</h3>
+      <table>
+        <thead><tr><th style="width:74px">情形</th><th style="width:34%">条件</th><th style="width:26%">结论</th><th>谁主导</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>$f(n)=O\!\left(n^{\log_b a-\varepsilon}\right)$，某 $\varepsilon\gt 0$</td>
+            <td>$T(n)=\Theta\!\left(n^{\log_b a}\right)$</td>
+            <td><strong>叶子</strong>主导（递归项大）</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>$f(n)=\Theta\!\left(n^{\log_b a}\right)$</td>
+            <td>$T(n)=\Theta\!\left(n^{\log_b a}\log n\right)$</td>
+            <td>两边<strong>打平</strong>，多乘一个 $\log n$</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>$f(n)=\Omega\!\left(n^{\log_b a+\varepsilon}\right)$ 且 $af(n/b)\le cf(n)$（某 $c\lt 1$，$n$ 充分大）</td>
+            <td>$T(n)=\Theta(f(n))$</td>
+            <td><strong>根</strong>主导（本层代价大）</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>怎么记：</strong>关键量是<strong>叶子总数</strong> $a^{\log_b n}=n^{\log_b a}$。
+        把「每层代价」$f(n)$ 和「叶子总数」$n^{\log_b a}$ 比大小：
+        叶子大 → 情形 1（答案就是叶子数）；一样大 → 情形 2（答案再乘 $\log n$，因为有 $\log n$ 层）；$f$ 大 → 情形 3（答案就是 $f$）。
+        <br>这正是递归树里「哪一层贡献最大」的结论。
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 220" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>主定理三情形的几何直觉</title>
+          <text x="40" y="20" font-size="12" font-weight="600" fill="#1F1F1D">三情形 = 递归树的「重量」压在哪一层</text>
+          <g>
+            <polygon points="110,52 170,52 200,176 80,176" fill="#EAF3DE" stroke="#3B6D11"/>
+            <text x="140" y="44" text-anchor="middle" font-size="11.5" fill="#27500A">情形 1</text>
+            <text x="140" y="118" text-anchor="middle" font-size="11.5" fill="#27500A">叶子重</text>
+            <text x="140" y="196" text-anchor="middle" font-size="11" fill="#27500A">Θ(n^log_b a)</text>
+
+            <polygon points="300,52 360,52 390,176 270,176" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="330" y="44" text-anchor="middle" font-size="11.5" fill="#0C447C">情形 2</text>
+            <text x="330" y="118" text-anchor="middle" font-size="11.5" fill="#0C447C">每层一样</text>
+            <text x="330" y="196" text-anchor="middle" font-size="11" fill="#0C447C">Θ(n^log_b a · lg n)</text>
+
+            <polygon points="490,52 550,52 580,176 460,176" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="520" y="44" text-anchor="middle" font-size="11.5" fill="#633806">情形 3</text>
+            <text x="520" y="118" text-anchor="middle" font-size="11.5" fill="#633806">根重</text>
+            <text x="520" y="196" text-anchor="middle" font-size="11" fill="#633806">Θ(f(n))</text>
+          </g>
+          <g stroke="#888780" stroke-width="1.4" stroke-dasharray="5 4">
+            <line x1="140" y1="56" x2="140" y2="172"/><line x1="330" y1="56" x2="330" y2="172"/><line x1="520" y1="56" x2="520" y2="172"/>
+          </g>
+        </svg>
+        <div class="cap">同一棵树，三种情况下「最重的一层」位置不同，答案就跟着变</div>
+      </div>
+
+      <h3>例题：$T(n)=2T(n/2)+100n^{0.9}$</h3>
+      <p>讲义 p56 给的例子值得慢慢做一遍，它专门用来抓「看着像情形 2，其实是情形 1」的错觉：</p>
+      <ol>
+        <li>读出参数：$a=2$，$b=2$，$f(n)=100n^{0.9}$。</li>
+        <li>算临界指数：$\log_b a=\log_2 2=1$。</li>
+        <li>比较：$f(n)=100n^{0.9}=O(n^{1-0.1})$，取 $\varepsilon=0.1\gt 0$ —— 满足<strong>情形 1</strong>。</li>
+        <li>结论：$T(n)=\Theta(n^{\log_2 2})=\Theta(n)$。</li>
+      </ol>
+      <div class="warn">
+        <strong>为什么不能当情形 2：</strong>$100n^{0.9}$ 和 $n$ 只差一个常数因子 $100$ 吗？不是。
+        $n^{0.9}/n=1/n^{0.1}\to 0$，这个差距<strong>随 $n$ 增大而无限拉大</strong>，不是常数。
+        主定理的 $\varepsilon$ 要求的正是「多项式意义下更小」，而不是「看起来差不多」。
+        <br>反过来说，$T(n)=2T(n/2)+100n$ 才是情形 2（$f=\Theta(n^{1})$），答案是 $\Theta(n\log n)$ —— 常数 100 不影响阶。
+      </div>
+
+      <h3>拿它验证前面所有结果</h3>
+      <table>
+        <thead><tr><th>递归式</th><th>$a$</th><th>$b$</th><th>$\log_b a$</th><th>$f(n)$</th><th>情形</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>归并排序 $2T(n/2)+\Theta(n)$</td><td>2</td><td>2</td><td>1</td><td>$\Theta(n)$</td><td>2</td><td>$\Theta(n\log n)$</td></tr>
+          <tr><td>二分查找 $T(n/2)+\Theta(1)$</td><td>1</td><td>2</td><td>0</td><td>$\Theta(1)$</td><td>2</td><td>$\Theta(\log n)$</td></tr>
+          <tr><td>快速幂 $T(n/2)+\Theta(1)$</td><td>1</td><td>2</td><td>0</td><td>$\Theta(1)$</td><td>2</td><td>$\Theta(\log n)$</td></tr>
+          <tr><td>上例 $2T(n/2)+100n^{0.9}$</td><td>2</td><td>2</td><td>1</td><td>$O(n^{0.9})$</td><td>1</td><td>$\Theta(n)$</td></tr>
+          <tr><td>$T(n)=T(n/3)+T(2n/3)+cn$</td><td colspan="4" style="color:#993C1D">不满足 $aT(n/b)$ 形式（两个子问题规模不同）</td><td>—</td><td>用递归树：$\Theta(n\log n)$</td></tr>
+        </tbody>
+      </table>
+
+      <div class="ok">
+        <strong>一句话：</strong>主定理不是新知识，它是<strong>递归树结论的公式化</strong>。
+        忘了公式时，画三层递归树，看每层和怎么变，答案自己就出来了。
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2>8 · 树：层次结构的抽象 <span class="tag t-blue">p57–p73</span></h2>
+
+      <p>讲义从这里开始进入<strong>数据结构</strong>部分。树是「层次结构」的抽象模型 ——
+      组织架构图、文件系统、编程环境里的继承关系，全是树。</p>
+
+      <h3>基本术语</h3>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 330" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>树的术语示意（讲义 p59 的 A–K 树）</title>
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="340" y1="42" x2="176" y2="72"/><line x1="340" y1="42" x2="360" y2="72"/><line x1="340" y1="42" x2="496" y2="72"/>
+            <line x1="170" y1="102" x2="116" y2="132"/><line x1="170" y1="102" x2="235" y2="132"/>
+            <line x1="235" y1="162" x2="176" y2="192"/><line x1="235" y1="162" x2="230" y2="192"/><line x1="235" y1="162" x2="288" y2="192"/>
+            <line x1="360" y1="102" x2="322" y2="132"/><line x1="360" y1="102" x2="400" y2="132"/>
+          </g>
+          <g font-size="13" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <rect x="324" y="14" width="32" height="28" rx="5" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="340" y="28" fill="#633806">A</text>
+            <rect x="154" y="74" width="32" height="28" rx="5" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="170" y="88" fill="#633806">B</text>
+            <rect x="344" y="74" width="32" height="28" rx="5" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="360" y="88" fill="#633806">C</text>
+            <rect x="480" y="74" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="496" y="88" fill="#0C447C">D</text>
+            <rect x="100" y="134" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="116" y="148" fill="#0C447C">E</text>
+            <rect x="219" y="134" width="32" height="28" rx="5" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="235" y="148" fill="#633806">F</text>
+            <rect x="306" y="134" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="322" y="148" fill="#0C447C">G</text>
+            <rect x="384" y="134" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="400" y="148" fill="#0C447C">H</text>
+            <rect x="160" y="194" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="176" y="208" fill="#0C447C">I</text>
+            <rect x="214" y="194" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="230" y="208" fill="#0C447C">J</text>
+            <rect x="272" y="194" width="32" height="28" rx="5" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="288" y="208" fill="#0C447C">K</text>
+          </g>
+          <g font-size="11" fill="#888780" font-family="ui-monospace,monospace">
+            <text x="30" y="28">深度 0</text>
+            <text x="30" y="88">深度 1</text>
+            <text x="30" y="148">深度 2</text>
+            <text x="30" y="208">深度 3</text>
+          </g>
+          <g stroke="#888780" stroke-width="1" stroke-dasharray="3 3">
+            <line x1="76" y1="28" x2="120" y2="28"/><line x1="76" y1="88" x2="120" y2="88"/>
+            <line x1="76" y1="148" x2="94" y2="148"/><line x1="76" y1="208" x2="120" y2="208"/>
+          </g>
+          <g font-size="11.5" fill="#5F5E5A">
+            <text x="380" y="240">橙色 = 内部节点 A B C F（至少一个孩子）</text>
+            <text x="380" y="258">蓝色 = 叶节点 D E G H I J K（没有孩子）</text>
+            <text x="380" y="276">树高 = 最大深度 = 3</text>
+            <text x="380" y="294">C 的子树 = {C, G, H}</text>
+          </g>
+        </svg>
+        <div class="cap">注意：叶节点（leaf / external）就是「没有孩子的节点」，与「最下面一层」不完全等价</div>
+      </div>
+
+      <table>
+        <thead><tr><th style="width:120px">术语</th><th>定义</th><th style="width:120px">本例</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Root 根</strong></td><td>没有父节点的节点</td><td>A</td></tr>
+          <tr><td><strong>Internal 内部节点</strong></td><td>至少有一个孩子</td><td>A, B, C, F</td></tr>
+          <tr><td><strong>Leaf 叶 / external</strong></td><td>没有孩子</td><td>D, E, G, H, I, J, K</td></tr>
+          <tr><td><strong>Ancestors 祖先</strong></td><td>父亲、祖父、曾祖父……一直到根</td><td>I 的祖先：F, B, A</td></tr>
+          <tr><td><strong>Descendants 后代</strong></td><td>孩子、孙子、曾孙……</td><td>B 的后代：E, F, I, J, K</td></tr>
+          <tr><td><strong>Depth 深度</strong></td><td>一个节点的<strong>祖先个数</strong></td><td>I 的深度 = 3</td></tr>
+          <tr><td><strong>Height 高度</strong></td><td>树中<strong>所有节点深度的最大值</strong></td><td>3</td></tr>
+          <tr><td><strong>Subtree 子树</strong></td><td>一个节点连同它全部后代构成的树</td><td>{C, G, H}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>两个容易混的点：</strong>
+        <ul style="margin:6px 0 0">
+          <li><strong>深度 vs 高度</strong>：深度是「从上往下数祖先」，高度是「整棵树最深到几层」。单个节点也可以谈高度（它到最远叶子的距离），但讲义这里只定义树高。</li>
+          <li><strong>叶 ≠ 最底层</strong>：本例 D 在深度 1 就是叶子。判断标准只有一个 —— 有没有孩子。</li>
+        </ul>
+      </div>
+
+      <h3>遍历：把一个递归结构线性化</h3>
+      <p>树是非线性的，但输出必须是一维序列。三种经典遍历的差别，只在<strong>「访问根」放在递归的哪一步</strong>：</p>
+
+      <table>
+        <thead><tr><th style="width:120px">遍历</th><th>顺序</th><th>一句话</th><th>典型应用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Preorder</strong> 前序</td><td>根 → 子树们</td><td>先访问自己，再管孩子</td><td>打印文档目录、复制一棵树</td></tr>
+          <tr><td><strong>Postorder</strong> 后序</td><td>子树们 → 根</td><td>孩子都处理完了才轮到自己</td><td>算目录总大小、表达式求值</td></tr>
+          <tr><td><strong>Inorder</strong> 中序</td><td>左 → 根 → 右</td><td>只对<strong>二叉树</strong>有意义</td><td>表达式加括号、二叉搜索树有序输出</td></tr>
+        </tbody>
+      </table>
+
+<pre>Algorithm preOrder(v)
+    visit(v)
+    for each child w of v
+        preOrder(w)
+
+Algorithm postOrder(v)
+    for each child w of v
+        postOrder(w)
+    visit(v)
+
+Algorithm inOrder(v)            <span class="c"># 仅二叉树</span>
+    if v has a left child
+        inOrder(left(v))
+    visit(v)
+    if v has a right child
+        inOrder(right(v))</pre>
+
+      <p>讲义 p60 用一份「How to Make Money Fast」的文档目录演示前序：访问序号 $1,2,3,4,\dots,9$
+      正好是从上到下、从左到右读一遍目录 —— 这就是<strong>前序 = 文档大纲</strong>的直觉。</p>
+
+      <p>p62 用文件系统演示后序：要算 <code>cs16/</code> 目录的总大小，必须<strong>先算完所有子目录</strong>，
+      最后才能把自己那一层的文件加起来。这就是「孩子先于父亲」，非后序不可。</p>
+
+      <h4>前序的非递归实现</h4>
+      <p>讲义 p61 给了一个用栈改写的版本，思路是「把待访问的节点压栈」：</p>
+<pre>Algorithm preOrder(v)
+    PUSH(S, v)
+    while S not empty
+        x = POP(S)
+        visit(x)
+        for each child w of x
+            PUSH(w)</pre>
+      <div class="warn">
+        <strong>顺序陷阱：</strong>这样写会把孩子<strong>逆序</strong>访问（后压的先弹）。
+        如果要求严格按孩子的自然顺序，必须<strong>倒着</strong>压栈，或者压栈后再反转。
+        这是考试和面试里最常被扣分的一行。
+      </div>
+
+      <h3>二叉树</h3>
+      <p>二叉树是每个内部节点<strong>至多两个孩子</strong>的树，而且孩子是<strong>有序对</strong> ——
+      左孩子和右孩子不能互换，哪怕只有一个孩子，也要区分它是左还是右。</p>
+
+      <div class="card">
+        <p style="margin:0"><strong>递归定义（讲义给的第二套定义，更本质）：</strong>二叉树要么是<strong>空</strong>，
+        要么是一个根，加上<strong>有序的一对</strong>子树（左、右），且每棵子树本身也是二叉树。</p>
+      </div>
+
+      <table>
+        <thead><tr><th style="width:150px">类型</th><th>条件</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Binary tree</strong></td><td>每个内部节点<strong>至多</strong>两个孩子</td></tr>
+          <tr><td><strong>Proper binary tree</strong></td><td>每个内部节点<strong>恰好</strong>两个孩子（没有「独生子」）</td></tr>
+          <tr><td><strong>Complete binary tree</strong></td><td>所有内部节点都有两个孩子，且<strong>所有叶子同深度</strong> —— 完美填满的树</td></tr>
+          <tr><td><strong>Nearly complete</strong></td><td>除最后一层外全填满，最后一层的节点<strong>尽量靠左</strong>（堆用的就是这个）</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Proper binary tree 的五条性质</h4>
+      <p>记 $n$ 为节点总数、$e$ 为叶子数、$i$ 为内部节点数、$h$ 为高度。讲义列了六条，但它们其实是
+      <strong>两个方向</strong>的结论，理解方向比背公式重要：</p>
+
+      <table>
+        <thead><tr><th style="width:120px">性质</th><th>为什么</th><th style="width:90px">方向</th></tr></thead>
+        <tbody>
+          <tr><td>$e=i+1$</td><td>每个内部节点恰好两个孩子，边数 $=2i$；树的边数又 $=n-1$，而 $n=i+e$，所以 $2i=i+e-1$</td><td>恒等式</td></tr>
+          <tr><td>$n=2e-1$</td><td>由 $e=i+1$ 与 $n=i+e$ 消去 $i$</td><td>恒等式</td></tr>
+          <tr><td>$h\le i$</td><td>最瘦的 proper 树是一条「链」：每个内部节点带一个叶子，此时 $h=i$</td><td><strong>上界</strong>（最坏）</td></tr>
+          <tr><td>$h\le (n-1)/2$</td><td>同上，用 $i=(n-1)/2$ 代入</td><td><strong>上界</strong></td></tr>
+          <tr><td>$e\le 2^h$</td><td>高度 $h$ 的二叉树第 $h$ 层最多 $2^h$ 个节点</td><td><strong>上界</strong></td></tr>
+          <tr><td>$h\ge \log_2 e$</td><td>把上式反过来解</td><td><strong>下界</strong>（最好）</td></tr>
+          <tr><td>$h\ge \log_2(n+1)-1$</td><td>把 $e=(n+1)/2$ 代入</td><td><strong>下界</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>怎么记这堆不等式：</strong>只有两个「锚」——
+        ① $e=i+1$（proper 的定义直接推出来的）；
+        ② 第 $h$ 层最多 $2^h$ 个节点（二叉树的扇出决定的）。
+        其余全是这两条 + $n=i+e$ 的代数变形。<strong>方向</strong>靠「瘦树 / 胖树」两个极端图像判断，不要死背。
+      </div>
+
+      <h4>完全二叉树的额外性质</h4>
+      <table>
+        <thead><tr><th>性质</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td>$n=2^{h+1}-1$</td><td>每一层都填满，总数是等比级数 $1+2+4+\cdots+2^h$</td></tr>
+          <tr><td>$e=2^h$</td><td>叶子全部在最底层，正好 $2^h$ 个</td></tr>
+          <tr><td>$h=\log_2 e=\log_2(n+1)-1$</td><td>高度被 $n$ <strong>唯一确定</strong>，不再是范围 —— 这是堆能做到 $O(\log n)$ 的根本原因</td></tr>
+        </tbody>
+      </table>
+
+      <h3>表达式树：把遍历用起来</h3>
+      <p>算术表达式天然是一棵二叉树：<strong>内部节点放运算符，叶节点放操作数</strong>。
+      讲义用 $(2\times(a-1)+(3\times b))$ 举例：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>表达式 (2×(a−1)+(3×b)) 的表达式树</title>
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="340" y1="58" x2="240" y2="94"/><line x1="340" y1="58" x2="440" y2="94"/>
+            <line x1="240" y1="124" x2="170" y2="160"/><line x1="240" y1="124" x2="310" y2="160"/>
+            <line x1="440" y1="124" x2="395" y2="160"/><line x1="440" y1="124" x2="485" y2="160"/>
+            <line x1="310" y1="190" x2="285" y2="226"/><line x1="310" y1="190" x2="335" y2="226"/>
+          </g>
+          <g font-size="15" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="340" cy="42" r="17" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="340" y="42" fill="#633806">+</text>
+            <circle cx="240" cy="108" r="17" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="240" y="108" fill="#633806">×</text>
+            <circle cx="440" cy="108" r="17" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="440" y="108" fill="#633806">×</text>
+            <circle cx="310" cy="174" r="17" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="310" y="174" fill="#633806">−</text>
+            <rect x="152" y="146" width="34" height="30" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="169" y="161" fill="#0C447C">2</text>
+            <rect x="378" y="146" width="34" height="30" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="395" y="161" fill="#0C447C">3</text>
+            <rect x="468" y="146" width="34" height="30" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="485" y="161" fill="#0C447C">b</text>
+            <rect x="268" y="212" width="34" height="30" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="285" y="227" fill="#0C447C">a</text>
+            <rect x="318" y="212" width="34" height="30" rx="4" fill="#E6F1FB" stroke="#185FA5"/>
+            <text x="335" y="227" fill="#0C447C">1</text>
+          </g>
+          <g font-size="11.5" fill="#5F5E5A">
+            <text x="500" y="42">橙色圆 = 运算符（内部节点）</text>
+            <text x="500" y="60">蓝色方 = 操作数（叶节点）</text>
+            <text x="60" y="42">前序：+ × 2 − a 1 × 3 b</text>
+            <text x="60" y="60">（前缀表达式 / 波兰表示）</text>
+            <text x="60" y="270">后序：2 a 1 − × 3 b × +</text>
+            <text x="60" y="288">（后缀表达式 / 逆波兰 RPN）</text>
+            <text x="500" y="270">中序 + 加括号规则：</text>
+            <text x="500" y="288">((2×(a−1))+(3×b))</text>
+          </g>
+        </svg>
+        <div class="cap">同一棵树，三种遍历得到三种表达式写法</div>
+      </div>
+
+      <h4>打印表达式 = 中序的特化</h4>
+<pre>Algorithm printExpression(v)
+    if v has a left child
+        print("(")
+        printExpression(left(v))
+    print(v.element())
+    if v has a right child
+        printExpression(right(v))
+        print(")")</pre>
+      <p>在标准中序的「左 → 根 → 右」外面，给左子树前补 <code>(</code>、右子树后补 <code>)</code>，
+      就得到了<strong>完全括号化</strong>的表达式：<code>((2 × (a − 1)) + (3 × b))</code>。
+      括号的作用是「不管运算符优先级，强制显式写出结构」。</p>
+
+      <h4>求值 = 后序的特化</h4>
+<pre>Algorithm evalExpr(v)
+    if is_leaf(v)
+        return v.element()
+    else
+        x = evalExpr(left(v))
+        y = evalExpr(right(v))
+        ⋄ = operator stored at v
+        return x ⋄ y</pre>
+      <p>必须后序：算 <code>+</code> 之前，左右两个子表达式的值都得先算好。
+      讲义 p70 把叶子换成具体数字 $2,5,1,3,2$（即 $a=5,b=2$），问了一句 <em>Reverse Polish?</em> ——
+      这正是后缀表达式的求值顺序：
+      $$2\ 5\ 1\ -\ \times\ 3\ 2\ \times\ +\;=\;2\times(5-1)+3\times2\;=\;14$$</p>
+
+      <h3>两种存储表示</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4 style="margin-top:0">链接结构（通用）</h4>
+          <p>每个节点存 <code>element</code>、<code>parent</code>、以及<strong>孩子序列</strong>（可变长）。
+          一般树必须这样存，因为孩子个数不定。</p>
+          <p>二叉树可以简化成三个指针：<code>parent</code>、<code>left</code>、<code>right</code>。</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">数组表示（限完全二叉树）</h4>
+          <p>把节点按「层序」放进数组，用下标算关系：</p>
+          <ul style="margin:6px 0">
+            <li><code>rank(root) = 1</code></li>
+            <li>左孩子：<code>rank = 2·rank(parent)</code></li>
+            <li>右孩子：<code>rank = 2·rank(parent) + 1</code></li>
+          </ul>
+          <p>好处：不用指针，缓存友好；坏处：树<strong>不填满就会留空洞</strong>，浪费空间。</p>
+        </div>
+      </div>
+
+      <div class="ok">
+        <strong>这一节的主线：</strong>树的定义是递归的 → 所以遍历天然是递归的 → 三种遍历的区别只在 <code>visit</code> 的位置 →
+        不同的 <code>visit</code> 位置对应不同的应用（目录打印、求总大小、表达式加括号 / 求值）。
+        后面所有树结构（堆、二叉搜索树、平衡树）都是这套框架的特化。
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2>9 · 堆与堆排序 <span class="tag t-blue">p74–p107</span></h2>
+
+      <p>讲义先用一页回顾排序现状，然后引出堆：<strong>归并排序</strong>最坏 $O(n\log n)$ 但要额外空间；
+      <strong>插入排序</strong>就地排序、对小规模或近乎有序的输入很快，但最坏 $O(n^2)$。
+      堆排序（heapsort）想<strong>同时拿到两者的好处</strong>：$O(n\log n)$ 且就地。</p>
+
+      <h3>堆是什么</h3>
+      <p>堆（heap）是满足两个条件的二叉树：</p>
+      <ol>
+        <li><strong>结构条件</strong>：是一棵<strong>近完全二叉树</strong>（nearly complete）——
+        除最后一层外全填满，最后一层尽量靠左。</li>
+        <li><strong>堆序条件</strong>：$A[\mathrm{Parent}(i)]\ge A[i]$ 对所有 $i\gt 1$ 成立（大顶堆 max-heap）。</li>
+      </ol>
+      <p>第一条保证「能用数组紧凑存储、高度是 $\lfloor\lg n\rfloor$」；第二条保证「最大值一定在根」。
+      两条合起来才有后面的 $O(\log n)$ 操作。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 330" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>堆的树形与数组表示（同一个堆的两种视角）</title>
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="340" y1="46" x2="204" y2="72"/><line x1="340" y1="46" x2="476" y2="72"/>
+            <line x1="196" y1="102" x2="144" y2="128"/><line x1="196" y1="102" x2="256" y2="128"/>
+            <line x1="484" y1="102" x2="424" y2="128"/><line x1="484" y1="102" x2="544" y2="128"/>
+            <line x1="136" y1="158" x2="112" y2="184"/><line x1="136" y1="158" x2="168" y2="184"/>
+            <line x1="264" y1="158" x2="288" y2="184"/>
+          </g>
+          <g font-size="13" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <circle cx="340" cy="34" r="17"/>
+              <circle cx="200" cy="90" r="17"/><circle cx="480" cy="90" r="17"/>
+              <circle cx="140" cy="146" r="17"/><circle cx="260" cy="146" r="17"/>
+              <circle cx="420" cy="146" r="17"/><circle cx="540" cy="146" r="17"/>
+              <circle cx="108" cy="202" r="17"/><circle cx="164" cy="202" r="17"/><circle cx="292" cy="202" r="17"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="340" y="34">16</text>
+              <text x="200" y="90">14</text><text x="480" y="90">10</text>
+              <text x="140" y="146">8</text><text x="260" y="146">7</text>
+              <text x="420" y="146">9</text><text x="540" y="146">3</text>
+              <text x="108" y="202">2</text><text x="164" y="202">4</text><text x="292" y="202">1</text>
+            </g>
+          </g>
+
+          <g font-size="10.5" fill="#888780" font-family="ui-monospace,monospace" text-anchor="middle">
+            <text x="366" y="20">1</text><text x="226" y="76">2</text><text x="506" y="76">3</text>
+            <text x="166" y="132">4</text><text x="286" y="132">5</text><text x="446" y="132">6</text>
+            <text x="566" y="132">7</text><text x="82" y="188">8</text><text x="138" y="188">9</text><text x="266" y="188">10</text>
+          </g>
+
+          <text x="40" y="248" font-size="12" fill="#5F5E5A">数组表示（1-indexed）：</text>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <g fill="#F1EFE8" stroke="#B4B2A9">
+              <rect x="52" y="262" width="48" height="34"/><rect x="100" y="262" width="48" height="34"/>
+              <rect x="148" y="262" width="48" height="34"/><rect x="196" y="262" width="48" height="34"/>
+              <rect x="244" y="262" width="48" height="34"/><rect x="292" y="262" width="48" height="34"/>
+              <rect x="340" y="262" width="48" height="34"/><rect x="388" y="262" width="48" height="34"/>
+              <rect x="436" y="262" width="48" height="34"/><rect x="484" y="262" width="48" height="34"/>
+            </g>
+            <g fill="#1F1F1D">
+              <text x="76" y="279">16</text><text x="124" y="279">14</text><text x="172" y="279">10</text>
+              <text x="220" y="279">8</text><text x="268" y="279">7</text><text x="316" y="279">9</text>
+              <text x="364" y="279">3</text><text x="412" y="279">2</text><text x="460" y="279">4</text>
+              <text x="508" y="279">1</text>
+            </g>
+            <g fill="#888780" font-size="10.5">
+              <text x="76" y="308">1</text><text x="124" y="308">2</text><text x="172" y="308">3</text>
+              <text x="220" y="308">4</text><text x="268" y="308">5</text><text x="316" y="308">6</text>
+              <text x="364" y="308">7</text><text x="412" y="308">8</text><text x="460" y="308">9</text>
+              <text x="508" y="308">10</text>
+            </g>
+          </g>
+          <text x="548" y="279" font-size="11.5" fill="#888780">= A</text>
+        </svg>
+        <div class="cap">节点 $i$ 的左孩子是 $2i$、右孩子是 $2i+1$、父亲是 $\lfloor i/2\rfloor$ —— 不需要任何指针</div>
+      </div>
+
+      <h3>下标公式：不用指针的原因</h3>
+      <p>「近完全二叉树」这个结构条件，让<strong>位置关系可以直接算出来</strong>：</p>
+
+<pre>Parent(i) { return ⌊i/2⌋; }
+Left(i)   { return 2*i; }
+Right(i)  { return 2*i + 1; }</pre>
+
+      <p>这就是为什么堆通常用数组实现，而不是链式结构：省掉三个指针，遍历时缓存友好。
+      代价是「树必须填满」，否则数组里会出现空洞。</p>
+
+      <div class="note">
+        <strong>1-indexed 还是 0-indexed？</strong>讲义（和 CLRS）用 <strong>1-indexed</strong>，
+        公式最干净。写成 Python 的 0-indexed 时公式要变：父亲 $\lfloor (i-1)/2\rfloor$、左孩子 $2i+1$、右孩子 $2i+2$。
+        作业和考试里如果题目没说，按讲义用 1-indexed。
+      </div>
+
+      <h3>堆的高度</h3>
+      <p>讲义问：$n$ 个元素的堆高度是多少？为什么？</p>
+      <p>答案 $h=\lfloor\lg n\rfloor$。理由：高度 $h$ 的二叉树至少 $h+1$ 个节点（一条链），最多 $2^{h+1}-1$ 个节点；
+      而堆是<strong>近完全</strong>的，它的节点数正好落在 $2^{h}\le n\le 2^{h+1}-1$ 这个区间里 ——
+      也就是<strong>每一层都填满了</strong>（除了最后一层），所以 $n$ 与 $h$ 几乎一一对应，解出 $h=\lfloor\lg n\rfloor$。</p>
+
+      <div class="ok">
+        <strong>为什么这件事重要：</strong>堆的所有基本操作（Heapify、Insert、ExtractMax）都是「沿一条根到叶的路径走」，
+        代价正比于高度，因此都是 $O(\log n)$。<strong>高度是 $O(\log n)$ 是整个堆结构的地基。</strong>
+      </div>
+
+      <h3>Heapify：让一个节点「沉下去」</h3>
+      <p>这是堆的核心子程序。它的<strong>前提</strong>很关键，讲义专门列了出来：</p>
+      <ul>
+        <li>给定堆中一个节点 $i$，以及它的左右孩子 $l,r$；</li>
+        <li>假设<strong>以 $l$ 和 $r$ 为根的两棵子树已经是合法的堆</strong>；</li>
+        <li>唯一可能出问题的是 $i$ 自己（比如它刚被换成一个很小的值）。</li>
+      </ul>
+      <p>要做的事只有一件：<strong>让 $i$ 的值「往下浮」（float down），直到它不再比孩子小</strong>。
+      具体做法是「和较大的那个孩子交换」，然后对新的位置<strong>递归</strong>。</p>
+
+<pre>Heapify(A, i)
+{
+    l = Left(i); r = Right(i);
+    if (l &lt;= heap_size(A) &amp;&amp; A[l] &gt; A[i])
+        largest = l;
+    else
+        largest = i;
+    if (r &lt;= heap_size(A) &amp;&amp; A[r] &gt; A[largest])
+        largest = r;
+    if (largest != i)
+    {
+        Swap(A, i, largest);
+        Heapify(A, largest);      <span class="c"># 只递归一条路径</span>
+    }
+}</pre>
+
+      <div class="note">
+        <strong>为什么只递归一次：</strong>交换只影响被换下去的那个孩子所在的那棵子树，另一棵子树没动过、仍然是堆。
+        所以每层最多一个递归调用 —— 这决定了 Heapify 是 $O(h)$ 而不是指数级。
+      </div>
+
+      <h4>走一遍：<code>Heapify(A, 2)</code>，$A=[16,4,10,14,7,9,3,2,8,1]$</h4>
+      <p>讲义 p85–p93 用了 9 张幻灯片逐帧演示，过程如下（下标从 1 开始）：</p>
+      <table>
+        <thead><tr><th style="width:60px">步</th><th>当前节点</th><th>它的孩子</th><th>动作</th><th>数组</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>$i=2$，值 4</td><td>$l=4$ 值 14，$r=5$ 值 7</td><td>14 最大 → 交换 2↔4</td><td>16,<strong>14</strong>,10,<strong>4</strong>,7,9,3,2,8,1</td></tr>
+          <tr><td>1</td><td>$i=4$，值 4</td><td>$l=8$ 值 2，$r=9$ 值 8</td><td>8 最大 → 交换 4↔9</td><td>16,14,10,<strong>8</strong>,7,9,3,2,<strong>4</strong>,1</td></tr>
+          <tr><td>2</td><td>$i=9$，值 4</td><td>无（叶子）</td><td>停止</td><td>16,14,10,8,7,9,3,2,4,1</td></tr>
+        </tbody>
+      </table>
+      <p>只走了 <strong>2 层</strong>就停了，因为 4 落到了叶子。注意每层都是和「两个孩子里更大的那个」交换 ——
+      如果和较小的那个换，换完还是比另一个孩子小，得再换一次，就错了。</p>
+
+      <p><strong>复杂度：</strong>$O(h)=O(\log n)$。讲义 p94 的问法是「Heapify 最多能递归调用自己几次？」——
+      答案就是高度，因为每次下沉一层。</p>
+
+      <h3>BuildHeap：自底向上建堆</h3>
+      <p>有了 Heapify，建堆就很简单：<strong>从最后一个内部节点开始，倒着往前，对每个节点调一次 Heapify</strong>。</p>
+      <p>为什么从 $\lfloor n/2\rfloor$ 开始？因为下标 $> \lfloor n/2\rfloor$ 的节点<strong>全是叶子</strong>
+      （$2i\gt n$），单个元素的数组本来就是堆，不用处理。</p>
+
+<pre>BuildHeap(A)
+{
+    heap_size(A) = length(A);
+    for (i = ⌊length[A]/2⌋ downto 1)
+        Heapify(A, i);
+}</pre>
+
+      <div class="note">
+        <strong>为什么倒序就对了：</strong>处理 $i$ 的时候，$i$ 的两个孩子下标都 $>i$，
+        已经在这之前处理过了，所以「两棵子树已是堆」这个前提自动成立。这就是 Heapify 能用的条件。
+        <strong>顺序绝对不能反</strong> —— 从前往后处理会破坏前提。
+      </div>
+
+      <h4>走一遍：$A=\{4,1,3,2,16,9,10,14,8,7\}$</h4>
+      <p>$n=10$，从 $i=5$ 倒着走到 $i=1$：</p>
+      <table>
+        <thead><tr><th style="width:56px">$i$</th><th>节点值 / 孩子</th><th>动作</th><th>数组</th></tr></thead>
+        <tbody>
+          <tr><td>5</td><td>16，唯一孩子 $A[10]=7$</td><td>7 不比 16 大 → 不动</td><td>4,1,3,2,16,9,10,14,8,7</td></tr>
+          <tr><td>4</td><td>2，孩子 14、8</td><td>14 大 → 换 4↔8</td><td>4,1,3,<strong>14</strong>,16,9,10,<strong>2</strong>,8,7</td></tr>
+          <tr><td>3</td><td>3，孩子 9、10</td><td>10 大 → 换 3↔7</td><td>4,1,<strong>10</strong>,14,16,9,<strong>3</strong>,2,8,7</td></tr>
+          <tr><td>2</td><td>1，孩子 14、16</td><td>16 大 → 换 2↔5，再下沉到 10</td><td>4,<strong>16</strong>,10,14,<strong>7</strong>,9,3,2,8,<strong>1</strong></td></tr>
+          <tr><td>1</td><td>4，孩子 16、10</td><td>16 大 → 换 1↔2，一路沉到下标 9</td><td><strong>16</strong>,14,10,8,7,9,3,2,4,1</td></tr>
+        </tbody>
+      </table>
+      <p>最后得到合法的大顶堆 $16,14,10,8,7,9,3,2,4,1$ —— 正是第 9 节开头那张图。</p>
+
+      <h3>为什么 BuildHeap 是 $O(n)$ 而不是 $O(n\log n)$</h3>
+      <p>讲义 p98 先给了一个「显然」的分析：$n/2$ 次调用 × 每次 $O(\lg n)$ = $O(n\lg n)$。
+      然后连问三句：<em>Is this a correct asymptotic upper bound? Is it asymptotically tight?</em>
+      答案是：<strong>是正确上界，但不紧</strong>。真实代价是 $O(n)$。</p>
+
+      <p>错在哪？错在「每次都是 $O(\lg n)$」这个假设 —— 那是<strong>最坏情况</strong>，只有根附近才成立。
+      绝大多数节点在树底，它们的高度很小，甚至为 0。</p>
+
+      <p>讲义的紧分析（p99）：高度为 $h$ 的节点最多有 $\lceil n/2^{h+1}\rceil$ 个，对它调 Heapify 要 $O(h)$，于是</p>
+      $$T(n)=\sum_{h=0}^{\lfloor\lg n\rfloor}\left\lceil\frac{n}{2^{h+1}}\right\rceil O(h)
+           =O\!\left(n\sum_{h=0}^{\lfloor\lg n\rfloor}\frac{h}{2^{h}}\right)$$
+
+      <p>而 $\sum_{h\ge 0}\dfrac{h}{2^h}=2$ 是收敛的常数（这是个标准级数），所以</p>
+      $$T(n)=O(n\cdot 2)=O(n)$$
+
+      <div class="ok">
+        <strong>直觉版解释：</strong>一半的节点是叶子（高度 0，不用干活），$1/4$ 的节点高度 1，$1/8$ 的高度 2……
+        干活多的节点<strong>极少</strong>。「人多的地方活少，活多的地方人少」，加权求和只有常数倍。
+        <br>对比：如果反过来（每个节点都很高），那就是 $\log n$ 倍了 —— 但近完全二叉树不允许。
+      </div>
+
+      <h3>Heapsort：把根一个个取出来</h3>
+      <p>既然最大值永远在 $A[1]$，排序就很自然：</p>
+      <ol>
+        <li>$A[1]$ 是最大值 → 和 $A[n]$（末尾）交换，最大值就<strong>落到了最终位置</strong>；</li>
+        <li><code>heap_size--</code>，把末尾排除出堆；</li>
+        <li>此时 $A[1]$ 是个小值，调一次 <code>Heapify(A,1)</code> 恢复堆序；</li>
+        <li>重复 $n-1$ 次。</li>
+      </ol>
+
+<pre>Heapsort(A)
+{
+    BuildHeap(A);
+    for (i = length(A) downto 2)
+    {
+        Swap(A[1], A[i]);
+        heap_size(A) -= 1;
+        Heapify(A, 1);
+    }
+}</pre>
+
+      <p>接着上一节的堆 $16,14,10,8,7,9,3,2,4,1$，看前两轮：</p>
+      <table>
+        <thead><tr><th style="width:60px">轮</th><th>交换</th><th>Heapify 之后</th><th>已就位</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>16 ↔ 1（末尾）</td><td>14,8,10,4,7,9,3,2,<strong>1</strong></td><td>16 在最后</td></tr>
+          <tr><td>2</td><td>14 ↔ 1</td><td>10,8,9,4,7,1,3,<strong>2</strong></td><td>14,16 就位</td></tr>
+        </tbody>
+      </table>
+      <p>每轮把堆顶（当前最大值）换到已排序区的前端，堆区缩小一格。最后整个数组升序。</p>
+
+      <div class="note">
+        <strong>为什么是就地（in-place）：</strong>所有操作都在原数组里交换，额外空间只有几个下标变量 $O(1)$。
+        这是堆排序相对归并排序的最大优势。
+      </div>
+
+      <h4>复杂度</h4>
+      $$T(n)=\underbrace{O(n)}_{\text{BuildHeap}}+(n-1)\cdot\underbrace{O(\lg n)}_{\text{每次 Heapify}}=O(n)+O(n\lg n)=O(n\lg n)$$
+      <p>讲义 p103 还补了一句实话：<em>Heapsort is a nice algorithm, but in practice Quicksort usually wins</em> ——
+      堆排序的常数因子和缓存局部性都不如快排，实际很少直接用来排序。
+      <strong>堆真正的价值在优先队列</strong>。</p>
+
+      <h3>优先队列：堆的主战场</h3>
+      <p>优先队列维护一个集合 $S$，每个元素带一个 key，支持三个操作：</p>
+      <table>
+        <thead><tr><th style="width:170px">操作</th><th>含义</th><th>堆上的实现</th><th>复杂度</th></tr></thead>
+        <tbody>
+          <tr><td><code>Insert(S, x)</code></td><td>插入元素 $x$</td><td>放到数组末尾，然后<strong>向上浮</strong></td><td>$O(\lg n)$</td></tr>
+          <tr><td><code>Maximum(S)</code></td><td>返回最大 key</td><td>直接返回 <code>A[1]</code></td><td>$O(1)$</td></tr>
+          <tr><td><code>ExtractMax(S)</code></td><td>删除并返回最大 key</td><td>取 <code>A[1]</code>，把末尾搬到根，Heapify 下沉</td><td>$O(\lg n)$</td></tr>
+        </tbody>
+      </table>
+
+<pre>HeapInsert(A, key)
+{
+    heap_size[A] ++;
+    i = heap_size[A];
+    while (i &gt; 1 AND A[Parent(i)] &lt; key)
+    {
+        A[i] = A[Parent(i)];      <span class="c"># 父亲下移</span>
+        i = Parent(i);
+    }
+    A[i] = key;                   <span class="c"># 找到位置，落座</span>
+}
+
+HeapExtractMax(A)
+{
+    if (heap_size[A] &lt; 1)
+        { underflow error; }
+    max = A[1];
+    A[1] = A[heap_size[A]];
+    heap_size[A] --;
+    Heapify(A, 1);
+    return max;
+}</pre>
+
+      <div class="note">
+        <strong>Insert 与 Heapify 的对称性：</strong>Heapify 是「小值往下沉」（修复「父亲太小」），
+        Insert 是「大值往上浮」（修复「新元素比父亲大」）。
+        一个是<strong>自顶向下</strong>、一个是<strong>自底向上</strong>，两者都只走一条路径，所以都是 $O(\log n)$。
+      </div>
+
+      <p>插入 15 到 $[16,14,10,8,7,9,3,2,4,1]$ 的过程：</p>
+      <table>
+        <thead><tr><th style="width:56px">步</th><th>位置</th><th>父亲</th><th>判断</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>$i=11$（新末尾）</td><td>$A[5]=7$</td><td>$7\lt 15$ → 7 下移，$i=5$</td></tr>
+          <tr><td>2</td><td>$i=5$</td><td>$A[2]=14$</td><td>$14\lt 15$ → 14 下移，$i=2$</td></tr>
+          <tr><td>3</td><td>$i=2$</td><td>$A[1]=16$</td><td>$16\ge 15$ → 停，落座</td></tr>
+        </tbody>
+      </table>
+      <p>结果：$16,15,10,8,14,9,3,2,4,1,7$。注意只有「路径上的值」移动，其余元素原地不动。</p>
+
+      <div class="warn">
+        <strong>讲义上的小笔误：</strong>p107 的 <code>HeapExtractMax</code> 里写的是 <code>underfolow error</code>，
+        应为 <code>underflow</code>。这里照原文保留说明，实际代码当然要写对。
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2>10 · 本讲速查 <span class="tag t-green">复习用</span></h2>
+
+      <h3>复杂度总表</h3>
+      <table>
+        <thead><tr><th style="width:26%">对象</th><th style="width:22%">操作</th><th style="width:18%">代价</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>阶乘（线性递归）</td><td>$f(n)$</td><td>$O(n)$</td><td>$n$ 次调用</td></tr>
+          <tr><td>二分查找</td><td>查找</td><td>$O(\log n)$</td><td>$T(n)=T(n/2)+O(1)$</td></tr>
+          <tr><td>快速幂</td><td>$x^n$</td><td>$O(\log n)$</td><td>指数每次减半</td></tr>
+          <tr><td>朴素 Fibonacci</td><td>$F_k$</td><td>$O(2^{k/2})$</td><td>重复子问题，调用数指数增长</td></tr>
+          <tr><td>线性 Fibonacci</td><td>$F_k$</td><td>$O(k)$</td><td>返回 pair，$k-1$ 次调用</td></tr>
+          <tr><td>归并排序</td><td>排序</td><td>$\Theta(n\log n)$</td><td>$2T(n/2)+\Theta(n)$，情形 2</td></tr>
+          <tr><td>Heapify</td><td>修复一个节点</td><td>$O(\log n)$</td><td>最多下沉 $h$ 层</td></tr>
+          <tr><td>BuildHeap</td><td>建堆</td><td>$O(n)$</td><td>$\sum_h \frac{n}{2^{h+1}}O(h)$</td></tr>
+          <tr><td>Heapsort</td><td>排序</td><td>$O(n\log n)$</td><td>$O(n)+(n-1)O(\log n)$</td></tr>
+          <tr><td>堆上的 Insert / ExtractMax</td><td>单次</td><td>$O(\log n)$</td><td>走一条根到叶路径</td></tr>
+          <tr><td>堆上的 Maximum</td><td>单次</td><td>$O(1)$</td><td>最大值在根</td></tr>
+        </tbody>
+      </table>
+
+      <h3>三种解递归式的方法</h3>
+      <table>
+        <thead><tr><th style="width:110px">方法</th><th>做法</th><th>什么时候用</th></tr></thead>
+        <tbody>
+          <tr><td>递归树</td><td>画开，逐层求和，数层数和叶子</td><td>猜答案、处理不等分（如 $T(n/3)+T(2n/3)$）</td></tr>
+          <tr><td>主定理</td><td>比 $f(n)$ 与 $n^{\log_b a}$</td><td>标准 $aT(n/b)+f(n)$ 形式</td></tr>
+          <tr><td>代换法</td><td>猜界 + 归纳证明</td><td>主定理不适用，或需要严格证明</td></tr>
+        </tbody>
+      </table>
+
+      <h3>五个最容易错的地方</h3>
+      <ol>
+        <li><strong>递归不向基例前进</strong> → 栈溢出。写完递归先检查「参数是不是每次都在靠近基例」。</li>
+        <li><strong>把 <code>y·y</code> 写成两次递归调用</strong> → 快速幂退化成指数级。Fibonacci 是同一个坑。</li>
+        <li><strong>递归树层数取最短路径</strong> → 上界算小。层数必须看最长路径（$T(n/3)+T(2n/3)$ 是 $\log_{3/2}n$）。</li>
+        <li><strong>主定理情形 2 误判</strong> → $n^{0.9}$ 与 $n$ 差 $\varepsilon$，属于情形 1，不是「常数倍」。</li>
+        <li><strong>BuildHeap 顺序写反</strong> → 前提「子树已是堆」不成立。必须从 $\lfloor n/2\rfloor$ <strong>倒序</strong>。</li>
+      </ol>
+
+      <div class="ok">
+        <strong>本讲的一句话主线：</strong>
+        递归是「把问题变小」的通用手段，但<strong>变小的方式决定代价</strong> ——
+        每次砍一半 → $O(\log n)$；每次砍一个 → $O(n)$；每次分成两个有重叠的子问题 → 指数级。
+        而递归式（递归树 / 主定理）就是<strong>把「变小的方式」翻译成复杂度</strong>的工具。
+        后半讲把递归用到树上（遍历、表达式、堆），本质都是「同样的框架 + 不同的 <code>visit</code>」。
+      </div>
+    </section>
+
+
+    <footer>
+整理自 02lecture.pdf · 复旦大学《数据结构（与算法）》第二讲 递归 · 共 108 页<br>
+      小节标题后的页码标注对应原幻灯片；公式与推导按讲义内容重排，凡属补充内容均已单独标注
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
