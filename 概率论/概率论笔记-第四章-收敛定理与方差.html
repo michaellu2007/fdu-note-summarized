@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概率论 · 第四章（二）收敛定理 · 期望的计算 · 方差</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+h1{font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:21px;margin:56px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:34px 0 10px;color:var(--ink)}
+h4{font-size:15px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:10px 0}
+.lede{color:var(--ink2);font-size:15px;margin:0 0 8px}
+.meta{color:var(--ink3);font-size:13px;margin:0}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.2px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13.5px;background:var(--bg2)}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:6px;
+  background:var(--bg2);color:var(--ink3);border:1px solid var(--line);
+  vertical-align:2px;margin-left:8px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.tag.a{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.tag.b{background:var(--gold-bg);color:var(--gold);border-color:transparent}
+.tag.c{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.toc{border:1px solid var(--line);border-radius:12px;padding:16px 24px;background:var(--bg3);margin:26px 0 10px}
+.toc ol{margin:6px 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+figure{margin:24px 0}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px;text-align:center}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:12px 16px;overflow-x:auto;font-size:13px;line-height:1.6;
+  font-family:ui-monospace,Consolas,monospace;color:var(--ink2)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;
+  background:var(--bg2);padding:1px 5px;border-radius:4px}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12.8px;color:var(--ink3);line-height:1.75}
+.q{border-left:3px solid var(--line);padding-left:14px;color:var(--ink2);margin:16px 0}
+ol.work{padding-left:24px}
+ol.work>li{margin:20px 0}
+ol.work .stem{font-weight:500}
+.hint{margin:8px 0 0;padding:10px 14px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;font-size:14px;color:var(--ink2)}
+.hint b{color:var(--ink)}
+.thm{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0}
+.thm .nm{font-weight:650;color:var(--accent);font-size:14.5px;margin:0 0 4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>概率论 · 第四章（二）收敛定理 · 期望的计算 · 方差</h1>
+<p class="lede">承接上一份笔记（§4.1 期望的三层定义）。这一节的主线只有一句话：<strong>「先取极限」和「先取期望」什么时候可以换顺序</strong>，然后拿这个工具去算具体的期望和方差。</p>
+<p class="meta">整理日期 2026-10-25　|　课堂照片 19 张（12 张黑板 + 7 张投影）　|　对应讲义 §4.1 性质 (4)(5) – §4.4，教材 §4.1 后半 – §4.3</p>
+
+<div class="box warn">
+<p class="label">先解决一个会害你翻错书的问题：讲义和教材的章节号对不上</p>
+<p>这两本书的编号<strong>不一致</strong>，而且差得不止一点。老师说「§4.2」的时候，你不知道该翻哪本。</p>
+<table style="margin:10px 0 0">
+<tr><th style="width:130px">内容</th><th style="width:150px">讲义</th><th style="width:90px">讲义页</th><th style="width:180px">教材</th><th style="width:80px">教材页</th></tr>
+<tr><td>期望的定义和性质</td><td>§4.1</td><td>39–49</td><td>§4.1</td><td>68–73</td></tr>
+<tr><td><strong>收敛定理</strong></td><td><strong>§4.2</strong></td><td>50–53</td><td><strong>§4.1 后半</strong>（定理 4.1.2）</td><td>73–75</td></tr>
+<tr><td><strong>期望的计算</strong></td><td><strong>§4.3</strong></td><td>53–57</td><td><strong>§4.2</strong></td><td>75–79</td></tr>
+<tr><td><strong>方差</strong>（与不等式）</td><td><strong>§4.4</strong></td><td>57–64</td><td><strong>§4.3</strong>（+ §4.4 常见分布）</td><td>79–84</td></tr>
+<tr><td>大数定律</td><td>§4.5</td><td>—</td><td>§4.5</td><td>84–92</td></tr>
+</table>
+<p style="margin-top:10px">规律是：<strong>从「收敛定理」开始，教材的编号比讲义小 1</strong>。所以「讲义 §4.3 期望的计算」在教材里是 §4.2；「讲义 §4.4 方差」在教材里是 §4.3。找内容时先按<b>标题</b>找，别按编号找。</p>
+</div>
+
+<div class="toc">
+<strong style="font-size:13.5px;color:var(--ink2)">目录</strong>
+<ol>
+<li><a href="#p0">第零部分 · 这节课到底在讲什么</a></li>
+<li><a href="#p1">第一部分 · §4.1 性质总表，(4)(5) 的证明</a>
+  <ol>
+  <li><a href="#s11">§1.1　五条性质与两个容易漏掉的前提</a></li>
+  <li><a href="#s12">§1.2　性质 (4)：独立 ⇒ 乘积期望</a></li>
+  <li><a href="#s13">§1.3　Cauchy–Schwarz：判别式法</a></li>
+  <li><a href="#s14">§1.4　不相关：一个「不独立但不相关」的例子</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · §4.2 收敛定理</a>
+  <ol>
+  <li><a href="#s21">§2.1　问题的由来：一个差 1 的反例</a></li>
+  <li><a href="#s22">§2.2　单调收敛定理（回顾）</a></li>
+  <li><a href="#s23">§2.3　Fatou 引理</a></li>
+  <li><a href="#s24">§2.4　Lebesgue 控制收敛定理</a></li>
+  <li><a href="#s25">§2.5　三个定理的强弱与用法</a></li>
+  <li><a href="#s26">§2.6　几乎处处（a.s.）到底是什么</a></li>
+  <li><a href="#s27">§2.7　定理 4.2.3：零的判定</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · §4.3 期望的计算</a>
+  <ol>
+  <li><a href="#s31">§3.1　离散型：可积 ⟺ 绝对收敛</a></li>
+  <li><a href="#s32">§3.2　反例：收敛但期望不存在</a></li>
+  <li><a href="#s33">§3.3　LOTUS：不用先求 φ(ξ) 的分布</a></li>
+  <li><a href="#s34">§3.4　Stieltjes 积分：一个符号统一两种情形</a></li>
+  </ol>
+</li>
+<li><a href="#p4">第四部分 · §4.4 方差</a>
+  <ol>
+  <li><a href="#s41">§4.1　定义与五条性质</a></li>
+  <li><a href="#s42">§4.2　二项分布的方差</a></li>
+  <li><a href="#s43">§4.3　反面教材：ξᵢ 不独立时不能直接加</a></li>
+  </ol>
+</li>
+<li><a href="#p5">第五部分 · 作业 P89 第 7、10、12、17、19 题</a></li>
+<li><a href="#pa">附录 A · 板书逐张对照（19 张）</a></li>
+<li><a href="#pb">附录 B · 页码与材料索引</a></li>
+<li><a href="#pc">附录 C · 还没讲的</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p0">第零部分 · 这节课到底在讲什么</h2>
+
+<p>你说「一点都听不懂」。先把结论摆出来，后面每一节都是这句话的展开。</p>
+
+<div class="box key">
+<p class="label">一句话</p>
+<p>这节课只做一件事：<strong>划出「$\lim$ 和 $\mathbb E$ 可以交换顺序」的安全区</strong>，然后用这个许可证去算期望和方差。</p>
+<p>为什么这件事值得花一整节课？因为 $\mathbb E$ 是积分，$\lim$ 是极限，而<strong>「先极限后积分」和「先积分后极限」一般不相等</strong>。不是「有时差一点」，是<strong>可以差出整整 1</strong>——<a href="#s21">§2.1</a> 有一个具体例子。整个 §4.2 就是三个定理，分别告诉你三种可以交换的情形。</p>
+</div>
+
+<h4>这节课的四段路，以及它们之间的依赖关系</h4>
+
+<table>
+<tr><th style="width:56px">段</th><th style="width:210px">内容</th><th>它要解决什么</th></tr>
+<tr><td>①</td><td>§4.1 性质 (4)(5)</td><td>把「独立 ⇒ $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$」和 Cauchy–Schwarz 补完。<strong>这两个证明都要用上一节的三层定义</strong>，是纯技术活，但必须做——后面算方差全靠它们。</td></tr>
+<tr><td>②</td><td>§4.2 收敛定理</td><td>划安全区：什么条件下 $\lim\mathbb E=\mathbb E\lim$。三个定理：单调收敛（MCT）、Fatou、控制收敛（DCT）。</td></tr>
+<tr><td>③</td><td>§4.3 期望的计算</td><td>用 ② 的许可证，把「离散型的 $\sum$ 公式」「LOTUS」「Stieltjes 积分」一个个证出来。<strong>②是③的工具，不是并列关系。</strong></td></tr>
+<tr><td>④</td><td>§4.4 方差</td><td>定义 $\mathrm{Var}(\xi)=\mathbb E(\xi-\mathbb E\xi)^2$，性质 (1)–(5)。这里唯一的坑是：<strong>$\mathrm{Var}$ 不像 $\mathbb E$ 那样可以随便相加</strong>。</td></tr>
+</table>
+
+<p>所以如果你只听懂了「收敛定理在划安全区」这一句，后面的就都能挂上去；反过来，如果 ② 没跟上，③ 里那些 $\lim$ 与 $\sum$ 的交换你会觉得全是「老师随便换的」——<strong>这就是听不懂的主要来源</strong>。</p>
+
+<div class="box ok">
+<p class="label">一个判断自己有没有跟上的自测</p>
+<p>合上笔记，能不能回答这三个问题：</p>
+<p>① 为什么 $\mathbb E(\xi_n)$ 的极限可以不等于 $\mathbb E(\lim\xi_n)$？举一个具体例子。</p>
+<p>② 单调收敛定理为什么要求「单调」？去掉单调，还能得到什么（哪怕是不等式）？</p>
+<p>③ 为什么「$\sum x_k p_k$ 收敛」不足以保证期望存在，非要「绝对收敛」？</p>
+<p>三个都答得出，这节课就算过了。答不出，对应的就是 <a href="#s21">§2.1</a>、<a href="#s23">§2.3</a>、<a href="#s31">§3.1</a>。</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p1">第一部分 · §4.1 性质总表，(4)(5) 的证明</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:170px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s11">§1.1</a> 五条性质</td><td><span class="tag b">板书 1·17·18</span><span class="tag c">教材 p.73</span></td><td>板书第 1 页开头就是这张表。教材 p73 的措辞更精确，两边对照着写。</td></tr>
+<tr><td><a href="#s12">§1.2</a> 性质 (4)</td><td><span class="tag b">板书 1·16·17·18</span><span class="tag c">教材 p.73</span></td><td>本次课的重点之一。板书写了完整的 $\xi_n,\eta_n$ 逼近构造。</td></tr>
+<tr><td><a href="#s13">§1.3</a> Cauchy–Schwarz</td><td><span class="tag b">板书 1·16</span><span class="tag c">教材 p.79</span></td><td>板书写的是<strong>判别式法</strong>，和讲义 p49 的配方法不同。两种都写清楚。</td></tr>
+<tr><td><a href="#s14">§1.4</a> 不相关</td><td><span class="tag b">板书 5</span><span class="tag c">教材 p.73 例4.1.2</span></td><td>板书 5 上那个「十字形」支撑集，就是教材 p73 的例 4.1.2。</td></tr>
+</table>
+</div>
+
+<h3 id="s11">§1.1　五条性质与两个容易漏掉的前提<span class="tag b">板书 1·17·18</span><span class="tag c">教材 p.73</span></h3>
+
+<p>板书第 1 页的标题是「设 $\xi,\eta$ 可积及所有变量」——意思是下面这些性质里，凡出现的量都假定有定义。五条性质逐字如下：</p>
+
+<div class="thm">
+<p class="nm">性质（板书 1 原表）</p>
+<p>(1) $\xi\ge0\ \Rightarrow\ \mathbb E(\xi)\ge0$；</p>
+<p>(2) $a\in\mathbb R\ \Rightarrow\ \mathbb E(a\xi)=a\mathbb E\xi$；</p>
+<p>(3) $\xi+\eta$ 可积 $\Rightarrow\ \mathbb E(\xi+\eta)=\mathbb E(\xi)+\mathbb E(\eta)$；</p>
+<p>(4) $\xi,\eta$ 独立，若 $\xi,\eta\in\mathcal F_+$，或 $\xi,\eta$ 可积（且 $\xi\eta$ 可积），则 $\mathbb E(\xi\eta)=\mathbb E(\xi)\mathbb E(\eta)$；</p>
+<p>(5) $\xi,\eta$ 可积 $\Rightarrow\ \big[\mathbb E(\xi\eta)\big]^2\le\mathbb E\xi^2\cdot\mathbb E\eta^2$。</p>
+</div>
+
+<p>教材 p73 的写法更细，值得抄在旁边：</p>
+
+<p class="q">(4) 设 $\xi,\eta$ 独立，如果两者非负，或两者可积<strong>且乘积 $\xi\eta$ 也可积</strong>，则 $\mathbb E\xi\eta=\mathbb E\xi\cdot\mathbb E\eta$。</p>
+
+<div class="box key">
+<p class="label">为什么 (4) 里要专门加一句「$\xi\eta$ 可积」</p>
+<p>因为 $\mathbb E(\xi\eta)$ 这个记号得先有<strong>意义</strong>。$\xi$ 可积、$\eta$ 可积，并<strong>不</strong>自动保证 $\xi\eta$ 可积——板书第 1 页下方的注 (1) 说的就是这件事。反例：</p>
+<p>取 $\Omega=(0,1]$、$\mathbb P$ 为 Lebesgue 测度，令 $\xi(\omega)=\eta(\omega)=\omega^{-1/2}$。则</p>
+\[
+\mathbb E|\xi|=\int_0^1\omega^{-1/2}\,\mathrm d\omega=2\lt\infty ,
+\qquad
+\mathbb E|\xi\eta|=\int_0^1\frac{\mathrm d\omega}{\omega}=+\infty .
+\]
+<p>两者各自可积，乘积不可积。此时「$\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$」这句话左边压根没有定义，谈不上对错。</p>
+<p><strong>这是定义域问题，不是证明技巧问题。</strong>考试里如果题目没给乘积可积，写「由独立性 $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$」是要扣分的。</p>
+</div>
+
+<div class="box warn">
+<p class="label">板书注 (2)：反过来也不成立</p>
+<p>板书注 (2) 写的是「$\xi\eta$ 可积，但 $\xi$、$\eta$ 两者未必可积」。</p>
+<p>最省事的例子：$\Omega=(0,1]$，$\xi(\omega)=1/\omega$，$\eta(\omega)=\omega$。则 $\xi\eta\equiv1$，$\mathbb E(\xi\eta)=1$；但 $\mathbb E|\xi|=\int_0^1\frac{\mathrm d\omega}{\omega}=+\infty$。</p>
+<p>要让两个都不可积，就让支撑集错开：$\xi(\omega)=\frac{1}{\omega}1_{(0,1/2)}(\omega)$、$\eta(\omega)=\frac{1}{1-\omega}1_{(1/2,1)}(\omega)$，此时 $\xi\eta\equiv0$，两个因子的期望都是 $+\infty$。</p>
+<p><strong>结论：「乘积可积」几乎不携带任何关于因子可积性的信息。</strong>这就是为什么教材 p73 要单独说一句「可积的随机变量全体是一个线性空间，但注意和可积的两随机变量未必可积，因为不管 $\xi$ 是不是可积，$\xi+(-\xi)=0$ 总是可积」——同一个陷阱，换成加法而已。</p>
+</div>
+
+<h3 id="s12">§1.2　性质 (4)：独立 ⇒ 乘积期望<span class="tag b">板书 1·16·17·18</span><span class="tag c">教材 p.73</span></h3>
+
+<p>板书第 1 页把证明分成两段：先做非负情形，再用正负部分推到一般情形。非负那段的骨架是「用简单随机变量逼近」，这正是上一节 §2.5(3) 的构造。</p>
+
+<h4>第一段：$\xi,\eta\in\mathcal F_+$</h4>
+
+<p>由上一节的定理 4.1.1(3)，对每个 $n\ge1$ 取</p>
+
+\[
+\xi_n=\sum_{i=1}^{n2^n}\frac{i-1}{2^n}\,1_{\big\{\frac{i-1}{2^n}\lt\xi\le\frac{i}{2^n}\big\}}+n\,1_{\{\xi\ge n\}},
+\qquad
+\eta_n=\sum_{j=1}^{n2^n}\frac{j-1}{2^n}\,1_{\big\{\frac{j-1}{2^n}\lt\eta\le\frac{j}{2^n}\big\}}+n\,1_{\{\eta\ge n\}} .
+\]
+
+<p>板书写了这一整行，然后是三句关键的话：</p>
+
+<pre>ξₙ ↑ ξ,  ηₙ ↑ η,  ξₙ, ηₙ ∈ S ∩ F₊
+∴ ξₙηₙ ↑ ξη,   ξ, η 独立 ⇒ ξₙ 与 ηₙ 独立
+E(ξη) = lim E(ξₙηₙ) = lim E(ξₙ)·E(ηₙ) = Eξ·Eη</pre>
+
+<p>这三步每一步都值得交代清楚，因为它们是整段证明的全部内容：</p>
+
+<p><strong>① 为什么 $\xi_n\eta_n\uparrow\xi\eta$。</strong> 两个因子都非负且各自递增，所以乘积也非负递增；而 $\xi_n\to\xi$、$\eta_n\to\eta$，由极限的乘法得 $\xi_n\eta_n\to\xi\eta$。非负 + 递增 + 收敛到 $\xi\eta$，正好是单调收敛定理的条件。</p>
+
+<p><strong>② 为什么 $\xi,\eta$ 独立 ⇒ $\xi_n,\eta_n$ 独立。</strong> 这是最容易被跳过的一步。注意 $\xi_n$ 是<strong>只由 $\xi$ 决定</strong>的函数，$\eta_n$ 是<strong>只由 $\eta$ 决定</strong>的函数：$\xi_n=f_n(\xi)$、$\eta_n=g_n(\eta)$。而「独立随机变量的函数仍然独立」——更准确地说，$\xi_n$ 是那些示性函数 $1_{\{\frac{i-1}{2^n}\lt\xi\le\frac{i}{2^n}\}}$ 的线性组合，这些示性函数都是 $\{\xi\in B\}$ 型的集合，而 $\{\xi\in B\}$ 与 $\{\eta\in C\}$ 对一切 Borel 集 $B,C$ 独立（这是 §1.4 集族法的结论）。所以 $\xi_n$ 与 $\eta_n$ 独立。</p>
+
+<p><strong>③ 为什么 $\mathbb E(\xi_n\eta_n)=\mathbb E\xi_n\,\mathbb E\eta_n$。</strong> 因为 $\xi_n,\eta_n$ 都是<strong>简单随机变量</strong>，这一步在上一节已经证过（讲义 p43 / 教材 p70 的引理 4.1.3）。简单情形下 $\xi_n\eta_n=\sum_{i,j}x_iy_j1_{A_i\cap B_j}$，独立性给出 $\mathbb P(A_i\cap B_j)=\mathbb P(A_i)\mathbb P(B_j)$，代进去就分开了。</p>
+
+<p>然后两次用单调收敛定理把 $\lim$ 搬进 $\mathbb E$：</p>
+
+\[
+\mathbb E(\xi\eta)\overset{\text{MCT}}{=}\lim_{n}\mathbb E(\xi_n\eta_n)=\lim_n\big(\mathbb E\xi_n\,\mathbb E\eta_n\big)=\lim_n\mathbb E\xi_n\cdot\lim_n\mathbb E\eta_n\overset{\text{MCT}}{=}\mathbb E\xi\,\mathbb E\eta .
+\]
+
+<p>板书最后一行右边还写了「$\mathbb E(\xi_n)\to\mathbb E\xi$、$\mathbb E(\eta_n)\to\mathbb E\eta$」，就是在交代最后一个等号。</p>
+
+<h4>第二段：一般情形</h4>
+
+<p>设 $\xi\eta$ 可积。把 $\xi=\xi^+-\xi^-$、$\eta=\eta^+-\eta^-$ 展开成四项：</p>
+
+\[
+\xi\eta=\xi^+\eta^+-\xi^+\eta^--\xi^-\eta^++\xi^-\eta^- .
+\]
+
+<p>$\xi,\eta$ 独立 ⇒ $\xi^\pm$ 与 $\eta^\pm$ 的四种组合都独立（因为它们分别是 $\xi$、$\eta$ 的函数）。每一项都是<strong>非负</strong>的，可以套第一段，于是</p>
+
+\[
+\mathbb E(\xi\eta)=\mathbb E\xi^+\mathbb E\eta^+-\mathbb E\xi^+\mathbb E\eta^--\mathbb E\xi^-\mathbb E\eta^++\mathbb E\xi^-\mathbb E\eta^-=(\mathbb E\xi^+-\mathbb E\xi^-)(\mathbb E\eta^+-\mathbb E\eta^-)=\mathbb E\xi\,\mathbb E\eta .
+\]
+
+<div class="box key">
+<p class="label">这一段为什么非要拆成四项</p>
+<p>因为第一段只对<strong>非负</strong>的因子成立（它整条建立在单调收敛定理上，而 MCT 只吃非负）。$\xi$ 或 $\eta$ 一旦有负值，「递增逼近」就不存在了。</p>
+<p>拆成 $\xi^\pm,\eta^\pm$ 之后，每一项都是「非负 × 非负」，第一段就能逐项用；最后再把四项按 $\xi$、$\eta$ 重新组合，恰好配成 $(\mathbb E\xi^+-\mathbb E\xi^-)(\mathbb E\eta^+-\mathbb E\eta^-)$。</p>
+<p><strong>和上一节证线性性时的「重排成非负之和」是同一个套路</strong>：把有正有负的对象拆开，让每一块都非负，最后再合并回去。</p>
+</div>
+
+<div class="box ok">
+<p class="label">板书上的「猜想」：一条只用期望刻画独立性的判据</p>
+<p>板书第 1 页中间写了一句「猜想」：</p>
+\[
+\xi,\eta\ \text{独立}\iff \forall f,g\ \text{有界连续},\ \ \mathbb E\big[f(\xi)g(\eta)\big]=\mathbb Ef(\xi)\cdot\mathbb Eg(\eta).
+\]
+<p>这个「猜想」其实是<strong>真的</strong>，不是猜想。方向「⇒」和上面第一段同理（$f(\xi)$ 只依赖 $\xi$，$g(\eta)$ 只依赖 $\eta$）。方向「⇐」取 $f,g$ 分别逼近 $1_{(-\infty,x]}$、$1_{(-\infty,y]}$（有界、逐点收敛），再用控制收敛定理取极限，就得到 $\mathbb P(\xi\le x,\eta\le y)=\mathbb P(\xi\le x)\mathbb P(\eta\le y)$，即独立。</p>
+<p><strong>它的意义</strong>：独立性的原始定义是关于<em>分布</em>的（要验所有 Borel 集的乘积），而这个判据说「只要验所有有界连续函数的乘积期望」。后者只用期望、不碰分布，在推广（比如随机过程里的「弱独立」）时非常好用。</p>
+</div>
+
+<h3 id="s13">§1.3　Cauchy–Schwarz：判别式法<span class="tag b">板书 1·16</span><span class="tag c">教材 p.79</span></h3>
+
+<p>板书第 1 页下半张写的是这个证明，只用四行：</p>
+
+<pre>(5) Cauchy-Schwarz
+f(t) = E(tξ − η)² = t²Eξ² − 2tE(ξη) + Eη² ≥ 0
+Δ ≤ 0 ⇒ b² − 4ac = 4(E(ξη))² − 4Eξ²Eη² ≤ 0
+⇒ (E(ξη))² ≤ Eξ²·Eη²</pre>
+
+<p>展开成完整的推理：</p>
+
+<p><strong>第一步：构造一个关于 $t$ 的二次函数。</strong>对任意 $t\in\mathbb R$，令</p>
+
+\[
+f(t):=\mathbb E(t\xi-\eta)^2 .
+\]
+
+<p>因为 $(t\xi-\eta)^2\ge0$ 处处成立，由性质 (1) 得 $f(t)\ge0$ 对<strong>一切</strong> $t$ 成立。这一点是整个证明的支点：<strong>非负性来自「平方」，与 $t$ 取什么无关。</strong></p>
+
+<p><strong>第二步：把 $f(t)$ 写成 $t$ 的二次式。</strong>用线性性（性质 (2)(3)）：</p>
+
+\[
+f(t)=t^2\,\mathbb E\xi^2-2t\,\mathbb E(\xi\eta)+\mathbb E\eta^2 .
+\]
+
+<p>记 $a=\mathbb E\xi^2$、$b=-2\mathbb E(\xi\eta)$、$c=\mathbb E\eta^2$，则 $f(t)=at^2+bt+c$。</p>
+
+<p><strong>第三步：二次式恒非负 ⇒ 判别式 ≤ 0。</strong>若 $a\gt0$，一个开口向上的抛物线处处在 $x$ 轴上方或相切，等价于它没有两个不同实根，即</p>
+
+\[
+\Delta=b^2-4ac\le0
+\quad\Longrightarrow\quad
+4\big[\mathbb E(\xi\eta)\big]^2-4\,\mathbb E\xi^2\,\mathbb E\eta^2\le0
+\quad\Longrightarrow\quad
+\big[\mathbb E(\xi\eta)\big]^2\le\mathbb E\xi^2\,\mathbb E\eta^2 .
+\]
+
+<p>若 $a=\mathbb E\xi^2=0$，则由定理 4.2.3(4)（<a href="#s27">§2.7</a>）得 $\xi=0$ a.s.，于是 $\mathbb E(\xi\eta)=0$，两边都是 0，结论平凡成立。</p>
+
+<div class="box key">
+<p class="label">为什么「判别式 ≤ 0」这一步是合法的</p>
+<p>常见的困惑是：抛物线非负，为什么不能是「无实根」以外的情形？</p>
+<p>因为 $a=\mathbb E\xi^2\gt0$ 时开口向上。开口向上的抛物线只有三种可能：与 $x$ 轴无交点（$\Delta\lt0$）、相切（$\Delta=0$）、有两个交点（$\Delta\gt0$，此时在两个根之间取负值）。第三种与「处处非负」矛盾，所以只剩前两种，合起来就是 $\Delta\le0$。</p>
+<p><strong>反过来说，如果 $a\lt0$（开口向下），$\Delta\le0$ 反而意味着处处为负</strong>——所以「$a\gt0$」这个前提不能省。这就是为什么上面要单独处理 $a=0$ 的情形。</p>
+</div>
+
+<div class="box warn">
+<p class="label">三种写法，本质是同一件事</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:130px">出处</th><th>做法</th><th style="width:150px">代价</th></tr>
+<tr><td><strong>板书</strong>（判别式法）</td><td>对一切 $t$ 有 $at^2+bt+c\ge0$，用 $\Delta\le0$</td><td>最短，但需要单独处理 $a=0$</td></tr>
+<tr><td>讲义 p49（配方法）</td><td>把 $\mathbb E(a|\xi|+b|\eta|)^2\ge0$ 对 $a,b$ 展开，取最优的 $a/b$</td><td>不用讨论退化，但要多写两行</td></tr>
+<tr><td>教材 p79</td><td>取 $x\in\mathbb R$，用 $\mathbb E\xi^2-2x\mathbb E\xi\eta+x^2\mathbb E\eta^2=\mathbb E(\xi-x\eta)^2\ge0$</td><td>和判别式法等价，只是把 $t$ 换成了 $x$、把 $\xi$ 和 $\eta$ 的角色对调</td></tr>
+</table>
+<p style="margin-top:10px"><strong>三种写法里判别式法最适合考试</strong>：只要记得「构造 $\mathbb E(t\xi-\eta)^2$、用 $\Delta\le0$」这两句，四行就完了。配方法容易在「取什么系数最优」那一步卡住。</p>
+</div>
+
+<p>教材 p79 还顺带指出了它的几个常用推论，后面会反复出现：</p>
+
+\[
+|\mathbb E\xi|\le\sqrt{\mathbb E\xi^2}\quad(\text{取 }\eta=1),
+\qquad
+\big[\mathbb E(\xi+\eta)^2\big]^{1/2}\le\big(\mathbb E\xi^2\big)^{1/2}+\big(\mathbb E\eta^2\big)^{1/2}\quad(\text{Minkowski}).
+\]
+
+<h3 id="s14">§1.4　不相关：一个「不独立但不相关」的例子<span class="tag b">板书 5</span><span class="tag c">教材 p.73 例4.1.2</span></h3>
+
+<p>板书第 1 页最后一行给了定义：</p>
+
+<div class="thm">
+<p class="nm">定义（不相关）</p>
+<p>假设 $\xi,\eta$ 为两个随机变量，若 $\mathbb E(\xi\eta)=\mathbb E(\xi)\mathbb E(\eta)$，则称 $\xi,\eta$ <strong>不相关</strong>。</p>
+</div>
+
+<p>由性质 (4)：<strong>独立 ⇒ 不相关</strong>（只要乘积可积）。反过来不成立。板书第 5 页画的就是反例，那个「十字形」的图对应教材 p73 的例 4.1.2。</p>
+
+<div class="box warn">
+<p class="label">反例：支撑集是四个坐标轴上的点</p>
+<p>设 $(\xi,\eta)$ 在四个点 $(1,0)$、$(0,1)$、$(-1,0)$、$(0,-1)$ 上等可能分布，每点概率 $\tfrac14$。板书 5 画的就是这个：横轴、纵轴上各两个点，每个旁边标 $\tfrac14$。</p>
+<p><strong>先算 $\mathbb E$。</strong>由对称性 $\mathbb E\xi=\tfrac14(1+0-1+0)=0$，$\mathbb E\eta=\tfrac14(0+1+0-1)=0$。</p>
+<p><strong>再看乘积。</strong>在这四个点上，$\xi$ 和 $\eta$ <strong>总有一个是 0</strong>（点要么在横轴要么在纵轴上），所以 $\xi\eta\equiv0$，于是 $\mathbb E(\xi\eta)=0=\mathbb E\xi\,\mathbb E\eta$。<strong>不相关。</strong></p>
+<p><strong>但显然不独立。</strong>取 $A=\{\xi=0\}$、$B=\{\eta=1\}$：</p>
+\[
+\mathbb P(\xi=0,\eta=1)=\tfrac14\ \ne\ \tfrac18=\mathbb P(\xi=0)\mathbb P(\eta=1)=\tfrac12\cdot\tfrac14 .
+\]
+<p>板书这一行写的就是 $ \tfrac14\ne\tfrac18 $。</p>
+</div>
+
+<div class="box key">
+<p class="label">这个例子到底在说明什么</p>
+<p>它说明<strong>「不相关」只是二阶矩层面的信息，比独立弱得多</strong>。</p>
+<p>$\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$ 只约束了 $\xi\eta$ 的<em>平均值</em>。上面这个例子里，$\xi\eta$ 恒等于 0，平均值当然是 0——可「恒等于 0」和「独立」完全是两回事，恰恰相反，$\xi\eta\equiv0$ 说明两者有极强的依赖（知道 $\xi\ne0$ 就能断定 $\eta=0$）。</p>
+<p><strong>一句话记：不相关管的是「乘积的平均」，独立管的是「整个联合分布」。</strong>前者是一个数，后者是一族函数。</p>
+</div>
+
+<p>教材 p73 紧接着给了一句很有用的注解：「由上面的性质，可积的随机变量全体也是一个线性空间。」意思是可积性对线性组合封闭，这是后面所有「先拆再合」的证明能走通的前提。</p>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p2">第二部分 · §4.2 收敛定理</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:180px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s21">§2.1</a> 问题的由来</td><td><span class="tag">我补的</span></td><td>讲义和教材都是直接给定理，没有先摆出「不交换会怎样」。这个反例是我按教材 p74 那句「极其重要」补的。</td></tr>
+<tr><td><a href="#s22">§2.2</a> 单调收敛定理</td><td><span class="tag b">板书 5</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></td><td>上一节已证过，这里只定位它在链条里的角色。</td></tr>
+<tr><td><a href="#s23">§2.3</a> Fatou 引理</td><td><span class="tag b">板书 5·12</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></td><td>板书写了完整的 $\hat\xi_n=\inf_{k\ge n}\xi_k$ 构造。</td></tr>
+<tr><td><a href="#s24">§2.4</a> 控制收敛定理</td><td><span class="tag b">板书 5·14·15</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></td><td>板书的「夹逼」那一段（板书 15）就是教材 p74 的双 Fatou 证明。</td></tr>
+<tr><td><a href="#s25">§2.5</a> 三者强弱</td><td><span class="tag">我补的</span></td><td>把三个定理放在一张表里对比，讲义没有做这件事。</td></tr>
+<tr><td><a href="#s26">§2.6</a> 几乎处处</td><td><span class="tag b">板书 12·13</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></td><td>板书 12/13 是同一块黑板，写的就是定义 4.2.1。</td></tr>
+<tr><td><a href="#s27">§2.7</a> 定理 4.2.3</td><td><span class="tag b">板书 4</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.75</span></td><td>板书 4 写了 (1) 的完整证明。</td></tr>
+</table>
+</div>
+
+<h3 id="s21">§2.1　问题的由来：一个差 1 的反例<span class="tag">我补的</span></h3>
+
+<p><strong>先把要问的问题说清楚：</strong></p>
+
+\[
+\lim_{n\to\infty}\mathbb E(\xi_n)\ \overset{?}{=}\ \mathbb E\Big(\lim_{n\to\infty}\xi_n\Big).
+\]
+
+<p>左边是「先算期望，再取极限」，右边是「先取极限，再算期望」。这两个东西一般<strong>不相等</strong>，而且不是「差一点点」。</p>
+
+<div class="box warn">
+<p class="label">反例：一个「面积恒为 1、但逐点趋于 0」的尖峰</p>
+<p>取 $\Omega=(0,1]$，$\mathbb P$ 为 $(0,1]$ 上的 Lebesgue 测度。令</p>
+\[
+\xi_n(\omega)=n\cdot1_{(0,\,1/n]}(\omega),\qquad n=1,2,\dots
+\]
+<p>也就是说 $\xi_n$ 在靠近 0 的一小段上取值为 $n$，其余地方为 0。于是</p>
+\[
+\mathbb E(\xi_n)=n\cdot\mathbb P\Big(\big(0,\tfrac1n\big]\Big)=n\cdot\frac1n=1
+\quad\text{对每个 }n\text{ 都成立}.
+\]
+<p>但固定任意 $\omega\in(0,1]$，当 $n\gt1/\omega$ 时 $\omega\notin(0,1/n]$，所以 $\xi_n(\omega)=0$。即</p>
+\[
+\xi_n(\omega)\longrightarrow0\quad(\forall\omega),\qquad\text{从而}\quad \mathbb E\Big(\lim_n\xi_n\Big)=\mathbb E(0)=0 .
+\]
+<p>于是</p>
+\[
+\lim_{n\to\infty}\mathbb E(\xi_n)=1\ \ne\ 0=\mathbb E\Big(\lim_{n\to\infty}\xi_n\Big).
+\]
+<p><strong>差了整整 1</strong>——而且这个 1 不是误差，是全部质量都「跑掉了」。</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 680 330" width="100%" role="img" aria-labelledby="f1t f1d">
+<title id="f1t">尖峰反例：面积恒为 1 但逐点趋于 0</title>
+<desc id="f1d">三条阶梯函数在原点附近越来越高、越来越窄，每条的积分面积都等于 1，但在每个固定的 ω 处取值最终为 0。</desc>
+<defs>
+<marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<line x1="70" y1="250" x2="644" y2="250" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwA)"/>
+<line x1="70" y1="250" x2="70" y2="38" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwA)"/>
+<text x="652" y="256" font-size="12" fill="var(--ink3)">ω</text>
+<text x="58" y="44" font-size="12" fill="var(--ink3)">ξ</text>
+<text x="74" y="268" font-size="11.5" fill="var(--ink3)">0</text>
+<text x="345" y="268" font-size="11.5" fill="var(--ink3)" text-anchor="middle">1/2</text>
+<text x="253" y="268" font-size="11.5" fill="var(--ink3)" text-anchor="middle">1/3</text>
+<text x="636" y="268" font-size="11.5" fill="var(--ink3)" text-anchor="end">1</text>
+
+<path d="M 70 190 L 620 190 L 620 250 L 640 250" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<text x="165" y="182" font-size="12" fill="var(--accent)">ξ₁：高 1，宽 1</text>
+
+<path d="M 70 130 L 345 130 L 345 250 L 640 250" fill="none" stroke="var(--ok)" stroke-width="2"/>
+<text x="165" y="122" font-size="12" fill="var(--ok)">ξ₂：高 2，宽 1/2</text>
+
+<path d="M 70 70 L 253 70 L 253 250 L 640 250" fill="none" stroke="var(--gold)" stroke-width="2"/>
+<text x="165" y="62" font-size="12" fill="var(--gold)">ξ₃：高 3，宽 1/3</text>
+
+<text x="74" y="290" font-size="13" fill="var(--ink2)">每条折线下方面积 = 高 × 宽 = 1，所以 Eξₙ ≡ 1 恒成立</text>
+<text x="74" y="314" font-size="13" fill="var(--warn)">但每个固定的 ω 最终都落在平地上，所以 ξₙ(ω) → 0</text>
+</svg>
+<figcaption>图 1 · 为什么 $\lim$ 和 $\mathbb E$ 不能无条件交换。质量不断往 $0$ 附近挤、越来越高越来越窄，总质量不变，但每一点上的值最终都变成 $0$。</figcaption>
+</figure>
+
+<div class="box key">
+<p class="label">这个反例为什么能「逃过」控制收敛定理</p>
+<p>控制收敛定理要求存在一个<strong>可积</strong>的 $\eta$ 把整列压住：$|\xi_n|\le\eta$。这里压不住——因为</p>
+\[
+\sup_{n\ge1}\xi_n(\omega)\approx\frac1{\omega},
+\qquad
+\mathbb E\Big(\frac1{\omega}\Big)=\int_0^1\frac{\mathrm d\omega}{\omega}=+\infty .
+\]
+<p>尖峰的高度 $n$ 和宽度 $1/n$ 恰好让「包络」变成 $1/\omega$，而 $1/\omega$ 不可积。<strong>所以定理的前提不成立，结论当然可以失效</strong>——这不是定理有漏洞，恰恰说明「可积控制」这个条件卡得刚刚好。</p>
+</div>
+
+<p>教材 p74 对这三个定理的定位说得非常准，值得原样抄下来：</p>
+
+<p class="q">下面的定理可以说是单调收敛定理的推论，它们与单调收敛定理一样都是在讨论<strong>什么时候极限与期望两种运算可以交换</strong>，这在概率论以及分析中是极其重要的。</p>
+
+<h3 id="s22">§2.2　单调收敛定理（回顾）<span class="tag b">板书 5</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></h3>
+
+<div class="thm">
+<p class="nm">定理 4.2.1（单调收敛定理，MCT）</p>
+<p>设 $\{\xi_n\}$ 为一列<strong>递增</strong>收敛于 $\xi$ 的<strong>非负</strong>随机变量，则</p>
+\[
+\mathbb E(\xi)=\lim_{n\to\infty}\mathbb E(\xi_n).
+\]
+</div>
+
+<p>上一份笔记 <a href="./概率论笔记-第四章期望.html#s25">§2.5</a> 给过完整证明（含 $A_n=\{\xi_n\ge a\eta\}$ 那个 $a\lt1$ 的技巧），这里不重复。要强调的是它在整条链上的<strong>位置</strong>：</p>
+
+<div class="box ok">
+<p class="label">MCT 是另外两个定理的发动机</p>
+<p>后面 Fatou 和 DCT 的证明<strong>全部要回到 MCT</strong>——它们的做法都是「先构造一个单调序列，再套 MCT」。所以：</p>
+<p>· MCT 的<strong>条件最窄</strong>（必须单调 + 非负），但<strong>地位最高</strong>；</p>
+<p>· Fatou 和 DCT 是「把非单调的情形，想办法改造成单调的情形，然后借 MCT 过关」。</p>
+<p>理解这一点，你就明白为什么这两个定理的证明里总在构造 $\inf$、总在加减一个可积的 $\eta$——<strong>那些都不是技巧，是在造单调性。</strong></p>
+</div>
+
+<h3 id="s23">§2.3　Fatou 引理<span class="tag b">板书 5·12</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></h3>
+
+<div class="thm">
+<p class="nm">定理 4.2.2(1)（Fatou 引理）· 讲义版</p>
+<p>设 $\xi,\eta$ 为可积的随机变量，$\{\xi_n\}$ 为一列随机变量。若 $\forall n\ge1$，$\xi_n\ge\xi$，则</p>
+\[
+\mathbb E\Big(\varliminf_{n\to\infty}\xi_n\Big)\ \le\ \varliminf_{n\to\infty}\mathbb E(\xi_n).
+\]
+</div>
+
+<p>教材 p74 的版本条件更窄（要求 $\xi_n$ 非负），但更好记：</p>
+
+<div class="thm">
+<p class="nm">定理 4.1.2(1)（Fatou 引理）· 教材版</p>
+<p>设 $\{\xi_n\}$ 是<strong>非负</strong>随机变量序列，则 $\mathbb E[\liminf_n\xi_n]\le\liminf_n\mathbb E[\xi_n]$。</p>
+</div>
+
+<p>两个版本的关系：讲义版把「非负」换成了「有可积下界 $\xi$」，做法是令 $\xi_n'=\xi_n-\xi\ge0$ 化归到教材版。所以记住教材版就够，讲义版是它的推论。</p>
+
+<h4>证明（板书写的就是这一段）</h4>
+
+<p>板书的骨架只有三行：</p>
+
+<pre>令 ξ̂ₙ = inf_{k≥n} ξₖ，  则 0 ≤ ξ̂ₙ ↑ lim ξₙ
+由单调收敛定理：E(lim ξₙ) = lim E(ξ̂ₙ) ≤ lim E(ξₙ)</pre>
+
+<p>展开：</p>
+
+<p><strong>第一步：造一个单调序列。</strong>令</p>
+
+\[
+\hat\xi_n:=\inf_{k\ge n}\xi_k .
+\]
+
+<p>它有两个性质，都是「取 $\inf$」直接带来的：</p>
+
+<p style="margin-left:1.6em">· <strong>单调不减</strong>：$n$ 变大时，取 $\inf$ 的集合 $\{k\ge n\}$ 变小，最小值只会变大，所以 $\hat\xi_n\le\hat\xi_{n+1}$；</p>
+
+<p style="margin-left:1.6em">· <strong>极限是 $\liminf$</strong>：由下极限的定义，$\lim_n\hat\xi_n=\liminf_n\xi_n$。</p>
+
+<p>于是 $\hat\xi_n$ 是<strong>非负且递增</strong>的——正是 MCT 的适用条件。</p>
+
+<p><strong>第二步：套 MCT。</strong></p>
+
+\[
+\mathbb E\Big(\liminf_{n}\xi_n\Big)=\mathbb E\Big(\lim_n\hat\xi_n\Big)\overset{\text{MCT}}{=}\lim_n\mathbb E(\hat\xi_n).
+\]
+
+<p><strong>第三步：把 $\hat\xi_n$ 换回 $\xi_n$。</strong>由 $\inf$ 的定义，$\hat\xi_n\le\xi_n$（$\inf$ 不超过集合里任何一个元素），所以 $\mathbb E(\hat\xi_n)\le\mathbb E(\xi_n)$ 对每个 $n$ 成立。两边取下极限：</p>
+
+\[
+\mathbb E\Big(\liminf_n\xi_n\Big)=\lim_n\mathbb E(\hat\xi_n)\le\varliminf_n\mathbb E(\xi_n).\qquad\blacksquare
+\]
+
+<figure>
+<svg viewBox="0 0 680 310" width="100%" role="img" aria-labelledby="f2t f2d">
+<title id="f2t">Fatou 引理的 inf 包络构造</title>
+<desc id="f2d">震荡的数列 ξₙ 与其从第 n 项起取下确界得到的单调不减阶梯，阶梯始终不超过原数列，并上升趋向下极限。</desc>
+<defs>
+<marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<line x1="70" y1="250" x2="640" y2="250" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwB)"/>
+<line x1="70" y1="250" x2="70" y2="45" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwB)"/>
+<text x="646" y="256" font-size="12" fill="var(--ink3)">n</text>
+
+<line x1="70" y1="155" x2="620" y2="155" stroke="var(--warn)" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="76" y="143" font-size="11.5" fill="var(--warn)">lim inf ξₙ</text>
+
+<polyline points="110,155 170,202 230,92 290,179 350,79 410,171 470,74 530,167"
+          fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+<circle cx="110" cy="155" r="3" fill="var(--accent)"/>
+<circle cx="170" cy="202" r="3" fill="var(--accent)"/>
+<circle cx="230" cy="92" r="3" fill="var(--accent)"/>
+<circle cx="290" cy="179" r="3" fill="var(--accent)"/>
+<circle cx="350" cy="79" r="3" fill="var(--accent)"/>
+<circle cx="410" cy="171" r="3" fill="var(--accent)"/>
+<circle cx="470" cy="74" r="3" fill="var(--accent)"/>
+<circle cx="530" cy="167" r="3" fill="var(--accent)"/>
+<text x="120" y="56" font-size="12" fill="var(--accent)">ξₙ：上下震荡，不单调</text>
+
+<path d="M 110 202 L 230 202 L 230 179 L 350 179 L 350 171 L 470 171 L 470 167 L 600 167"
+      fill="none" stroke="var(--ok)" stroke-width="2.6"/>
+<text x="600" y="216" font-size="12" fill="var(--ok)" text-anchor="end">ξ̂ₙ = inf<tspan baseline-shift="sub" font-size="9">k≥n</tspan> ξₖ：单调不减，且在 ξₙ 下方</text>
+
+<text x="74" y="290" font-size="12.5" fill="var(--ink3)">对每个固定的 ω 都这样取一次 inf，就把「不单调」改造成了「单调」</text>
+</svg>
+<figcaption>图 2 · Fatou 的核心手法。$\hat\xi_n=\inf_{k\ge n}\xi_k$ 是「从第 $n$ 项往后看的最小值」，它一定单调不减、一定不超过 $\xi_n$，于是可以套 MCT。</figcaption>
+</figure>
+
+<div class="box key">
+<p class="label">为什么 Fatou 只能得到「≤」，拿不到等号</p>
+<p>因为整个证明只用到了 $\hat\xi_n\le\xi_n$ 这一个<strong>单向</strong>信息。单向的不等式取极限，只能保住单向。</p>
+<p>这也是为什么需要下一个定理：如果想拿到等号，就必须再补一个<strong>反方向</strong>的不等式，两边夹住。控制收敛定理干的就是这件事。</p>
+</div>
+
+<h3 id="s24">§2.4　Lebesgue 控制收敛定理<span class="tag b">板书 5·14·15</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></h3>
+
+<div class="thm">
+<p class="nm">定理 4.1.2(2)（Lebesgue 控制收敛定理，DCT）· 教材版</p>
+<p>如果 $\lim_n\xi_n=\xi$，并且存在<strong>可积的非负随机变量 $\eta$</strong> 使得对任何 $n$ 都有 $|\xi_n|\le\eta$，那么</p>
+\[
+\mathbb E\xi=\lim_{n\to\infty}\mathbb E\xi_n .
+\]
+</div>
+
+<p>讲义把它写在定理 4.2.2 的 (3) 里（用「$\eta\le\xi_n\le\eta$」的形式），意思一样。</p>
+
+<h4>证明：双 Fatou 夹逼（板书 15 就是这一段）</h4>
+
+<p>板书的写法是把两个方向的 Fatou 并排放，中间画一个大括号写 $\xi=\lim\xi_n$：</p>
+
+<pre>由 ξ ≤ ξₙ, 由(1)     E(lim ξₙ) ≤ lim E(ξₙ)
+又 ξₙ ≤ η, 由(2)     E(lim ξₙ) ≥ lim E(ξₙ)   }  ξ = lim ξₙ
+lim E(ξₙ) = lim E(ξₙ) = lim E(ξₙ) = E(lim ξₙ) = E(ξ)</pre>
+
+<p>展开成标准写法。因为 $|\xi_n|\le\eta$，所以 $\eta-\xi_n\ge0$、$\eta+\xi_n\ge0$，两个都能套 Fatou：</p>
+
+<p><strong>第一个（控制上界）：</strong></p>
+
+\[
+\mathbb E\eta-\mathbb E\xi=\mathbb E\big[\liminf_n(\eta-\xi_n)\big]\le\liminf_n\big(\mathbb E\eta-\mathbb E\xi_n\big)=\mathbb E\eta-\varlimsup_n\mathbb E\xi_n ,
+\]
+
+<p>两边消去 $\mathbb E\eta$（有限，可以消）得 $\varlimsup_n\mathbb E\xi_n\le\mathbb E\xi$。</p>
+
+<p><strong>第二个（控制下界）：</strong></p>
+
+\[
+\mathbb E\eta+\mathbb E\xi=\mathbb E\big[\liminf_n(\eta+\xi_n)\big]\le\liminf_n\big(\mathbb E\eta+\mathbb E\xi_n\big)=\mathbb E\eta+\varliminf_n\mathbb E\xi_n ,
+\]
+
+<p>消去 $\mathbb E\eta$ 得 $\mathbb E\xi\le\varliminf_n\mathbb E\xi_n$。</p>
+
+<p><strong>夹住：</strong></p>
+
+\[
+\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n
+\quad\Longrightarrow\quad
+\lim_n\mathbb E\xi_n=\mathbb E\xi .\qquad\blacksquare
+\]
+
+<figure>
+<svg viewBox="0 0 680 260" width="100%" role="img" aria-labelledby="f3t f3d">
+<title id="f3t">控制收敛定理的夹逼结构</title>
+<desc id="f3d">两条上下边界 η 与 −η 之间夹着若干条 ξₙ 曲线，整列被同一个可积函数控制。</desc>
+<defs>
+<marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<path d="M 70 105 C 160 70 240 65 320 80 C 420 100 520 70 620 95 L 620 185 C 520 210 420 180 320 200 C 240 215 160 210 70 175 Z"
+      fill="var(--accent)" opacity="0.12"/>
+<path d="M 70 105 C 160 70 240 65 320 80 C 420 100 520 70 620 95"
+      fill="none" stroke="var(--warn)" stroke-width="2"/>
+<path d="M 70 175 C 160 210 240 215 320 200 C 420 180 520 210 620 185"
+      fill="none" stroke="var(--warn)" stroke-width="2"/>
+
+<line x1="70" y1="140" x2="636" y2="140" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<line x1="70" y1="222" x2="70" y2="52" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwC)"/>
+<line x1="70" y1="222" x2="636" y2="222" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwC)"/>
+
+<path d="M 70 125 C 170 100 250 130 330 118 C 430 104 520 132 620 120" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+<path d="M 70 160 C 170 175 250 150 330 168 C 430 182 520 155 620 165" fill="none" stroke="var(--ok)" stroke-width="1.8"/>
+
+<text x="80" y="96" font-size="12" fill="var(--warn)">η</text>
+<text x="80" y="202" font-size="12" fill="var(--warn)">−η</text>
+<text x="74" y="246" font-size="12" fill="var(--ink3)">整列被同一个可积的 η 压住：|ξₙ| ≤ η，Eη &lt; ∞</text>
+</svg>
+<figcaption>图 3 · 控制收敛定理的几何含义。整列曲线都被关在 $\pm\eta$ 这条「可积的走廊」里，谁也跑不出去，所以极限和期望可以交换。</figcaption>
+</figure>
+
+<div class="box key">
+<p class="label">为什么「双向」控制是必须的</p>
+<p>上一节说 Fatou 只能给单向不等式。现在把这个单向的不等式用两次：</p>
+<p>· 用在上方（$\eta-\xi_n\ge0$）→ 得到 $\varlimsup\mathbb E\xi_n\le\mathbb E\xi$，即「期望不会突然变大」；</p>
+<p>· 用在下方（$\eta+\xi_n\ge0$）→ 得到 $\mathbb E\xi\le\varliminf\mathbb E\xi_n$，即「期望不会突然变小」。</p>
+<p>两条合起来才夹出等号。<strong>只有上界没有下界，就漏掉了「质量掉到 $-\infty$」的可能；只有下界没有上界，就漏掉了图 1 那种「尖峰跑掉」的可能。</strong>所以条件必须写成 $|\xi_n|\le\eta$，一个绝对值符号同时管住两头。</p>
+</div>
+
+<p>教材 p74 还补了两个有用的观察：</p>
+
+<p>· <strong>有界收敛定理</strong>：若 (2) 中的 $\eta$ 是一个<strong>常数</strong>，此时 $\eta$ 可积条件自动满足，控制收敛定理就称为有界收敛定理。这是考试里最常用的版本——只要能说明 $|\xi_n|\le M$ 且 $M$ 是常数，就可以交换。</p>
+
+<p>· <strong>只有一边界的情形</strong>：若随机序列有下界（存在常数 $c$ 使 $\xi_n\ge c$），则 Fatou 引理成立；若有上界，则 $\varlimsup\mathbb E[\xi_n]\le\mathbb E[\limsup\xi_n]$。也就是说，<strong>只要有一边被常数压住，就能拿到半个结论</strong>。</p>
+
+<h3 id="s25">§2.5　三个定理的强弱与用法<span class="tag">我补的</span></h3>
+
+<p>三个定理经常被混着记，其实它们的差别很清楚：<strong>条件越宽，结论越弱</strong>。</p>
+
+<table>
+<tr><th style="width:120px">定理</th><th style="width:230px">条件</th><th style="width:170px">结论</th><th>适合什么场合</th></tr>
+<tr><td><strong>MCT</strong><br>单调收敛</td><td>$\xi_n$ 非负且<strong>单调递增</strong>，$\xi_n\uparrow\xi$</td><td>$\mathbb E\xi=\lim\mathbb E\xi_n$<br>（等式）</td><td>序列天然单调：部分和、递增逼近（$n2^n$ 网格那套）、示性函数截断</td></tr>
+<tr><td><strong>Fatou</strong><br>法图引理</td><td>$\xi_n$ <strong>有可积下界</strong>（如 $\xi_n\ge0$）</td><td>$\mathbb E[\liminf\xi_n]\le\liminf\mathbb E\xi_n$<br>（<strong>不等式</strong>）</td><td>不单调，但只需要一个方向的不等式；或作为证 DCT 的中间步骤</td></tr>
+<tr><td><strong>DCT</strong><br>控制收敛</td><td>$\xi_n\to\xi$ 且存在可积 $\eta$ 使 $\vert\xi_n\vert\le\eta$</td><td>$\mathbb E\xi=\lim\mathbb E\xi_n$<br>（等式）</td><td><strong>最常用</strong>。只要找得到一个可积的控制函数就能换</td></tr>
+<tr><td><strong>有界收敛</strong></td><td>$\xi_n\to\xi$ 且 $\vert\xi_n\vert\le M$（常数）</td><td>$\mathbb E\xi=\lim\mathbb E\xi_n$</td><td>DCT 的特例，最好验证——先试这个</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">实用顺序：先试最省事的</p>
+<p>拿到一个要交换 $\lim$ 和 $\mathbb E$ 的题，按这个顺序想：</p>
+<p><strong>① 能不能找到常数界？</strong>（有界收敛）→ 能，直接换。</p>
+<p><strong>② 能不能找到一个可积的 $\eta$ 压住整列？</strong>（DCT）→ 能，直接换。常见的 $\eta$：$|\xi_n|\le|\xi_1|+\cdots$ 这类可求和的控制，或者问题里给定的界。</p>
+<p><strong>③ 序列是不是单调？</strong>（MCT）→ 是，直接换。</p>
+<p><strong>④ 都不行？</strong>退一步用 Fatou 拿不等式，或者改变序列的构造（截断、取 $\inf$ 包络）把它变成单调的。</p>
+<p>如果四步都不行，<strong>那就是真的不能交换</strong>——回去看图 1 那个反例，它四条都不满足。</p>
+</div>
+
+<h3 id="s26">§2.6　几乎处处（a.s.）到底是什么<span class="tag b">板书 12·13</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.74</span></h3>
+
+<p>板书 12/13 是同一块黑板，逐字是：</p>
+
+<pre>定义4.2.1  设 (Ω, F, P) 为一个概率空间，如果一个
+定义或一种关系在去掉一个概率为 0 的事件后还成立，则
+称这个定义或这种关系关于 P 几乎处处成立，记 P-a.s./a.e.
+ξ = 0 a.s. ⇒ P(ξ ≠ 0) = 0</pre>
+
+<div class="thm">
+<p class="nm">定义 4.2.1（几乎处处成立）</p>
+<p>设 $(\Omega,\mathcal F,\mathbb P)$ 为一个概率空间，如果一个定义或一种关系在去掉一个概率为零的事件上处处成立，则称这个关系关于 $\mathbb P$ <strong>几乎处处成立</strong>，记为 $\mathbb P$-a.s.（almost surely），有时在不混淆的情况下简记为 a.s.。</p>
+<p>例如：$\xi=0$ a.s. $\iff\mathbb P(\xi\ne0)=0$。</p>
+</div>
+
+<div class="box key">
+<p class="label">为什么要专门发明这个词</p>
+<p>因为<strong>积分看不见零测集</strong>。若 $\xi=\eta$ a.s.，则对任何事件 $A$ 都有 $\mathbb E(\xi;A)=\mathbb E(\eta;A)$，进而（若都存在）$\mathbb E\xi=\mathbb E\eta$、$\mathrm{Var}(\xi)=\mathrm{Var}(\eta)$、分布函数也相同。</p>
+<p>也就是说，在「用积分和分布刻画的一切性质」面前，$\xi$ 和 $\eta$ 是<strong>无法区分</strong>的。教材 p75 原话：「在许多情况下，几乎处处相等的随机变量可以不必区分它们的差别。」</p>
+<p>如果坚持要求「处处成立」（每个 $\omega$ 都成立），大量本来对的结论就要加上一堆无意义的例外——比如「$f\ge0$ 且 $\int f=0$ ⇒ $f=0$」，这只能得到 $f=0$ a.s.，在零测集上它可以随便取什么值。<strong>a.s. 不是一个让步，它才是积分能看见的「真」等价关系。</strong></p>
+</div>
+
+<p>讲义 p52 紧接着说了一句很重要的话：</p>
+
+<p class="q">前面所有的条件都可以减弱到几乎处处成立的条件。</p>
+
+<p>意思是：<a href="#s22">§2.2</a>–<a href="#s24">§2.4</a> 里那些「$\xi_n\to\xi$」「$\xi_n\ge0$」，都可以改成「a.s. 成立」，定理照样对。因为证明里真正用到的只是「不成立的那个集合概率为 0」。</p>
+
+<p>教材 p74 还给了一段更口语的解释，对理解很有帮助：</p>
+
+<p class="q">在概率论中，我们通常可以忽略概率等于零的事件。概率为零的事件称为<strong>几乎不可能事件</strong>，它的补集是概率为 1 的事件，通常称为<strong>几乎必然事件</strong>。一个关于样本点的断言如果在某个几乎必然事件上成立，称这个断言是几乎必然或几乎处处（简单地，a.s.）成立。</p>
+
+<h3 id="s27">§2.7　定理 4.2.3：零的判定<span class="tag b">板书 4</span><span class="tag a">讲义 §4.2</span><span class="tag c">教材 p.75</span></h3>
+
+<div class="thm">
+<p class="nm">定理 4.2.3</p>
+<p>设 $\xi$ 为概率空间 $(\Omega,\mathcal F,\mathbb P)$ 上的随机变量，则</p>
+<p>(1) $\xi=0$ a.s.，则 $\xi$ 可积且 $\mathbb E(\xi)=0$；</p>
+<p>(2) $\mathbb P(A)=0$，则 $\mathbb E(1_A\xi)=0$；</p>
+<p>(3) 如 $\xi$ 可积，则 $\xi=0$ a.s. $\iff\forall A\in\mathcal F,\ \mathbb E(1_A\xi)=0$；</p>
+<p>(4) 如 $\xi\ge0$，则 $\mathbb E(\xi)=0\Rightarrow\xi=0$ a.s.。</p>
+</div>
+
+<p>教材 p75 的编号是定理 4.1.3，内容相同，只是把 (3)(4) 的顺序换了一下。</p>
+
+<h4>证明要点</h4>
+
+<p><strong>(1)</strong> 板书第 4 页的完整证明：$\xi=0$ a.s. 等价于 $|\xi|=0$ a.s.。任取简单随机变量 $\eta$ 满足 $0\le\eta\le|\xi|$，则 $\eta=0$ a.s.。令 $A=\{\eta\ne0\}$，则 $\mathbb P(A)=0$，且 $\eta$ 有界（记界为 $C$）：</p>
+
+\[
+0\le\mathbb E(\eta)=\mathbb E(\eta1_A)+\mathbb E(\eta1_{A^c})\le C\,\mathbb P(A)+0=0 .
+\]
+
+<p>所以 $\mathbb E(\eta)=0$ 对一切这样的 $\eta$ 成立，由定义 4.1.2（取上确界）得 $\mathbb E|\xi|=0$，进而 $\mathbb E\xi^+=\mathbb E\xi^-=0$，故 $\mathbb E\xi=0$。</p>
+
+<p><strong>关键在哪：</strong>这一步用的是「简单随机变量有界」——所以 $\mathbb E(\eta;A)\le C\,\mathbb P(A)=0$。如果 $\eta$ 无界，这个估计就断了。</p>
+
+<p><strong>(2)</strong> $1_A\xi=0$ a.s.（在 $A^c$ 上 $1_A=0$，在 $A$ 上概率为 0），由 (1) 直接得。</p>
+
+<p><strong>(3) 必要性</strong> 由 (1)：$\xi=0$ a.s. ⇒ $1_A\xi=0$ a.s. ⇒ $\mathbb E(1_A\xi)=0$。</p>
+
+<p><strong>(3) 充分性</strong> 是这一条里唯一有内容的。要证 $\xi=0$ a.s.，只需证 $\mathbb P(\xi\gt0)=0$ 且 $\mathbb P(\xi\lt0)=0$。取 $A_n=\{\xi\gt\tfrac1n\}$，由假设 $\mathbb E(\xi1_{A_n})=0$，而</p>
+
+\[
+0=\mathbb E(\xi;A_n)\ \ge\ \frac1n\,\mathbb P(A_n)\ \Longrightarrow\ \mathbb P(A_n)=0 .
+\]
+
+<p>再由概率的连续性，$\mathbb P(\xi\gt0)=\lim_n\mathbb P(\xi\gt\tfrac1n)=0$。对 $-\xi$ 同理得 $\mathbb P(\xi\lt0)=0$。合起来 $\mathbb P(\xi\ne0)=0$。</p>
+
+<p><strong>(4)</strong> 由 (3)：$\xi\ge0$ 且 $\mathbb E\xi=0$ 意味着对所有 $A$ 有 $\mathbb E(\xi1_A)=0$（因为 $0\le\xi1_A\le\xi$，期望夹在 0 和 0 之间），再用 (3) 的充分性。</p>
+
+<div class="box ok">
+<p class="label">(3) 的意义：用「和所有示性函数的内积」来判定一个函数</p>
+<p>(3) 说的是：<strong>$\xi$ 是否为零，可以完全由 $\{\mathbb E(\xi1_A):A\in\mathcal F\}$ 这一族数决定</strong>。</p>
+<p>$\mathbb E(\xi1_A)$ 就是 $\xi$ 在事件 $A$ 上的积分。所以这句话可以读成「$\xi$ 被它在所有事件上的积分完全决定（模 a.s.）」。这是 $L^1$ 空间对偶性的雏形——在泛函分析里，同样的论证会变成「$L^1$ 的对偶是 $L^\infty$」。</p>
+<p>它也是后面很多证明的通用手法：<strong>要证两个随机变量相等，就证它们在每个事件上的积分相等</strong>。</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p3">第三部分 · §4.3 期望的计算</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:180px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s31">§3.1</a> 离散型公式</td><td><span class="tag b">板书 10·11</span><span class="tag a">讲义 §4.3</span><span class="tag c">教材 p.75</span></td><td>板书 10 写的是「必要性」那半（拆 $\Sigma^++\Sigma^-$），板书 11 是课件「离散型随机变量的期望公式」。</td></tr>
+<tr><td><a href="#s32">§3.2</a> 反例</td><td><span class="tag b">板书 7·8</span><span class="tag a">讲义 §4.3 例4.3.3</span></td><td>板书 7/8 是同一块黑板，写了完整的两行求和。</td></tr>
+<tr><td><a href="#s33">§3.3</a> LOTUS</td><td><span class="tag b">板书 3·9</span><span class="tag a">讲义 §4.3 推论4.3.1</span><span class="tag c">教材 p.76 推论4.2.1</span></td><td>板书 3 是手写的完整证明，板书 9 是课件「LOTUS 公式」。</td></tr>
+<tr><td><a href="#s34">§3.4</a> Stieltjes</td><td><span class="tag b">板书 6</span><span class="tag a">讲义 §4.3 定理4.3.4</span><span class="tag c">教材 p.77</span></td><td>板书 6 是课件「用分布函数表示期望」，黑板上有对应的 $g_\Delta$ 构造（板书 3 下半）。</td></tr>
+</table>
+</div>
+
+<h3 id="s31">§3.1　离散型：可积 ⟺ 绝对收敛<span class="tag b">板书 10·11</span><span class="tag a">讲义 §4.3</span><span class="tag c">教材 p.75</span></h3>
+
+<div class="thm">
+<p class="nm">定理 4.3.1（教材：定理 4.2.1）</p>
+<p>设 $\xi$ 是一个离散的随机变量，取值集合为 $R(\xi)$。则 $\xi$ 可积的充分必要条件为</p>
+\[
+\sum_{x\in R(\xi)}|x|\,\mathbb P(\xi=x)\lt\infty .
+\]
+<p>此时</p>
+\[
+\mathbb E(\xi)=\sum_{x\in R(\xi)}x\,\mathbb P(\xi=x).
+\]
+</div>
+
+<p>板书 11 那张课件页把「课堂提醒」写得很直白，先记住它：</p>
+
+<p class="q">离散型期望不是简单的算术平均，而是按概率加权的平均。</p>
+
+<h4>证明（讲义 p53 的写法，板书 10 是同一个意思）</h4>
+
+<p><strong>第一步：先做非负情形。</strong>设 $\xi\in\mathcal F_+$，$R(\xi)=\{x_n:n\ge1\}$。令</p>
+
+\[
+\xi_n:=\sum_{k=1}^{n}x_k1_{\{\xi=x_k\}},
+\]
+
+<p>则 $0\le\xi_n\uparrow\xi$（因为 $\xi\ge0$，截断部分只会越来越大并最终覆盖所有取值）。由 MCT：</p>
+
+\[
+\mathbb E(\xi)=\lim_{n}\mathbb E(\xi_n)=\lim_n\sum_{k=1}^{n}x_k\mathbb P(\xi=x_k)=\sum_{k=1}^{\infty}x_k\mathbb P(\xi=x_k).
+\]
+
+<p>这就是「充分性」：只要这个级数收敛（非负项，所以收敛 = 绝对收敛），期望就等于它。</p>
+
+<p><strong>第二步：一般情形。</strong>板书 10 写的是这一步。$\xi$ 可积意味着</p>
+
+\[
+\mathbb E\xi^+\lt\infty,\qquad \mathbb E\xi^-\lt\infty ,
+\]
+
+<p>而 $\xi^+$ 只在 $x\ge0$ 的取值上非零、$\xi^-$ 只在 $x\lt0$ 的取值上非零，所以</p>
+
+\[
+\mathbb E\xi^+=\sum_{x\ge0}x\,\mathbb P(\xi=x),\qquad
+\mathbb E\xi^-=\sum_{x\lt0}(-x)\,\mathbb P(\xi=x).
+\]
+
+<p>两者都有限，加起来正好是</p>
+
+\[
+\mathbb E|\xi|=\mathbb E\xi^++\mathbb E\xi^-=\sum_{x\in R(\xi)}|x|\,\mathbb P(\xi=x)\lt\infty .
+\]
+
+<p>反过来，若这个级数有限，则正部、负部各自的级数都有限，于是 $x\mapsto x\mathbb P(\xi=x)$ 这个级数<strong>绝对收敛</strong>，可以任意重排，$\mathbb E\xi=\sum x\mathbb P(\xi=x)$ 成立。$\blacksquare$</p>
+
+<div class="box key">
+<p class="label">为什么必须是「绝对」收敛</p>
+<p>两个理由，缺一不可：</p>
+<p><strong>① 定义层面。</strong>$\mathbb E\xi$ 的定义是 $\mathbb E\xi^+-\mathbb E\xi^-$。如果 $\mathbb E\xi^+=\mathbb E\xi^-=+\infty$，这个差是 $\infty-\infty$，<strong>没有定义</strong>。「绝对收敛」恰好等价于「两边都有限」，也就是「差值有意义」。</p>
+<p><strong>② 一致性层面。</strong>条件收敛的级数<strong>可以重排成任意值</strong>（Riemann 重排定理）。而 $R(\xi)$ 是一个集合，写 $\sum_{x\in R(\xi)}$ 时并没有规定求和顺序——如果结果依赖顺序，这个「期望」就不唯一了，那它就不是一个数。</p>
+<p>所以「绝对收敛」不是加强条件，是<strong>让这个记号有意义的最低要求</strong>。</p>
+</div>
+
+<h3 id="s32">§3.2　反例：收敛但期望不存在<span class="tag b">板书 7·8</span><span class="tag a">讲义 §4.3 例4.3.3</span></h3>
+
+<p>板书 7/8 是同一块黑板的两个角度。老师先写了「例：设 $\xi$ 为 r.v.，取值为</p>
+
+\[
+x_k=(-1)^k\frac{2^k}{k},\qquad \mathbb P(\xi=x_k)=\frac{1}{2^k},\qquad k=1,2,\dots
+\]
+
+<p>然后画了两行：</p>
+
+<pre>⇒  Σ_{k≥1} xₖ P(ξ=xₖ) = Σ (-1)ᵏ (2ᵏ/k)·(1/2ᵏ) = Σ (-1)ᵏ/k = −ln 2
+                        = Σ 1/k = +∞</pre>
+
+<p><strong>这两行不是等式，是两个不同的求和。</strong>老师把它们并排写，是为了对比「带符号的收敛」和「不带符号的发散」。展开成表最清楚：</p>
+
+<table>
+<tr><th style="width:60px">k</th><th style="width:110px">$x_k=(-1)^k\dfrac{2^k}{k}$</th><th style="width:90px">$p_k=\dfrac1{2^k}$</th><th style="width:110px">$x_kp_k=\dfrac{(-1)^k}{k}$</th><th style="width:90px">$|x_k|p_k=\dfrac1k$</th></tr>
+<tr><td>1</td><td>−2</td><td>1/2</td><td>−1</td><td>1</td></tr>
+<tr><td>2</td><td>+2</td><td>1/4</td><td>+1/2</td><td>1/2</td></tr>
+<tr><td>3</td><td>−8/3</td><td>1/8</td><td>−1/3</td><td>1/3</td></tr>
+<tr><td>4</td><td>+4</td><td>1/16</td><td>+1/4</td><td>1/4</td></tr>
+<tr><td>5</td><td>−32/5</td><td>1/32</td><td>−1/5</td><td>1/5</td></tr>
+<tr><td>6</td><td>+32/3</td><td>1/64</td><td>+1/6</td><td>1/6</td></tr>
+<tr><td><strong>和</strong></td><td>—</td><td>$\sum p_k=1$</td><td>$\to-\ln2\approx-0.693$</td><td>$\to+\infty$</td></tr>
+</table>
+
+<p><strong>先确认它是个合法的分布：</strong>$\sum_{k\ge1}2^{-k}=1$，没问题。</p>
+
+<p><strong>再看两列的和：</strong></p>
+
+\[
+\sum_{k\ge1}x_kp_k=\sum_{k\ge1}\frac{(-1)^k}{k}=-\ln2\quad(\text{交错调和级数，收敛}),
+\qquad
+\sum_{k\ge1}|x_k|p_k=\sum_{k\ge1}\frac1k=+\infty\quad(\text{调和级数，发散}).
+\]
+
+<div class="box warn">
+<p class="label">这个反例在打谁的脸</p>
+<p>它打的是「级数收敛 ⟹ 期望存在」这个想当然。<strong>交错调和级数收敛到 $-\ln2$，但它不是绝对收敛的，所以期望不存在。</strong></p>
+<p>为什么直觉上「期望应该是 $-\ln2$」是错的：因为期望的取值依赖于求和的<strong>顺序</strong>。把 $x_kp_k$ 这一列重新排列（比如每次取三个正项配一个负项），部分和可以收敛到任何你想要的值——Riemann 重排定理。既然结果能随便改，那这个数就不能叫「$\xi$ 的期望」。</p>
+<p><strong>这也是定义 4.1.4 为什么写成 $\mathbb E\xi^+-\mathbb E\xi^-$ 而不是直接 $\sum x\mathbb P$ 的原因</strong>：正部、负部分别求和，就自动要求两边都有限，把顺序问题一次性排除掉了。</p>
+</div>
+
+<h3 id="s33">§3.3　LOTUS：不用先求 $\varphi(\xi)$ 的分布<span class="tag b">板书 3·9</span><span class="tag a">讲义 §4.3 推论4.3.1</span><span class="tag c">教材 p.76 推论4.2.1</span></h3>
+
+<div class="thm">
+<p class="nm">推论 4.3.1（变量替换公式 / LOTUS）</p>
+<p>设 $\xi$ 是一个离散的随机变量，$\varphi:\mathbb R\to\mathbb R$ 为一个函数。则 $\varphi(\xi)$ 可积的充要条件是级数</p>
+\[
+\sum_{x\in R(\xi)}|\varphi(x)|\,\mathbb P(\xi=x)
+\]
+<p><strong>绝对收敛</strong>。此时</p>
+\[
+\mathbb E\big(\varphi(\xi)\big)=\sum_{x\in R(\xi)}\varphi(x)\,\mathbb P(\xi=x).
+\]
+</div>
+
+<p>板书 9 那张课件页把它的意义写得很好，直接抄：</p>
+
+<p class="q">要求 $\varphi(\xi)$ 的期望时，通常<strong>不必先写出 $\varphi(\xi)$ 的完整分布</strong>；直接对 $\xi$ 的取值加权即可。</p>
+
+<p>课件右边还画了一个小流程：$x\ \xrightarrow{\ \varphi\ }\ \varphi(x)$，配一句「先变换数值，再按原概率加权」。<strong>这就是 LOTUS 的全部内容</strong>。</p>
+
+<h4>证明（板书 3，手写的完整版）</h4>
+
+<p>板书 3 的推导顺序是：</p>
+
+<pre>φ(ξ) 可积 ⟺ Σ_{y∈R(φ(ξ))} |y| P(φ(ξ)=y) &lt; ∞        ← 前证明
+由定义 E(φ(ξ)) = Σ_{y} y P(φ(ξ)=y)
+P(φ(ξ)=y) = Σ_{x: φ(x)=y} P(ξ=x)
+⇒ Σ_y |y| P(φ(ξ)=y) = Σ_y |y| Σ_{x: φ(x)=y} P(ξ=x)
+                    = Σ_y Σ_{x: φ(x)=y} |φ(x)| P(ξ=x)
+                    = Σ_{x∈R(ξ)} |φ(x)| P(ξ=x)</pre>
+
+<p>关键只有一件事：<strong>$\varphi(\xi)$ 的每个取值 $y$，都对应 $\xi$ 的一批取值 $\{x:\varphi(x)=y\}$，而这些批次构成 $R(\xi)$ 的一个划分</strong>（不重不漏）。所以</p>
+
+<p style="margin-left:1.6em">· 求 $y$ 的概率时，要把这批 $x$ 的概率<strong>加起来</strong>；</p>
+<p style="margin-left:1.6em">· 最后一步把「按 $y$ 分组求和」还原成「按 $x$ 求和」，靠的正是这个划分的性质。</p>
+
+<p>板书的表格画得很直观，三列对应三个对象：</p>
+
+<table>
+<tr><th style="width:150px">$\xi$ 的取值</th><th style="width:150px">$\varphi(\xi)$ 的取值</th><th>关系</th></tr>
+<tr><td>$x$</td><td>$y=\varphi(x)$</td><td>多个 $x$ 可以映射到同一个 $y$</td></tr>
+<tr><td>$\mathbb P(\xi=x)$</td><td>$\mathbb P(\varphi(\xi)=y)=\sum_{x:\varphi(x)=y}\mathbb P(\xi=x)$</td><td>同一批 $x$ 的概率合并</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">LOTUS 为什么省事：一个具体对比</p>
+<p>要算 $\mathbb E(\xi^2)$，$\xi$ 服从二项分布 $b(n,p)$。</p>
+<p><strong>不用 LOTUS：</strong>先求 $\xi^2$ 的分布——取值是 $\{0,1,4,9,\dots,n^2\}$，$\mathbb P(\xi^2=k^2)=\binom nk p^kq^{n-k}$（注意 $k$ 和 $-k$ 会合并，但这里 $k\ge0$ 不重复），然后 $\mathbb E(\xi^2)=\sum_k k^2\binom nk p^kq^{n-k}$。<strong>白忙一场</strong>，因为算出来的东西和直接用 LOTUS 一模一样。</p>
+<p><strong>用 LOTUS：</strong>直接 $\mathbb E(\xi^2)=\sum_{k=0}^n k^2\binom nk p^kq^{n-k}$，一步到位。</p>
+<p>价值在于：$\varphi$ 一旦不单调（比如 $\varphi(x)=|x|$、$\varphi(x)=x^2$、$\varphi(x)=1/(1+x)$），求 $\varphi(\xi)$ 的分布要处理「多个 $x$ 撞到同一个 $y$」的合并问题，很啰嗦。<strong>LOTUS 说这个合并可以完全跳过。</strong></p>
+</div>
+
+<p>顺带一个常用特例（讲义 p54 例 4.3.2）：几何分布 $\mathbb P(\xi=k)=q^{k-1}p$，$k=1,2,\dots$ 的期望是</p>
+
+\[
+\mathbb E(\xi)=\sum_{k\ge1}kq^{k-1}p=p\sum_{k\ge1}kq^{k-1}=p\Big(\sum_{k\ge0}q^k\Big)'=p\Big(\frac1{1-q}\Big)'=\frac{p}{(1-q)^2}=\frac1p .
+\]
+
+<p>中间那一步「先求和再求导」的合法性来自幂级数在收敛半径内可以逐项求导——这也是为什么 $\sum kq^{k-1}$ 这种「带 $k$ 的几何级数」有闭式。</p>
+
+<h3 id="s34">§3.4　Stieltjes 积分：一个符号统一两种情形<span class="tag b">板书 6</span><span class="tag a">讲义 §4.3 定理4.3.4</span><span class="tag c">教材 p.77</span></h3>
+
+<p>板书 6 是课件「用分布函数表示期望」那一页，分两块：</p>
+
+<pre>Stieltjes 积分形式
+  设 F 是随机变量 ξ 的分布函数，φ 为合适函数，则
+      E[φ(ξ)] = ∫_R φ(x) dF(x)
+  特别地，若期望存在，则
+      E(ξ) = ∫_R x dF(x)
+
+连续型情形
+  若 ξ 有密度函数 f，则
+      E[φ(ξ)] = ∫_R φ(x) f(x) dx,    E(ξ) = ∫_R x f(x) dx</pre>
+
+<div class="thm">
+<p class="nm">定理 4.3.4</p>
+<p>设 $\xi$ 是一个随机变量，其对应的分布函数为 $F$，$\varphi:\mathbb R\to\mathbb R$ 为<strong>非负连续</strong>或<strong>有界连续</strong>函数。则</p>
+\[
+\mathbb E\big(\varphi(\xi)\big)=\int_{\mathbb R}\varphi(x)\,\mathrm dF(x).
+\]
+</div>
+
+<h4>证明</h4>
+
+<p>讲义 p56–57 的证明分四步，思路和「用简单函数逼近」完全一样，只是把 $\xi$ 的取值换成了 $x$ 轴上的分割。</p>
+
+<p><strong>第一步：只需做非负连续情形。</strong>若 $\varphi$ 有界但不非负，拆成 $\varphi=\varphi^+-\varphi^-$，两边分别用非负的结论相减。</p>
+
+<p><strong>第二步：在区间 $[a,b]$ 上做分割逼近。</strong>取 $[a,b]$ 的一个分割 $\Delta=\{x_0\lt x_1\lt\cdots\lt x_n\}$，令</p>
+
+\[
+m_i:=\inf_{x\in[x_{i-1},x_i]}\varphi(x),
+\qquad
+g_\Delta(x):=\sum_{i=1}^{n}m_i\,1_{(x_{i-1},\,x_i]}(x),\qquad x\in\mathbb R .
+\]
+
+<p>也就是用「每个小区间上的最小值」做一个阶梯函数，从下方逼近 $\varphi$。分割越细（$|\Delta|\to0$），逼近越好：</p>
+
+\[
+g_\Delta(x)\ \uparrow\ \varphi(x)\,1_{(a,b]}(x).
+\]
+
+<p><strong>第三步：对阶梯函数算期望。</strong>$g_\Delta$ 是简单函数，所以 $g_\Delta(\xi)$ 是简单随机变量，可以直接用 §1.1 的性质：</p>
+
+\[
+\mathbb E\big(g_\Delta(\xi)\big)=\sum_{i=1}^{n}m_i\,\mathbb P\big(x_{i-1}\lt\xi\le x_i\big)=\sum_{i=1}^{n}m_i\big(F(x_i)-F(x_{i-1})\big).
+\]
+
+<p>右边这个和，正是 $\varphi$ 关于 $F$ 的<strong>下 Darboux 和</strong>——也就是 Stieltjes 积分 $\int_a^b\varphi\,\mathrm dF$ 的逼近式。</p>
+
+<p><strong>第四步：用 MCT 取极限。</strong>因为 $g_\Delta(\xi)\uparrow\varphi(\xi)1_{(a,b]}(\xi)$ 且非负，由 MCT：</p>
+
+\[
+\mathbb E\big(\varphi(\xi)1_{(a,b]}(\xi)\big)=\lim_{|\Delta|\to0}\sum_{i=1}^{n}m_i\big(F(x_i)-F(x_{i-1})\big)=\int_a^b\varphi(x)\,\mathrm dF(x).
+\]
+
+<p>最后取 $a=-n$、$b=n$，令 $n\to\infty$，再用一次 MCT（此时 $\varphi(\xi)1_{(-n,n]}(\xi)\uparrow\varphi(\xi)$），得</p>
+
+\[
+\mathbb E\big(\varphi(\xi)\big)=\lim_{n\to\infty}\int_{-n}^{n}\varphi(x)\,\mathrm dF(x)=\int_{\mathbb R}\varphi(x)\,\mathrm dF(x).\qquad\blacksquare
+\]
+
+<div class="box key">
+<p class="label">$\mathrm dF$ 到底是什么：为什么一个符号能统一两种情形</p>
+<p>$\mathrm dF$ 就是「$F$ 的增量」。$F$ 长什么样，$\int\varphi\,\mathrm dF$ 就退化成什么：</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:150px">$\xi$ 的类型</th><th style="width:190px">$F$ 的形状</th><th>$\int\varphi\,\mathrm dF$ 变成</th></tr>
+<tr><td>离散型</td><td>阶梯函数，在 $x_k$ 处跳高 $p_k=\mathbb P(\xi=x_k)$</td><td>$\sum_k\varphi(x_k)p_k$ —— 就是 LOTUS</td></tr>
+<tr><td>连续型</td><td>光滑，$\mathrm dF=f(x)\,\mathrm dx$</td><td>$\int\varphi(x)f(x)\,\mathrm dx$</td></tr>
+<tr><td>奇异型</td><td>连续但导数几乎处处为 0（如 Cantor 分布）</td><td>既不是 $\sum$ 也不是 $\int f\,\mathrm dx$，但 $\int\varphi\,\mathrm dF$ 仍然有意义</td></tr>
+</table>
+<p style="margin-top:10px"><strong>这就是它的价值</strong>：$\sum$ 只管离散、$\int f\,\mathrm dx$ 只管有密度的，而 $\int\varphi\,\mathrm dF$ 对<strong>所有</strong>分布都成立，且在前两种情形下自动退化成熟悉的样子。所以教材 p79 说「化为通常的 Riemann 积分，我们将在下一章更详细地讨论这种情况」——第五章讲密度函数时会把这条接上。</p>
+</div>
+
+<div class="box warn">
+<p class="label">一个容易忽略的条件</p>
+<p>定理要求 $\varphi$ 是「非负连续或有界连续」。<strong>为什么需要连续性？</strong>因为证明里的 $g_\Delta$ 是用「小区间上的最小值」构造的，只有当 $\varphi$ 连续（或至少 Riemann 可积）时，$|\Delta|\to0$ 才能保证 $g_\Delta\to\varphi$。</p>
+<p>如果 $\varphi$ 有跳跃（比如 $\varphi=1_{[0,\infty)}$），这个逼近就不成立。不过实际做题遇到的 $\varphi$（多项式、$|x|$、$e^{tx}$、$1/(1+x)$）基本都是连续的，所以这个条件通常不用检查。</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p4">第四部分 · §4.4 方差</h2>
+
+<div class="box warn">
+<p class="label">来源说明（逐小节）</p>
+<table style="margin:8px 0 0">
+<tr><th style="width:180px">小节</th><th style="width:170px">来源</th><th>说明</th></tr>
+<tr><td><a href="#s41">§4.1</a> 定义与五条性质</td><td><span class="tag b">板书 2</span><span class="tag a">讲义 §4.4</span><span class="tag c">教材 p.79</span></td><td>板书第 2 页就是这一整节，写了定义 4.4.1、性质 (1)–(5) 的证明、以及作业。</td></tr>
+<tr><td><a href="#s42">§4.2</a> 二项分布的方差</td><td><span class="tag a">讲义 §4.4 例4.4.1</span></td><td><strong>课上没讲</strong>，但作业第 7 题（Poisson）要用同样的手法，所以补上。</td></tr>
+<tr><td><a href="#s43">§4.3</a> 反面教材</td><td><span class="tag a">讲义 §4.4 例4.4.2</span></td><td>讲义 p59–60 用红字标了「错误」，专门演示「$\xi_i$ 不独立时不能直接加方差」。</td></tr>
+</table>
+</div>
+
+<h3 id="s41">§4.1　定义与五条性质<span class="tag b">板书 2</span><span class="tag a">讲义 §4.4</span><span class="tag c">教材 p.79</span></h3>
+
+<div class="thm">
+<p class="nm">定义 4.4.1（方差）</p>
+<p>设 $\xi$ 是一个数学期望存在且有限的随机变量。如果 $\mathbb E(\xi-\mathbb E\xi)^2$ 存在，则称它为 $\xi$ 的<strong>方差</strong>，记为 $\mathrm{Var}(\xi)$ 或 $D(\xi)$。而 $\sqrt{D(\xi)}$ 称为 $\xi$ 的<strong>根方差</strong>或<strong>标准差</strong>。</p>
+</div>
+
+<p>讲义 p57 在引入它之前有一句定位，值得先看：</p>
+
+<p class="q">数学期望是随机变量的重要的数字特征，它表示了随机变量平均取值的情况。下面我们将介绍另一个数字特征：方差。它描述了随机变量<strong>偏离均值的程度</strong>。</p>
+
+<p>所以两个数字特征的分工是：<strong>期望说「中心在哪」，方差说「散得多开」</strong>。两个随机变量可以期望相同而方差差很远（比如都取值 $\{0,2\}$，一个各 $\tfrac12$、一个 $99\%$ 取 1）。</p>
+
+<div class="thm">
+<p class="nm">性质（板书 2 原表）</p>
+<p>(1) $\mathrm{Var}(\xi)=\mathbb E(\xi^2)-\big(\mathbb E\xi\big)^2$；</p>
+<p>(2) $\mathrm{Var}(\xi)=0\iff$ 存在某个常数 $C$ 使得 $\mathbb P(\xi=C)=1$；</p>
+<p>(3) 对于任意的 $a\in\mathbb R$，有 $\mathrm{Var}(a\xi)=a^2\mathrm{Var}(\xi)$；</p>
+<p>(4) 若 $\xi,\eta$ 独立，则 $\mathrm{Var}(\xi+\eta)=\mathrm{Var}(\xi)+\mathrm{Var}(\eta)$；</p>
+<p>(5) 若 $C\ne\mathbb E(\xi)$，则 $\mathrm{Var}(\xi)\lt\mathbb E\big[(\xi-C)^2\big]$。</p>
+</div>
+
+<h4>(1) 的计算公式</h4>
+
+<p>板书 2 只写了结果，讲义 p58 给了证明，用的是定理 4.3.4（Stieltjes 形式）。这里用更直白的代数：</p>
+
+\[
+\begin{aligned}
+\mathrm{Var}(\xi)&=\mathbb E(\xi-\mathbb E\xi)^2
+=\mathbb E\big[\xi^2-2\xi\,\mathbb E\xi+(\mathbb E\xi)^2\big]\\
+&=\mathbb E(\xi^2)-2\,\mathbb E\xi\cdot\mathbb E\xi+(\mathbb E\xi)^2
+=\mathbb E(\xi^2)-(\mathbb E\xi)^2 .
+\end{aligned}
+\]
+
+<p>中间一步用了线性性，以及「$\mathbb E\xi$ 是一个<strong>常数</strong>，可以提出期望号」。<strong>这是最常用的计算公式</strong>——实际算方差几乎都走这条路：先算 $\mathbb E\xi$ 和 $\mathbb E(\xi^2)$，再相减。</p>
+
+<h4>(2) 方差为零 ⟺ 几乎必然是常数</h4>
+
+<p>板书的证明是双向写的：</p>
+
+<pre>(2) Var(ξ) = 0 ⇔ ∃C, s.t. P(ξ = C) = 1
+    ⇒  ξ = Eξ a.s. ⇒ P(ξ = Eξ) = 1
+    ⇐  P(ξ = C) = 1 ⇒ ξ = C a.s., ξ² = C² a.s.
+       ⇒ Eξ = C, Eξ² = C² ⇒ Var(ξ) = C² − C² = 0 ✓</pre>
+
+<p><strong>「⇒」那半</strong>：$0=\mathrm{Var}(\xi)=\mathbb E(\xi-\mathbb E\xi)^2$。由定理 4.2.3(4)（非负且期望为 0 ⇒ a.s. 为 0），得 $\xi-\mathbb E\xi=0$ a.s.，即 $\xi=\mathbb E\xi$ a.s.，取 $C=\mathbb E\xi$ 即可。</p>
+
+<p><strong>「⇐」那半</strong>：$\xi=C$ a.s. ⇒ $\xi^2=C^2$ a.s.（两边平方，零测集不变）⇒ $\mathbb E\xi=C$、$\mathbb E\xi^2=C^2$ ⇒ 由 (1) 得 $\mathrm{Var}(\xi)=C^2-C^2=0$。</p>
+
+<div class="box key">
+<p class="label">(2) 的实际含义：方差度量的是「不确定性」，不是「数值大小」</p>
+<p>常值随机变量的方差是 0，而且<strong>只有</strong>常值随机变量的方差是 0（模 a.s.）。所以「$\mathrm{Var}(\xi)=0$」读作「$\xi$ 没有随机性」。</p>
+<p>注意这里用到了 <a href="#s27">§2.7</a> 的定理 4.2.3(4)——<strong>如果只会「期望为 0 ⇒ 函数为 0」而不加 a.s.，这一条就证不出来</strong>。这也解释了为什么 §4.2 那节要先讲 a.s.：后面的每一条性质都在用它。</p>
+</div>
+
+<h4>(3) 齐次性</h4>
+
+<p>板书只写了一行 $\mathrm{Var}(a\xi)=a^2\mathrm{Var}(\xi)$。展开就是</p>
+
+\[
+\mathrm{Var}(a\xi)=\mathbb E(a\xi)^2-\big(\mathbb E(a\xi)\big)^2=a^2\mathbb E\xi^2-a^2(\mathbb E\xi)^2=a^2\mathrm{Var}(\xi).
+\]
+
+<p>关键是 $a$ 要<strong>平方</strong>。直观上：把数据整体放大 $a$ 倍，离散程度放大 $|a|$ 倍，而方差是「平方后的平均」，所以放大 $a^2$ 倍。这也解释了为什么要开根号定义标准差——标准差和 $\xi$ 同量纲。</p>
+
+<h4>(4) 独立可加性 —— 本节唯一有内容的一条</h4>
+
+<p>板书 2 只写了结论，讲义 p58 给了展开。完整推导：</p>
+
+\[
+\begin{aligned}
+\mathrm{Var}(\xi+\eta)
+&=\mathbb E(\xi+\eta)^2-\big(\mathbb E(\xi+\eta)\big)^2\\
+&=\mathbb E\xi^2+2\mathbb E(\xi\eta)+\mathbb E\eta^2-\big[(\mathbb E\xi)^2+2\mathbb E\xi\mathbb E\eta+(\mathbb E\eta)^2\big]\\
+&=\underbrace{\big[\mathbb E\xi^2-(\mathbb E\xi)^2\big]}_{=\,\mathrm{Var}(\xi)}
++\underbrace{\big[\mathbb E\eta^2-(\mathbb E\eta)^2\big]}_{=\,\mathrm{Var}(\eta)}
++\underbrace{2\big[\mathbb E(\xi\eta)-\mathbb E\xi\mathbb E\eta\big]}_{\text{交叉项}} .
+\end{aligned}
+\]
+
+<p>最后那个交叉项，由性质 (4)（<a href="#s12">§1.2</a>）：<strong>$\xi,\eta$ 独立 ⇒ $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$ ⇒ 交叉项 = 0</strong>。于是结论成立。</p>
+
+<div class="box warn">
+<p class="label">这条性质的独立性只用了一次，而且只用来消掉交叉项</p>
+<p>把上面的推导倒过来看：如果 $\xi,\eta$ <strong>不</strong>独立，交叉项 $2[\mathbb E(\xi\eta)-\mathbb E\xi\mathbb E\eta]$ 一般不为 0，正确公式是</p>
+\[
+\mathrm{Var}(\xi+\eta)=\mathrm{Var}(\xi)+\mathrm{Var}(\eta)+2\,\mathrm{Cov}(\xi,\eta),
+\qquad \mathrm{Cov}(\xi,\eta):=\mathbb E(\xi\eta)-\mathbb E\xi\mathbb E\eta .
+\]
+<p>而由 <a href="#s14">§1.4</a>，<strong>「不相关」恰恰就是 $\mathrm{Cov}(\xi,\eta)=0$</strong>。所以更准确的说法是：</p>
+\[
+\xi,\eta\ \text{不相关}\ \Longrightarrow\ \mathrm{Var}(\xi+\eta)=\mathrm{Var}(\xi)+\mathrm{Var}(\eta),
+\]
+<p>而「独立 ⇒ 不相关」，所以独立性是它的一个充分条件，但不是必要条件。<strong>考试里如果题目只给了「不相关」，用这条性质是对的；如果什么依赖关系都没给，就不能用。</strong></p>
+</div>
+
+<h4>(5) 均值是最优的中心</h4>
+
+<p>板书 2 的证明：</p>
+
+\[
+\begin{aligned}
+\mathbb E(\xi-C)^2
+&=\mathbb E\big[(\xi-\mathbb E\xi)+(\mathbb E\xi-C)\big]^2\\
+&=\mathbb E(\xi-\mathbb E\xi)^2+2(\mathbb E\xi-C)\underbrace{\mathbb E(\xi-\mathbb E\xi)}_{=\,0}+(\mathbb E\xi-C)^2\\
+&=\mathrm{Var}(\xi)+(\mathbb E\xi-C)^2\ \gt\ \mathrm{Var}(\xi)\qquad(\text{当 }C\ne\mathbb E\xi).
+\end{aligned}
+\]
+
+<p>板书在这个式子旁边标了两个记号：交叉项那里写「$=0$」，最后一项下面写「$>0$」——就是在交代为什么严格大于。</p>
+
+<figure>
+<svg viewBox="0 0 680 280" width="100%" role="img" aria-labelledby="f4t f4d">
+<title id="f4t">方差是偏离中心的最小平方误差</title>
+<desc id="f4d">以两点等可能分布为例，画出 E(ξ−C)² 关于 C 的抛物线，最低点在 C 等于期望处，最低值为方差。</desc>
+<defs>
+<marker id="arwD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<line x1="80" y1="240" x2="640" y2="240" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwD)"/>
+<line x1="90" y1="252" x2="90" y2="40" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwD)"/>
+<text x="640" y="260" font-size="12" fill="var(--ink3)">C</text>
+<text x="74" y="46" font-size="12" fill="var(--ink3)">E(ξ−C)²</text>
+
+<polyline points="90,55 132,90 196,131 260,157 345,170 430,157 494,131 558,90 600,55"
+          fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+
+<line x1="345" y1="170" x2="345" y2="240" stroke="var(--warn)" stroke-width="1.2" stroke-dasharray="4 3"/>
+<line x1="90" y1="170" x2="345" y2="170" stroke="var(--warn)" stroke-width="1.2" stroke-dasharray="4 3"/>
+<circle cx="345" cy="170" r="4" fill="var(--warn)"/>
+
+<text x="345" y="258" font-size="12" fill="var(--warn)" text-anchor="middle">C = Eξ = 1</text>
+<text x="84" y="166" font-size="12" fill="var(--warn)" text-anchor="end">Var ξ = 1</text>
+<text x="140" y="212" font-size="12.5" fill="var(--ink2)">偏离 Eξ 越远，</text>
+<text x="140" y="232" font-size="12.5" fill="var(--ink2)">平方误差越大</text>
+</svg>
+<figcaption>图 4 · 以 $\mathbb P(\xi=0)=\mathbb P(\xi=2)=\tfrac12$ 为例：$\mathbb E(\xi-C)^2=C^2-2C+2$，抛物线最低点在 $C=\mathbb E\xi=1$，最低值恰好是 $\mathrm{Var}(\xi)=1$。</figcaption>
+</figure>
+
+<div class="box ok">
+<p class="label">(5) 的意义：为什么方差非要用 $\mathbb E\xi$ 当中心</p>
+<p>因为<strong>「用 $C$ 去逼近 $\xi$，平方误差的期望」这个量，在 $C=\mathbb E\xi$ 时取到最小</strong>。所以「方差」不是随便挑了个中心，它是「最小平方误差」这个最优值。</p>
+<p>这也把方差和最小二乘联系起来了：$\mathbb E\xi$ 是 $\xi$ 在常数里的<strong>最佳 $L^2$ 逼近</strong>，而方差就是这个逼近的残差平方和。后面学条件期望时，会有完全平行的结论（$\mathbb E(\xi\mid\mathcal G)$ 是 $\xi$ 在 $\mathcal G$-可测函数里的最佳 $L^2$ 逼近）。</p>
+</div>
+
+<h3 id="s42">§4.2　二项分布的方差<span class="tag a">讲义 §4.4 例4.4.1</span></h3>
+
+<p>课上没讲，但作业第 7 题（Poisson）要用同一套手法，所以补上。</p>
+
+<p>设 $\xi\sim b(n,p)$。两条路：</p>
+
+<p><strong>路线 A：硬算。</strong>已知 $\mathbb E\xi=np$，再算</p>
+
+\[
+\mathbb E(\xi^2)=\sum_{k=0}^{n}k^2\binom nk p^kq^{n-k}=npq+n^2p^2
+\quad\Longrightarrow\quad
+\mathrm{Var}(\xi)=npq+n^2p^2-(np)^2=npq .
+\]
+
+<p><strong>路线 B：0-1 分解。</strong>令 $\xi_i=1_{\{\text{第 }i\text{ 次成功}\}}$，则 $\xi_i$ 独立同分布、$\mathbb E\xi_i=p$、$\mathrm{Var}(\xi_i)=p-p^2=pq$，且 $\xi=\sum_{i=1}^{n}\xi_i$。由性质 (4)：</p>
+
+\[
+\mathrm{Var}(\xi)=\sum_{i=1}^{n}\mathrm{Var}(\xi_i)=npq .
+\]
+
+<div class="box key">
+<p class="label">对比一下：算期望不需要独立，算方差需要</p>
+<p>上一份笔记 <a href="./概率论笔记-第四章期望.html#s41">§4.1</a> 强调过：$\mathbb E\xi=\sum\mathbb E\xi_i$ 只用线性性，<strong>不需要独立性</strong>。</p>
+<p>但 $\mathrm{Var}(\xi)=\sum\mathrm{Var}(\xi_i)$ 走的是性质 (4)，<strong>需要独立性</strong>（严格说需要不相关）。这是两条完全不同的路，混起来就会出错——下一节就是活生生的例子。</p>
+</div>
+
+<h3 id="s43">§4.3　反面教材：$\xi_i$ 不独立时不能直接加<span class="tag a">讲义 §4.4 例4.4.2</span></h3>
+
+<p>讲义 p59 举了一个例子，并且用<strong>红字</strong>在结果旁边标了「错误」。这个例子值得完整看一遍，因为它是本节最容易踩的坑。</p>
+
+<p class="q">例 4.4.2：设 $n$ 个球随意地放入 $n$ 个盒子中。$\xi$ 表示空盒子的个数。求其数学期望和方差。</p>
+
+<p><strong>解（讲义原文，含那个错误）：</strong>$\xi_i$ 表示第 $i$ 个盒子为空的事件的指标，则 $\xi=\sum_{i=1}^{n}\xi_i$，$\xi_i$ 取 0 或 1，并且 $\xi_i$（$1\le i\le n$）<strong>不独立</strong>同分布：$\mathbb P(\xi_i=1)=\big(\tfrac{n-1}{n}\big)^n$。所以</p>
+
+\[
+\mathbb E(\xi_i)=1\times\Big(\frac{n-1}{n}\Big)^n=\Big(\frac{n-1}{n}\Big)^n ,
+\qquad
+\mathrm{Var}(\xi_i)=\Big(\frac{n-1}{n}\Big)^n-\Big(\frac{n-1}{n}\Big)^{2n} .
+\]
+
+<p>到这里都对。然后讲义写：</p>
+
+\[
+\mathbb E(\xi)=\frac{(n-1)^n}{n^{n-1}},\qquad
+\mathrm{Var}(\xi)=\frac{(n-1)^n}{n^{n-1}}-\frac{(n-1)^{2n}}{n^{2n-1}}\qquad\text{【错误】}
+\]
+
+<p>错在哪：它默认了 $\mathrm{Var}(\xi)=\sum\mathrm{Var}(\xi_i)$，<strong>而 $\xi_i$ 之间并不独立</strong>。</p>
+
+<p>讲义 p60 紧接着自己纠正了：</p>
+
+<pre>注意：实际上这里的 ξᵢ 不是独立的。例如 n=2 时
+0 = P(ξ₁=1, ξ₂=1) ≠ 1/16 = P(ξ₁=1)P(ξ₂=1)
+但由同分布我们知道
+E(ξ²) = Σ E(ξᵢ²) + Σ_{i≠j} E(ξᵢξⱼ) = nE(ξ₁²) + n(n−1)E(ξ₁ξ₂)</pre>
+
+<p>（$n=2$ 时两个盒子都为空是不可能的，所以左边是 0；而各自为空的概率是 $\tfrac14$，乘积 $\tfrac1{16}$。）</p>
+
+<p>正确的做法是<strong>把 $\mathbb E(\xi^2)$ 老老实实展开</strong>：</p>
+
+\[
+\mathbb E(\xi^2)=\sum_{i}\mathbb E(\xi_i^2)+\sum_{i\ne j}\mathbb E(\xi_i\xi_j)=n\mathbb E(\xi_1^2)+n(n-1)\mathbb E(\xi_1\xi_2),
+\]
+
+<p>其中 $\mathbb E(\xi_1^2)=\mathbb E(\xi_1)=\big(\tfrac{n-1}{n}\big)^n$（0-1 变量的平方等于自身），而 $\mathbb E(\xi_1\xi_2)=\mathbb P(\xi_1=1,\xi_2=1)=\big(\tfrac{n-2}{n}\big)^n$（前两个盒子都空，意味着所有球都落在剩下 $n-2$ 个盒子里）。于是</p>
+
+\[
+\mathbb E(\xi^2)=\frac{(n-1)^n}{n^{n-1}}+\frac{(n-1)(n-2)^n}{n^{n-1}},
+\qquad
+\mathrm{Var}(\xi)=\mathbb E(\xi^2)-(\mathbb E\xi)^2
+=\frac{(n-1)^n}{n^{n-1}}+\frac{(n-1)(n-2)^n}{n^{n-1}}-\Big[\frac{(n-1)^n}{n^n}\Big]^2 .
+\]
+
+<div class="box warn">
+<p class="label">这个例子要你记住的一句话</p>
+<p><strong>期望可以无条件地加，方差不行。</strong></p>
+<p>· $\mathbb E(\xi_1+\cdots+\xi_n)=\sum\mathbb E\xi_i$ —— 只要每个期望存在，<strong>什么依赖关系都不用管</strong>；</p>
+<p>· $\mathrm{Var}(\xi_1+\cdots+\xi_n)=\sum\mathrm{Var}(\xi_i)$ —— <strong>必须不相关</strong>（独立当然够，但独立不是必需的）；</p>
+<p>· 若不相关不成立，就必须加交叉项 $2\sum_{i\lt j}\mathrm{Cov}(\xi_i,\xi_j)$。</p>
+<p><strong>为什么会有这个差别</strong>：期望是线性的，方差是二次的。展开 $(\sum\xi_i)^2$ 会冒出所有交叉项 $\xi_i\xi_j$，而期望是线性的，交叉项不会自动消失；只有在独立（或不相关）时，$\mathbb E(\xi_i\xi_j)=\mathbb E\xi_i\mathbb E\xi_j$ 才能把它们配成 $\mathrm{Var}$ 的形式消掉。</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="p5">第五部分 · 作业 P89 第 7、10、12、17、19 题</h2>
+
+<p>板书第 2 页末尾写的作业（逐字）：</p>
+
+<pre>作业：P89.  7. 10. 12. 17. 19</pre>
+
+<p>页码是教材《概率论》（应坚刚、何萍）的页码，P89 是<strong>第四章章末习题</strong>的第一页（第 7 题在 p89，第 10、12 题在 p90，第 17、19 题在 p91）。</p>
+
+<ol class="work">
+
+<li>
+<p class="stem">7. 如果 $X$ 服从参数为 $\lambda$ 的 Poisson 分布，证明：</p>
+\[
+\mathbb E\big(X(X-1)\cdots(X-k)\big)=\lambda^{k+1},\qquad k=0,1,2,\cdots .
+\]
+<p class="stem">求 $X$ 的方差。</p>
+<div class="hint">
+<p><b>从哪下手：</b>这叫<strong>阶乘矩</strong>。不要展开 $X^2$ 硬算，直接用定义：</p>
+\[
+\mathbb E\big[X(X-1)\cdots(X-k)\big]=\sum_{m\ge0}m(m-1)\cdots(m-k)\,e^{-\lambda}\frac{\lambda^m}{m!}.
+\]
+<p>关键是注意到 $m(m-1)\cdots(m-k)=\dfrac{m!}{(m-k-1)!}$，和分母的 $m!$ 一约，只剩 $\dfrac{1}{(m-k-1)!}$。然后令 $j=m-k-1$，剩下的求和正好是 $e^{\lambda}$ 的 Taylor 级数。</p>
+<p><b>坑一：</b>求和必须从 $m\ge k+1$ 开始——$m\le k$ 时那个连乘里有 0 因子，整项为 0，硬写成从 0 开始会出错（分母 $m!$ 在 $m\lt k+1$ 时约不掉）。</p>
+<p><b>坑二：</b>题目给的指数是 $k+1$ 不是 $k$。用 $k=0$ 自查：$\mathbb E(X)=\lambda=\lambda^1$ ✓；用 $k=1$ 自查：$\mathbb E[X(X-1)]=\lambda^2$ ✓。</p>
+<p><b>求方差：</b>取 $k=1$ 得 $\mathbb E(X^2)-\mathbb E(X)=\lambda^2$，所以 $\mathbb E(X^2)=\lambda^2+\lambda$，再由性质 (1) 得 $\mathrm{Var}(X)=\lambda$。<b>Poisson 的期望和方差相等</b>，这个结论要记住。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">10. 设 $\xi,\eta$ 是二值（值域仅有两个元素）随机变量，证明：$\xi,\eta$ 独立当且仅当它们不相关。</p>
+<div class="hint">
+<p><b>从哪下手：</b>「⇒」是免费的——由 <a href="#s12">§1.2</a> 性质 (4)，独立 ⇒ $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$，即不相关。</p>
+<p>「⇐」是全部内容。设 $R(\xi)=\{a,b\}$、$R(\eta)=\{c,d\}$（$a\ne b$、$c\ne d$）。令 $A=\{\xi=a\}$、$B=\{\eta=c\}$，则 $A^c=\{\xi=b\}$、$B^c=\{\eta=d\}$，并且<strong>指示变量可以写成 $\xi$ 的线性函数</strong>：</p>
+\[
+1_A=\frac{\xi-b}{a-b},\qquad 1_B=\frac{\eta-d}{c-d}.
+\]
+<p>这一步是整个证明的钥匙：它把「事件」翻译成了「随机变量的线性表达式」，于是可以代入已知的 $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$ 去算。</p>
+<p>把 $\xi=b+(a-b)1_A$、$\eta=d+(c-d)1_B$ 代进 $\mathbb E(\xi\eta)=\mathbb E\xi\mathbb E\eta$，展开后绝大多数项会两边抵消，最后剩下的正是</p>
+\[\mathbb P(A\cap B)=\mathbb P(A)\mathbb P(B).\]
+<p>这就够了：二值变量的独立性只需要验「同时取到某一对值」这一条（另外三对由取补自动得到，用 $\mathbb P(A^c\cap B)=\mathbb P(B)-\mathbb P(A\cap B)$ 之类）。</p>
+<p><b>这个结论的意义：</b>它说明「独立 ⇏ 不相关」的反例<strong>必须</strong>用至少三个取值的变量（比如 <a href="#s14">§1.4</a> 那个十字形的例子）。二值情形下两者等价。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">12. 掷一个骰子到所有点数都至少出现一次即停止，$\xi$ 表示掷的次数。求 $\mathbb E\xi$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>经典的「集齐」问题，用<strong>分阶段</strong>。把过程切成六段：</p>
+<p>$\xi_i$ = 从「已经出现 $i-1$ 种点数」到「出现第 $i$ 种新点数」所需的掷数（$i=1,\dots,6$）。则 $\xi=\xi_1+\cdots+\xi_6$。</p>
+<p>关键是 $\xi_i$ 的分布：此时还没出现过的点数有 $6-(i-1)$ 种，所以每次掷出「新点数」的概率是 $p_i=\dfrac{7-i}{6}$，而「等第一次成功」的等待时间服从几何分布，故 $\mathbb E\xi_i=\dfrac1{p_i}=\dfrac{6}{7-i}$。</p>
+<p>由线性性：</p>
+\[\mathbb E\xi=\sum_{i=1}^{6}\frac{6}{7-i}=6\Big(\frac16+\frac15+\frac14+\frac13+\frac12+1\Big)=14.7 .\]
+<p><b>注意：</b>这里 $\xi_i$ 之间其实<strong>并不独立</strong>（几何分布的参数在变，而且各段的「成功」定义不同），但<strong>求期望只用线性性，不需要独立</strong>——这正是上一份笔记反复强调的那一点。</p>
+<p><b>如果要求方差</b>，就<strong>不能</strong>直接加，必须用 $\mathrm{Var}(\xi)=\sum\mathrm{Var}(\xi_i)+2\sum_{i\lt j}\mathrm{Cov}(\xi_i,\xi_j)$，而协方差要另外算——这题只问期望，是出题人的善意。</p>
+<p><b>自检：</b>答案必须大于 6（不可能 6 次就集齐，除非极幸运），小于 $6\times6=36$。14.7 落在合理区间。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">17. $n$ 个球随机放入 $m$ 个盒子，$\xi$ 是空盒的个数，求 $\mathbb E\xi$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>指示变量法。<strong>不要</strong>去求 $\xi$ 的分布（那是第二类 Stirling 数，很麻烦），直接拆：</p>
+\[\xi=\sum_{i=1}^{m}1_{\{\text{第 }i\text{ 个盒子为空}\}} .\]
+<p>由线性性，$\mathbb E\xi=\sum_{i=1}^{m}\mathbb P(\text{第 }i\text{ 盒为空})$。而「第 $i$ 盒为空」意味着 $n$ 个球全部落进其余 $m-1$ 个盒子，每个球落进去的概率是 $\dfrac{m-1}{m}$，且各球独立，所以</p>
+\[\mathbb P(\text{第 }i\text{ 盒为空})=\Big(\frac{m-1}{m}\Big)^n
+\quad\Longrightarrow\quad
+\mathbb E\xi=m\Big(\frac{m-1}{m}\Big)^n .\]
+<p><b>必须点明的一点：</b>各盒子是否为空<strong>并不独立</strong>（知道第 1 盒空了，第 2 盒为空的概率会变大）。但线性性不要求独立，所以这个答案是对的。<b>这题的价值就在于逼你区分「期望可加」和「方差可加」。</b></p>
+<p><b>自检：</b>取 $m=2$、$n=1$，得 $\mathbb E\xi=2\cdot(\tfrac12)^1=1$——一个球放进两个盒子，恰好一个空盒 ✓。</p>
+<p><b>和讲义例 4.4.2 的关系：</b>那是同一类问题的 $n$ 个球 / $n$ 个盒子版本，见 <a href="#s43">§4.3</a>。</p>
+</div>
+</li>
+
+<li>
+<p class="stem">19. 设 $\xi_1,\cdots,\xi_k$ 是独立同分布的非负整数值随机变量，证明</p>
+\[\mathbb E\min(\xi_1,\cdots,\xi_k)=\sum_{n\ge1}\Big(\sum_{m\ge n}p_m\Big)^{k},\]
+<p class="stem">其中 $p_m=\mathbb P(\xi_1=m)$。</p>
+<div class="hint">
+<p><b>从哪下手：</b>两步。<strong>第一步</strong>用「尾和公式」（上一份作业第 3 题，已证过）：对<strong>非负整值</strong>随机变量 $\zeta$，</p>
+\[\mathbb E\zeta=\sum_{n\ge1}\mathbb P(\zeta\ge n).\]
+<p>把 $\zeta=\min(\xi_1,\dots,\xi_k)$ 代进去（它也是非负整值的，所以公式适用）。</p>
+<p><strong>第二步</strong>是关键观察：</p>
+\[\{\min(\xi_1,\dots,\xi_k)\ge n\}=\bigcap_{i=1}^{k}\{\xi_i\ge n\} .\]
+<p>「最小值不小于 $n$」等价于「<strong>每一个</strong>都不小于 $n$」——这一步把「min」翻译成了「交」，是整题唯一的技巧。</p>
+<p>然后由独立性，交的概率变成乘积：</p>
+\[\mathbb P\Big(\bigcap_{i=1}^{k}\{\xi_i\ge n\}\Big)=\prod_{i=1}^{k}\mathbb P(\xi_i\ge n)=\Big(\sum_{m\ge n}p_m\Big)^{k},\]
+<p>因为同分布，每个因子都一样，且 $\mathbb P(\xi_1\ge n)=\sum_{m\ge n}p_m$。代回尾和公式即得结论。</p>
+<p><b>自检：</b>取 $k=1$，右边变成 $\sum_{n\ge1}\sum_{m\ge n}p_m$，正好就是尾和公式本身（$\mathbb E\xi_1$）✓。取 $k=2$、$\xi_i$ 服从参数 $p$ 的几何分布，可以手算验证两边相等。</p>
+</div>
+</li>
+
+</ol>
+
+<!-- ============================================================ -->
+<hr>
+
+<h2 id="pa">附录 A · 板书逐张对照（19 张）</h2>
+
+<p>19 张照片：<strong>5 张手写笔记</strong>（前 5 张，是同学整理的，字迹工整但顺序不是课堂顺序）、<strong>3 张投影课件</strong>、<strong>11 张黑板</strong>。编号与你给的附件顺序一致。</p>
+
+<table>
+<tr><th style="width:40px">#</th><th style="width:80px">类型</th><th>内容（摘要）</th><th style="width:130px">对应小节</th></tr>
+<tr><td>1</td><td>手写</td><td>性质 (1)–(5) 总表；证 (4) 的 $\xi_n,\eta_n$ 逼近；「猜想」$\xi,\eta$ 独立 ⟺ 有界连续 $f,g$ 的乘积期望分解；Cauchy–Schwarz 判别式法；注 (1)(2)；不相关的定义</td><td><a href="#s11">§1.1</a>–<a href="#s14">§1.4</a></td></tr>
+<tr><td>2</td><td>手写</td><td>Stieltjes 截断收尾；定义 4.4.1 方差；性质 (1)–(5) 及证明；<strong>作业 P89 7.10.12.17.19</strong></td><td><a href="#s34">§3.4</a>、<a href="#s41">§4.1</a>、<a href="#p5">第五部分</a></td></tr>
+<tr><td>3</td><td>手写</td><td>离散型 $\varphi(\xi)$ 可积 ⟺ 绝对收敛的完整推导（含三列表格）；定理 4.3.4 陈述；$g_\Delta$ 构造与 MCT 收尾</td><td><a href="#s33">§3.3</a>、<a href="#s34">§3.4</a></td></tr>
+<tr><td>4</td><td>手写</td><td>定理 4.2.2(3) 的夹逼（$\xi\le\xi_n$ 与 $\xi_n\le\eta$ 两支）；a.s. 记号；定理 4.2.3 四条及 (1)(2)(3) 的证明</td><td><a href="#s24">§2.4</a>、<a href="#s27">§2.7</a></td></tr>
+<tr><td>5</td><td>手写</td><td>不相关反例（十字形支撑集，$\tfrac14\ne\tfrac18$）；§4.2 三个定理的陈述；Fatou 与 (3) 的证明</td><td><a href="#s14">§1.4</a>、<a href="#p2">第二部分</a></td></tr>
+<tr><td>6</td><td>投影</td><td>课件「用分布函数表示期望」：Stieltjes 形式 $\mathbb E[\varphi(\xi)]=\int\varphi\,\mathrm dF$；连续型 $\int\varphi f\,\mathrm dx$；特别地 $\mathbb E(\xi)=\int x\,\mathrm dF(x)$</td><td><a href="#s34">§3.4</a></td></tr>
+<tr><td>7</td><td>黑板</td><td>反例：$x_k=(-1)^k\frac{2^k}{k}$、$\mathbb P(\xi=x_k)=\frac1{2^k}$；$\sum x_kp_k=\sum\frac{(-1)^k}{k}=-\ln2$；$\sum|x_k|p_k=\sum\frac1k=+\infty$</td><td><a href="#s32">§3.2</a></td></tr>
+<tr><td>8</td><td>黑板</td><td>同 7，另一角度（左侧能看清老师的板书动作）</td><td><a href="#s32">§3.2</a></td></tr>
+<tr><td>9</td><td>投影</td><td>课件「函数的期望：LOTUS 公式」：离散型 $\mathbb E[\varphi(\xi)]=\sum\varphi(x)\mathbb P(\xi=x)$，只要右端绝对收敛；意义「不必先写出 $\varphi(\xi)$ 的完整分布」；配 $x\xrightarrow{\varphi}\varphi(x)$ 流程图</td><td><a href="#s33">§3.3</a></td></tr>
+<tr><td>10</td><td>黑板</td><td>「记 $\xi$ 充分性 / 必要性」：$\xi$ 可积 ⟺ $\mathbb E\xi^+\lt\infty$ 且 $\mathbb E\xi^-\lt\infty$ ⟺ $\sum_{x\ge0}x\mathbb P(\xi=x)+\sum_{x\lt0}(-x)\mathbb P(\xi=x)\lt\infty$ ⟺ $\sum|x|\mathbb P(\xi=x)\lt\infty$</td><td><a href="#s31">§3.1</a></td></tr>
+<tr><td>11</td><td>投影</td><td>课件「离散型随机变量的期望公式」：定理（可积 ⟺ $\sum|x|\mathbb P(\xi=x)\lt\infty$，此时 $\mathbb E\xi=\sum x\mathbb P(\xi=x)$）；课堂提醒「不是算术平均，而是按概率加权」</td><td><a href="#s31">§3.1</a></td></tr>
+<tr><td>12</td><td>黑板</td><td>定理 4.2.2(3) 陈述；$1_A\xi$ 与 $\xi$ 的关系示意；<strong>定义 4.2.1（a.s.）</strong>；$\xi=0$ a.s. ⇒ $\mathbb P(\xi\ne0)=0$</td><td><a href="#s26">§2.6</a></td></tr>
+<tr><td>13</td><td>黑板</td><td>同 12，另一角度（只拍到定义 4.2.1 那块）</td><td><a href="#s26">§2.6</a></td></tr>
+<tr><td>14</td><td>黑板</td><td>(3)(a)：由 $\xi\le\xi_n\uparrow\xi$ 得 $0\le\xi_n-\xi\uparrow\xi-\xi$，用 MCT 得 $\mathbb E(\xi-\xi)=\lim\mathbb E(\xi_n-\xi)$；(b) 开头</td><td><a href="#s24">§2.4</a></td></tr>
+<tr><td>15</td><td>黑板</td><td>(3)(b) 夹逼完成：$\mathbb E(\lim\xi_n)\le\varliminf\mathbb E(\xi_n)$ 与 $\mathbb E(\lim\xi_n)\ge\varlimsup\mathbb E(\xi_n)$ 两支并排，中间大括号标 $\xi=\lim\xi_n$</td><td><a href="#s24">§2.4</a></td></tr>
+<tr><td>16</td><td>黑板</td><td>性质 (4) 收尾：$\xi_n\eta_n\uparrow\xi\eta$、$\mathbb E(\xi\eta)=\lim\mathbb E(\xi_n)\mathbb E(\eta_n)=\mathbb E\xi\mathbb E\eta$；「$\xi,\eta$ 独立 ⇒ $\forall f,g$ 有界连续，$\mathbb E f(\xi)g(\eta)=\mathbb E f(\xi)\mathbb E g(\eta)$」；(5) Cauchy–Schwarz 开头</td><td><a href="#s12">§1.2</a>、<a href="#s13">§1.3</a></td></tr>
+<tr><td>17</td><td>黑板</td><td>证 (4) ①：$\xi_n=\sum\frac{i-1}{2^n}1_{\{\cdots\}}+n1_{\{\xi\ge n\}}$、$\eta_n$ 同构；$\xi_n\uparrow\xi$、$\eta_n\uparrow\eta$、$\xi_n,\eta_n\in\mathcal S\cap\mathcal F_+$；下半张是性质 (1)–(5) 总表</td><td><a href="#s12">§1.2</a>、<a href="#s11">§1.1</a></td></tr>
+<tr><td>18</td><td>黑板</td><td>同 17，另一角度（能看清 $\xi_n$ 求和的上限 $n2^n$）</td><td><a href="#s12">§1.2</a></td></tr>
+<tr><td>19</td><td>黑板</td><td>同 16/17 的交界处，能同时看到逼近构造与 Cauchy–Schwarz 的 $f(t)=\mathbb E(t\xi-\eta)^2$</td><td><a href="#s12">§1.2</a>、<a href="#s13">§1.3</a></td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">两处需要提醒的辨认</p>
+<p><strong>① 前 5 张是手写笔记，不是黑板。</strong>它们的内容和板书重合，但顺序是整理过的，不是课堂顺序。所以第 1 页开头就出现了「性质 (1)–(5)」这种总结性的东西——那是课后整理，不是老师课上第一句就讲的。</p>
+<p><strong>② 第 7/8 张板书上的那个「等号」容易误读。</strong>老师写的是</p>
+<pre>Σ xₖ pₖ = Σ (−1)ᵏ/k = −ln2
+        = Σ 1/k = +∞</pre>
+<p>第二行的等号<strong>不是</strong>「$-\ln2=+\infty$」，而是「另一个求和，等于 $+\infty$」。他是在对比两个不同的求和：带符号的收敛，不带符号的发散。笔记 <a href="#s32">§3.2</a> 里用表格把这个对比拆开了。</p>
+</div>
+
+<h2 id="pb">附录 B · 页码与材料索引</h2>
+
+<table>
+<tr><th style="width:180px">材料</th><th style="width:150px">位置</th><th>内容</th></tr>
+<tr><td rowspan="5">《概率论讲义（2026-9）》<br>（151 页 PDF）</td><td>p39–p49</td><td>§4.1 期望的定义和性质（<strong>上一份笔记</strong>）</td></tr>
+<tr><td>p50–p53</td><td>§4.2 收敛定理（定理 4.2.1 单调收敛、定理 4.2.2 Fatou–Lebesgue、定义 4.2.1 a.s.、定理 4.2.3）</td></tr>
+<tr><td>p53–p57</td><td>§4.3 数学期望的计算（定理 4.3.1、例 4.3.2 几何、例 4.3.3 反例、推论 4.3.1、定理 4.3.4）</td></tr>
+<tr><td>p57–p64</td><td>§4.4 方差与不等式（定义 4.4.1、性质、例 4.4.1–4.4.3、Chebyshev、Hölder、Minkowski）</td></tr>
+<tr><td>p89 附近</td><td>协方差与相关系数（第 6 章）里有一个和作业第 10 题同手法的例题</td></tr>
+<tr><td rowspan="4">《概率论》第 2 版<br>（应坚刚、何萍）</td><td>p68–p75</td><td>§4.1 期望的定义和性质（含性质 (4)(5) 的证明、例 4.1.2 不相关反例、定理 4.1.2 Fatou/控制收敛、定理 4.1.3）</td></tr>
+<tr><td>p75–p79</td><td>§4.2 期望的计算公式（定理 4.2.1、例 4.2.1、推论 4.2.1、Stieltjes 形式）</td></tr>
+<tr><td>p79–p84</td><td>§4.3 方差及其不等式（定理 4.3.1 Chebyshev + Cauchy–Schwarz）、§4.4 常见分布的期望</td></tr>
+<tr><td>p89–p92</td><td>第四章章末习题（<strong>作业 7、10、12、17、19</strong>）</td></tr>
+</table>
+
+<h2 id="pc">附录 C · 还没讲的</h2>
+
+<table>
+<tr><th style="width:150px">内容</th><th>说明</th></tr>
+<tr><td>Chebyshev 不等式</td><td>讲义 p62 / 教材 p79。$\mathbb P(|\xi|\ge m)\le\frac{1}{m^\alpha}\mathbb E|\xi|^\alpha$，推论是 $\mathbb P(|\xi-\mathbb E\xi|\ge m)\le\frac{\mathrm{Var}(\xi)}{m^2}$。<strong>它是 §4.5 大数定律的发动机</strong>，下次课大概率接着讲。</td></tr>
+<tr><td>Hölder / Minkowski</td><td>讲义 p62–64。$\|\xi\eta\|_1\le\|\xi\|_r\|\eta\|_s$（$\frac1r+\frac1s=1$）与 $\|\xi+\eta\|_r\le\|\xi\|_r+\|\eta\|_r$。属于 $L^p$ 空间的内容，可能只在习题里出现。</td></tr>
+<tr><td>常见分布的期望与方差汇总</td><td>教材 §4.4（p80–84）：二项、Poisson、几何、均匀、正态、指数、Gamma 的 $\mathbb E$ 与 $\mathrm{Var}$。建议自己列一张表背下来。</td></tr>
+<tr><td>§4.5 大数定律</td><td>教材 p84–92。弱大数定律（Chebyshev 证）、Kolmogorov 强大数定律。</td></tr>
+<tr><td>第 5 章 连续型随机变量</td><td>讲义 p65 起 / 教材 p93 起。到那时 Stieltjes 积分会退化成 $\int\varphi f\,\mathrm dx$，<a href="#s34">§3.4</a> 的伏笔在这里收。</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">下次课前最值得先看的两处</p>
+<p><strong>① 讲义 p62 的 Chebyshev 不等式。</strong>它的证明只有一行（$\mathbb P(|\xi|\ge m)=\mathbb E(1_{\{|\xi|\ge m\}})\le\mathbb E\big(\frac{|\xi|^\alpha}{m^\alpha}1_{\{|\xi|\ge m\}}\big)$），但用法极广。看完再回头看 <a href="#s24">§2.4</a> 的控制收敛，你会发现两者是同一个思想：「用指示函数把事件翻译成期望」。</p>
+<p><strong>② 教材 p79 关于 Cauchy–Schwarz 的那句话。</strong>它说「任取 $x\in\mathbb R$，$\mathbb E\xi^2-2x\mathbb E\xi\eta+x^2\mathbb E\eta^2=\mathbb E(\xi-x\eta)^2\ge0$，因此立刻推出 Cauchy–Schwarz 不等式」。这个写法和板书的判别式法是同一件事，对照着看能把 <a href="#s13">§1.3</a> 彻底钉牢。</p>
+</div>
+
+<div class="footnote">
+<p><strong>关于这份笔记</strong></p>
+<p>· 这是《概率论》第四章的<strong>第二份</strong>笔记。第一份 <a href="./概率论笔记-第四章期望.html">概率论笔记-第四章期望.html</a> 讲 §4.1 的三层定义与单调收敛定理；两份合起来覆盖讲义 §4.1–§4.4。</p>
+<p>· 公式用离线 KaTeX 渲染，不依赖网络；配套资源在 <code>assets/katex/</code>。</p>
+<p>· <strong>来源三态已在每个小节标题标注</strong>：<span class="tag b">板书 N</span> 表示课上有照片、文字由照片逐字辨认（N 见 <a href="#pa">附录 A</a>）；<span class="tag a">讲义 §x</span> 表示讲义有而课上未展开；<span class="tag c">教材 p.xx</span> 表示教材补充；无标签（<span class="tag">我补的</span>）表示上述三处都没有，是为把「为什么」讲通而补的反例、动机或解释。<strong>无标签的内容不要当成老师讲过。</strong></p>
+<p>· <strong>讲义与教材的章节号不一致</strong>（从「收敛定理」起教材比讲义小 1），见页面顶部的对照表。引用时我都在标签里注明了是哪一本。</p>
+<p>· 讲义里另有两处小笔误，不影响结论，供参考：p50 定理 4.2.2(2) 的条件写成「$\forall\ge1$」（漏了 $n$）；p53 证明中「由单调<strong>手里</strong>定理」应为「单调<strong>收敛</strong>定理」。</p>
+<p>· 前 5 张照片是<strong>手写笔记</strong>而非黑板，内容与板书重合但顺序经过整理，见 <a href="#pa">附录 A</a> 的提醒。</p>
+</div>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body></html>
