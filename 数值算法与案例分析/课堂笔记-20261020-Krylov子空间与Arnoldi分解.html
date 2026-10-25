@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课堂笔记 · 2026-10-20 · 子空间迭代与 Krylov 子空间（Arnoldi / Lanczos）</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.8; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px; margin:0 auto; padding:56px 32px 96px}
+.eyebrow{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+h1{font-size:30px; line-height:1.35; font-weight:600; margin:0 0 18px; letter-spacing:-.01em}
+.lede{font-size:15px; color:var(--ink2); margin:0 0 8px}
+h2{
+  font-size:21px; font-weight:600; margin:56px 0 18px; padding-bottom:10px;
+  border-bottom:1px solid var(--line); letter-spacing:-.01em;
+}
+h3{font-size:17px; font-weight:600; margin:34px 0 12px}
+h4{font-size:15px; font-weight:600; margin:24px 0 8px; color:var(--ink2)}
+p{margin:12px 0}
+ul,ol{margin:12px 0; padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; background:var(--bg2); padding:1px 5px; border-radius:4px}
+pre{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:14px 18px; overflow-x:auto; font-size:13px; line-height:1.65}
+pre code{background:none; padding:0}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+.toc{background:var(--bg3); border:1px solid var(--line); border-radius:12px; padding:18px 24px; margin:28px 0 8px}
+.toc ol{margin:8px 0 0; padding-left:22px}
+.toc li{margin:3px 0; font-size:14.5px}
+.toc ol ol{margin:2px 0 8px; padding-left:20px; border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px; color:var(--ink2)}
+.tag{
+  display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.02em;
+  padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:2px;
+  background:var(--gold-bg); color:var(--gold); white-space:nowrap;
+}
+.tag.a{background:var(--accent-bg); color:var(--accent)}
+.tag.o{background:var(--ok-bg); color:var(--ok)}
+.box{border:1px solid var(--line); border-radius:12px; padding:16px 22px; margin:20px 0; background:var(--bg3)}
+.box.key{background:var(--accent-bg); border-color:transparent}
+.box.warn{background:var(--warn-bg); border-color:transparent}
+.box.ok{background:var(--ok-bg); border-color:transparent}
+.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px; text-transform:uppercase}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse; width:100%; margin:20px 0; font-size:14.5px}
+th,td{border-bottom:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
+.katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.5px; color:var(--ink3); margin-top:6px}
+table.apx th:nth-child(1),table.apx td:nth-child(1){width:52px}
+table.apx th:nth-child(2),table.apx td:nth-child(2){width:58px; white-space:nowrap}
+table.apx th:nth-child(4),table.apx td:nth-child(4){width:104px}
+figure{margin:26px 0}
+figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-10-20 课堂</p>
+<h1>子空间迭代与 Krylov 子空间：<br>从幂法到一个只靠 matvec 就能造出来的子空间</h1>
+
+<p class="lede">这堂课的主线只有一句话：<strong>把幂法从一个向量推广到一个 <em>k</em> 维子空间</strong>。先把「同时推 <em>k</em> 个向量」的子空间迭代讲通，再指出其中一个特殊选择——Krylov 子空间——可以由一次 matvec 长一维地造出来，于是有了 Arnoldi 分解 $AQ=QH$。本笔记按「收敛速度 → 子空间迭代 → Krylov → Arnoldi 分解 → 三个追问」的顺序展开。</p>
+
+<p class="lede" style="font-size:14px">配套：本课用到的幂法 / 反幂法 / QR 方法细节见 <a href="补课笔记-幂法反幂法与第3章引言.html">《补课笔记 · 幂法 / 反幂法 / QR 方法 + 第 2、3 章补充》</a>，特别是 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3 Arnoldi 过程</a>（讲义版）与 <a href="补课笔记-幂法反幂法与第3章引言.html#s533">§5.3.3 上 Hessenberg 分解</a>（Householder 版）。本笔记讲的是<strong>课堂版</strong>，两者视角不同，不要当成重复。</p>
+
+<div class="toc">
+<strong style="font-size:13px; letter-spacing:.06em; color:var(--ink3)">目录</strong>
+<ol>
+<li><a href="#p1">本课在课程里的位置</a></li>
+<li><a href="#p2">收敛速度：从「收敛」到「多快」</a>
+  <ol>
+    <li><a href="#s21">两种收敛阶：linear 与 quadratic</a></li>
+    <li><a href="#s22">幂法的角度刻画：$\tan\theta_{k+1}\le|\lambda_2/\lambda_1|\tan\theta_k$</a></li>
+    <li><a href="#s23">这条引理为什么贯穿整章</a></li>
+  </ol>
+</li>
+<li><a href="#p3">子空间迭代：把 $k$ 个向量一起推</a>
+  <ol>
+    <li><a href="#s31">从 $k=1$ 到 $k\gt 1$</a></li>
+    <li><a href="#s32">迭代格式与板书原文</a></li>
+    <li><a href="#s33">为什么每一步都必须重做 QR</a></li>
+    <li><a href="#s34">收敛速度与那个被圈出来的 $\lambda_{k+1}$</a></li>
+  </ol>
+</li>
+<li><a href="#p4">Krylov 子空间与 Arnoldi 分解</a>
+  <ol>
+    <li><a href="#s41">定义，以及它为什么是「自然」的</a></li>
+    <li><a href="#s42">为什么不能直接拿 $\{r,Ar,A^2r,\dots\}$ 当基</a></li>
+    <li><a href="#s43">Arnoldi 正交化：板书逐行</a></li>
+    <li><a href="#s44">定理：$q_j=p_{j-1}(A)\,r$</a></li>
+    <li><a href="#s45">推论：$Aq_j$ 只落在前 $j+1$ 个方向里</a></li>
+    <li><a href="#s46">矩阵形式：$AQ_k=Q_kH_k+\beta_{k+1}q_{k+1}e_k^*$</a></li>
+    <li><a href="#s47">Hessenberg 结构：逐列看图</a></li>
+    <li><a href="#s48">余项 $\beta_{k+1}$ 到底在干什么</a></li>
+    <li><a href="#s49">对称的情形：$A^*=A\Rightarrow H$ 三对角 $\Rightarrow$ 短递推</a></li>
+    <li><a href="#s410">Hessenberg 上半部分装的是什么</a></li>
+    <li><a href="#s411">这个分解后面拿来干什么</a></li>
+  </ol>
+</li>
+<li><a href="#p5">为什么用 $Aq_j$ 而不是 $A^j r$</a></li>
+<li><a href="#p6">Krylov 比子空间迭代省在哪</a></li>
+<li><a href="#p7">附录 · 30 张照片逐张对照</a></li>
+</ol>
+</div>
+
+<div class="box warn">
+<p class="label">来源：这一课哪些是讲的、哪些不是</p>
+<p><strong>先说结论：</strong>文件夹里 30 张照片并不都属于 10.20。按拍摄时间（16:21:21–16:22:36）它们是一口气拍完的，而板上的内容明显分成两代：</p>
+<table>
+<tr><th>照片</th><th>内容</th><th>判断</th></tr>
+<tr><td>154–161（手写笔记本 8 页）</td><td>154 = Krylov / Arnoldi / Hessenberg / 收敛阶；155–161 = 幂法、反幂法、RQI、QR 迭代、Hessenberg 约化、隐式 QR、双位移</td><td>只有 <strong>154 是本课新记的</strong>；155–161 属 <a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a> 已覆盖的第 5 章内容</td></tr>
+<tr><td>162、163、164、165</td><td>黑板：<code>Krylov subspace</code> / <code>Arnoldi decomp.</code> / $[r,Ar,A^2r,A^3r]=[q_1,\dots,q_4]R$ / $AQ_k=\dots$ / $Q_k^*AQ_k=H_k$ / $A^*=A\Rightarrow H_k^*=H_k$ 三对角</td><td><strong>本课新写的</strong></td></tr>
+<tr><td>166</td><td>黑板：$\|\alpha_2q_2+\cdots+\alpha_nq_n\|_2$ 与 $\alpha_i\leftarrow\alpha_i(\lambda_i/\lambda_1)^k$</td><td>幂法的角度刻画，<strong>本课写在 Krylov 板旁边的旧板</strong></td></tr>
+<tr><td>167–183（20 张，其中 175 糊得没法读）</td><td>反幂法、RQI、$AV=VH$、子空间迭代、plain QR / LR、Hessenberg 约化、shifting、implicit QR、Wilkinson shift、double shift、实 Schur 的 $2\times2$ 块</td><td><strong>上一堂课的板书，没擦</strong>。已全部由 <a href="补课笔记-幂法反幂法与第3章引言.html#p3">补课笔记第三部分</a> 覆盖</td></tr>
+</table>
+<p><strong>判据与保留意见：</strong>光看照片<strong>无法区分</strong>「老师 10.20 又重新讲了一遍」和「上一堂课的板书还留在板上」。判定的依据是手写笔记页 154 只记了 Krylov/Arnoldi 这一段——主人自己认定本课新内容就是这块。所以本笔记把 162–166 当本课主线，其余按旧板书处理。若实际课上做了整章串讲，请以老师为准。</p>
+</div>
+
+<div class="box warn">
+<p class="label">记号撞车预警：这节课撞了四处</p>
+<table>
+<tr><th>记号</th><th>在本课是什么</th><th>和哪里撞车</th></tr>
+<tr><td>$q_1,\dots,q_n$</td><td><strong>两套完全不同的东西</strong>：在 <a href="#s22">§2.2</a> 幂法的角度刻画里是 $A$ 的<strong>特征向量</strong>；在 <a href="#s43">§4.3</a> 之后是 Krylov 子空间的<strong>标准正交基</strong></td><td>同一个字母、同一个下标范围，含义完全不同。板书上这两处挨着写，最容易看串</td></tr>
+<tr><td>$H$</td><td><strong>上 Hessenberg 阵</strong> $H_k=Q_k^*AQ_k$</td><td><a href="补课笔记-幂法反幂法与第3章引言.html#s533">补课笔记 §5.3.3</a> 里 $H$ 是 <strong>Householder 变换</strong>（完全不同的东西）；同笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 的 $H$ 才是 Hessenberg，与本笔记一致。另注意板书还用了带横线的 $\bar H_k$（多一行的扩展版，见 <a href="#s46">§4.6</a>）</td></tr>
+<tr><td>$\beta_k$ / $h_{k,k-1}$</td><td>同一个数：Hessenberg 的<strong>次对角元</strong>，也等于新向量的范数 $\|\tilde q_k\|_2$</td><td>板书上两种写法都出现（<a href="#s46">§4.6</a> 有说明）</td></tr>
+<tr><td>$\mathcal{K}_k$ / $K(A,r,k)$</td><td>第 $k$ 个 Krylov 子空间。板书写 $K(A,r,k)$，本笔记写 $\mathcal{K}_k(A,r)$，两者是同一个东西</td><td>讲义 PDF 2 §2.4.3 写 $K(A,b,k)$（初始向量记作 $b$ 而不是 $r$）；下标 $k$ 还同时是迭代步数</td></tr>
+<tr><td>$r$</td><td>Krylov 子空间的<strong>初始向量</strong> $r$（解方程组时它就是初始残量 $b-Ax_0$）</td><td><a href="补课笔记-幂法反幂法与第3章引言.html#s310">§3.10</a> 的残量 $r=b-Ax$、<a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 的列数 $r$</td></tr>
+</table>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p1">第一部分 · 本课在课程里的位置<span class="tag">板书 162–166</span></h2>
+
+<p><strong>一句话：</strong>第 5 章讲的是「怎么求<strong>一个</strong>特征值 / 特征向量」，本课开始讲「怎么一次求<strong>一批</strong>」，并由此过渡到第 4 章的 Krylov 方法。桥梁是<strong>子空间</strong>这个概念：幂法推的是一个向量，子空间迭代推的是一整个 $k$ 维子空间。</p>
+
+<p>把整章的收敛速度线索摆在一起看，会发现它们是同一个式子的四种面孔：</p>
+
+<table>
+<tr><th>方法</th><th>被推的对象</th><th>收敛因子</th><th>见</th></tr>
+<tr><td>幂法</td><td>一个向量 $x_k$</td><td>$|\lambda_2/\lambda_1|$</td><td><a href="#s22">§2.2</a></td></tr>
+<tr><td>反幂法</td><td>一个向量 $x_k$</td><td>$|\lambda_i-\mu|\,/\,|\lambda_k-\mu|$（$i\ne k$）</td><td><a href="补课笔记-幂法反幂法与第3章引言.html#s22">补课笔记 §2.2</a></td></tr>
+<tr><td>Rayleigh 商迭代</td><td>一个向量，但位移每步更新</td><td>三次（quadratic 的升级版）</td><td><a href="补课笔记-幂法反幂法与第3章引言.html#s26">补课笔记 §2.6</a></td></tr>
+<tr><td><strong>子空间迭代</strong></td><td>$k$ 个向量 / 一个 $k$ 维子空间</td><td>$|\lambda_{k+1}/\lambda_k|$</td><td><a href="#s34">§3.4</a></td></tr>
+<tr><td><strong>Krylov / Arnoldi</strong></td><td>一个 $k$ 维子空间，但只用 matvec 造</td><td>由「多项式在谱上的最小值」决定</td><td><a href="#s411">§4.11</a></td></tr>
+</table>
+
+<p>最后一行是本课埋的伏笔，也是第 4 章全部收敛性分析的起点：把 $|\lambda_2/\lambda_1|^k$ 换成 $\min_{p}\max_{\lambda\in\Lambda(A)}|p(\lambda)|$，幂法的比值就升级成了多项式逼近问题。</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p2">第二部分 · 收敛速度：从「收敛」到「多快」<span class="tag">板书 166、168</span><span class="tag">笔记 154</span></h2>
+
+<h3 id="s21">§2.1 两种收敛阶：linear 与 quadratic<span class="tag">板书 165 下半、168 上半</span></h3>
+
+<p><strong>一句话：</strong>板书上写的两个不等式，是在给「收敛」这件事<strong>定量</strong>——不说「会收敛」，而说「每步误差乘一个常数」或「每步误差平方一次」。</p>
+
+<p>板书原文（两块板上各写了一遍）：</p>
+
+<pre><code>|ε_k| ≤ r |ε_{k-1}|      r ∈ [0,1)      linear convergence
+|ε_k| ≤ C |ε_{k-1}|²                    quadratic convergence</code></pre>
+
+<p>旁边画了两张 $\log|\varepsilon_k|$ 对 $k$ 的图：linear 那张是一条<strong>向右下斜的直线</strong>，quadratic 那张是<strong>越走越陡的曲线</strong>（板书画成一个向左上弯的弧，横轴 $k$、纵轴 $\log|\varepsilon_k|$，意思是斜率每步翻倍）。</p>
+
+<p>为什么取 $\log$：linear 收敛时 $\log|\varepsilon_k|\le \log|\varepsilon_0|+k\log r$，右边是 $k$ 的<strong>一次函数</strong>，所以图上是一条直线，斜率 $\log r$；而 $r$ 越接近 1，直线越平。quadratic 时 $\log|\varepsilon_k|\approx 2\log|\varepsilon_{k-1}|$，所以斜率每步<strong>翻倍</strong>，图上必然是越来越陡的曲线。</p>
+
+<div class="box key">
+<p class="label">数量级：这两个式子差多少</p>
+<p>都从 $\varepsilon_0=10^{-1}$ 降到 $10^{-16}$（双精度的机器 epsilon 量级）：</p>
+<ul>
+<li><strong>linear，$r=0.5$</strong>：$0.5^k\le 10^{-15}$，即 $k\approx 50$ 步。这就是幂法的常态。</li>
+<li><strong>quadratic，$C=1$</strong>：$10^{-1}\to 10^{-2}\to 10^{-4}\to 10^{-8}\to 10^{-16}$，<strong>4 步</strong>。</li>
+</ul>
+<p>4 步对 50 步。这就是为什么 <a href="补课笔记-幂法反幂法与第3章引言.html#s26">RQI</a> 值得多算一次矩阵分解（每步一次 LU，$O(n^3)$），而幂法只做 matvec。</p>
+</div>
+
+<p><strong>注意一个容易混的地方：</strong>quadratic 的式子本身<strong>不保证收敛</strong>。$C|\varepsilon_0|\ge 1$ 时它会发散。它的含义是「一旦进入 $|\varepsilon_k|\lt 1/C$ 的区域，就飞快」——所以实际算法都是先用便宜的方法（幂法、子空间迭代）把误差压到吸引域里，再切到二次收敛的方法。</p>
+
+<figure>
+<svg viewBox="0 0 680 260" width="100%" role="img" aria-labelledby="fig1t fig1d">
+<title id="fig1t">线性收敛与二次收敛的 log 误差曲线</title>
+<desc id="fig1d">左图线性收敛时 log 误差随迭代次数线性下降，是一条直线；右图二次收敛时曲线越来越陡，四步就从 10 的负 1 次方降到 10 的负 16 次方。</desc>
+<g font-family="system-ui,sans-serif">
+  <!-- left panel -->
+  <text x="40" y="24" font-size="12.5" fill="var(--ink2)">linear：r = 0.5，约 50 步</text>
+  <line x1="60" y1="210" x2="300" y2="210" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="60" y1="210" x2="60" y2="50" stroke="var(--ink3)" stroke-width="1"/>
+  <text x="24" y="56" font-size="11" fill="var(--ink3)">log|ε|</text>
+  <text x="280" y="228" font-size="11" fill="var(--ink3)">k</text>
+  <text x="46" y="58" font-size="10" fill="var(--ink3)">0</text>
+  <text x="38" y="214" font-size="10" fill="var(--ink3)">−16</text>
+  <line x1="60" y1="60" x2="270" y2="206" stroke="var(--accent)" stroke-width="2"/>
+  <line x1="60" y1="60" x2="72" y2="60" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 3"/>
+  <circle cx="60" cy="60" r="3.5" fill="var(--accent)"/>
+  <text x="80" y="52" font-size="10.5" fill="var(--accent)">ε₀</text>
+  <text x="150" y="120" font-size="11" fill="var(--accent)">斜率 = log r</text>
+  <!-- right panel -->
+  <text x="390" y="24" font-size="12.5" fill="var(--ink2)">quadratic：C = 1，4 步</text>
+  <line x1="400" y1="210" x2="650" y2="210" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="400" y1="210" x2="400" y2="50" stroke="var(--ink3)" stroke-width="1"/>
+  <text x="364" y="56" font-size="11" fill="var(--ink3)">log|ε|</text>
+  <text x="630" y="228" font-size="11" fill="var(--ink3)">k</text>
+  <path d="M400 60 L440 66 L480 78 L520 102 L560 150 L600 200" fill="none" stroke="var(--ok)" stroke-width="2"/>
+  <circle cx="400" cy="60" r="3" fill="var(--ok)"/>
+  <circle cx="440" cy="66" r="3" fill="var(--ok)"/>
+  <circle cx="480" cy="78" r="3" fill="var(--ok)"/>
+  <circle cx="520" cy="102" r="3" fill="var(--ok)"/>
+  <circle cx="560" cy="150" r="3" fill="var(--ok)"/>
+  <circle cx="600" cy="200" r="3" fill="var(--ok)"/>
+  <text x="408" y="172" font-size="10.5" fill="var(--ok)">斜率每步翻倍</text>
+</g>
+</svg>
+<figcaption>图 1 · 两种收敛阶在 $\log|\varepsilon_k|$–$k$ 图上的形状。linear 是直线（幂法、子空间迭代），quadratic 是越来越陡的曲线（Newton、RQI）。</figcaption>
+</figure>
+
+<h3 id="s22">§2.2 幂法的角度刻画：$\tan\theta_{k+1}\le|\lambda_2/\lambda_1|\tan\theta_k$<span class="tag">板书 166</span></h3>
+
+<p><strong>一句话：</strong>幂法收敛的「误差」不一定要用向量距离量，用<strong>夹角</strong>量更漂亮——因为它对尺度不敏感，而且收敛因子精确等于特征值之比，不带任何未知常数。</p>
+
+<p>板书写了三行，我先把它们抄下来，再说明每一行是干什么用的：</p>
+
+<pre><code>A* = A
+|λ₁| > |λ₂| ≥ ⋯ ≥ |λₙ|
+ q₁   q₂      qₙ
+
+x₀ = q₁α₁ + ⋯ + qₙαₙ
+Aᵏx₀ = λ₁ᵏ ( q₁α₁ + q₂α₂(λ₂/λ₁)ᵏ + ⋯ + qₙαₙ(λₙ/λ₁)ᵏ )
+
+θₖ = ∠(Aᵏx₀ , q₁)          tan θ_{k+1} ≤ |λ₂/λ₁| tan θₖ
+
+‖q₂α₂ + ⋯ + qₙαₙ‖₂ = (|α₂|² + ⋯ + |αₙ|²)^{1/2}
+αᵢ ← αᵢ (λᵢ/λ₁)ᵏ</code></pre>
+
+<p>板书的最后两行不是新结论，而是<strong>证明要用的两个零件</strong>：第一行说 $\{q_i\}$ 是<strong>标准正交</strong>的（所以范数等于坐标的 2-范数，交叉项全为零），第二行说每一轮的坐标都在被 $(\lambda_i/\lambda_1)^k$ 缩放。下面把证明补全。</p>
+
+<h4>证明</h4>
+
+<p><strong>前提。</strong>板书第一行写 $A^*=A$，这不是装饰：它保证 $A$ 有一组<strong>标准正交</strong>的特征向量 $q_1,\dots,q_n$（谱定理），而这正是「范数 $=$ 坐标 2-范数」这一步的依据。若 $A$ 只是可对角化而非 Hermite，特征向量不正交，下面第 (2) 步要换成用 $Q^{-1}$ 的范数来估，常数会变差，但结论的<strong>收敛因子</strong>仍然是 $|\lambda_2/\lambda_1|$。</p>
+
+<p><strong>(1) 展开。</strong>写 $x_0=\sum_{i=1}^n \alpha_i q_i$，要求 $\alpha_1\ne 0$（否则 $x_0$ 与 $q_1$ 正交，幂法拿不到 $\lambda_1$）。则</p>
+
+\[
+A^k x_0=\sum_{i=1}^n \alpha_i\lambda_i^k q_i=\lambda_1^k\Big(\alpha_1q_1+\sum_{i=2}^n \alpha_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^k q_i\Big).
+\]
+
+<p><strong>(2) 拆成平行于 $q_1$ 和垂直于 $q_1$ 的两块。</strong>因为 $\{q_i\}$ 标准正交，$\alpha_1q_1$ 就是 $A^kx_0/\lambda_1^k$ 在 $q_1$ 上的正交投影，剩下的部分</p>
+
+\[
+v_k:=\lambda_1^k\sum_{i=2}^n \alpha_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^k q_i
+\]
+
+<p>满足 $v_k\perp q_1$。于是</p>
+
+\[
+\tan\theta_k=\frac{\|v_k\|_2}{\|\lambda_1^k\alpha_1q_1\|_2}
+=\frac{\big\|\sum_{i=2}^n \alpha_i(\lambda_i/\lambda_1)^k q_i\big\|_2}{|\alpha_1|}
+=\frac{\Big(\sum_{i=2}^n |\alpha_i|^2\big|\lambda_i/\lambda_1\big|^{2k}\Big)^{1/2}}{|\alpha_1|},
+\]
+
+<p>最后一步用了标准正交性（也就是板书那行 $\|\alpha_2q_2+\cdots+\alpha_nq_n\|_2=(|\alpha_2|^2+\cdots+|\alpha_n|^2)^{1/2}$）。</p>
+
+<p><strong>(3) 把 $k$ 换成 $k+1$，然后「提出来」。</strong></p>
+
+\[
+\tan\theta_{k+1}
+=\frac{\Big(\sum_{i=2}^n |\alpha_i|^2\big|\lambda_i/\lambda_1\big|^{2k+2}\Big)^{1/2}}{|\alpha_1|}
+=\frac{\Big(\sum_{i=2}^n |\alpha_i|^2\big|\lambda_i/\lambda_1\big|^{2k}\cdot\big|\lambda_i/\lambda_1\big|^{2}\Big)^{1/2}}{|\alpha_1|}.
+\]
+
+<p>关键一步：对 $i\ge 2$ 有 $|\lambda_i|\le|\lambda_2|$（这是「$|\lambda_1|\gt|\lambda_2|\ge\cdots\ge|\lambda_n|$」<strong>唯一</strong>被用到的地方），所以每个 $\big|\lambda_i/\lambda_1\big|^2\le\big|\lambda_2/\lambda_1\big|^2$，可以整体提到根号外面：</p>
+
+\[
+\tan\theta_{k+1}\le\frac{|\lambda_2|}{|\lambda_1|}\cdot
+\frac{\Big(\sum_{i=2}^n |\alpha_i|^2\big|\lambda_i/\lambda_1\big|^{2k}\Big)^{1/2}}{|\alpha_1|}
+=\frac{|\lambda_2|}{|\lambda_1|}\tan\theta_k .
+\]
+
+<p>$\blacksquare$</p>
+
+<div class="box ok">
+<p class="label">这个式子比「$\|x_k-q_1\|\le C r^k$」好在哪</p>
+<ol>
+<li><strong>常数是显式的。</strong>没有 $C$、没有 $\alpha_i$、没有 $\|x_0\|$。收敛因子就是 $|\lambda_2/\lambda_1|$，一句话说清「多快」。</li>
+<li><strong>尺度无关。</strong>幂法的向量范数会指数增长或下溢（$\lambda_1^k$ 那一项），但 $\tan\theta$ 是比值，把这个因子约掉了。所以这个不等式<strong>不会被上溢/下溢破坏</strong>——这也解释了为什么实际代码里要每步归一化：不归一化，$\tan\theta$ 算出来还是对的，但向量本身会炸。</li>
+<li><strong>它自动给出了线性收敛。</strong>$\tan\theta_{k+1}\le r\tan\theta_k$，$r=|\lambda_2/\lambda_1|\in[0,1)$，正是 <a href="#s21">§2.1</a> 的 linear convergence，只是把「误差 $\varepsilon_k$」具体化成了「夹角正切」。</li>
+</ol>
+</div>
+
+<figure>
+<svg viewBox="0 0 680 230" width="100%" role="img" aria-labelledby="fig2t fig2d">
+<title id="fig2t">幂法夹角误差的几何含义</title>
+<desc id="fig2d">向量 A 的 k 次幂乘以 x0 与主特征向量 q1 的夹角为 theta_k，垂直分量长度为 v_k 的模，平行分量为 alpha1 乘以 lambda1 的 k 次方，正切就是两者之比。</desc>
+<g font-family="system-ui,sans-serif">
+  <line x1="70" y1="180" x2="600" y2="180" stroke="var(--ink3)" stroke-width="1.2"/>
+  <text x="606" y="185" font-size="12" fill="var(--ink3)">q₁</text>
+  <!-- vector A^k x0 -->
+  <line x1="70" y1="180" x2="470" y2="62" stroke="var(--accent)" stroke-width="2.2" marker-end="url(#arw1)"/>
+  <text x="410" y="52" font-size="12" fill="var(--accent)">Aᵏx₀</text>
+  <!-- perpendicular component -->
+  <line x1="470" y1="62" x2="470" y2="180" stroke="var(--warn)" stroke-width="1.8" stroke-dasharray="5 4"/>
+  <text x="478" y="126" font-size="11.5" fill="var(--warn)">vₖ ⊥ q₁</text>
+  <!-- angle arc -->
+  <path d="M110 180 A 40 40 0 0 0 102 158" fill="none" stroke="var(--ink2)" stroke-width="1.3"/>
+  <text x="122" y="176" font-size="11.5" fill="var(--ink2)">θₖ</text>
+  <text x="200" y="200" font-size="11.5" fill="var(--ink3)">‖λ₁ᵏα₁ q₁‖₂ = |α₁|·|λ₁|ᵏ  （平行分量）</text>
+  <text x="200" y="220" font-size="11.5" fill="var(--ink3)">tan θₖ = ‖vₖ‖ / |α₁|，每步乘上 ≤ |λ₂/λ₁|</text>
+  <defs>
+    <marker id="arw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+</g>
+</svg>
+<figcaption>图 2 · $\tan\theta_k$ 就是「垂直分量 / 平行分量」。垂直分量里第 $i$ 项带着 $(\lambda_i/\lambda_1)^k$，所以每一步都被压缩一次，压缩比不超过 $|\lambda_2/\lambda_1|$。</figcaption>
+</figure>
+
+<h3 id="s23">§2.3 这条引理为什么贯穿整章<span class="tag o">教材补充</span></h3>
+
+<p>板书写完这个不等式就翻页了，没解释用途。但它其实是后面所有方法的<strong>模板</strong>：</p>
+
+<ul>
+<li><strong>反幂法</strong>：把 $A$ 换成 $(A-\mu I)^{-1}$，特征值变成 $1/(\lambda_i-\mu)$，模最大的变成离 $\mu$ 最近的那个，于是收敛因子从 $|\lambda_2/\lambda_1|$ 变成 $|\lambda_i-\mu|/|\lambda_k-\mu|$——<strong>形式一模一样</strong>，只是换了谱。</li>
+<li><strong>子空间迭代</strong>：把「一个向量与 $q_1$ 的夹角」换成「一个子空间与 $\mathrm{span}\{q_1,\dots,q_k\}$ 的夹角」，收敛因子变成 $|\lambda_{k+1}/\lambda_k|$。见 <a href="#s34">§3.4</a>。</li>
+<li><strong>Krylov / GMRES</strong>：把「只剩 $(\lambda_i/\lambda_1)^k$ 这种单项式衰减」换成「任选一个 $k$ 次多项式 $p$，让 $p(\lambda_i)$ 尽量小」。因为 $q_j=p_{j-1}(A)r$（<a href="#s44">§4.4</a>），子空间里能造出的所有向量都是「多项式乘 $r$」，所以误差的上界就是</li>
+</ul>
+
+\[
+\frac{\|x_k-x^*\|}{\|x_0-x^*\|}\le \min_{\substack{\deg p\le k-1\\ p(0)=1}}\ \max_{\lambda\in\Lambda(A)}|p(\lambda)| .
+\]
+
+<p>当 $\Lambda(A)$ 是实轴上的一段区间时，这个极小极大问题的最优解就是<strong>Chebyshev 多项式</strong>，于是得到 GMRES/CG 的经典收敛界。所以「$|\lambda_2/\lambda_1|^k$」只是这个更一般框架在「谱只有一个点占优」时的特例。</p>
+
+<div class="box warn">
+<p class="label">来源说明</p>
+<p>§2.3 的三条都是<strong>我按教材补的</strong>，板书上没有。板书上 $\tan\theta_{k+1}$ 那一块写完就直接进入 Krylov 了，中间没有任何过渡文字。列出这三条是因为它们解释了「为什么老师要在这里插一段幂法的角度分析」——如果不接到后面的子空间/Krylov 上，这段看起来像是随手复习。</p>
+</div>
+
+<hr>
+<!-- ============================================================ -->
+<h2 id="p3">第三部分 · 子空间迭代：把 $k$ 个向量一起推<span class="tag">板书 170（右）、174</span></h2>
+
+<h3 id="s31">§3.1 从 $k=1$ 到 $k\gt 1$</h3>
+
+<p><strong>一句话：</strong>幂法一次只能抓一个特征值，而且重特征值就抓不全。要一次抓 $k$ 个，最直接的想法是<strong>同时推 $k$ 个向量</strong>——但立刻会撞上一个问题：它们会自己塌成一维。</p>
+
+<p>动机有两条，都很实际：</p>
+<ol>
+<li><strong>要 $k$ 个特征值就要 $k$ 个方向。</strong>幂法推出来的永远只有 $q_1$ 那一个方向。</li>
+<li><strong>重特征值需要一整个子空间。</strong>若 $\lambda_1=\lambda_2$ 但 $q_1,q_2$ 张成一个二维特征子空间，单个向量只会落到其中<strong>某一个</strong>方向上（取决于 $x_0$），另一个方向丢了。要抓住整个特征子空间，必须推一个<strong>子空间</strong>而不是一个向量。</li>
+</ol>
+
+<p>所以对象从 $x_k\in\mathbb{C}^n$ 换成 $X_i\in\mathbb{C}^{n\times k}$（$k$ 列），目标是让 $X_i$ 的列空间收敛到 $\mathrm{span}\{q_1,\dots,q_k\}$。</p>
+
+<h3 id="s32">§3.2 迭代格式与板书原文<span class="tag">板书 170（右）</span></h3>
+
+<p>板书原文（右板，左边是 $AV=VH$ 那一块，右边是这块）：</p>
+
+<pre><code>|λ₁| ≥ |λ₂| ≥ ⋯ ≥ |λₖ| > |λ_{k+1}| ≥ ⋯
+ └──────── desired ────────┘
+X ∈ ℂ^{n×k}
+X̃_{i+1} = A Xᵢ
+X̃_{i+1} = Q_{i+1} R_{i+1}        ← QR 分解
+X_{i+1} ← Q_{i+1}
+
+              A = ⎡λ₁  ∗  ∗  ∗ ⎤
+                  ⎢   λ₂  ∗  ∗ ⎥
+                  ⎢      ⋱  ∗ ⎥
+                  ⎢         λₖ ⎥
+                  ⎣      (λ_{k+1})⎦   ← 圈出来的</code></pre>
+
+<p>三步走：<strong>乘 $A$ → QR 分解 → 只留 $Q$</strong>。$R$ 被扔掉。初值 $X_0$ 取任意 $n\times k$ 的列满秩矩阵（实际中常取随机矩阵或单位阵的前 $k$ 列）。</p>
+
+<h3 id="s33">§3.3 为什么每一步都必须重做 QR<span class="tag o">教材补充</span></h3>
+
+<p><strong>一句话：</strong>因为不重做 QR，$k$ 列会全部倒向 $q_1$，子空间自己塌成一维——这跟 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 里「$Y=[r,Ar,\dots]$ 病态」是<strong>同一个病</strong>。</p>
+
+<p>假设跳过 QR，只做 $X_i=A^iX_0$。看第 $j$ 列：$x_i^{(j)}=A^ix_0^{(j)}$，按 <a href="#s22">§2.2</a> 的展开，</p>
+
+\[
+x_i^{(j)}=\lambda_1^i\Big(\alpha_1^{(j)}q_1+\sum_{m=2}^{n}\alpha_m^{(j)}\Big(\frac{\lambda_m}{\lambda_1}\Big)^{i}q_m\Big).
+\]
+
+<p>当 $i$ 变大，括号里第一项（沿 $q_1$ 的分量）占绝对优势，$q_2,\dots,q_k$ 的系数按 $(\lambda_m/\lambda_1)^i$ 衰减到舍入误差以下。于是<strong>每一列都近似等于 $c_j\lambda_1^iq_1$</strong>，其中 $c_j=\alpha_1^{(j)}$ 只差一个<strong>标量</strong>。$k$ 列互相只差一个倍数，矩阵的秩实际塌成 1，$Q$ 里剩下的方向全是噪声。</p>
+
+<p>QR 的作用就是每步把「已经占优的 $q_1$ 方向」从第 2 到第 $k$ 列里<strong>减掉</strong>（正交化的效果），让它们带着自己的 $q_2,\dots,q_k$ 分量继续往下走。这和 Arnoldi 里 $Aq_j$ 减去前面所有方向是同一个动作。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="fig3t fig3d">
+<title id="fig3t">子空间迭代中重正交化的作用</title>
+<desc id="fig3d">左图不做 QR 时三列都逐渐倒向同一个主特征方向，右图每步做 QR 后三列分别逼近前三个特征方向。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="96" y="22" font-size="12.5" fill="var(--warn)">不做 QR：三列塌向 q₁</text>
+  <line x1="60" y1="150" x2="270" y2="150" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="60" y1="150" x2="60" y2="50" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="60" y1="150" x2="230" y2="150" stroke="var(--ink2)" stroke-width="1.6" marker-end="url(#arw3)"/>
+  <line x1="60" y1="150" x2="222" y2="128" stroke="var(--warn)" stroke-width="1.6" marker-end="url(#arw3w)"/>
+  <line x1="60" y1="150" x2="215" y2="112" stroke="var(--warn)" stroke-width="1.6" marker-end="url(#arw3w)"/>
+  <line x1="60" y1="150" x2="200" y2="98" stroke="var(--warn)" stroke-width="1.6" marker-end="url(#arw3w)"/>
+  <text x="238" y="154" font-size="11" fill="var(--ink2)">q₁</text>
+  <text x="70" y="186" font-size="11" fill="var(--ink3)">三列 → 只差一个标量 → 秩塌成 1</text>
+
+  <line x1="380" y1="150" x2="600" y2="150" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="380" y1="150" x2="380" y2="50" stroke="var(--ink3)" stroke-width="1"/>
+  <text x="416" y="22" font-size="12.5" fill="var(--ok)">每步 QR：三列各就各位</text>
+  <line x1="380" y1="150" x2="560" y2="150" stroke="var(--ok)" stroke-width="1.8" marker-end="url(#arw3o)"/>
+  <line x1="380" y1="150" x2="470" y2="80" stroke="var(--ok)" stroke-width="1.8" marker-end="url(#arw3o)"/>
+  <line x1="380" y1="150" x2="410" y2="66" stroke="var(--ok)" stroke-width="1.8" marker-end="url(#arw3o)"/>
+  <text x="566" y="154" font-size="11" fill="var(--ok)">q₁</text>
+  <text x="476" y="76" font-size="11" fill="var(--ok)">q₂</text>
+  <text x="392" y="60" font-size="11" fill="var(--ok)">q₃</text>
+  <text x="390" y="186" font-size="11" fill="var(--ink3)">span(Xᵢ) → span{q₁,…,qₖ}</text>
+
+  <defs>
+    <marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ink2)"/>
+    </marker>
+    <marker id="arw3w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--warn)"/>
+    </marker>
+    <marker id="arw3o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ok)"/>
+    </marker>
+  </defs>
+</g>
+</svg>
+<figcaption>图 3 · 子空间迭代里 QR 的唯一作用：把已经占优的方向从其余列里剥掉，防止 $k$ 列退化成同一个方向。</figcaption>
+</figure>
+
+<h3 id="s34">§3.4 收敛速度与那个被圈出来的 $\lambda_{k+1}$<span class="tag">板书 170（右）</span></h3>
+
+<p><strong>一句话：</strong>$\mathrm{span}(X_i)\to\mathrm{span}\{q_1,\dots,q_k\}$ 的速度是 $|\lambda_{k+1}/\lambda_k|$；板书把 $\lambda_{k+1}$ <strong>圈出来</strong>，就是在标「污染源」。</p>
+
+<p>推理和 <a href="#s22">§2.2</a> 完全平行，只是把「一个向量」换成「一个子空间」：</p>
+
+<ul>
+<li><strong>想要的</strong>是前 $k$ 个方向 $q_1,\dots,q_k$（板书上的 <code>desired</code> 括号）。</li>
+<li><strong>捣乱的是</strong>第 $k+1$ 个方向 $q_{k+1}$：它在 $i$ 步之后带着 $(\lambda_{k+1}/\lambda_1)^i$ 的权重混在子空间里。要把它压到 $q_k$ 的量级以下，需要 $(\lambda_{k+1}/\lambda_1)^i\lesssim(\lambda_k/\lambda_1)^i$，即两者之比起作用。</li>
+<li>所以<strong>决定速度的是 $|\lambda_{k+1}/\lambda_k|$</strong>：这个比值越小（$q_k$ 与 $q_{k+1}$ 分得越开），子空间分得越快。板书把 $\lambda_{k+1}$ 圈起来，就是因为整个算法的收敛性只取决于这一个数。</li>
+</ul>
+
+<div class="box warn">
+<p class="label">板书这块的读法，有一个地方要小心</p>
+<p>板书左半边是 $|λ_1|\ge|λ_2|\ge\cdots\ge|λ_k|\gt|λ_{k+1}|\ge\cdots$，右半边是一个<strong>上三角</strong>矩阵（$A$ 的 Schur 型），对角元依次是 $\lambda_1,\lambda_2,\dots,\lambda_k$，最后一个被圈出来的是 $\lambda_{k+1}$。这两半说的是同一件事：</p>
+<ul>
+<li>上三角（而非对角）表示「$A$ 在 Schur 基下不是对角的」，所以特征子空间之间还有耦合；</li>
+<li>前 $k$ 个对角元构成一个<strong>不变子空间</strong>（因为上三角 ⇒ 前 $k$ 列只用到前 $k$ 个基向量）；</li>
+<li>那个不等式 $|\lambda_k|\gt|\lambda_{k+1}|$ 是这个不变子空间<strong>可被迭代分离出来</strong>的充要条件——如果 $|\lambda_k|=|\lambda_{k+1}|$，子空间迭代就分不开它们，此时子空间只会收敛到「前 $k$ 个里某些方向」的混合。</li>
+</ul>
+<p>这一条（$|\lambda_k|\gt|\lambda_{k+1}|$ 是分离的充要条件）<strong>板书只画了不等号，没有写出「这是充要条件」这句话</strong>，是我按标准结论补的。</p>
+</div>
+
+<div class="box key">
+<p class="label">子空间迭代的代价：这是引出 Krylov 的动机</p>
+<p>要维持一个 $k$ 维子空间，子空间迭代<strong>每推进一步就要 $k$ 次 matvec</strong>（$k$ 列各乘一次 $A$），再加一次 $n\times k$ 的 QR（$O(nk^2)$）。而且它<strong>没有嵌套性</strong>：想从 $k=5$ 加到 $k=6$，前面算的 5 维子空间几乎用不上，得重来。</p>
+<p>Krylov 子空间的好处正是这两条的反面：$k$ 维子空间只要 $k-1$ 次 matvec，而且 $\mathcal{K}_1\subset\mathcal{K}_2\subset\cdots$ 天然嵌套。见 <a href="#p6">第六部分</a> 的对照表。</p>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p4">第四部分 · Krylov 子空间与 Arnoldi 分解<span class="tag">板书 162–165</span><span class="tag">笔记 154</span></h2>
+
+<h3 id="s41">§4.1 定义，以及它为什么是「自然」的<span class="tag">板书 162 上板</span></h3>
+
+<p>板书原文（上板，标题 <code>Krylov subspace</code>）：</p>
+
+<pre><code>K(A, r, k) = span{r, Ar, ⋯, A^{k-1}r}
+           = span{q₁, q₂, ⋯, qₖ}</code></pre>
+
+<p>即第 $k$ 个 Krylov 子空间</p>
+
+\[
+\mathcal{K}_k(A,r):=\mathrm{span}\{r,\ Ar,\ A^2r,\ \dots,\ A^{k-1}r\}.
+\]
+
+<p>它「自然」在两点：</p>
+
+<p><strong>① 精确解就在里面（解方程组时）。</strong>由 Cayley–Hamilton 定理 $p_A(A)=0$，其中 $p_A(t)=\det(tI-A)$。若 $A$ 非奇异则 $p_A(0)=\det(-A)\ne 0$，于是把 $p_A(A)=0$ 两边乘 $A^{-1}$ 再整理，得到</p>
+
+\[
+A^{-1}=\frac{1}{p_A(0)}\big(A^{n-1}+c_1A^{n-2}+\cdots+c_{n-1}I\big),
+\]
+
+<p>即 $A^{-1}$ 是 $A$ 的 $n-1$ 次多项式。所以 $x^*=A^{-1}b=p(A)b$ 且 $\deg p\le n-1$，也就是</p>
+
+\[
+x^*\in\mathcal{K}_n(A,b).
+\]
+
+<p>这就是「为什么只算到 $A^{n-1}b$ 就停」的理由，也是 Krylov 方法的<strong>存在性保证</strong>：$\mathcal{K}_n$ 里一定装着精确解。而 $\mathcal{K}_1\subset\mathcal{K}_2\subset\cdots\subset\mathcal{K}_n$，所以维数越高近似越好（非严格单调）。</p>
+
+<p><strong>② 造它只要 matvec。</strong>$\mathcal{K}_k$ 的生成方式就是「把 $r$ 反复乘 $A$」，完全不需要对 $A$ 做分解。对大型稀疏矩阵这是决定性的：matvec 是 $O(\mathrm{nnz})$，而任何分解都是 $O(n^3)$ 起步。</p>
+
+<figure>
+<svg viewBox="0 0 680 190" width="100%" role="img" aria-labelledby="fig4t fig4d">
+<title id="fig4t">Krylov 子空间的链式构造</title>
+<desc id="fig4d">从 r 出发，每乘一次 A 就多一个方向，逐级嵌套出 K1 到 K4，每一级都包含前一级。</desc>
+<g font-family="system-ui,sans-serif">
+  <rect x="30" y="60" width="70" height="46" rx="8" fill="var(--accent-bg)" stroke="var(--accent)"/>
+  <text x="46" y="88" font-size="12.5" fill="var(--accent)">r</text>
+  <text x="34" y="126" font-size="10.5" fill="var(--ink3)">K₁</text>
+  <line x1="104" y1="83" x2="152" y2="83" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arw4)"/>
+  <text x="110" y="76" font-size="10.5" fill="var(--ink3)">×A</text>
+
+  <rect x="156" y="60" width="120" height="46" rx="8" fill="var(--bg2)" stroke="var(--ink3)"/>
+  <text x="168" y="88" font-size="12" fill="var(--ink)">r , Ar</text>
+  <text x="160" y="126" font-size="10.5" fill="var(--ink3)">K₂</text>
+  <line x1="280" y1="83" x2="328" y2="83" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arw4)"/>
+  <text x="286" y="76" font-size="10.5" fill="var(--ink3)">×A</text>
+
+  <rect x="332" y="60" width="150" height="46" rx="8" fill="var(--bg2)" stroke="var(--ink3)"/>
+  <text x="344" y="88" font-size="12" fill="var(--ink)">r , Ar , A²r</text>
+  <text x="336" y="126" font-size="10.5" fill="var(--ink3)">K₃</text>
+  <line x1="486" y1="83" x2="534" y2="83" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#arw4)"/>
+  <text x="492" y="76" font-size="10.5" fill="var(--ink3)">×A</text>
+
+  <rect x="538" y="60" width="112" height="46" rx="8" fill="var(--bg2)" stroke="var(--ink3)"/>
+  <text x="548" y="88" font-size="12" fill="var(--ink)">⋯ , A³r</text>
+  <text x="542" y="126" font-size="10.5" fill="var(--ink3)">K₄</text>
+
+  <text x="30" y="34" font-size="12" fill="var(--ink2)">每加一维只需 1 次 matvec</text>
+  <path d="M30 148 L30 162 L650 162 L650 148" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="270" y="182" font-size="11.5" fill="var(--accent)">嵌套：K₁ ⊂ K₂ ⊂ K₃ ⊂ ⋯ ⊂ Kₙ ∋ x*</text>
+  <defs>
+    <marker id="arw4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ink3)"/>
+    </marker>
+  </defs>
+</g>
+</svg>
+<figcaption>图 4 · Krylov 子空间的构造是「链式」的：每一级只多一个方向，且前一级完全包含在后一级里。这是子空间迭代没有的性质。</figcaption>
+</figure>
+
+<h3 id="s42">§4.2 为什么不能直接拿 $\{r,Ar,A^2r,\dots\}$ 当基<span class="tag o">教材补充</span></h3>
+
+<p><strong>一句话：</strong>这组向量<strong>张成的空间是对的，但当基用是灾难</strong>——它们会迅速变得几乎线性相关，条件数按 $|\lambda_1/\lambda_n|^k$ 的量级爆炸。</p>
+
+<p>原因是 <a href="#s22">§2.2</a> 的同一个现象：$A^jr$ 的方向被 $q_1$ 主导得越来越厉害。拿一个 $4\times 4$ 的对角例子量化一下。取</p>
+
+\[
+A=\mathrm{diag}(1,\ \varepsilon,\ \varepsilon^2,\ \varepsilon^3),\qquad r=(1,1,1,1)^{\mathsf T},
+\]
+
+<p>则 $A^jr=(1,\varepsilon^{j},\varepsilon^{2j},\varepsilon^{3j})^{\mathsf T}$。$j=2$ 和 $j=3$ 两列只差 $\varepsilon^{2}-\varepsilon^{3}$ 这种量级的项，$\varepsilon$ 小的时候它们几乎一模一样。</p>
+
+<table>
+<tr><th>$\varepsilon$</th><th>$\mathrm{cond}_2\big([r,Ar,A^2r,A^3r]\big)$</th><th>Arnoldi 得到的 $Q$ 的 $\mathrm{cond}_2$</th><th>正交性误差 $\|Q^*Q-I\|_2$</th></tr>
+<tr><td>$10^{-1}$</td><td>$5.8\times 10^{3}$</td><td>$1.000$</td><td>$2.9\times 10^{-14}$</td></tr>
+<tr><td>$10^{-2}$</td><td>$4.7\times 10^{6}$</td><td>$1.000$</td><td>$1.4\times 10^{-13}$</td></tr>
+<tr><td>$10^{-3}$</td><td>$4.6\times 10^{9}$</td><td>$1.000$</td><td>$6.3\times 10^{-11}$</td></tr>
+</table>
+
+<p class="footnote">数值为 numpy 实算（双精度，$\varepsilon_{\text{mach}}\approx 2.2\times10^{-16}$）。$Q$ 用经典 Gram–Schmidt 的 Arnoldi 得到，未做重正交化。</p>
+
+<p>$\varepsilon=10^{-3}$ 那一行最说明问题：$\mathrm{cond}\approx 4.6\times 10^9$，乘上 $\varepsilon_{\text{mach}}$ 得 $10^{-6}$——也就是拿这组向量做任何正交化，<strong>正交性最多只剩 6 位有效数字</strong>。而 Arnoldi 的 $Q$ 是正交阵，条件数恒为 1。</p>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="fig5t fig5d">
+<title id="fig5t">幂序列矩阵与 Arnoldi 基的条件数对比</title>
+<desc id="fig5d">三组参数下，幂序列矩阵的条件数取对数后分别是 3.8、6.7、9.7，而 Arnoldi 基的条件数恒为 1，柱形几乎不可见。</desc>
+<g font-family="system-ui,sans-serif">
+  <line x1="90" y1="250" x2="640" y2="250" stroke="var(--ink3)" stroke-width="1"/>
+  <line x1="90" y1="250" x2="90" y2="40" stroke="var(--ink3)" stroke-width="1"/>
+  <text x="86" y="28" font-size="11" fill="var(--ink3)">log₁₀(cond₂)</text>
+  <text x="620" y="270" font-size="11" fill="var(--ink3)">ε</text>
+  <g font-size="10" fill="var(--ink3)">
+    <line x1="86" y1="199" x2="640" y2="199" stroke="var(--line)" stroke-width="1"/>
+    <text x="66" y="203">3</text>
+    <line x1="86" y1="148" x2="640" y2="148" stroke="var(--line)" stroke-width="1"/>
+    <text x="66" y="152">6</text>
+    <line x1="86" y1="97" x2="640" y2="97" stroke="var(--line)" stroke-width="1"/>
+    <text x="66" y="101">9</text>
+    <line x1="86" y1="46" x2="640" y2="46" stroke="var(--line)" stroke-width="1"/>
+    <text x="60" y="50">12</text>
+  </g>
+  <!-- group 1: eps=1e-1, log=3.77 -->
+  <rect x="150" y="175.9" width="34" height="74.1" fill="var(--warn)"/>
+  <rect x="188" y="249" width="34" height="1" fill="var(--ok)"/>
+  <text x="152" y="170" font-size="10.5" fill="var(--warn)">5.8e3</text>
+  <text x="150" y="270" font-size="11.5" fill="var(--ink2)">10⁻¹</text>
+  <!-- group 2: log=6.67 -->
+  <rect x="300" y="126.6" width="34" height="123.4" fill="var(--warn)"/>
+  <rect x="338" y="249" width="34" height="1" fill="var(--ok)"/>
+  <text x="300" y="120" font-size="10.5" fill="var(--warn)">4.7e6</text>
+  <text x="300" y="270" font-size="11.5" fill="var(--ink2)">10⁻²</text>
+  <!-- group 3: log=9.66 -->
+  <rect x="450" y="75.8" width="34" height="174.2" fill="var(--warn)"/>
+  <rect x="488" y="249" width="34" height="1" fill="var(--ok)"/>
+  <text x="450" y="69" font-size="10.5" fill="var(--warn)">4.6e9</text>
+  <text x="450" y="270" font-size="11.5" fill="var(--ink2)">10⁻³</text>
+  <!-- legend -->
+  <rect x="430" y="286" width="12" height="10" fill="var(--warn)"/>
+  <text x="448" y="295" font-size="11" fill="var(--ink2)">cond([r,Ar,A²r,A³r])</text>
+  <rect x="566" y="286" width="12" height="10" fill="var(--ok)"/>
+  <text x="584" y="295" font-size="11" fill="var(--ok)">cond(Q) = 1</text>
+  <text x="120" y="290" font-size="11" fill="var(--ink3)">绿色柱高度为 0：正交阵的条件数恒为 1</text>
+</g>
+</svg>
+<figcaption>图 5 · 幂序列矩阵的条件数随 $\varepsilon$ 指数增长，Arnoldi 的正交基则恒为 1。这张图就是 <a href="#p5">第五部分</a> 的全部论据。</figcaption>
+</figure>
+
+<h3 id="s43">§4.3 Arnoldi 正交化：板书逐行<span class="tag">板书 162</span></h3>
+
+<p>板书原文（上板下半 + 右板），左边是前三步的具体算式，右边是一般项：</p>
+
+<pre><code>q₁  = r / ‖r‖₂
+q̃₂  = (Aq₁) − q₁ q₁*(Aq₁)
+q₂  = q̃₂ / ‖q̃₂‖₂ = p₁(A) r
+q̃₃  = (Aq₂) − (q₁q₁* + q₂q₂*)(Aq₂)
+q₃  = q̃₃ / ‖q̃₃‖₂ = p₂(A) r
+
+右板（一般项）：
+q̃_i  = (Aq_{i-1}) − [q₁,⋯,q_{i-1}][q₁,⋯,q_{i-1}]*(Aq_{i-1})
+q_i  = q̃_i / ‖q̃_i‖₂</code></pre>
+
+<p>三个地方值得说清：</p>
+
+<p><strong>① 减的是什么。</strong>$q_1q_1^*(Aq_1)$ 是把 $Aq_1$ 投影到 $q_1$ 方向上再减掉；$q_1,q_2$ 那一行则是 $(q_1q_1^*+q_2q_2^*)(Aq_2)$，一次减掉两个方向。板书右板把这两个外积之和写成一个矩阵</p>
+
+\[
+[q_1,\dots,q_{i-1}]\,[q_1,\dots,q_{i-1}]^*=Q_{i-1}Q_{i-1}^*,
+\]
+
+<p>这是<strong>到 $\mathrm{span}\{q_1,\dots,q_{i-1}\}$ 的正交投影算子</strong>。写成投影算子比写成求和更清楚：整个正交化就是</p>
+
+\[
+\tilde q_i=(I-Q_{i-1}Q_{i-1}^*)Aq_{i-1},
+\]
+
+<p>一句话——<strong>「把已经张成的那块减掉，剩下的就是要加的新方向」</strong>。</p>
+
+<p><strong>② 这是 CGS 不是 MGS。</strong>板书用 $Q_{i-1}Q_{i-1}^*$ 一次减完，是经典 Gram–Schmidt（CGS）。改成逐个减（modified Gram–Schmidt，MGS）在浮点下正交性明显更好，而计算量一样。<a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 的伪代码里 <code>modified</code> 这个开关控制的就是这个。</p>
+
+<p><strong>③ 为什么要除以范数。</strong>不归一化的话，$A\tilde q$ 的范数会像 $\lambda_1^i$ 那样指数增长或衰减，最后上溢/下溢。归一化把尺度信息全部塞进 $h_{j+1,j}$（也就是 $\beta$）里，向量本身永远是单位长的。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="fig6t fig6d">
+<title id="fig6t">Arnoldi 一步的几何</title>
+<desc id="fig6d">把 A 乘 q_j 得到的向量减去它在已有子空间上的投影，剩下的垂直分量归一化后成为 q_{j+1}，垂直分量的长度就是次对角元 beta。</desc>
+<g font-family="system-ui,sans-serif">
+  <!-- subspace plane -->
+  <path d="M70 200 L300 200 L400 150 L170 150 Z" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="80" y="188" font-size="11.5" fill="var(--accent)">span{q₁,…,q<tspan baseline-shift="sub" font-size="8.5">j</tspan>}</text>
+  <!-- Aq_j -->
+  <line x1="170" y1="200" x2="330" y2="52" stroke="var(--ink)" stroke-width="2" marker-end="url(#arw6)"/>
+  <text x="340" y="48" font-size="12" fill="var(--ink)">Aq<tspan baseline-shift="sub" font-size="8.5">j</tspan></text>
+  <!-- projection -->
+  <line x1="170" y1="200" x2="330" y2="170" stroke="var(--ink3)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arw6g)"/>
+  <text x="232" y="224" font-size="11.5" fill="var(--ink3)">Q<tspan baseline-shift="sub" font-size="8.5">j-1</tspan>Q<tspan baseline-shift="sub" font-size="8.5">j-1</tspan>*Aq<tspan baseline-shift="sub" font-size="8.5">j</tspan>（投影）</text>
+  <!-- residual -->
+  <line x1="330" y1="170" x2="330" y2="52" stroke="var(--warn)" stroke-width="2.2" marker-end="url(#arw6w)"/>
+  <text x="338" y="118" font-size="11.5" fill="var(--warn)">q̃<tspan baseline-shift="sub" font-size="8.5">j+1</tspan></text>
+  <text x="338" y="136" font-size="11.5" fill="var(--warn)">‖·‖₂ = β<tspan baseline-shift="sub" font-size="8.5">j+1</tspan></text>
+  <!-- q_j -->
+  <line x1="170" y1="200" x2="272" y2="200" stroke="var(--ok)" stroke-width="2" marker-end="url(#arw6o)"/>
+  <text x="278" y="204" font-size="11.5" fill="var(--ok)">q<tspan baseline-shift="sub" font-size="8.5">j</tspan></text>
+  <text x="70" y="22" font-size="12" fill="var(--ink2)">正交化 = 减去投影，剩下的垂直分量归一化后成为新方向</text>
+  <defs>
+    <marker id="arw6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ink)"/>
+    </marker>
+    <marker id="arw6g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ink3)"/>
+    </marker>
+    <marker id="arw6w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--warn)"/>
+    </marker>
+    <marker id="arw6o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--ok)"/>
+    </marker>
+  </defs>
+</g>
+</svg>
+<figcaption>图 6 · Arnoldi 一步：$Aq_j$ 拆成「落在旧子空间里的投影」$+$「垂直的新方向 $\tilde q_{j+1}$」。投影系数就是 $H$ 的第 $j$ 列，垂直分量的长度就是 $\beta_{j+1}$。</figcaption>
+</figure>
+
+<h3 id="s44">§4.4 定理：$q_j=p_{j-1}(A)\,r$<span class="tag">板书 162</span><span class="tag o">证明补全</span></h3>
+
+<p><strong>一句话：</strong>每个正交基向量都是「$A$ 的一个 $j-1$ 次多项式」乘上初始向量 $r$。所以整个 $\mathcal{K}_k$ 就是「所有次数 $\le k-1$ 的多项式作用在 $r$ 上」得到的集合。</p>
+
+<p>板书写的是三个具体例子：$q_2=p_1(A)r$、$q_3=p_2(A)r$，但没有一般证明。下面补全。</p>
+
+<h4>先证一个引理</h4>
+
+<div class="box key">
+<p class="label">引理（多项式与 $A$ 的交换性）</p>
+<p>若 $p$ 是多项式、$v=p(A)r$，则 $Av=\big(\lambda p(\lambda)\big)(A)\,r$。</p>
+<p><strong>证明。</strong>写 $p(\lambda)=\sum_{m=0}^{d}c_m\lambda^m$，则 $p(A)=\sum_{m=0}^dc_mA^m$，于是</p>
+\[
+Av=A\sum_{m=0}^{d}c_mA^mr=\sum_{m=0}^{d}c_mA^{m+1}r=\Big(\sum_{m=0}^{d}c_m\lambda^{m+1}\Big)(A)\,r=\big(\lambda p(\lambda)\big)(A)\,r .
+\]
+<p>关键只在于 $A\cdot A^m=A^{m+1}$，也就是「$A$ 与它自己的多项式可交换」。$\blacksquare$</p>
+</div>
+
+<h4>定理与归纳证明</h4>
+
+<p><strong>定理。</strong>设 Arnoldi 过程不发生 breakdown（即每步 $\|\tilde q_{j+1}\|_2\ne 0$），则存在多项式 $p_{j-1}$，$\deg p_{j-1}=j-1$，使得 $q_j=p_{j-1}(A)\,r$。</p>
+
+<p><strong>证明（对 $j$ 归纳）。</strong></p>
+
+<p><em>$j=1$：</em>$q_1=r/\|r\|_2$，取常数多项式 $p_0(\lambda)\equiv 1/\|r\|_2$ 即可（$\deg p_0=0$）。</p>
+
+<p><em>归纳步：</em>设对 $i=1,\dots,j$ 都有 $q_i=p_{i-1}(A)r$，且 $\deg p_{i-1}=i-1$。要证 $q_{j+1}=p_j(A)r$，$\deg p_j=j$。</p>
+
+<p>(a) <strong>先算 $Aq_j$。</strong>由引理，</p>
+
+\[
+Aq_j=A\,p_{j-1}(A)r=\big(\lambda p_{j-1}(\lambda)\big)(A)\,r,
+\]
+
+<p>而 $\deg(\lambda p_{j-1})=j$。</p>
+
+<p>(b) <strong>再算 $\tilde q_{j+1}$。</strong>按定义</p>
+
+\[
+\tilde q_{j+1}=Aq_j-\sum_{i=1}^{j}\underbrace{(q_i^*Aq_j)}_{=:\,c_i\in\mathbb{C}}q_i .
+\]
+
+<p>把 (a) 和归纳假设代进去：</p>
+
+\[
+\tilde q_{j+1}=\big(\lambda p_{j-1}\big)(A)r-\sum_{i=1}^{j}c_i\,p_{i-1}(A)r
+=\underbrace{\Big[\lambda p_{j-1}(\lambda)-\sum_{i=1}^{j}c_i\,p_{i-1}(\lambda)\Big]}_{=:\,\tilde p_j(\lambda)}(A)\,r .
+\]
+
+<p>方括号里是<strong>多项式</strong>（$A$ 的多项式对加法、数乘封闭），所以 $\tilde q_{j+1}=\tilde p_j(A)r$，且</p>
+
+\[
+\deg\tilde p_j\le \max\big(j,\ \max_i(i-1)\big)=j .
+\]
+
+<p>(c) <strong>归一化。</strong>$q_{j+1}=\tilde q_{j+1}/\|\tilde q_{j+1}\|_2=\big(\tilde p_j/\|\tilde p_j(A)r\|_2\big)(A)\,r$，取</p>
+
+\[
+p_j:=\frac{\tilde p_j}{\|\tilde p_j(A)r\|_2},
+\]
+
+<p>除以一个非零标量不改变次数，故 $\deg p_j=\deg\tilde p_j\le j$。$\blacksquare$</p>
+
+<div class="box warn">
+<p class="label">上面最后一步「$\le j$」不够，要的是「$=j$」</p>
+<p>很多书写到 $\deg p_j\le j$ 就停了，但 <a href="#s45">§4.5</a> 要用到<strong>恰好是 $j$ 次</strong>（否则 $Aq_j$ 可能落进更小的子空间里，$\beta_{j+1}$ 就会提前为零）。补上这一步：</p>
+<p>看 $\tilde p_j=\lambda p_{j-1}-\sum_{i=1}^jc_ip_{i-1}$ 的<strong>首项</strong>。$\deg p_{i-1}=i-1\le j-1$，所以求和那一项的次数 $\le j-1$，<strong>碰不到 $j$ 次项</strong>。而 $\lambda p_{j-1}$ 的次数恰好是 $j$，其首项系数等于 $p_{j-1}$ 的首项系数，非零。所以</p>
+\[
+\deg\tilde p_j=j\quad\text{且首项系数}=p_{j-1}\text{ 的首项系数}\ne 0 .
+\]
+<p>于是 $\deg p_j=j$ 严格成立。这条论证在板书上没有（板书写 $p_1,p_2$ 时是直接看出来的），但一般情形必须交代。</p>
+</div>
+
+<div class="box ok">
+<p class="label">这个定理的真正含义</p>
+\[
+\mathcal{K}_k(A,r)=\{p(A)r:\ \deg p\le k-1\}
+\]
+<p>也就是说：<strong>Krylov 子空间 = 「用一个多项式去过滤 $r$」能得到的所有向量</strong>。这一步转换是第 4 章全部收敛性分析的入口——因为这样一来，「在 $\mathcal{K}_k$ 里找最佳近似」就变成了「找一个最优的 $k-1$ 次多项式」，而多项式逼近是有成熟理论（Chebyshev、极小极大）的。</p>
+<p>反过来看 <a href="#s42">§4.2</a>：直接算 $A^jr$ 等于用单项式 $\lambda^j$ 做过滤，而单项式在谱上分布极不均匀（在 $\lambda_1$ 处远大于别处），所以得到的方向全挤在一起；Arnoldi 相当于每一步重新选一个「在已有方向上取零」的多项式，自然就均匀了。</p>
+</div>
+
+<h3 id="s45">§4.5 推论：$Aq_j$ 只落在前 $j+1$ 个方向里<span class="tag">板书 163、165</span></h3>
+
+<p><strong>一句话：</strong>$Aq_j\in\mathrm{span}\{q_1,\dots,q_{j+1}\}$，所以 $H$ 的第 $j$ 列只有前 $j+1$ 个元非零——这就是 Hessenberg 结构的来源。</p>
+
+<p>有两条独立的证法，都值得看，因为它们回答的是不同层面的「为什么」。</p>
+
+<h4>路线 A：靠多项式次数（结构性解释）</h4>
+
+<p>由 <a href="#s44">§4.4</a>，$q_j=p_{j-1}(A)r$ 且 $\deg p_{j-1}=j-1$。由引理，</p>
+
+\[
+Aq_j=\big(\lambda p_{j-1}(\lambda)\big)(A)\,r,\qquad \deg(\lambda p_{j-1})=j .
+\]
+
+<p>所以 $Aq_j$ 是「次数 $\le j$ 的多项式作用在 $r$ 上」，按 <a href="#s41">§4.1</a> 的定义它属于 $\mathcal{K}_{j+1}(A,r)$。而</p>
+
+\[
+\mathcal{K}_{j+1}(A,r)=\mathrm{span}\{r,Ar,\dots,A^{j}r\}=\mathrm{span}\{q_1,\dots,q_{j+1}\},
+\]
+
+<p>最后一步是「Arnoldi 保空间」：$\mathrm{span}\{q_1,\dots,q_m\}=\mathcal{K}_m$ 对每个 $m$ 成立。于是 $Aq_j\in\mathrm{span}\{q_1,\dots,q_{j+1}\}$。$\blacksquare$</p>
+
+<div class="box warn">
+<p class="label">「Arnoldi 保空间」这条等式也得证，否则是循环论证</p>
+<p>$\mathrm{span}\{q_1,\dots,q_m\}=\mathcal{K}_m$ 对 $m$ 归纳：</p>
+<ul>
+<li>$m=1$：$q_1=r/\|r\|_2$，两边都是 $\mathrm{span}\{r\}$。</li>
+<li>设 $\mathrm{span}\{q_1,\dots,q_m\}=\mathcal{K}_m$。由定义 $q_{m+1}\propto\tilde q_{m+1}=(I-Q_mQ_m^*)Aq_m$，其中 $Aq_m\in\mathcal{K}_{m+1}$（这一步用的正是「$Aq_m$ 是 $m$ 次多项式乘 $r$」，即路线 A 的结论在 $m$ 处的版本），而 $Q_mQ_m^*Aq_m\in\mathrm{span}\{q_1,\dots,q_m\}=\mathcal{K}_m\subseteq\mathcal{K}_{m+1}$。两式相减得 $\tilde q_{m+1}\in\mathcal{K}_{m+1}$，故 $\mathrm{span}\{q_1,\dots,q_{m+1}\}\subseteq\mathcal{K}_{m+1}$。</li>
+<li>两个空间的维数都是 $m+1$（无 breakdown 时 $q_1,\dots,q_{m+1}$ 线性无关，$\dim\mathcal{K}_{m+1}=m+1$），包含关系 $+$ 维数相同 $\Rightarrow$ 相等。$\blacksquare$</li>
+</ul>
+<p>注意这个归纳里「$\dim\mathcal{K}_{m+1}=m+1$」正是「无 breakdown」的等价说法，也是为什么 breakdown 发生时整个链条提前终止。</p>
+</div>
+
+<h4>路线 B：靠正交投影的恒等式（构造性解释）</h4>
+
+<p>这条路线<strong>不需要</strong>多项式，直接从 Arnoldi 的定义出发。记 $P_j:=Q_jQ_j^*$ 是到 $\mathrm{span}\{q_1,\dots,q_j\}$ 的正交投影，则 $\tilde q_{j+1}=(I-P_j)Aq_j$，即</p>
+
+\[
+Aq_j=\underbrace{P_jAq_j}_{\in\,\mathrm{span}\{q_1,\dots,q_j\}}+\underbrace{(I-P_j)Aq_j}_{=\,\tilde q_{j+1}} .
+\]
+
+<p>把 $P_jAq_j=\sum_{i=1}^{j}(q_i^*Aq_j)q_i$ 和 $\tilde q_{j+1}=h_{j+1,j}q_{j+1}$（其中 $h_{j+1,j}:=\|\tilde q_{j+1}\|_2$）代进去：</p>
+
+\[
+\boxed{\,Aq_j=\sum_{i=1}^{j}h_{ij}\,q_i+h_{j+1,j}\,q_{j+1}\,},\qquad h_{ij}:=q_i^*Aq_j\ (1\le i\le j).
+\]
+
+<p>这是<strong>恒等式</strong>，系数直接可算，不需要任何归纳。路线 A 解释「为什么没有更远的项」，路线 B 给出「系数是什么」。两者缺一不可。</p>
+
+<h4>为什么没有 $q_{j+2},q_{j+3},\dots$</h4>
+
+<p>因为 $q_{j+2}\perp\mathrm{span}\{q_1,\dots,q_{j+1}\}$（正交基的定义），而 $Aq_j\in\mathrm{span}\{q_1,\dots,q_{j+1}\}$，所以</p>
+
+\[
+q_{j+2}^*Aq_j=0 .
+\]
+
+<p>同理 $q_{j+3}^*Aq_j=0$，等等。所以展开式里 $q_{j+2}$ 及以后的所有系数<strong>恒为零</strong>，不是「很小」而是「精确为零」（精确算术下）。</p>
+
+<div class="box key">
+<p class="label">这就是 Hessenberg 的全部秘密</p>
+<p>「$Aq_j$ 只用到前 $j+1$ 个基向量」$\iff$「$H$ 的第 $j$ 列只有前 $j+1$ 个元非零」$\iff$「$H$ 是上 Hessenberg」。</p>
+<p>三句话是同一件事的三种说法。而它的根源只有一条：<strong>每乘一次 $A$，多项式次数升一，所以最多多出一个新方向。</strong></p>
+</div>
+
+<h3 id="s46">§4.6 矩阵形式：$AQ_k=Q_kH_k+\beta_{k+1}q_{k+1}e_k^*$<span class="tag">板书 162、165</span></h3>
+
+<p>板书原文（两块板，两种下标写法，是同一个恒等式）：</p>
+
+<pre><code>Arnoldi decomp.
+A[q₁,q₂,⋯,q_{k-1}] = [q₁,q₂,⋯,q_k] H̄_{k-1}
+                    = [q₁,⋯,q_{k-1}] H_{k-1} + q_k β_k e_{k-1}*     β_k = h_{k,k-1}
+
+A Q_{k-1} = Q_{k-1} H_{k-1} + q_k β_k e_{k-1}*
+                     └── 上 Hessenberg ──┘
+
+AQ_k = Q_k H_k + q_{k+1} β_{k+1} e_k*  =  Q_k H_k + (rank 1)
+Q_k* A Q_k = H_k
+A* = A  ⇒  H_k* = H_k = 三对角</code></pre>
+
+<p>把 <a href="#s45">§4.5</a> 的恒等式按列排起来。第 $j$ 列是</p>
+
+\[
+Aq_j=\sum_{i=1}^{j+1}h_{ij}q_i,\qquad
+h_{ij}=\begin{cases}q_i^*Aq_j, & 1\le i\le j, \\ \|\tilde q_{j+1}\|_2, & i=j+1.\end{cases}
+\]
+
+<p>对 $j=1,\dots,k$ 拼成矩阵，左边是 $AQ_k$，右边前 $k$ 列拼成 $Q_kH_k$，第 $k$ 列多出来的那一项单独拎出来：</p>
+
+\[
+\boxed{\,AQ_k=Q_kH_k+\beta_{k+1}\,q_{k+1}e_k^*\,}
+\]
+
+<p>其中 $e_k^*=(0,\dots,0,1)\in\mathbb{C}^{1\times k}$，$\beta_{k+1}:=h_{k+1,k}=\|\tilde q_{k+1}\|_2$。</p>
+
+<p><strong>那个 $(\text{rank }1)$ 是什么。</strong>$\beta_{k+1}q_{k+1}e_k^*$ 是<strong>列向量乘行向量</strong>（外积），秩为 1，而且只在第 $k$ 列有非零元——因为 $e_k^*$ 只在第 $k$ 个位置是 1。所以它把「$Aq_k$ 跑出子空间的那一点」精确地记了下来，其余各列完全不受影响。</p>
+
+<p><strong>为什么还有一个 $(k+1)\times k$ 的版本。</strong>如果不想留余项，可以把 $q_{k+1}$ 也吸进左边的矩阵：</p>
+
+\[
+AQ_k=Q_{k+1}\bar H_k,\qquad \bar H_k=\begin{bmatrix}H_k\\ \beta_{k+1}e_k^*\end{bmatrix}\in\mathbb{C}^{(k+1)\times k}.
+\]
+
+<p>板书第一行的 $A[q_1,\dots,q_{k-1}]=[q_1,\dots,q_k]\bar H_{k-1}$ 就是这个形式（把 $k$ 换成 $k-1$），右边画的那个 $k\times(k-1)$ 的阶梯矩阵最后一行只有一个 $\beta_k$，正是 $\bar H_{k-1}$。所以两行板书<strong>没有矛盾，只是「留余项」和「吸进 $Q$」两种写法</strong>。</p>
+
+<p><strong>什么时候可以写成 $AQ=QH$。</strong>两种情形：① $k=n$，此时 $\mathcal{K}_n=\mathbb{C}^n$，没有「外面」可跑，$\beta_{n+1}$ 不存在；② 恰好发生 breakdown，$\beta_{k+1}=0$，余项自动消失。除此之外，$AQ=QH$ 只是<strong>忽略余项的近似写法</strong>，不能当恒等式用。</p>
+
+<p><strong>$Q_k^*AQ_k=H_k$ 是怎么来的。</strong>对 $AQ_k=Q_kH_k+\beta_{k+1}q_{k+1}e_k^*$ 左乘 $Q_k^*$：</p>
+
+\[
+Q_k^*AQ_k=\underbrace{Q_k^*Q_k}_{=\,I}H_k+\beta_{k+1}\underbrace{(Q_k^*q_{k+1})}_{=\,0}e_k^*=H_k .
+\]
+
+<p>两个「等于」都用到了正交性：$Q_k^*Q_k=I_k$，以及 $q_{k+1}\perp\mathrm{span}\{q_1,\dots,q_k\}$。所以 $H_k$ 就是 $A$ 在 $\mathcal{K}_k$ 上的<strong>压缩（compression）</strong>——注意是压缩不是相似变换，因为 $Q_k$ 是 $n\times k$ 的长矩阵，$H_k$ 与 $A$ 的谱并不相同，但 $H_k$ 的特征值会逼近 $A$ 的（这就是 Ritz 值，见 <a href="#s411">§4.11</a>）。</p>
+
+<h3 id="s47">§4.7 Hessenberg 结构：逐列看图<span class="tag">板书 163</span></h3>
+
+<p>板书把 $k=4$ 的情形写全了：</p>
+
+<pre><code>[r, Ar, A²r, A³r] = [q₁, q₂, q₃, q₄] ⎡1 x x x⎤
+                                      ⎢  x x x⎥
+                                      ⎢    x x⎥
+                                      ⎣      x⎦</code></pre>
+
+<p>左边是「幂序列」，右边是「正交基 × 上三角的 $R$」。这条式子说明 $\mathrm{span}\{r,Ar,A^2r,A^3r\}=\mathrm{span}\{q_1,q_2,q_3,q_4\}$（$R$ 可逆），也就是 $\mathcal{K}_4$ 的两组基之间的关系。左上角的 $1$ 对应 $R_{11}=\|r\|_2$（板书把 $r$ 取成单位向量时它就是 1）。</p>
+
+<p>而真正的 Arnoldi 分解是「$A$ 作用在前 $k$ 个方向上的结果」：</p>
+
+<pre><code>A[q₁,q₂,q₃] = [q₁,q₂,q₃,q₄] ⎡x x x⎤
+                            ⎢x x x⎥
+                            ⎢  x x⎥
+                            ⎣    β₄⎦   ← 只有最后一行是新的</code></pre>
+
+<figure>
+<svg viewBox="0 0 680 296" width="100%" role="img" aria-labelledby="fig7t fig7d">
+<title id="fig7t">上 Hessenberg 矩阵的非零模式</title>
+<desc id="fig7d">左边是 k 等于 6 的上 Hessenberg 矩阵，非零元集中在主对角线、上方和对角线下方一格；右边是扩展的 H 矩阵，多出一行次对角元。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="40" y="26" font-size="12" fill="var(--ink2)">H<tspan baseline-shift="sub" font-size="8.5">k</tspan>（6×6，上 Hessenberg）</text>
+  <!-- grid 6x6 -->
+  <g>
+    <rect x="40" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+    <rect x="76" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+    <rect x="112" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+    <rect x="148" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+    <rect x="184" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+    <rect x="220" y="40" width="36" height="30" fill="var(--bg2)" stroke="var(--line)"/>
+  </g>
+  <g stroke="var(--line)">
+    <line x1="40" y1="70" x2="256" y2="70"/><line x1="40" y1="100" x2="256" y2="100"/>
+    <line x1="40" y1="130" x2="256" y2="130"/><line x1="40" y1="160" x2="256" y2="160"/>
+    <line x1="40" y1="190" x2="256" y2="190"/><line x1="40" y1="220" x2="256" y2="220"/>
+    <line x1="76" y1="40" x2="76" y2="220"/><line x1="112" y1="40" x2="112" y2="220"/>
+    <line x1="148" y1="40" x2="148" y2="220"/><line x1="184" y1="40" x2="184" y2="220"/>
+    <line x1="220" y1="40" x2="220" y2="220"/>
+  </g>
+  <!-- nonzero marks: i<=j+1 -->
+  <g fill="var(--accent)">
+    <circle cx="58" cy="55" r="5"/><circle cx="94" cy="55" r="5"/><circle cx="130" cy="55" r="5"/><circle cx="166" cy="55" r="5"/><circle cx="202" cy="55" r="5"/><circle cx="238" cy="55" r="5"/>
+    <circle cx="58" cy="85" r="5"/><circle cx="94" cy="85" r="5"/><circle cx="130" cy="85" r="5"/><circle cx="166" cy="85" r="5"/><circle cx="202" cy="85" r="5"/><circle cx="238" cy="85" r="5"/>
+    <circle cx="94" cy="115" r="5"/><circle cx="130" cy="115" r="5"/><circle cx="166" cy="115" r="5"/><circle cx="202" cy="115" r="5"/><circle cx="238" cy="115" r="5"/>
+    <circle cx="130" cy="145" r="5"/><circle cx="166" cy="145" r="5"/><circle cx="202" cy="145" r="5"/><circle cx="238" cy="145" r="5"/>
+    <circle cx="166" cy="175" r="5"/><circle cx="202" cy="175" r="5"/><circle cx="238" cy="175" r="5"/>
+    <circle cx="202" cy="205" r="5"/><circle cx="238" cy="205" r="5"/>
+  </g>
+  <!-- zeros below subdiagonal -->
+  <g fill="var(--ink3)" font-size="11" text-anchor="middle">
+    <text x="58" y="120">0</text><text x="58" y="150">0</text><text x="94" y="150">0</text>
+    <text x="58" y="180">0</text><text x="94" y="180">0</text><text x="130" y="180">0</text>
+    <text x="58" y="210">0</text><text x="94" y="210">0</text><text x="130" y="210">0</text><text x="166" y="210">0</text>
+  </g>
+  <!-- subdiagonal highlight -->
+  <g fill="var(--warn)">
+    <circle cx="58" cy="85" r="7" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+    <circle cx="94" cy="115" r="7" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+    <circle cx="130" cy="145" r="7" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+    <circle cx="166" cy="175" r="7" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+    <circle cx="202" cy="205" r="7" fill="none" stroke="var(--warn)" stroke-width="1.8"/>
+  </g>
+  <text x="40" y="248" font-size="11" fill="var(--warn)">○ 次对角 β<tspan baseline-shift="sub" font-size="8.5">j</tspan>：唯一「往前走」的耦合</text>
+  <text x="40" y="266" font-size="11" fill="var(--ink3)">● 其余非零元：h<tspan baseline-shift="sub" font-size="8.5">ij</tspan> = q<tspan baseline-shift="sub" font-size="8.5">i</tspan>*Aq<tspan baseline-shift="sub" font-size="8.5">j</tspan>，i ≤ j（往回耦合）</text>
+
+  <!-- right: extended H -->
+  <text x="360" y="26" font-size="12" fill="var(--ink2)">H̄<tspan baseline-shift="sub" font-size="8.5">k</tspan>（7×6，多一行）</text>
+  <g stroke="var(--line)">
+    <rect x="360" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="40" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="70" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="100" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="130" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="160" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="190" width="36" height="30" fill="var(--bg2)"/><rect x="360" y="220" width="36" height="30" fill="var(--bg2)"/><rect x="396" y="220" width="36" height="30" fill="var(--bg2)"/><rect x="432" y="220" width="36" height="30" fill="var(--bg2)"/><rect x="468" y="220" width="36" height="30" fill="var(--bg2)"/><rect x="504" y="220" width="36" height="30" fill="var(--bg2)"/><rect x="540" y="220" width="36" height="30" fill="var(--bg2)"/>
+    <line x1="360" y1="70" x2="576" y2="70"/><line x1="360" y1="100" x2="576" y2="100"/><line x1="360" y1="130" x2="576" y2="130"/><line x1="360" y1="160" x2="576" y2="160"/><line x1="360" y1="190" x2="576" y2="190"/><line x1="360" y1="220" x2="576" y2="220"/><line x1="360" y1="250" x2="576" y2="250"/>
+    <line x1="396" y1="40" x2="396" y2="250"/><line x1="432" y1="40" x2="432" y2="250"/><line x1="468" y1="40" x2="468" y2="250"/><line x1="504" y1="40" x2="504" y2="250"/><line x1="540" y1="40" x2="540" y2="250"/>
+  </g>
+  <g fill="var(--accent)">
+    <circle cx="378" cy="55" r="5"/><circle cx="414" cy="55" r="5"/><circle cx="450" cy="55" r="5"/><circle cx="486" cy="55" r="5"/><circle cx="522" cy="55" r="5"/><circle cx="558" cy="55" r="5"/>
+    <circle cx="378" cy="85" r="5"/><circle cx="414" cy="85" r="5"/><circle cx="450" cy="85" r="5"/><circle cx="486" cy="85" r="5"/><circle cx="522" cy="85" r="5"/><circle cx="558" cy="85" r="5"/>
+    <circle cx="414" cy="115" r="5"/><circle cx="450" cy="115" r="5"/><circle cx="486" cy="115" r="5"/><circle cx="522" cy="115" r="5"/><circle cx="558" cy="115" r="5"/>
+    <circle cx="450" cy="145" r="5"/><circle cx="486" cy="145" r="5"/><circle cx="522" cy="145" r="5"/><circle cx="558" cy="145" r="5"/>
+    <circle cx="486" cy="175" r="5"/><circle cx="522" cy="175" r="5"/><circle cx="558" cy="175" r="5"/>
+    <circle cx="522" cy="205" r="5"/><circle cx="558" cy="205" r="5"/>
+  </g>
+  <g fill="var(--warn)">
+    <circle cx="558" cy="235" r="5"/>
+  </g>
+  <text x="462" y="266" font-size="11" fill="var(--warn)">↑ 最后一行只有 β<tspan baseline-shift="sub" font-size="8.5">k</tspan> 一个元</text>
+  <text x="360" y="284" font-size="11" fill="var(--ink3)">AQ<tspan baseline-shift="sub" font-size="8.5">k</tspan> = Q<tspan baseline-shift="sub" font-size="8.5">k+1</tspan> H̄<tspan baseline-shift="sub" font-size="8.5">k</tspan>：把余项吸进 Q，矩阵就「整齐」了</text>
+</g>
+</svg>
+<figcaption>图 7 · 上 Hessenberg 的非零模式。实心圆是可非零位置，灰 <code>0</code> 是精确为零。次对角（空心圈）是唯一能把子空间往外推的耦合，其余非零元都在对角线及以上。</figcaption>
+</figure>
+
+<h3 id="s48">§4.8 余项 $\beta_{k+1}$ 到底在干什么<span class="tag o">教材补充</span></h3>
+
+<p>板书只写了一句 <code>= Q_kH_k + (rank 1)</code>，没解释这个 rank-1 项有什么用。它至少有四重身份，缺了任何一重都读不懂后面的算法。</p>
+
+<h4>① 几何：子空间「漏出去」多少</h4>
+
+\[
+\beta_{k+1}=\|\tilde q_{k+1}\|_2=\|(I-Q_kQ_k^*)Aq_k\|_2=\mathrm{dist}\big(Aq_k,\ \mathrm{span}\{q_1,\dots,q_k\}\big).
+\]
+
+<p>也就是 $Aq_k$ 到旧子空间的距离。$\beta_{k+1}=0$ 当且仅当 $Aq_k\in\mathrm{span}\{q_1,\dots,q_k\}$，即 $\mathcal{K}_k$ 是 $A$-不变子空间。所以 $\beta_{k+1}$ 就是「$\mathcal{K}_k$ 离 $A$-不变有多远」的度量。</p>
+
+<h4>② 算法：下一步的种子，也是停机判据</h4>
+
+<p>$q_{k+1}=\tilde q_{k+1}/\beta_{k+1}$，没有它迭代就断了。<a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 的伪代码里 <code>if H(k+1,k) &lt; tolerance</code> 就 break，用的正是这个量：$\beta_{k+1}$ 掉到容差以下，说明子空间已经饱和，再算下去只是噪声。</p>
+
+<h4>③ 收敛性：GMRES 残差的直接度量</h4>
+
+<p>解 $Ax=b$ 时取 $r_0=b-Ax_0$，$q_1=r_0/\|r_0\|_2$。GMRES 在第 $k$ 步的解是 $x_k=x_0+Q_ky$，残量</p>
+
+\[
+\|b-Ax_k\|_2=\|r_0-AQ_ky\|_2=\big\|\,\|r_0\|_2e_1-\bar H_ky\,\big\|_2 .
+\]
+
+<p>（第二个等号用了 $AQ_k=Q_{k+1}\bar H_k$ 和 $Q_{k+1}$ 保范数。）右边这个最小二乘问题的残量，经过 $k$ 次 Givens 旋转后正好是<strong>最后一个未被消掉的分量</strong>，它正比于 $\beta_{k+1}$。所以「$\beta$ 小 $\Rightarrow$ 残量小」不是巧合，是同一个数。</p>
+
+<h4>④ 特征值：Ritz 值的误差界</h4>
+
+<p>$H_k$ 的特征值（Ritz 值）逼近 $A$ 的特征值，误差界里出现的正是 $\beta_{k+1}$：$\beta$ 越小，Ritz 对越准。这是 <a href="#s411">§4.11</a> 的内容。</p>
+
+<div class="box key">
+<p class="label">一句话</p>
+<p>余项 $\beta_{k+1}q_{k+1}e_k^*$ 是「本步没抓住的那部分」，同时也是「下一步要抓的方向」。它既是误差，又是燃料。$\beta_{k+1}=0$ 时两者同时归零——这叫 <strong>happy breakdown</strong>：子空间已经是不变子空间，精确解就在里面，迭代该停了。</p>
+</div>
+
+<h3 id="s49">§4.9 对称的情形：$A^*=A\Rightarrow H$ 三对角 $\Rightarrow$ 短递推<span class="tag">板书 165</span></h3>
+
+<p>板书最后两行是整块板的收尾，也是 Lanczos 的全部内容：</p>
+
+<pre><code>A* = A  ⇒  H_k* = H_k = 三对角</code></pre>
+
+<p><strong>第一步：$H_k^*=H_k$。</strong></p>
+
+\[
+H_k^*=(Q_k^*AQ_k)^*=Q_k^*A^*Q_k=Q_k^*AQ_k=H_k ,
+\]
+
+<p>这里用了 $(XYZ)^*=Z^*Y^*X^*$、$(Q_k^*)^*=Q_k$、以及假设 $A^*=A$。所以 $H_k$ 是 Hermite 矩阵。</p>
+
+<p><strong>第二步：上 Hessenberg $+$ Hermite $\Rightarrow$ 三对角。</strong></p>
+
+<p>设 $i\gt j+1$。由上 Hessenberg 性，$h_{ij}=0$（次对角以下全零）。要证的是 $i\lt j-1$ 时也 $h_{ij}=0$。由 Hermite 性 $h_{ij}=\overline{h_{ji}}$，而 $j\lt i-1$ 意味着 $h_{ji}$ 处在「$j\gt i+1$」的位置，同样是次对角以下，故 $h_{ji}=0$，于是 $h_{ij}=0$。</p>
+
+<p>两种情形合起来：$|i-j|\gt 1$ 时 $h_{ij}=0$，即 $H_k$ 三对角。$\blacksquare$</p>
+
+<p><strong>第三步：三对角意味着短递推。</strong>把 $Aq_j=\sum_{i=1}^{j+1}h_{ij}q_i$ 里那些为零的项划掉，只剩三项：</p>
+
+\[
+Aq_j=\underbrace{h_{j-1,j}}_{\beta_{j-1}}q_{j-1}+\underbrace{h_{jj}}_{\alpha_j}q_j+\underbrace{h_{j+1,j}}_{\beta_j}q_{j+1} .
+\]
+
+<p>也就是说：<strong>正交化时只需要减掉 $q_{j-1}$ 和 $q_j$ 两个方向</strong>，前面 $q_1,\dots,q_{j-2}$ 的系数自动为零，不用算也不用减。这就是 Lanczos 过程，也是 CG 每步只要 $O(1)$ 存储的根源。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="fig8t fig8d">
+<title id="fig8t">长递推与短递推的带宽对比</title>
+<desc id="fig8d">左边一般矩阵的 H 是上 Hessenberg，每列要减掉前面所有方向；右边对称矩阵的 H 是三对角，每列只需减掉前两个方向。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="60" y="26" font-size="12.5" fill="var(--ink2)">一般 A：上 Hessenberg（长递推）</text>
+  <text x="410" y="26" font-size="12.5" fill="var(--ok)">A* = A：三对角（短递推）</text>
+  <!-- left 5x5 hessenberg -->
+  <g>
+    <g stroke="var(--line)">
+      <rect x="60" y="40" width="34" height="28" fill="var(--bg2)"/><rect x="94" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <rect x="128" y="40" width="34" height="28" fill="var(--bg2)"/><rect x="162" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <rect x="196" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <line x1="60" y1="68" x2="230" y2="68"/><line x1="60" y1="96" x2="230" y2="96"/>
+      <line x1="60" y1="124" x2="230" y2="124"/><line x1="60" y1="152" x2="230" y2="152"/>
+      <line x1="60" y1="180" x2="230" y2="180"/>
+      <line x1="94" y1="40" x2="94" y2="180"/><line x1="128" y1="40" x2="128" y2="180"/>
+      <line x1="162" y1="40" x2="162" y2="180"/><line x1="196" y1="40" x2="196" y2="180"/>
+    </g>
+    <g fill="var(--accent)">
+      <circle cx="77" cy="54" r="4.5"/><circle cx="111" cy="54" r="4.5"/><circle cx="145" cy="54" r="4.5"/><circle cx="179" cy="54" r="4.5"/><circle cx="213" cy="54" r="4.5"/>
+      <circle cx="77" cy="82" r="4.5"/><circle cx="111" cy="82" r="4.5"/><circle cx="145" cy="82" r="4.5"/><circle cx="179" cy="82" r="4.5"/><circle cx="213" cy="82" r="4.5"/>
+      <circle cx="111" cy="110" r="4.5"/><circle cx="145" cy="110" r="4.5"/><circle cx="179" cy="110" r="4.5"/><circle cx="213" cy="110" r="4.5"/>
+      <circle cx="145" cy="138" r="4.5"/><circle cx="179" cy="138" r="4.5"/><circle cx="213" cy="138" r="4.5"/>
+      <circle cx="179" cy="166" r="4.5"/><circle cx="213" cy="166" r="4.5"/>
+    </g>
+    <g fill="var(--ink3)" font-size="10" text-anchor="middle">
+      <text x="77" y="114">0</text><text x="77" y="142">0</text><text x="111" y="142">0</text>
+      <text x="77" y="170">0</text><text x="111" y="170">0</text><text x="145" y="170">0</text>
+    </g>
+  </g>
+  <text x="60" y="200" font-size="11" fill="var(--ink3)">第 j 列要减 j 个方向</text>
+  <text x="60" y="218" font-size="11" fill="var(--ink3)">每步 O(nj)，存 j 个向量</text>
+
+  <!-- right 5x5 tridiagonal -->
+  <g>
+    <g stroke="var(--line)">
+      <rect x="410" y="40" width="34" height="28" fill="var(--bg2)"/><rect x="444" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <rect x="478" y="40" width="34" height="28" fill="var(--bg2)"/><rect x="512" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <rect x="546" y="40" width="34" height="28" fill="var(--bg2)"/>
+      <line x1="410" y1="68" x2="580" y2="68"/><line x1="410" y1="96" x2="580" y2="96"/>
+      <line x1="410" y1="124" x2="580" y2="124"/><line x1="410" y1="152" x2="580" y2="152"/>
+      <line x1="410" y1="180" x2="580" y2="180"/>
+      <line x1="444" y1="40" x2="444" y2="180"/><line x1="478" y1="40" x2="478" y2="180"/>
+      <line x1="512" y1="40" x2="512" y2="180"/><line x1="546" y1="40" x2="546" y2="180"/>
+    </g>
+    <g fill="var(--ok)">
+      <circle cx="427" cy="54" r="4.5"/><circle cx="461" cy="54" r="4.5"/>
+      <circle cx="427" cy="82" r="4.5"/><circle cx="461" cy="82" r="4.5"/><circle cx="495" cy="82" r="4.5"/>
+      <circle cx="461" cy="110" r="4.5"/><circle cx="495" cy="110" r="4.5"/><circle cx="529" cy="110" r="4.5"/>
+      <circle cx="495" cy="138" r="4.5"/><circle cx="529" cy="138" r="4.5"/><circle cx="563" cy="138" r="4.5"/>
+      <circle cx="529" cy="166" r="4.5"/><circle cx="563" cy="166" r="4.5"/>
+    </g>
+    <g fill="var(--ink3)" font-size="10" text-anchor="middle">
+      <text x="495" y="58">0</text><text x="529" y="58">0</text><text x="563" y="58">0</text>
+      <text x="529" y="86">0</text><text x="563" y="86">0</text>
+      <text x="563" y="114">0</text>
+      <text x="427" y="114">0</text><text x="427" y="142">0</text><text x="461" y="142">0</text>
+      <text x="427" y="170">0</text><text x="461" y="170">0</text><text x="495" y="170">0</text>
+    </g>
+  </g>
+  <text x="410" y="200" font-size="11" fill="var(--ok)">第 j 列只减 2 个方向</text>
+  <text x="410" y="218" font-size="11" fill="var(--ok)">每步 O(n)，只存 3 个向量</text>
+</g>
+</svg>
+<figcaption>图 8 · 带宽对比。对称性把 $H$ 的带宽从「整个上三角」压到「三条对角线」，于是每步工作量从 $O(nj)$ 降到 $O(n)$、存储从 $j$ 个向量降到 3 个。</figcaption>
+</figure>
+
+<table>
+<tr><th></th><th>长递推（Arnoldi / GMRES）</th><th>短递推（Lanczos / CG）</th></tr>
+<tr><td>适用</td><td>一般方阵</td><td>Hermite（CG 还需正定）</td></tr>
+<tr><td>每步正交化范围</td><td>全部 $q_1,\dots,q_j$</td><td>只有 $q_{j-1},q_j$</td></tr>
+<tr><td>$H$ 的结构</td><td>上 Hessenberg</td><td>三对角</td></tr>
+<tr><td>每步计算量</td><td>$O(nj)$，随 $j$ 增长</td><td>$O(n)$，固定</td></tr>
+<tr><td>存储</td><td>$j$ 个 $n$ 维向量，$O(nj)$</td><td>3 个向量，$O(n)$</td></tr>
+<tr><td>余项</td><td>$h_{j+1,j}q_{j+1}$</td><td>$\beta_jq_{j+1}$（同形式）</td></tr>
+<tr><td>为什么能短</td><td>—</td><td>对称性强制 $h_{ij}=0\ (i\lt j-1)$</td></tr>
+<tr><td>代价</td><td>存储和计算随迭代增长</td><td><strong>正交性会慢慢丢失</strong>，需重正交化</td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">短递推的代价，不要略过</p>
+<p>短递推省掉了显式正交化，但正交性就不再被「主动维护」，只靠三项递推<strong>被动继承</strong>。浮点误差累积后 $Q_k$ 会逐渐失去正交性，表现为：Ritz 值里冒出<strong>幽灵特征值</strong>（重根被算成多个）、收敛停滞、同一特征值被重复报告。</p>
+<p>补救办法（<a href="补课笔记-幂法反幂法与第3章引言.html#s244">§2.4.4</a> 与讲义 PDF 4 §4.4.4–§4.4.5）：<strong>完全重正交化</strong>（每步都对全部旧基再减一次，等于退化成 Arnoldi，$O(nj)$）、或<strong>有选择的重正交化</strong>（只在 $\beta_j$ 掉到某个阈值以下时才补做一次）。ARPACK 用的就是后者。</p>
+</div>
+
+<h3 id="s410">§4.10 Hessenberg 上半部分装的是什么<span class="tag o">教材补充</span></h3>
+
+<p>这是对话里最后一个没被回答的问题，也是整块板书最容易「看过去但没懂」的地方：既然次对角 $\beta$ 才是把子空间往外推的东西，那<strong>对角线上方那一大片 $h_{ij}\ (i\lt j)$ 到底是干什么的</strong>？分四层回答。</p>
+
+<h4>① 字面：它是「往回」的耦合强度</h4>
+
+\[
+h_{ij}=q_i^*Aq_j\qquad(i\lt j).
+\]
+
+<p>读法：$A$ 作用在第 $j$ 个方向 $q_j$ 上，产生的结果在<strong>第 $i$ 个（更早的）方向</strong> $q_i$ 上有多少分量。所以上半部分描述的是「$A$ 把信息从第 $j$ 维送回到第 $i$ 维」的强度，也就是<strong>长程记忆</strong>。次对角 $h_{j+1,j}$ 是唯一「往前走」的耦合（把信息送到新的第 $j+1$ 维），而对角 $h_{jj}=q_j^*Aq_j$ 是 $A$ 在 $q_j$ 方向上的 Rayleigh 商。</p>
+
+<p>所以 $H_k$ 可以拆成三块，各有明确含义：</p>
+
+\[
+H_k=\underbrace{D}_{\text{Rayleigh 商}}+\underbrace{S}_{\text{严格上三角：往回的长程耦合}}+\underbrace{N}_{\text{次对角：往外推}} .
+\]
+
+<h4>② 结构：它是「Ritz 值」的全部来源</h4>
+
+<p>$H_k$ 的特征值叫 <strong>Ritz 值</strong>，是 $A$ 的特征值在 $\mathcal{K}_k$ 内的最佳近似。而特征值是由<strong>整个</strong> $H_k$ 决定的，不只是三对角部分。如果把上半部分强行置零，你算的就不是 $A$ 的 Ritz 值，而是「某个与 $A$ 有相同对角和次对角的对称矩阵」的特征值——这完全是另一个问题。</p>
+
+<div class="box key">
+<p class="label">这就是为什么不对称时不能硬用三项递推</p>
+<p>「只保留对角 $+$ 次对角」$=$「假装 $A$ 是对称的」。误差就是被扔掉的上半部分。所以对非对称矩阵，<strong>Arnoldi 必须做全正交化</strong>（长递推），这不是为了数值稳定，而是<strong>数学上必须</strong>——那 $h_{ij}$ 是真的非零。</p>
+</div>
+
+<h4>③ 数值：它是「$A$ 离对称有多远」的度量</h4>
+
+<p>由 $H_k=Q_k^*AQ_k$ 和 $A^*=A\iff H_k^*=H_k$（<a href="#s49">§4.9</a>），有</p>
+
+\[
+\|H_k-H_k^*\|_2=\|Q_k^*(A-A^*)Q_k\|_2\le\|A-A^*\|_2 ,
+\]
+
+<p>而且当 $\mathcal{K}_k$ 抓到了 $A$ 的主要方向时这个界是紧的。所以「上半部分有多大」直接反映 $A$ 的非对称程度：$A$ 越接近对称，上半部分越小，三项递推越接近可用。</p>
+
+<h4>④ 工程：它决定了内存</h4>
+
+<p>存整个 $H_k$ 要 $O(k^2)$，只存三对角要 $O(k)$。这就是为什么 <code>ARPACK</code> 里对称问题（<code>dsaupd</code>）和非对称问题（<code>dnaupd</code>）是两个完全不同的代码路径，内存和每步代价差一个量级。</p>
+
+<div class="box ok">
+<p class="label">一句话总结</p>
+<p>次对角 $\beta$ 负责「把子空间往前推」，上半部分 $h_{ij}\ (i\lt j)$ 负责「记住 $A$ 有多不对称」。前者是引擎，后者是路况记录。对称的时候路况记录全为零，所以只需要三对角——这就是 Lanczos 能那么省的全部原因。</p>
+</div>
+
+<h3 id="s411">§4.11 这个分解后面拿来干什么<span class="tag a">讲义 PDF 4 §4.2–§4.4 前瞻</span></h3>
+
+<p>本课停在「得到 $AQ_k=Q_kH_k+\beta_{k+1}q_{k+1}e_k^*$」，没讲怎么用它。按讲义 PDF 4 的顺序，后面三条主线全部建立在这个分解上。这里只列接口，细节等课上讲到再补。</p>
+
+<table>
+<tr><th>用途</th><th>怎么用这个分解</th><th>讲义位置</th></tr>
+<tr><td><strong>解 $Ax=b$</strong>（GMRES）</td><td>把 $\min_{x\in x_0+\mathcal{K}_k}\|b-Ax\|$ 化成 $\min_y\|\,\|r_0\|_2e_1-\bar H_ky\|$，用 Givens 消成上三角</td><td>§4.2</td></tr>
+<tr><td><strong>解 $Ax=b$</strong>（FOM）</td><td>要求残量 $\perp\mathcal{K}_k$，即 $H_ky=\|r_0\|_2e_1$</td><td>§4.2.5</td></tr>
+<tr><td><strong>对称正定</strong>（CG）</td><td>$H_k$ 三对角 $\Rightarrow$ 三项递推 $\Rightarrow$ 不用存基，$H_k$ 也不用显式构造</td><td>§4.3</td></tr>
+<tr><td><strong>特征值</strong>（Ritz 值）</td><td>算 $H_k$ 的特征对 $(\theta_i,y_i)$，$(q_1,\dots,q_k)y_i$ 就是 Ritz 向量</td><td>§4.4</td></tr>
+<tr><td><strong>SVD / 最小二乘</strong></td><td>对 $A^*A$ 或 $AA^*$ 跑 Lanczos，得到双对角结构</td><td>§4.4.6–§4.4.7</td></tr>
+</table>
+
+<p>注意第一条和第四条的关系：GMRES 要的是<strong>最小二乘子问题</strong>，Ritz 值要的是<strong>特征值子问题</strong>，但两者的输入都是同一个 $H_k$。这就是为什么「$H_k$ 是 $A$ 在子空间上的压缩」这句话值得单独记住——它是整个第 4 章唯一的枢纽。</p>
+
+<hr>
+<!-- ============================================================ -->
+<h2 id="p5">第五部分 · 为什么用 $Aq_j$ 而不是 $A^j r$<span class="tag o">教材补充</span></h2>
+
+<p>这是对话里问得最久、也最值得写清楚的一个问题。先把容易混的两种说法分开：</p>
+
+<ul>
+<li><strong>不是问</strong>「为什么 Krylov 子空间要由幂次生成」——那由 <a href="#s41">§4.1</a> 的 Cayley–Hamilton 决定，没得选。</li>
+<li><strong>是问</strong>「既然 $\mathcal{K}_k=\mathrm{span}\{r,Ar,\dots,A^{k-1}r\}$，为什么不直接拿这 $k$ 个向量做 Gram–Schmidt，而要绕一圈用 $Aq_j$ 再正交化」。</li>
+</ul>
+
+<h3 id="s51">§5.1 数学上两者给出同一个子空间</h3>
+
+<p>精确算术下，两种做法得到的是<strong>同一个子空间</strong>的正交基。理由是一行：</p>
+
+\[
+\mathrm{span}\{q_1,\dots,q_j\}=\mathcal{K}_j(A,r)=\mathrm{span}\{r,Ar,\dots,A^{j-1}r\} .
+\]
+
+<p>左边是 Arnoldi 造出来的，右边是幂序列张成的，<a href="#s45">§4.5</a> 已经证过它们相等。所以<strong>「$Aq_j$ 再正交化」和「$A^jr$ 再正交化」在数学上是同一件事</strong>——$Aq_j$ 与 $A^jr$ 只差一个 $\mathcal{K}_j$ 内的分量，而这个分量在正交化时会被减掉。</p>
+
+<p>差别全在数值上。</p>
+
+<h3 id="s52">§5.2 数值上：误差被放大几次</h3>
+
+<p><strong>一句话：</strong>「先连乘 $j$ 次 $A$ 再正交化」把舍入误差放大了 $j$ 次；「每乘一次就立刻正交化」只放大 1 次。<a href="#s42">§4.2</a> 的条件数表已经把这个差别量化了（$4.6\times 10^9$ 对 $1$）。</p>
+
+<p>但光看条件数还不够，要说清「误差是在哪一步进来的」。分两种做法各算一遍。</p>
+
+<h4>做法 A：直接对幂序列正交化</h4>
+
+<p>设 $\hat y_1=r$ 精确，然后递推 $\hat y_{j+1}=A\hat y_j$。每一步引入相对误差 $\varepsilon$：</p>
+
+\[
+\hat y_{j+1}=A\hat y_j(1+\varepsilon_j),\qquad |\varepsilon_j|\le\varepsilon_{\text{mach}} .
+\]
+
+<p>展开到一阶：</p>
+
+\[
+\hat y_{j+1}=A^{j}r+\sum_{m=1}^{j}A^{j+1-m}\,\varepsilon_m\,A^{m-1}r .
+\]
+
+<p>第 $m$ 步的误差 $A^{m-1}r\varepsilon_m$ 被<strong>后面每一步的 $A$ 各放大一次</strong>，一共放大 $j+1-m$ 次。相对量级约为</p>
+
+\[
+\frac{\|\text{误差}\|}{\|A^jr\|}\sim\varepsilon_{\text{mach}}\sum_{m=1}^{j}\Big(\frac{\|A\|}{\|A\|}\Big)^{j+1-m}\cdot\frac{\|A^{m-1}r\|}{\|A^{j}r\|}\cdot\|A\|^{j+1-m}
+\;\Rightarrow\;
+\sim\;\varepsilon_{\text{mach}}\cdot\Big(\frac{|\lambda_1|}{|\lambda_n|}\Big)^{j}.
+\]
+
+<p>最后那个因子是「放大 $j$ 次」的定量版本：每乘一次 $A$，误差里沿 $q_1$ 的分量被放大 $\lambda_1$ 倍、沿 $q_n$ 的分量只被放大 $\lambda_n$ 倍，比值就按 $|\lambda_1/\lambda_n|$ 累积。这就是为什么 $\mathrm{cond}$ 会按 $\varepsilon^{-j}$ 长——<strong>和 <a href="#s42">§4.2</a> 表格里 $5.8\times10^3\to4.7\times10^6\to4.6\times10^9$ 的走势是同一件事</strong>。</p>
+
+<h4>做法 B：Arnoldi</h4>
+
+<p>每一步只有一次 matvec 和一次正交化，而且正交化<strong>当场</strong>把落在 $\mathcal{K}_j$ 里的分量减掉：</p>
+
+\[
+\tilde q_{j+1}=(I-Q_jQ_j^*)Aq_j .
+\]
+
+<p>误差只可能出现在 $\tilde q_{j+1}$ 里，量级是 $\varepsilon_{\text{mach}}\|A\|$（来自一次 matvec）。它<strong>不会</strong>被下一次的 $A$ 再放大，因为下一次用的是 $q_{j+1}$——一个<strong>重新归一化的单位向量</strong>，不是累积了历史的 $\hat y_{j+1}$。</p>
+
+<div class="box key">
+<p class="label">这才是关键的差别：历史被丢掉了</p>
+<ul>
+<li><strong>做法 A</strong>：$\hat y_{j+1}$ 这一个向量里<strong>压着</strong>全部 $j$ 步的误差。正交化只能把这 $j$ 步误差的「投影」减掉，减不掉误差本身。</li>
+<li><strong>做法 B</strong>：$q_{j+1}$ 只带<strong>这一步</strong>的误差。前 $j$ 步的误差已经被「投影到 $Q_j$ 上再减掉」这个动作清出去了，剩下的历史信息全部存在 $H_j$ 里（那是 $O(j^2)$ 个精确记账的数），不在向量里。</li>
+</ul>
+<p>一句话：<strong>Arnoldi 把「历史」从向量搬到了矩阵 $H$ 里</strong>。向量只负责「当前方向」，历史交给 $H$ 记账。这就是它稳定的根本原因。</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 680 230" width="100%" role="img" aria-labelledby="fig9t fig9d">
+<title id="fig9t">两种做法的误差累积路径</title>
+<desc id="fig9d">上图直接连乘时每一步的误差都被后续所有 A 乘法放大；下图 Arnoldi 每一步乘完立即正交化，误差只停留一步。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="30" y="22" font-size="12" fill="var(--warn)">做法 A：先连乘，最后才正交化</text>
+  <g font-size="10.5" fill="var(--ink2)">
+    <text x="34" y="52">r</text><text x="104" y="52">Ar</text><text x="174" y="52">A²r</text><text x="244" y="52">A³r</text><text x="314" y="52">A⁴r</text>
+  </g>
+  <g stroke="var(--ink3)" stroke-width="1.2">
+    <line x1="48" y1="48" x2="92" y2="48"/><line x1="120" y1="48" x2="164" y2="48"/>
+    <line x1="192" y1="48" x2="236" y2="48"/><line x1="264" y1="48" x2="308" y2="48"/>
+  </g>
+  <g fill="var(--warn)" font-size="9.5">
+    <text x="46" y="40">ε₁×4</text><text x="116" y="40">ε₂×3</text><text x="186" y="40">ε₃×2</text><text x="256" y="40">ε₄×1</text>
+  </g>
+  <text x="360" y="52" font-size="11" fill="var(--warn)">每个 ε 被后面所有 A 连乘放大</text>
+  <text x="360" y="70" font-size="11" fill="var(--warn)">总误差 ~ ε·(|λ₁|/|λₙ|)ʲ</text>
+
+  <line x1="30" y1="96" x2="650" y2="96" stroke="var(--line)" stroke-width="1"/>
+
+  <text x="30" y="126" font-size="12" fill="var(--ok)">做法 B：每乘一次立刻正交化</text>
+  <g font-size="10.5" fill="var(--ink2)">
+    <text x="34" y="156">q₁</text><text x="124" y="156">q₂</text><text x="214" y="156">q₃</text><text x="304" y="156">q₄</text><text x="394" y="156">q₅</text>
+  </g>
+  <g stroke="var(--ok)" stroke-width="1.3">
+    <line x1="52" y1="152" x2="112" y2="152"/><line x1="142" y1="152" x2="202" y2="152"/>
+    <line x1="232" y1="152" x2="292" y2="152"/><line x1="322" y1="152" x2="382" y2="152"/>
+  </g>
+  <g fill="var(--ok)" font-size="9.5">
+    <text x="66" y="144">×A + 正交化</text><text x="156" y="144">×A + 正交化</text>
+    <text x="246" y="144">×A + 正交化</text><text x="336" y="144">×A + 正交化</text>
+  </g>
+  <g fill="var(--ok)" font-size="9.5">
+    <text x="60" y="172">ε</text><text x="150" y="172">ε</text><text x="240" y="172">ε</text><text x="330" y="172">ε</text>
+  </g>
+  <text x="440" y="152" font-size="11" fill="var(--ok)">误差不跨步累积</text>
+  <text x="440" y="170" font-size="11" fill="var(--ok)">历史记在 H 里，不在向量里</text>
+
+  <text x="30" y="206" font-size="11.5" fill="var(--ink2)">两种做法的 matvec 次数相同（都是 k−1 次），差别只在误差放大的次数。</text>
+</g>
+</svg>
+<figcaption>图 9 · 误差累积路径对比。上图每个 $\varepsilon$ 都被后面的 $A$ 连乘放大；下图每步的 $\varepsilon$ 只停留一步，因为正交化把「历史分量」清出去了。</figcaption>
+</figure>
+
+<h3 id="s53">§5.3 一个可以手算的对照</h3>
+
+<p>用 <a href="#s42">§4.2</a> 的 $\varepsilon=10^{-1}$ 那组数据手算前两步，看得最清楚。取</p>
+
+\[
+A=\begin{bmatrix}1&0\\0&0.1\end{bmatrix},\qquad r=\begin{bmatrix}1\\1\end{bmatrix}.
+\]
+
+<p><strong>做法 A</strong>（幂序列）：</p>
+
+\[
+[r,\ Ar]=\begin{bmatrix}1&1\\1&0.1\end{bmatrix}.
+\]
+
+<p>两列的夹角：$\cos\theta=\dfrac{1+0.1}{\sqrt{2}\sqrt{1.01}}=\dfrac{1.1}{1.4213}\approx0.774$，$\theta\approx39.3^\circ$。两列还不算太挤，但 $\mathrm{cond}_2$ 已经是 $\dfrac{1.1}{0.9}\cdot\dfrac{\sqrt{2}}{\sqrt{1.01}}\cdot\dfrac{1}{1-0.1/1}\approx 2.8$ 量级——$\varepsilon$ 再小一个量级，这个数就翻十倍，因为第二列 $Ar=(1,0.1)$ 正在向 $e_1$ 靠。</p>
+
+<p><strong>做法 B</strong>（Arnoldi）：</p>
+
+\[
+q_1=\frac{1}{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix},\qquad
+Aq_1=\frac{1}{\sqrt2}\begin{bmatrix}1\\0.1\end{bmatrix},\qquad
+q_1^*Aq_1=\frac{1+0.1}{2}=0.55,
+\]
+
+\[
+\tilde q_2=Aq_1-0.55q_1=\frac{1}{\sqrt2}\begin{bmatrix}1-0.55\\0.1-0.55\end{bmatrix}
+=\frac{1}{\sqrt2}\begin{bmatrix}0.45\\-0.45\end{bmatrix}
+=\frac{0.45}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix}.
+\]
+
+<p>归一化后 $q_2=\dfrac{1}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix}$，<strong>严格与 $q_1$ 正交</strong>，且与 $\varepsilon$ 无关。$\beta_2=\|\tilde q_2\|_2=0.45/\sqrt2\cdot\sqrt2=0.45$，而 $h_{11}=0.55$，于是</p>
+
+\[
+H_2=\begin{bmatrix}0.55&0.55\\0.45&0.55\end{bmatrix}
+\]
+
+<p>（第二列由 $q_1^*Aq_2$ 与 $q_2^*Aq_2$ 算出，这里不展开）。$H_2$ 的特征值是 $0.55\pm\sqrt{0.55\cdot0.45}=0.55\pm0.4975$，即 $1.0475$ 与 $0.0525$——前者逼近 $A$ 的 $1$，后者逼近 $0.1$，<strong>两个都对上了</strong>。</p>
+
+<div class="box ok">
+<p class="label">这个例子说明了什么</p>
+<p>做法 A 的第二列随 $\varepsilon$ 越来越像 $e_1$，正交化时「减掉 $e_1$ 方向」剩下的东西是 $\varepsilon$ 量级的差，全是舍入误差；做法 B 的第二列由 $Aq_1$ 减去它在 $q_1$ 上的投影得到，<strong>那个 $0.45$ 的差是精确算出来的，不是两个大数相减剩下的渣</strong>。</p>
+<p>换句话说：做法 A 的「新方向」藏在两个几乎相同的向量之差里，做法 B 的新方向是投影之后<strong>直接剩下的</strong>。前者要靠减法挖出来，后者天生就在外面。</p>
+</div>
+
+<h3 id="s54">§5.4 一个诚实的补充：做法 A 不是「更贵」，是「更脆」</h3>
+
+<p>容易被误传的一点：有人会说「直接算 $A^jr$ 需要 $j$ 次 matvec，Arnoldi 只要 1 次，所以 Arnoldi 更快」。<strong>这个说法是错的</strong>——直接算时 $A^jr=A(A^{j-1}r)$，复用上一步结果，总共也是 $k-1$ 次 matvec。</p>
+
+<p>真正的差别是：</p>
+
+<table>
+<tr><th></th><th>做法 A（幂序列 + 一次正交化）</th><th>做法 B（Arnoldi，边乘边正交）</th></tr>
+<tr><td>matvec 次数</td><td>$k-1$</td><td>$k-1$</td></tr>
+<tr><td>正交化 flops</td><td>$O(nk^2)$（一次性做 Gram–Schmidt）</td><td>$O(nk^2)$（累计，每步 $O(nj)$）</td></tr>
+<tr><td>数值稳定性</td><td><strong>不可用</strong>（$\mathrm{cond}\sim(|\lambda_1/\lambda_n|)^{k}$）</td><td>可用（$\mathrm{cond}(Q)=1$）</td></tr>
+<tr><td>正交性</td><td>丢光</td><td>保持（病态时需重正交化）</td></tr>
+</table>
+
+<p>所以 Arnoldi 相对幂序列的优势<strong>纯粹是数值稳定性</strong>，不是计算量。这一点在 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3</a> 里也有同一个结论：讲义说「$Y$ 的列会趋于线性相关，信息丢失会非常严重」，补救的办法是「换基，不换子空间」。</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p6">第六部分 · Krylov 比子空间迭代省在哪</h2>
+
+<p>这两块内容在课上前后脚出现（<a href="#s32">§3.2</a> 和 <a href="#s41">§4.1</a>），但板书没做对比。摆在一起看，Krylov 的动机就非常清楚：</p>
+
+<table>
+<tr><th></th><th>子空间迭代</th><th>Krylov（Arnoldi）</th></tr>
+<tr><td>推进的对象</td><td>$k$ 个<strong>独立</strong>向量 $X_i\in\mathbb{C}^{n\times k}$</td><td>一个向量，靠乘 $A$ 长出 $k$ 个方向</td></tr>
+<tr><td>得到 $k$ 维子空间要几次 matvec</td><td>每步 $k$ 次；推到第 $i$ 步共 $ki$ 次</td><td><strong>总共 $k-1$ 次</strong></td></tr>
+<tr><td>嵌套性</td><td>无。从 $k=5$ 加到 $k=6$ 基本要重来</td><td>有。$\mathcal{K}_1\subset\mathcal{K}_2\subset\cdots$</td></tr>
+<tr><td>正交化</td><td>每步一次 $n\times k$ 的 QR，$O(nk^2)$</td><td>每步对 $j$ 个方向正交化，累计 $O(nk^2)$</td></tr>
+<tr><td>收敛速度</td><td>$|\lambda_{k+1}/\lambda_k|$</td><td>由多项式逼近决定，通常更快</td></tr>
+<tr><td>典型用途</td><td>求前 $k$ 个特征值 / 不变子空间</td><td>解 $Ax=b$（GMRES/CG）、求极端特征值（Lanczos）</td></tr>
+</table>
+
+<div class="box key">
+<p class="label">为什么 Krylov 能只用 $k-1$ 次 matvec</p>
+<p>因为 $\mathcal{K}_k$ 的 $k$ 个生成元 $\{r,Ar,\dots,A^{k-1}r\}$ 是<strong>串起来</strong>的：算 $A^jr$ 时复用了 $A^{j-1}r$。而子空间迭代的 $k$ 列之间没有任何关系，只能各乘各的。</p>
+<p>代价是：这 $k$ 个生成元<strong>几乎线性相关</strong>（<a href="#s42">§4.2</a>），所以必须每步正交化——这正是 Arnoldi 存在的原因。省下的 matvec，用正交化的 flops 换回来了。</p>
+</div>
+
+<p>还有一条课上没讲但很重要的对比：<strong>子空间迭代对「$k$ 个最大特征值」是直接瞄准的</strong>（它就是要 $\mathrm{span}\{q_1,\dots,q_k\}$），而 Krylov 子空间<strong>不瞄准任何特定的 $k$ 个特征向量</strong>——它只是「多项式过滤 $r$ 能得到的一切」。这让它对<strong>极端</strong>特征值（最大、最小、离位移最近的）特别好用，对<strong>中间</strong>的特征值几乎没用。这就是为什么求内部特征值要配合位移（shift-invert），而不能直接靠 Krylov。</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="p7">附录 · 30 张照片逐张对照</h2>
+
+<p>按文件名末尾编号排序（编号即微信导出顺序，也是拍摄顺序）。<strong>「本课」指 2026-10-20 新写的内容</strong>；「旧板」指上一堂课留下、本课未擦的板书。</p>
+
+<table class="apx">
+<tr><th>编号</th><th>类型</th><th>内容</th><th>归属</th><th>本笔记对应</th></tr>
+<tr><td>154</td><td>手写</td><td>残差分块 $\|b-B_1y_1-B_2y_2\|$；$\mathcal{K}_k(A,r)$ 定义；$q_1,q_2,q_3$ 与 $p_1(A)r,p_2(A)r$；$AQ_{k+1}=Q_{k+1}H_{k+1}+\cdots$；<code>upper hessenberg</code>；$Q_k^*AQ_k=H_k$；$A^*=A\Rightarrow H_k$ 三对角；linear / quadratic convergence 与 $\log|\varepsilon_k|$ 图</td><td><strong>本课</strong></td><td><a href="#s21">§2.1</a>、<a href="#s41">§4.1</a>、<a href="#s43">§4.3</a>、<a href="#s46">§4.6</a>、<a href="#s49">§4.9</a></td></tr>
+<tr><td>155</td><td>手写</td><td>幂法 $A^*=A$、$A^kx_0$ 展开、$\theta_k$ 与 $\tan\theta_{k+1}$；<code>inverse iter.</code>；<code>Rayleigh quotient iteration (RQI)</code>；$A-\mu I$ 的特征值与「单精度收敛到双精度」</td><td>旧板</td><td><a href="#s22">§2.2</a>；其余见 <a href="补课笔记-幂法反幂法与第3章引言.html#p2">补课笔记第二部分</a></td></tr>
+<tr><td>156</td><td>手写</td><td>Newton 法求 $\sqrt A$；$AV=VH$ 的框图；$A^k[x_1,x_2]=[q_1,q_2][\ldots]$</td><td>旧板</td><td>—（第 5 章 Schur 型）</td></tr>
+<tr><td>157</td><td>手写</td><td><code>subspace iter</code>（$X\in\mathbb{C}^{n\times k}$、$\tilde X_{i+1}=AX_i$、$X_{i+1}\leftarrow Q_{i+1}$）；<code>plain QR iter</code> 1961 Francis/Kublanovskaya；$A_0,A_1,\ldots$ 相似</td><td>旧板（含本课引子）</td><td><a href="#p3">第三部分</a></td></tr>
+<tr><td>158</td><td>手写</td><td>① Hessenberg reduction（Arnoldi / Householder 两条路）② shifting；Wilkinson shift；$e_n^*$ 与 $Q$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s535">§5.3.5</a>–<a href="补课笔记-幂法反幂法与第3章引言.html#s537">§5.3.7</a></td></tr>
+<tr><td>159</td><td>手写</td><td><code>Implicit QR</code>：<code>explicit</code> / <code>implicit</code> 对比；$Qe_1$ 由 $(H-\mu I)e_1$ 决定；Householder 向量 $w$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s537">§5.3.7</a></td></tr>
+<tr><td>160</td><td>手写</td><td><code>real matrices</code>：$A=QTQ^{\mathsf T}$，$T$ quasi-upper triangular；<code>double shift</code> 的 $A_1,A_2$ 递推与 motivation $\mu_1=\overline{\mu_2}$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s536">§5.3.6</a></td></tr>
+<tr><td>161</td><td>手写</td><td>QR 算法两步总结（Hess. reduct. + QR sweeps）；<code>drop tiny subdiagonals</code>；$2\times2$ 块与 <code>comp. eig.</code>（$\beta\gamma\lt 0$）</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s54">§5.4</a></td></tr>
+<tr><td>162</td><td>黑板</td><td>上板 <code>Krylov subspace</code>：$\mathcal{K}(A,r,k)$ 定义、$q_1,q_2,q_3$ 与 $p_1(A)r,p_2(A)r$、右板一般项；下板 <code>Lanczos-Arnoldi</code> / <code>Arnoldi decomp.</code>：$A[q_1,\dots,q_{k-1}]=[q_1,\dots,q_k]\bar H_{k-1}$、$AQ_{k-1}=Q_{k-1}H_{k-1}+q_k\beta_ke_{k-1}^*$、$\beta_k=h_{k,k-1}$、<code>upper hessenberg</code></td><td><strong>本课</strong></td><td><a href="#s41">§4.1</a>、<a href="#s43">§4.3</a>、<a href="#s44">§4.4</a>、<a href="#s46">§4.6</a></td></tr>
+<tr><td>163</td><td>黑板</td><td>$[r,Ar,A^2r,A^3r]=[q_1,q_2,q_3,q_4]R$，$R$ 上三角</td><td><strong>本课</strong></td><td><a href="#s47">§4.7</a></td></tr>
+<tr><td>164</td><td>黑板</td><td>全景：左板 Krylov + Arnoldi decomp.，右板 $[r,Ar,A^2r,A^3r]$ 与 $AQ_k=\cdots$（老师在场）</td><td><strong>本课</strong></td><td><a href="#p4">第四部分</a>（总览）</td></tr>
+<tr><td>165</td><td>黑板</td><td>$[r,Ar,A^2r,A^3r]=[q_1,\dots,q_4]R$；$AQ_k=Q_kH_k+q_{k+1}\beta_{k+1}e_k^*=Q_kH_k+(\text{rank }1)$；$Q_k^*AQ_k=H_k$；$A^*=A\Rightarrow H_k^*=H_k=$ 三对角</td><td><strong>本课</strong></td><td><a href="#s46">§4.6</a>、<a href="#s48">§4.8</a>、<a href="#s49">§4.9</a></td></tr>
+<tr><td>166</td><td>黑板</td><td>$\|\alpha_2q_2+\cdots+\alpha_nq_n\|_2=(|\alpha_2|^2+\cdots+|\alpha_n|^2)^{1/2}$；$\alpha_i\leftarrow\alpha_i(\lambda_i/\lambda_1)^k$</td><td><strong>本课</strong>（写在旧板旁）</td><td><a href="#s22">§2.2</a></td></tr>
+<tr><td>167</td><td>黑板</td><td><code>inverse iter.</code>：谱平面上的 $(\lambda_i-\mu)^{-1}$、$x_{k+1}=(A-\mu I)^{-1}x_k$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s22">§2.2</a></td></tr>
+<tr><td>168</td><td>黑板</td><td>linear convergence（含 $\le r^k|\varepsilon_0|$）；<code>Rayleigh quotient iteration (RQI)</code> 与三次收敛的比值链</td><td>旧板</td><td><a href="#s21">§2.1</a>；补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s26">§2.6</a></td></tr>
+<tr><td>169</td><td>黑板</td><td>$A^k[x_1,x_2]=[q_1,q_2][\ldots]=[y_1,y_2]$；$AV=VH$、$H=X\Theta X^{-1}$、$A(VX)=(VX)\Theta$</td><td>旧板</td><td>—（第 5 章 Schur 型）</td></tr>
+<tr><td>170</td><td>黑板</td><td>左：$AV=VH$ 推导；右：<code>subspace iteration</code> 全套（$|\lambda_1|\ge\cdots\ge|\lambda_k|\gt|\lambda_{k+1}|$、<code>desired</code> 括号、$X\in\mathbb{C}^{n\times k}$、三步迭代、上三角 $A$ 与被圈出的 $\lambda_{k+1}$）</td><td><strong>本课</strong>（右板）</td><td><a href="#s31">§3.1</a>–<a href="#s34">§3.4</a></td></tr>
+<tr><td>171</td><td>黑板</td><td><code>QR algorithm</code>（goal：$A=QTQ^*$，Schur decomp，$O(n^3)$）；<code>plain QR iter</code> 1961 Francis, Kublanovskaya；<code>LR iter</code> Rutishauser 1958；$Q^*AQ=H=G_{12}G_{23}G_{34}G_{45}R$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s531">§5.3.1</a>、<a href="补课笔记-幂法反幂法与第3章引言.html#s533">§5.3.3</a></td></tr>
+<tr><td>172</td><td>黑板</td><td>同 171，另加右下角 Hessenberg 约化的两条路：<code>1° Arnoldi ✗</code>、<code>2° Householder ✓</code>，$\|Q_i\|_2\ne1$ 的注记</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s533">§5.3.3</a></td></tr>
+<tr><td>173</td><td>黑板</td><td>② <code>shifting</code>：$\det A=0\Rightarrow?$、$A=QR$、$Q^*AQ$ 的阶梯形、$\det(A-\lambda I)=0$；右：RQI 的 $a_{nn}=e_n^*Ae_n$ 与 $e_n^*\to e_n^*Q^*$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s535">§5.3.5</a></td></tr>
+<tr><td>174</td><td>黑板</td><td>$A\to$ 阶梯形；$e_n^*\to e_n^*Q$；$e_n^*A\approx\mu e_n^*$（<code>poor</code>）$\to$ RQI 后 $e_n^*Q^*A\approx\mu e_n^*Q$（<code>good</code>）</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s535">§5.3.5</a></td></tr>
+<tr><td>175</td><td>黑板</td><td><strong>糊片，无法辨读</strong>（严重虚焦）</td><td>—</td><td>—</td></tr>
+<tr><td>176</td><td>黑板</td><td><code>Wilkinson's shift</code>：取 $H$ 右下 $2\times2$ 块 $\begin{bmatrix}h_{n-1,n-1}&h_{n-1,n}\\h_{n,n-1}&h_{nn}\end{bmatrix}$ 的两个特征值 $\mu_1,\mu_2$；下板 Householder 约化全过程（$Q_1e_1$、$w$、$H=I-2ww^*/w^*w$、$Q_1^*HQ_1$ 逐步消零）</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s535">§5.3.5</a>、<a href="补课笔记-幂法反幂法与第3章引言.html#s533">§5.3.3</a></td></tr>
+<tr><td>177</td><td>黑板</td><td>同 176（换角度重拍）</td><td>旧板</td><td>同上</td></tr>
+<tr><td>178</td><td>黑板</td><td>同 176 上半；下半 <code>real matrices</code>（$A=QTQ^{\mathsf T}$、quasi-upper triangular）与 <code>double shift</code>（$A_1=R_1Q_1+\mu I=Q_1^*A_0Q_1$ 等，motivation $\mu_1=\overline{\mu_2}$）</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s536">§5.3.6</a></td></tr>
+<tr><td>179</td><td>黑板</td><td><code>Implicit QR</code>：<code>explicit</code> 两步 vs <code>implicit</code> 的 <code>uniquely depend on Qe₁</code>；下板 double shift 的完整推导 $(A_0-\mu_1I)(A_0-\mu_2I)e_1=Q_1Q_2R_2R_1$</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s536">§5.3.6</a>、<a href="补课笔记-幂法反幂法与第3章引言.html#s537">§5.3.7</a></td></tr>
+<tr><td>180</td><td>黑板</td><td>Householder 约化下半 + <code>1° Hess. reduct.</code> / <code>2° QR sweeps</code> 的循环与 <code>drop tiny subdiagonals</code>、$2\times2$ 块（real / comp. eig.）</td><td>旧板</td><td>补课笔记 <a href="补课笔记-幂法反幂法与第3章引言.html#s54">§5.4</a></td></tr>
+<tr><td>181</td><td>黑板</td><td>同 180（重拍）</td><td>旧板</td><td>同上</td></tr>
+<tr><td>182</td><td>黑板</td><td>同 180（重拍，左侧有老师入镜）</td><td>旧板</td><td>同上</td></tr>
+<tr><td>183</td><td>黑板</td><td>同 176（全景，老师在场，手持帽子）</td><td>旧板</td><td>同上</td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">关于「老师到底讲没讲」的核对方法</p>
+<p>本笔记对「本课 / 旧板」的划分依据是：</p>
+<ol>
+<li><strong>手写笔记页</strong>——只有 154 一页记的是 Krylov / Arnoldi，155–161 全是幂法与 QR。主人自己记笔记时按「今天讲了什么」记，这是最强的证据。</li>
+<li><strong>板书内容的新旧</strong>——162–166 是 Krylov 系列，且 162 的 <code>Krylov subspace</code> 标题写在最上面（新写的板通常从顶部开始）；167–183 全部是幂法 / QR 系列，且多次重复拍摄同一块板（说明拍的人在补拍旧内容）。</li>
+<li><strong>与讲义对照</strong>——167–183 的内容与讲义 PDF 5 §5.1–§5.4 逐条对应，而 162–166 对应讲义 PDF 4 §4.1.1 与 PDF 2 §2.4.3 的交叉部分。</li>
+</ol>
+<p><strong>保留意见：</strong>第 2 条只能说明「新旧」，不能排除「老师 10.20 又快速重讲了一遍第 5 章」。如果实际课上做了整章串讲，那么 167–183 也应算作本课内容（只是已在补课笔记里覆盖）。</p>
+</div>
+
+<h3 id="s71">§7.1 本课没能从板书确认的三件事</h3>
+
+<ol>
+<li><strong>子空间迭代的收敛性证明</strong>——板书只有不等号 $|\lambda_k|\gt|\lambda_{k+1}|$ 和一个被圈出的 $\lambda_{k+1}$，<strong>没有证明</strong>。本笔记 <a href="#s34">§3.4</a> 的推理是教材补充。</li>
+<li><strong>$q_j=p_{j-1}(A)r$ 的一般证明</strong>——板书只写了 $q_2=p_1(A)r$、$q_3=p_2(A)r$ 两个例子。<a href="#s44">§4.4</a> 的归纳证明与「次数恰好为 $j$」那一步都是补的。</li>
+<li><strong>余项的用途</strong>——板书只有 <code>= Q_kH_k + (rank 1)</code> 一句。<a href="#s48">§4.8</a> 的四重身份全是教材补充，其中「GMRES 残差正比于 $\beta_{k+1}$」需要讲义 PDF 4 §4.2 的内容，本课没讲。</li>
+</ol>
+
+<h3 id="s72">§7.2 和 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">补课笔记 §2.4.3</a> 的关系</h3>
+
+<p>两处都讲 Arnoldi，但视角不同，<strong>不重复</strong>：</p>
+
+<table>
+<tr><th></th><th>补课笔记 §2.4.3（讲义版）</th><th>本笔记第四部分（课堂版）</th></tr>
+<tr><td>出发点</td><td>想用相似变换把 $A$ 变简单 $\to$ 撞上 $Y$ 病态 $\to$ 换酉基</td><td>想把幂法推广到 $k$ 维 $\to$ 子空间迭代太贵 $\to$ 用 Krylov 子空间</td></tr>
+<tr><td>核心推导</td><td>$AY=YC$（伴随矩阵）$\to$ $H=Q^*AQ=RCR^{-1}$</td><td>$q_j=p_{j-1}(A)r$（归纳）$\to$ $Aq_j$ 只到 $q_{j+1}$</td></tr>
+<tr><td>Hessenberg 的来源</td><td>「上三角 × 上 Hessenberg × 上三角仍是上 Hessenberg」</td><td>「每乘一次 $A$ 多项式次数升一，只多一个方向」</td></tr>
+<tr><td>余项</td><td><code>AQ=QH+rank-one</code>，说明「$Aq_r$ 落不进去」</td><td>$\beta_{k+1}$ 的四重身份（<a href="#s48">§4.8</a>）</td></tr>
+<tr><td>伪代码</td><td>有（MGS/CGS 两种，含 <code>reorthogonalized</code> 开关）</td><td>无（课上没写代码）</td></tr>
+</table>
+
+<p>建议读法：<strong>先看本笔记第四部分建立几何直觉，再回补课笔记 §2.4.3 看伴随矩阵那条推导和伪代码</strong>。前者回答「为什么要这样」，后者回答「代码怎么写」。</p>
+
+<p class="footnote" style="margin-top:40px">整理自：2026-10-20 课堂板书（照片 162–166）、同次拍摄的手写笔记页 154，以及主人与 AI 的对话记录（2026-10-20，主题为「Krylov 子空间分解为什么用 $Aq_j$ 而不是 $A^jr$」）。板书 167–183 与手写页 155–161 经核对属上一堂课内容，已在<a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a>中覆盖，本笔记仅作对照列出。<strong>明确标注为「教材补充」的段落课上没有讲</strong>：<a href="#s23">§2.3</a>（三条推广线索与 Chebyshev 界）、<a href="#s33">§3.3</a>（为什么必须重做 QR）、<a href="#s34">§3.4</a> 末尾的「充要条件」、<a href="#s42">§4.2</a>（条件数表与数值）、<a href="#s44">§4.4</a> 的完整归纳证明与「次数恰好为 $j$」、<a href="#s45">§4.5</a> 的「Arnoldi 保空间」归纳、<a href="#s48">§4.8</a>（余项的四重身份）、<a href="#s410">§4.10</a>（Hessenberg 上半部分的四层含义）、<a href="#p5">第五部分</a> 全部、<a href="#p6">第六部分</a> 的对比表。§4.11 的接口表取自讲义 PDF 4 §4.2–§4.4，课上未讲。图 1–9 均为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
