@@ -1,0 +1,2732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 2 · Finite Automata · 复习笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>/* ===== 计算理论学习笔记 · 亮色主题 ===== */
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-code: #f1f5f9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --text: #1e293b;
+  --text-soft: #475569;
+  --muted: #64748b;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --green: #059669;
+  --green-soft: #ecfdf5;
+  --purple: #7c3aed;
+  --purple-soft: #f5f3ff;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
+  --teal: #0d9488;
+  --teal-soft: #f0fdfa;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .05);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
+               "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.78;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 12px 26px;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.brand .dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  flex: none;
+  box-shadow: 0 0 0 4px var(--blue-soft);
+}
+
+.brand-title { font-weight: 700; font-size: 16px; letter-spacing: .2px; }
+.brand-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+.search input {
+  width: 260px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+  background: #fff;
+}
+
+/* ---------- Tabs ---------- */
+.tabs {
+  position: sticky;
+  top: 65px;
+  z-index: 39;
+  display: flex;
+  gap: 6px;
+  padding: 10px 26px 0;
+  background: linear-gradient(var(--bg-soft) 70%, rgba(248, 250, 252, 0));
+  flex-wrap: wrap;
+}
+
+.tab {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-bottom-color: transparent;
+  border-radius: 9px 9px 0 0;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.tab:hover { color: var(--blue); border-color: #bfdbfe; }
+.tab.active {
+  color: var(--blue);
+  background: #fff;
+  border-color: var(--line);
+  box-shadow: inset 0 2px 0 var(--blue);
+}
+
+/* ---------- 布局 ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 26px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 26px 80px;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 122px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 8px 18px;
+  box-shadow: var(--shadow);
+}
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 8px; }
+
+.toc-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 12px 8px;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 6px;
+}
+
+.toc-list { list-style: none; margin: 0; padding: 0; }
+.toc-list li { margin: 0; }
+.toc-list a {
+  display: block;
+  padding: 3px 12px;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.toc-list a:hover { background: var(--blue-soft); color: var(--blue); }
+.toc-list a.cur {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-left-color: var(--blue);
+  font-weight: 600;
+}
+.toc-list .toc-h3 a { font-weight: 600; color: var(--text); margin-top: 6px; }
+.toc-list .toc-h4 a { padding-left: 24px; color: var(--muted); font-size: 12.5px; }
+.toc-list .toc-h4 a:hover { color: var(--blue); }
+
+/* ---------- 内容面板 ---------- */
+.content { min-width: 0; }
+
+.panel { display: none; }
+.panel.active { display: block; animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+.chapter-head {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 4px 0 22px;
+  box-shadow: var(--shadow);
+}
+.chapter-head .ch-kicker {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--blue);
+  text-transform: uppercase;
+}
+.chapter-head h1 { margin: 6px 0 6px; font-size: 27px; letter-spacing: -.3px; }
+.chapter-head p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.overview {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 30px 30px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- 标题 ---------- */
+h1, h2, h3, h4, h5 { line-height: 1.35; scroll-margin-top: 130px; }
+
+.overview h2,
+.panel > h2 {
+  font-size: 21px;
+  margin: 34px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--line);
+}
+
+.panel h3 {
+  font-size: 18.5px;
+  color: var(--blue);
+  margin: 30px 0 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 4px solid var(--blue);
+}
+
+.panel h4 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 26px 0 10px;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: .3px;
+}
+.panel h4::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+.panel h4[id]::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+  opacity: .55;
+  flex: none;
+}
+
+/* ---------- 段落与列表 ---------- */
+p { margin: 10px 0; }
+ul, ol { margin: 10px 0; padding-left: 26px; }
+li { margin: 4px 0; }
+li > ul, li > ol { margin: 4px 0; }
+a { color: var(--blue); }
+
+strong { color: #0f172a; }
+
+code {
+  font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 12.8px;
+  background: var(--bg-code);
+  color: #0f172a;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px 16px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+pre code { background: none; padding: 0; font-size: 12.6px; }
+
+blockquote {
+  margin: 14px 0;
+  padding: 10px 16px;
+  background: var(--amber-soft);
+  border-left: 4px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  color: #78350f;
+}
+blockquote p { margin: 4px 0; }
+
+hr { border: none; border-top: 1px solid var(--line); margin: 22px 0; }
+
+/* ---------- 表格 ---------- */
+.tbl-wrap {
+  overflow-x: auto;
+  margin: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  min-width: 380px;
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--bg-code);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+tbody tr:nth-child(even) { background: #fcfdff; }
+tbody tr:hover { background: var(--blue-soft); }
+
+table.kv th { background: var(--blue-soft); color: var(--blue); }
+
+/* ---------- 定义 / 定理 提示框 ---------- */
+.cb {
+  border-left: 4px solid var(--line-strong);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+  padding: 9px 16px;
+  margin: 14px 0;
+}
+.cb > strong { display: inline; }
+
+.cb-definition { border-left-color: var(--blue);   background: var(--blue-soft); }
+.cb-definition > strong { color: var(--blue); }
+
+.cb-theorem, .cb-lemma, .cb-corollary, .cb-claim {
+  border-left-color: var(--purple); background: var(--purple-soft);
+}
+.cb-theorem > strong, .cb-lemma > strong,
+.cb-corollary > strong, .cb-claim > strong { color: var(--purple); }
+
+.cb-proof { border-left-color: #94a3b8; background: #f8fafc; }
+.cb-proof > strong { color: #475569; }
+
+.cb-example, .cb-solution { border-left-color: var(--green); background: var(--green-soft); }
+.cb-example > strong, .cb-solution > strong { color: var(--green); }
+
+.cb-remark, .cb-note { border-left-color: var(--amber); background: var(--amber-soft); }
+.cb-remark > strong, .cb-note > strong { color: var(--amber); }
+
+.cb-question, .cb-goal, .cb-objective { border-left-color: var(--teal); background: var(--teal-soft); }
+.cb-question > strong, .cb-goal > strong, .cb-objective > strong { color: var(--teal); }
+
+.cb-algorithm { border-left-color: #4f46e5; background: #eef2ff; }
+.cb-algorithm > strong { color: #4f46e5; }
+
+.cb-intuition { border-left-color: var(--amber); background: var(--amber-soft); }
+.cb-intuition > strong { color: var(--amber); }
+
+/* ---------- 概览专用 ---------- */
+.overview h3 {
+  font-size: 17px;
+  color: var(--text);
+  margin: 26px 0 10px;
+  padding: 0;
+  border: none;
+}
+.overview h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin-right: 9px;
+  vertical-align: middle;
+}
+
+.note-box {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  border-left: 4px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 14.5px;
+}
+
+.fig {
+  margin: 18px 0;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.fig svg { display: block; width: 100%; height: auto; min-width: 620px; }
+
+.tips { padding-left: 24px; }
+.tips li { margin: 8px 0; }
+
+.muted { color: var(--muted); font-size: 12.5px; }
+
+.tex { white-space: nowrap; }
+
+/* ---------- 回到顶部 ---------- */
+#toTop {
+  position: fixed;
+  right: 24px;
+  bottom: 28px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--blue);
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+#toTop.show { opacity: 1; pointer-events: auto; }
+#toTop:hover { transform: translateY(-2px); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    max-height: 340px;
+    margin-bottom: 4px;
+  }
+  .search input { width: 170px; }
+}
+
+@media (max-width: 720px) {
+  body { font-size: 15px; }
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
+  .tabs { padding: 10px 16px 0; top: 84px; }
+  .layout { padding: 0 14px 60px; }
+  .overview { padding: 6px 16px 22px; }
+  .brand-sub { display: none; }
+}
+
+/* ---------- 打印 ---------- */
+@media print {
+  .topbar, .tabs, .sidebar, #toTop { display: none !important; }
+  body { background: #fff; font-size: 11.5pt; }
+  .layout { display: block; padding: 0; max-width: none; }
+  .panel { display: block !important; }
+  .panel { page-break-before: always; }
+  #panel-ov { page-break-before: avoid; }
+  .overview, .chapter-head, .fig, .tbl-wrap { box-shadow: none; }
+  .cb, .note-box, blockquote { break-inside: avoid; }
+  h3, h4 { break-after: avoid; }
+}
+</style>
+<style>
+/* 单章版：章节主色 */
+.chapter-head { border-left-color: var(--accent); }
+.chapter-head .ch-kicker { color: var(--accent); }
+.panel h3 { color: var(--accent); border-left-color: var(--accent); }
+.panel h4[id]::before { background: var(--accent); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <div class="brand-title">Chapter 2 · Finite Automata · 复习笔记</div>
+      <div class="brand-sub">TC02.pdf · 94 页 · 正则语言 · 复旦大学《计算理论》课件精读 · 公式 KaTeX 离线渲染</div>
+    </div>
+  </div>
+  <div class="search">
+    <input id="tocFilter" type="search" placeholder="过滤目录 / 页码…" autocomplete="off">
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="toc-group">
+      <div class="toc-title">复习导读</div>
+      <ul class="toc-list">
+        ['<li class="toc-h3"><a href="#r-0">这份文档怎么用</a></li>', '<li class="toc-h3"><a href="#r-1">本章主线</a></li>', '<li class="toc-h3"><a href="#r-2">核心定义速查</a></li>', '<li class="toc-h3"><a href="#r-3">定理与构造清单</a></li>', '<li class="toc-h3"><a href="#r-4">易错点</a></li>', '<li class="toc-h3"><a href="#r-5">复习路线建议</a></li>']
+      </ul>
+    </div>
+    <div class="toc-group">
+      <div class="toc-title">逐页转写</div>
+      <ul class="toc-list">
+        <li class="toc-h4"><a href="#t02-p1">第 1 页</a></li>
+        <li class="toc-h4"><a href="#t02-p2">第 2 页</a></li>
+        <li class="toc-h4"><a href="#t02-p3">第 3 页</a></li>
+        <li class="toc-h4"><a href="#t02-p4">第 4 页</a></li>
+        <li class="toc-h4"><a href="#t02-p5">第 5 页</a></li>
+        <li class="toc-h4"><a href="#t02-p6">第 6 页</a></li>
+        <li class="toc-h4"><a href="#t02-p7">第 7 页</a></li>
+        <li class="toc-h4"><a href="#t02-p8">第 8 页</a></li>
+        <li class="toc-h4"><a href="#t02-p9">第 9 页</a></li>
+        <li class="toc-h4"><a href="#t02-p10">第 10 页</a></li>
+        <li class="toc-h4"><a href="#t02-p11">第 11 页</a></li>
+        <li class="toc-h4"><a href="#t02-p12">第 12 页</a></li>
+        <li class="toc-h4"><a href="#t02-p13">第 13 页</a></li>
+        <li class="toc-h4"><a href="#t02-p14">第 14 页</a></li>
+        <li class="toc-h4"><a href="#t02-p15">第 15 页</a></li>
+        <li class="toc-h4"><a href="#t02-p16">第 16 页</a></li>
+        <li class="toc-h4"><a href="#t02-p17">第 17 页</a></li>
+        <li class="toc-h4"><a href="#t02-p18">第 18 页</a></li>
+        <li class="toc-h4"><a href="#t02-p19">第 19 页</a></li>
+        <li class="toc-h4"><a href="#t02-p20">第 20 页</a></li>
+        <li class="toc-h4"><a href="#t02-p21">第 21 页</a></li>
+        <li class="toc-h4"><a href="#t02-p22">第 22 页</a></li>
+        <li class="toc-h4"><a href="#t02-p23">第 23 页</a></li>
+        <li class="toc-h4"><a href="#t02-p24">第 24 页</a></li>
+        <li class="toc-h4"><a href="#t02-p25">第 25 页</a></li>
+        <li class="toc-h4"><a href="#t02-p26">第 26 页</a></li>
+        <li class="toc-h4"><a href="#t02-p27">第 27 页</a></li>
+        <li class="toc-h4"><a href="#t02-p28">第 28 页</a></li>
+        <li class="toc-h4"><a href="#t02-p29">第 29 页</a></li>
+        <li class="toc-h4"><a href="#t02-p30">第 30 页</a></li>
+        <li class="toc-h4"><a href="#t02-p31">第 31 页</a></li>
+        <li class="toc-h4"><a href="#t02-p32">第 32 页</a></li>
+        <li class="toc-h4"><a href="#t02-p33">第 33 页</a></li>
+        <li class="toc-h4"><a href="#t02-p34">第 34 页</a></li>
+        <li class="toc-h4"><a href="#t02-p35">第 35 页</a></li>
+        <li class="toc-h4"><a href="#t02-p36">第 36 页</a></li>
+        <li class="toc-h4"><a href="#t02-p37">第 37 页</a></li>
+        <li class="toc-h4"><a href="#t02-p38">第 38 页</a></li>
+        <li class="toc-h4"><a href="#t02-p39">第 39 页</a></li>
+        <li class="toc-h4"><a href="#t02-p40">第 40 页</a></li>
+        <li class="toc-h4"><a href="#t02-p41">第 41 页</a></li>
+        <li class="toc-h4"><a href="#t02-p42">第 42 页</a></li>
+        <li class="toc-h4"><a href="#t02-p43">第 43 页</a></li>
+        <li class="toc-h4"><a href="#t02-p44">第 44 页</a></li>
+        <li class="toc-h4"><a href="#t02-p45">第 45 页</a></li>
+        <li class="toc-h4"><a href="#t02-p46">第 46 页</a></li>
+        <li class="toc-h4"><a href="#t02-p47">第 47 页</a></li>
+        <li class="toc-h4"><a href="#t02-p48">第 48 页</a></li>
+        <li class="toc-h4"><a href="#t02-p49">第 49 页</a></li>
+        <li class="toc-h4"><a href="#t02-p50">第 50 页</a></li>
+        <li class="toc-h4"><a href="#t02-p51">第 51 页</a></li>
+        <li class="toc-h4"><a href="#t02-p52">第 52 页</a></li>
+        <li class="toc-h4"><a href="#t02-p53">第 53 页</a></li>
+        <li class="toc-h4"><a href="#t02-p54">第 54 页</a></li>
+        <li class="toc-h4"><a href="#t02-p55">第 55 页</a></li>
+        <li class="toc-h4"><a href="#t02-p56">第 56 页</a></li>
+        <li class="toc-h4"><a href="#t02-p57">第 57 页</a></li>
+        <li class="toc-h4"><a href="#t02-p58">第 58 页</a></li>
+        <li class="toc-h4"><a href="#t02-p59">第 59 页</a></li>
+        <li class="toc-h4"><a href="#t02-p60">第 60 页</a></li>
+        <li class="toc-h4"><a href="#t02-p61">第 61 页</a></li>
+        <li class="toc-h4"><a href="#t02-p62">第 62 页</a></li>
+        <li class="toc-h4"><a href="#t02-p63">第 63 页</a></li>
+        <li class="toc-h4"><a href="#t02-p64">第 64 页</a></li>
+        <li class="toc-h4"><a href="#t02-p65">第 65 页</a></li>
+        <li class="toc-h4"><a href="#t02-p66">第 66 页</a></li>
+        <li class="toc-h4"><a href="#t02-p67">第 67 页</a></li>
+        <li class="toc-h4"><a href="#t02-p68">第 68 页</a></li>
+        <li class="toc-h4"><a href="#t02-p69">第 69 页</a></li>
+        <li class="toc-h4"><a href="#t02-p70">第 70 页</a></li>
+        <li class="toc-h4"><a href="#t02-p71">第 71 页</a></li>
+        <li class="toc-h4"><a href="#t02-p72">第 72 页</a></li>
+        <li class="toc-h4"><a href="#t02-p73">第 73 页</a></li>
+        <li class="toc-h4"><a href="#t02-p74">第 74 页</a></li>
+        <li class="toc-h4"><a href="#t02-p75">第 75 页</a></li>
+        <li class="toc-h4"><a href="#t02-p76">第 76 页</a></li>
+        <li class="toc-h4"><a href="#t02-p77">第 77 页</a></li>
+        <li class="toc-h4"><a href="#t02-p78">第 78 页</a></li>
+        <li class="toc-h4"><a href="#t02-p79">第 79 页</a></li>
+        <li class="toc-h4"><a href="#t02-p80">第 80 页</a></li>
+        <li class="toc-h4"><a href="#t02-p81">第 81 页</a></li>
+        <li class="toc-h4"><a href="#t02-p82">第 82 页</a></li>
+        <li class="toc-h4"><a href="#t02-p83">第 83 页</a></li>
+        <li class="toc-h4"><a href="#t02-p84">第 84 页</a></li>
+        <li class="toc-h4"><a href="#t02-p85">第 85 页</a></li>
+        <li class="toc-h4"><a href="#t02-p86">第 86 页</a></li>
+        <li class="toc-h4"><a href="#t02-p87">第 87 页</a></li>
+        <li class="toc-h4"><a href="#t02-p88">第 88 页</a></li>
+        <li class="toc-h4"><a href="#t02-p89">第 89 页</a></li>
+        <li class="toc-h4"><a href="#t02-p90">第 90 页</a></li>
+        <li class="toc-h4"><a href="#t02-p91">第 91 页</a></li>
+        <li class="toc-h4"><a href="#t02-p92">第 92 页</a></li>
+        <li class="toc-h4"><a href="#t02-p93">第 93 页</a></li>
+        <li class="toc-h4"><a href="#t02-p94">第 94 页</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="content">
+    <section class="panel active">
+      <div class="chapter-head">
+        <div class="ch-kicker">TC02.pdf · 94 页</div>
+        <h1>Chapter 2 · Finite Automata · 复习笔记</h1>
+        <p>有限自动机：从确定性到非确定性，再到正则表达式、泵引理与状态最小化。</p>
+      </div>
+      
+<section class="overview">
+  <h2 id="r-0">这份文档怎么用</h2>
+  <p>这是 <b>TC02.pdf</b>（Chapter 2 Finite Automata，共 94 页）的<b>逐页忠实转写</b>，
+  公式全部用 LaTeX（KaTeX）离线渲染。左侧目录可点击，也可用左上角输入框<b>按页码或关键词过滤</b>
+  （例如输入 <code>58</code> 直接跳到第 58 页，输入 <code>泵</code> 列出所有相关页）。</p>
+
+  <div class="note-box">
+    <b>符号约定：</b>课件沿用 Lewis &amp; Papadimitriou 的写法，用斜体 <span class="tex">$e$</span>
+    表示<b>空串</b>（即常见的 <span class="tex">$\varepsilon$</span>）；状态集用 <span class="tex">$K$</span>，
+    NFA 转移关系用 <span class="tex">$\Delta$</span>，DFA 转移函数用 <span class="tex">$\delta$</span>。
+    转写保留原写法，未作改动。
+  </div>
+
+  <h2 id="r-1">本章主线</h2>
+  <div class="fig">
+    <svg viewBox="0 0 900 200" role="img" aria-label="第2章推进顺序">
+      <defs><style>
+        .ft{font-family:"Segoe UI",system-ui,-apple-system,"Microsoft YaHei",sans-serif;}
+        .lbl{font-size:14px;font-weight:600;}
+        .sub{font-size:11.5px;}
+      </style></defs>
+      <rect x="0" y="0" width="900" height="200" fill="#ffffff"/>
+      <g class="ft">
+        <rect x="16" y="60" width="120" height="56" rx="9" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="76" y="84" class="lbl" fill="#1e40af" text-anchor="middle">DFA</text>
+        <text x="76" y="103" class="sub" fill="#3b82f6" text-anchor="middle">定义 / 配置</text>
+
+        <rect x="156" y="60" width="120" height="56" rx="9" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="216" y="84" class="lbl" fill="#1e40af" text-anchor="middle">NFA</text>
+        <text x="216" y="103" class="sub" fill="#3b82f6" text-anchor="middle">ε-转移</text>
+
+        <rect x="296" y="60" width="140" height="56" rx="9" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="366" y="84" class="lbl" fill="#3730a3" text-anchor="middle">子集构造</text>
+        <text x="366" y="103" class="sub" fill="#6366f1" text-anchor="middle">NFA → DFA</text>
+
+        <rect x="456" y="60" width="140" height="56" rx="9" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="526" y="84" class="lbl" fill="#3730a3" text-anchor="middle">正则表达式</text>
+        <text x="526" y="103" class="sub" fill="#6366f1" text-anchor="middle">双向等价</text>
+
+        <rect x="616" y="60" width="120" height="56" rx="9" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="676" y="84" class="lbl" fill="#991b1b" text-anchor="middle">泵引理</text>
+        <text x="676" y="103" class="sub" fill="#ef4444" text-anchor="middle">非正则</text>
+
+        <rect x="756" y="60" width="130" height="56" rx="9" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="821" y="84" class="lbl" fill="#92400e" text-anchor="middle">最小化</text>
+        <text x="821" y="103" class="sub" fill="#d97706" text-anchor="middle">Myhill-Nerode</text>
+
+        <g stroke="#94a3b8" stroke-width="1.6" fill="none">
+          <path d="M136 88 H154"/><path d="M148 83 L156 88 L148 93"/>
+          <path d="M276 88 H294"/><path d="M288 83 L296 88 L288 93"/>
+          <path d="M436 88 H454"/><path d="M448 83 L456 88 L448 93"/>
+          <path d="M596 88 H614"/><path d="M608 83 L616 88 L608 93"/>
+          <path d="M736 88 H754"/><path d="M748 83 L756 88 L748 93"/>
+        </g>
+        <text x="16" y="150" class="sub" fill="#64748b">贯穿全章的问题：FA 的记忆能力只有「当前状态」这一种，因此只能刻画正则语言。</text>
+        <text x="16" y="170" class="sub" fill="#64748b">本章的答案是：用「状态数」与「等价类」把「有限记忆」这件事精确化。</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2 id="r-2">核心定义速查</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>对象</th><th>形式定义</th><th>一句话</th></tr></thead>
+    <tbody>
+      <tr><td><b>DFA</b></td><td class="tex">$M=(K,\Sigma,\delta,s,F)$</td>
+          <td class="tex">$\delta:K\times\Sigma\to K$ 是<b>函数</b>，下一状态唯一确定。</td></tr>
+      <tr><td><b>NFA</b></td><td class="tex">$M=(K,\Sigma,\Delta,s,F)$</td>
+          <td class="tex">$\Delta\subseteq K\times(\Sigma\cup\{e\})\times K$ 是<b>关系</b>，可以「猜」。</td></tr>
+      <tr><td><b>子集构造</b></td><td class="tex">$K'=2^K$</td>
+          <td>把 $K$ 的每个子集当新状态；初态 $E(s)$，终态 $\{Q: Q\cap F\neq\emptyset\}$。</td></tr>
+      <tr><td><b>正则表达式</b></td><td>由 $\emptyset,\{a\}$ 经 $\cup,\circ,{}^*$ 生成</td>
+          <td>正则语言 = 含平凡语言、且对三种运算封闭的<b>最小</b>语言类。</td></tr>
+      <tr><td><b>泵引理</b></td><td class="tex">$w=xyz,\ y\neq e,\ |xy|\le n,\ xy^iz\in L$</td>
+          <td>长串中有一段「可任意重复」的短片段。</td></tr>
+      <tr><td><b>Myhill-Nerode</b></td><td class="tex">$\approx_L$ 等价类</td>
+          <td>最小 DFA 状态数 = 等价类个数。</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="r-3">定理与构造清单</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>#</th><th>结论</th><th>要点 / 代价</th><th>页码</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>NFA 与 DFA 等价</td>
+          <td>子集构造：状态数可能<b>指数爆炸</b>。</td><td>P22–P36</td></tr>
+      <tr><td>2</td><td>FA 封闭于并、连接、星、补、交</td>
+          <td>补要求是 <b>DFA</b> 且只改 $F$；交用乘积构造 $K=K_1\times K_2$。</td><td>P38–P43</td></tr>
+      <tr><td>3</td><td>正则表达式与 FA 等价</td>
+          <td>反向用 $R(i,j,k)$ 归纳。</td><td>P45–P51</td></tr>
+      <tr><td>4</td><td>泵引理</td>
+          <td>靠<b>鸽笼原理</b>证；只是<b>必要条件</b>。</td><td>P57–P63</td></tr>
+      <tr><td>5</td><td>Myhill–Nerode 定理</td>
+          <td>$L$ 正则 $\iff$ $\approx_L$ 只有有限个等价类。</td><td>P70–P84</td></tr>
+      <tr><td>6</td><td>最小化算法</td>
+          <td>先删不可达状态，再用 $\equiv_0\supseteq\equiv_1\supseteq\cdots$ 细化，
+              复杂度 $\mathcal{O}(|\Sigma||K|^3)$。</td><td>P65–P91</td></tr>
+      <tr><td>7</td><td>FA 就是算法</td>
+          <td>DFA 判定 $w\in L$ 用 $\mathcal{O}(|w|)$；NFA 用 $\mathcal{O}(|K|^2|w|)$。</td><td>P94</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="r-4">易错点</h2>
+  <ol class="tips">
+    <li><b>空串写作 <span class="tex">$e$</span></b>，不是 <span class="tex">$\varepsilon$</span>。$q_0\xrightarrow{e}q_1$ 是空转移。</li>
+    <li><b>NFA 的 $\Delta$ 是关系不是函数。</b>$\delta(q_0,b)=\emptyset$ 与「未定义」是两回事，
+        空集本身是子集构造里的合法状态。</li>
+    <li><b>子集构造要算 $e$-闭包 $E(q)$。</b>初态是 $E(s)$ 而不是 $\{s\}$。</li>
+    <li><b>补运算必须用在 DFA 上。</b>NFA 直接「把终态取反」会把
+        「存在一条接受路径」变成「不存在接受路径」，语义完全变了。</li>
+    <li><b>泵引理不能用来证明语言是正则的</b>，它只给必要条件。证非正则的套路是
+        「假设正则 → 拿常数 $n$ → 精心挑长串 → 分 $v,y$ 落点造矛盾」。</li>
+    <li><b>最小化要分两步</b>：先删不可达状态，再划分等价类。跳过第一步会得到错误结果。</li>
+  </ol>
+
+  <h2 id="r-5">复习路线建议</h2>
+  <ul class="tips">
+    <li><b>第一遍（重建骨架，1 小时）</b>：P5–P12 定义与配置 → P22–P36 子集构造 → P45–P51 正则表达式。</li>
+    <li><b>第二遍（攻证明，1.5 小时）</b>：P38–P43 闭包性质 → P57–P63 泵引理 → P70–P84 Myhill-Nerode。</li>
+    <li><b>第三遍（查漏，半小时）</b>：P65–P91 最小化算法 + P94 复杂度，<b>重点看算法步骤表</b>。</li>
+    <li>每看完一块，用目录输入框回查相关页，把公式与表格重推一遍（尤其是子集构造的 $E(q)$ 与最小化的划分过程）。</li>
+  </ul>
+</section>
+
+      <h4 id="t02-p1">第 1 页</h4>
+<p>（封面）Chapter 2 Finite Automata</p>
+<h4 id="t02-p2">第 2 页</h4>
+<p class="cb cb-goal"><strong>Goal:</strong>
+— to define increasingly powerful models of computation, more and more sophisticated devices for</p>
+<ul>
+<li>accepting languages</li>
+<li>generating languages</li>
+</ul>
+<p><strong>The Chomsky hierarchy</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Language type</th>
+<th>Automata type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>regular</td>
+<td>finite</td>
+</tr>
+<tr>
+<td>context-free</td>
+<td>pushdown</td>
+</tr>
+<tr>
+<td>context-sensitive</td>
+<td>linear bounded</td>
+</tr>
+<tr>
+<td>unrestricted</td>
+<td>Turing Machine</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p3">第 3 页</h4>
+<h3 id="t02-h1">2.1 Deterministic Finite Automata</h3>
+<p><strong>Introduction to DFA</strong></p>
+<p>（示意图描述）</p>
+<ul>
+<li><strong>Input tape（输入带）</strong>：一行方格，内容为 $a\ b\ b\ a\ b\ a$。</li>
+<li><strong>Reading head（读头）</strong>：moves left to right, one square at a time（从左向右、每次移动一格）。</li>
+<li><strong>Finite-state control（有限状态控制器）</strong>：一个方框内含有 4 个状态 $\{1,2,3,4\}$：</li>
+<li>状态 $1$：<strong>Start state</strong>（初态，用指向它的箭头表示）。</li>
+<li>状态 $2$、$4$：<strong>Double-circled states are accepting or final</strong>（双圈表示接受态/终态）。</li>
+<li>状态 $3$：普通状态。</li>
+<li>Finite-state control changes state depending on:</li>
+<li>current state</li>
+<li>next symbol</li>
+</ul>
+<h4 id="t02-p4">第 4 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> A <strong>deterministic finite automata(DFA)</strong> is a quintuple $(K,\Sigma,\delta,s,F)$, where</p>
+<ul>
+<li>$K$ is a finite set of states</li>
+<li>$\Sigma$ is an alphabet</li>
+<li>$s \in K$ is the initial state</li>
+<li>$F \subseteq K$ is the set of final states</li>
+<li>$\delta$: transition function, $K \times \Sigma \to K$.</li>
+</ul>
+<p class="cb cb-remark"><strong>Remarks:</strong>
+Transition function will determine <strong>unique</strong> next state based on current input and state.</p>
+<h4 id="t02-p5">第 5 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>1) A <strong>configuration</strong> of a DFA $(K,\Sigma,\delta,s,F)$ is any element of $K \times \Sigma^*$.</p>
+<p>2) The binary relation $\vdash_M$ between two configurations of $M$:</p>
+<p>$$(q,w) \vdash_M (q',w') \Leftrightarrow \exists a \in \Sigma,\ w = aw',\ \text{and}\ \delta(q,a) = q'.$$</p>
+<p>— say $(q,w)$ yields $(q',w')$ in one step.</p>
+<h4 id="t02-p6">第 6 页</h4>
+<p>3) The reflexive, transitive closure of $\vdash_M$, denoted as $\vdash_M^*$:
+$(q,w) \vdash_M^* (q',w') \Leftrightarrow (q,w)$ yields $(q',w')$ after some number, possibly zero, of steps.</p>
+<p>4) A <strong>string</strong> $w \in \Sigma^*$ <strong>is said to be accepted by</strong> $M$ iff there is a state $q \in F$ such that $(s,w) \vdash_M^* (q,e)$.
+<strong>The language accepted by</strong> $M$, $L(M)$ is the set of all strings accepted by $M$.</p>
+<h4 id="t02-p7">第 7 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> $\Sigma = \{a,b\}$</p>
+<p>$$K = \{q_0,q_1\}$$
+$$s = q_0$$
+$$F = \{q_0\}$$
+Transition function</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$q$</th>
+<th>$\sigma$</th>
+<th>$\delta(q,\sigma)$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$a$</td>
+<td>$q_0$</td>
+</tr>
+<tr>
+<td>$q_0$</td>
+<td>$b$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$a$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$b$</td>
+<td>$q_0$</td>
+</tr>
+</tbody>
+</table></div>
+<p>Consider the string $aabba$:</p>
+<p>$$q_0 \xrightarrow{a} q_0 \xrightarrow{a} q_0 \xrightarrow{b} q_1 \xrightarrow{b} q_0 \xrightarrow{a} q_0$$</p>
+<p>— $q_0$ is final, $aabba$ is accepted.</p>
+<h4 id="t02-p8">第 8 页</h4>
+<p><strong>Graphical representation</strong>
+— State Diagram</p>
+<ul>
+<li>State：$\bigcirc$</li>
+<li>Initial state：$\rightarrow\bigcirc$（带入射箭头）</li>
+<li>Final state：$\bigcirc$（双圈）</li>
+</ul>
+<p>Transition function:
+$\delta(q,a) = p$</p>
+<p>（边表示）$q \xrightarrow{a} p$</p>
+<p><strong>The DFA in example can be represented:</strong></p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0, q_1\}$；初态：$q_0$；终态：$\{q_0\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a} q_0$（自环）</li>
+<li>$q_0 \xrightarrow{b} q_1$</li>
+<li>$q_1 \xrightarrow{b} q_0$</li>
+<li>$q_1 \xrightarrow{a} q_1$（自环）</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$q_0$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$q_1$</td>
+<td>$q_0$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p9">第 9 页</h4>
+<p class="cb cb-example"><strong>Example:</strong>
+Let us design a DFA $M$ that accepts the language
+$$L_1 = \{w \in \{a,b\}^* : w \text{ does not contain three consecutive } b\text{'s}\}.$$</p>
+<p class="cb cb-solution"><strong>Solution:</strong> Let DFA $M = (K,\Sigma,\delta,s,F)$ where
+$$K = \{q_0,q_1,q_2,q_3\}$$
+$$\Sigma = \{a,b\}$$
+$$s = q_0$$
+$$F = \{q_0,q_1,q_2\}$$</p>
+<p>The state diagram is shown as following:</p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3\}$；初态：$q_0$；终态：$\{q_0,q_1,q_2\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a} q_0$（自环）</li>
+<li>$q_0 \xrightarrow{b} q_1$</li>
+<li>$q_1 \xrightarrow{a} q_0$</li>
+<li>$q_1 \xrightarrow{b} q_2$</li>
+<li>$q_2 \xrightarrow{a} q_0$（上方弧线）</li>
+<li>$q_2 \xrightarrow{b} q_3$</li>
+<li>$q_3 \xrightarrow{a,b} q_3$（自环）</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$q_0$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$q_0$</td>
+<td>$q_2$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_0$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_3$</td>
+<td>$q_3$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p10">第 10 页</h4>
+<p class="cb cb-question"><strong>Question:</strong>
+$$L_2 = \{w \in \{a,b\}^* : w \text{ contains three consecutive } b\text{'s}\}.$$
+The DFA that accept language $L_2$?</p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3\}$；初态：$q_0$；终态：$\{q_3\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a} q_0$（自环）</li>
+<li>$q_0 \xrightarrow{b} q_1$</li>
+<li>$q_1 \xrightarrow{a} q_0$</li>
+<li>$q_1 \xrightarrow{b} q_2$</li>
+<li>$q_2 \xrightarrow{a} q_0$（上方弧线）</li>
+<li>$q_2 \xrightarrow{b} q_3$</li>
+<li>$q_3 \xrightarrow{a,b} q_3$（自环）</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$q_0$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$q_0$</td>
+<td>$q_2$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_0$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_3$</td>
+<td>$q_3$</td>
+</tr>
+</tbody>
+</table></div>
+<p class="cb cb-note"><strong>Note:</strong> $L_2 = \Sigma^* - L_1$.</p>
+<h4 id="t02-p11">第 11 页</h4>
+<h3 id="t02-h2">2.2 Nondeterministic Finite Automata</h3>
+<p><strong>Generalization of determinism:</strong></p>
+<ul>
+<li>Many "next-states"</li>
+<li>Computation is a "tree"</li>
+<li>Acceptance: $\exists$ a path to accepting leaf</li>
+</ul>
+<p class="cb cb-example"><strong>Example:</strong> Consider the language $L = (ab \cup aba)^*$ which is accepted by the DFA:</p>
+<p>（状态图描述，5 个状态的 DFA）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3,q_4\}$；初态：$q_0$；终态：$\{q_0,q_2,q_3\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a} q_1$</li>
+<li>$q_0 \xrightarrow{b} q_4$</li>
+<li>$q_1 \xrightarrow{b} q_2$</li>
+<li>$q_1 \xrightarrow{a} q_4$</li>
+<li>$q_2 \xrightarrow{a} q_3$</li>
+<li>$q_2 \xrightarrow{b} q_4$</li>
+<li>$q_3 \xrightarrow{a} q_1$（上方弧线）</li>
+<li>$q_3 \xrightarrow{b} q_2$</li>
+<li>$q_4 \xrightarrow{a,b} q_4$（自环）</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$q_1$</td>
+<td>$q_4$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$q_4$</td>
+<td>$q_2$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_3$</td>
+<td>$q_4$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_1$</td>
+<td>$q_2$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$q_4$</td>
+<td>$q_4$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p12">第 12 页</h4>
+<p class="cb cb-note"><strong>Note:</strong></p>
+<ul>
+<li>No DFA with fewer than <strong>five</strong> states can accept this language.</li>
+<li>It is not easy to ascertain that a DFA is shown.</li>
+<li>$L$ is accepted by the simple <strong>Nondeterministic Finite Automata</strong>:</li>
+</ul>
+<p>$$M = (K,\Sigma,\delta,s,F),\ \text{where}$$
+$$K = \{q_0,q_1,q_2\},$$
+$$\Sigma = \{a,b\},$$
+$$s = q_0,$$
+$$F = \{q_0\}$$</p>
+<h4 id="t02-p13">第 13 页</h4>
+<p>（NFA 状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2\}$；初态：$q_0$；终态：$\{q_0\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a} q_1$</li>
+<li>$q_1 \xrightarrow{b} q_0$（上方弧线）</li>
+<li>$q_0 \xrightarrow{a} q_2$</li>
+<li>$q_1 \xrightarrow{b} q_2$</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$\{q_1, q_2\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\emptyset$</td>
+<td>$\{q_0, q_2\}$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+</tbody>
+</table></div>
+<p>（云朵标注）
+$$\delta(q_1,b) = \{q_0,q_2\}$$
+$$\delta(q_0,b) = \emptyset$$</p>
+<ul>
+<li>Consider input $aba$</li>
+<li>In state diagram of a NFA arrows are allowed to be labeled by the empty string $e$. The above NFA accepts the same language with</li>
+</ul>
+<p>（下方小图，含 $e$ 边；标注 [?]）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2\}$；初态：$q_0$；终态：$\{q_0\}$。</li>
+<li>边（依图中可见标注）：</li>
+<li>$q_0 \xrightarrow{e} q_1$</li>
+<li>$q_0 \xrightarrow{a} q_2$</li>
+<li>$q_1 \xrightarrow{a} q_2$ [?]</li>
+<li>$q_2 \xrightarrow{b} q_0$ [?]</li>
+</ul>
+<h4 id="t02-p14">第 14 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> A <strong>nondeterministic finite automata(NFA)</strong> is a quintuple $(K,\Sigma,\Delta,s,F)$, where</p>
+<ul>
+<li>$K$ is a finite set of states</li>
+<li>$\Sigma$ is an alphabet</li>
+<li>$s \in K$ is the initial state</li>
+<li>$F \subseteq K$ is the set of final states</li>
+<li>$\Delta$, transition relation, is a subset of $K \times (\Sigma \cup \{e\}) \times K$.</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong>
+For DFA, the transition function $\delta$ is a function, but for NFA, $\Delta$ only a relation.</p>
+<h4 id="t02-p15">第 15 页</h4>
+<ul>
+<li>triple $(q,u,p) \in \Delta$ — transition of $M$:</li>
+<li>$u \neq e$</li>
+<li>
+<p>$u = e$: no input symbol</p>
+</li>
+<li>
+<p>configuration — an element of $K \times \Sigma^*$.</p>
+</li>
+<li>
+<p>binary relation $\vdash_M$ and its reflexive transitive closure $\vdash_M^*$.</p>
+</li>
+<li>
+<p>A <strong>string</strong> $w \in \Sigma^*$ <strong>is accepted by</strong> $M$ iff there is a state $q \in F$ such that $(s,w) \vdash_M^* (q,e)$.
+  The <strong>language accepted by</strong> $M$, $L(M)$ is the set of all strings accepted by $M$.</p>
+</li>
+</ul>
+<h4 id="t02-p16">第 16 页</h4>
+<p class="cb cb-example"><strong>Example:</strong>
+$$L = \{w \in \{a,b\}^* : w \text{ contains the pattern } bb \text{ or } bab\}.$$</p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3,q_4\}$；初态：$q_0$；终态：$\{q_4\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a,b} q_0$（自环）</li>
+<li>$q_0 \xrightarrow{b} q_1$</li>
+<li>$q_1 \xrightarrow{b} q_2$</li>
+<li>$q_1 \xrightarrow{a} q_3$</li>
+<li>$q_2 \xrightarrow{e} q_4$</li>
+<li>$q_3 \xrightarrow{b} q_4$</li>
+<li>$q_4 \xrightarrow{a,b} q_4$（自环）</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+<th>$e$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$\{q_0\}$</td>
+<td>$\{q_0, q_1\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\{q_3\}$</td>
+<td>$\{q_2\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{q_4\}$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$\emptyset$</td>
+<td>$\{q_4\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$\{q_4\}$</td>
+<td>$\{q_4\}$</td>
+<td>$\emptyset$</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>Consider the string $bababab \in L$?</li>
+</ul>
+<h4 id="t02-p17">第 17 页</h4>
+<p class="cb cb-example"><strong>Example:</strong>
+$$\Sigma = \{a_1,\cdots,a_n\},\ \text{where } n \ge 2.$$
+$$L = \{w \in \Sigma^* : \exists a_i \text{ not appearing in } w\}.$$</p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{s,q_1,q_2,q_3\}$；初态：$s$；终态：$\{q_1,q_2,q_3\}$。</li>
+<li>边：</li>
+<li>$s \xrightarrow{e} q_1$</li>
+<li>$s \xrightarrow{e} q_2$</li>
+<li>$s \xrightarrow{e} q_3$</li>
+<li>$q_1 \xrightarrow{a_2,a_3} q_1$（自环）</li>
+<li>$q_2 \xrightarrow{a_1,a_3} q_2$（自环）</li>
+<li>$q_3 \xrightarrow{a_1,a_2} q_3$（自环）</li>
+</ul>
+<h4 id="t02-p18">第 18 页</h4>
+<p class="cb cb-example"><strong>Example:</strong>
+$$L = \{w \in \{a,b\}^* : w \text{ } 6^{th} \text{ symbol from end is an "}a\text{"}\}.$$</p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3,q_4,q_5,q_6\}$；初态：$q_0$；终态：$\{q_6\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{a,b} q_0$（自环）</li>
+<li>$q_0 \xrightarrow{a} q_1$</li>
+<li>$q_1 \xrightarrow{a,b} q_2$</li>
+<li>$q_2 \xrightarrow{a,b} q_3$</li>
+<li>$q_3 \xrightarrow{a,b} q_4$</li>
+<li>$q_4 \xrightarrow{a,b} q_5$</li>
+<li>$q_5 \xrightarrow{a,b} q_6$</li>
+</ul>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$\{q_0, q_1\}$</td>
+<td>$\{q_0\}$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\{q_2\}$</td>
+<td>$\{q_2\}$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$\{q_3\}$</td>
+<td>$\{q_3\}$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$\{q_4\}$</td>
+<td>$\{q_4\}$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$\{q_5\}$</td>
+<td>$\{q_5\}$</td>
+</tr>
+<tr>
+<td>$q_5$</td>
+<td>$\{q_6\}$</td>
+<td>$\{q_6\}$</td>
+</tr>
+<tr>
+<td>$q_6$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p19">第 19 页</h4>
+<p><strong>Expressive power of NFAs vs. DFAs</strong></p>
+<ul>
+<li>Every DFA is an NFA</li>
+<li>NFAs allow more transitions</li>
+</ul>
+<p><strong>Is the language more expressive?</strong></p>
+<blockquote>
+<p>— Is there a language $L = L(M)$ for some NFA $M$, where $L = L(M')$ for some DFA $M'$?</p>
+</blockquote>
+<h4 id="t02-p20">第 20 页</h4>
+<p>（Turing Award 页面）</p>
+<ul>
+<li>左侧：A.M. TURING AWARD 标志</li>
+<li>中间照片：<strong>Michael Oser Rabin（1931-）</strong></li>
+<li>右侧照片：<strong>Dana Stewart Scott（1932–）</strong></li>
+</ul>
+<p><strong>Turing Award Citation (1976)</strong>：For their joint paper "Finite Automata and Their Decision Problem," which introduced the idea of nondeterministic machines, which has proved to be an enormously valuable concept. Their (Scott &amp; Rabin) classic paper has been a continuous source of inspiration for subsequent work in this field.</p>
+<h4 id="t02-p21">第 21 页</h4>
+<p><strong>NFA/DFA Equivalence</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Two FA $M_1$ and $M_2$ (deterministic or non deterministic) are <strong>equivalent</strong> iff $L(M_1) = L(M_2)$.</p>
+<ul>
+<li>To prove equivalence of DFAs and NFAs we must do two things:</li>
+</ul>
+<blockquote>
+<p><em>I: For each DFA, produce an NFA that accepts the same language</em></p>
+<p><em>II: For each NFA, produce a DFA that accepts the same language</em></p>
+</blockquote>
+<p>We'll do part II; part I is immediate.</p>
+<h4 id="t02-p22">第 22 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong> For each NFA, there is an equivalent DFA.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<blockquote>
+<p><strong>Key idea:</strong> Every subset of $K$ becomes a single state in our new machine!</p>
+</blockquote>
+<p>For Example:
+NFA $M$, $K = \{q_0,q_1,q_2,q_3,q_4\}$, after reading a certain input string, $M$ could be in $\{q_0,q_2,q_3\}$, not in $\{q_1,q_4\}$, then DFA $M'$ is in state $\{q_0,q_2,q_3\}$.</p>
+<h4 id="t02-p23">第 23 页</h4>
+<p><strong>NFA $\Rightarrow$ DFA construction</strong></p>
+<p>Consider an arbitrary NFA $M = (K,\Sigma,\Delta,s,F)$.
+To construct an equivalent DFA $M' = (K',\Sigma,\delta,s',F')$.</p>
+<p class="cb cb-definition"><strong>Definition:</strong></p>
+<p>$$E(q) = \{p \in K : (q,e) \vdash_M^* (p,e)\}$$</p>
+<p class="cb cb-remark"><strong>Remark:</strong>
+$E(q)$— the set of all states of $M$ that are reachable from state $q$ without reading any input.</p>
+<h4 id="t02-p24">第 24 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>（状态图描述）</p>
+<ul>
+<li>状态集合：$\{q_0,q_1,q_2,q_3,q_4\}$；初态：$q_0$；终态：$\{q_4\}$。</li>
+<li>边：</li>
+<li>$q_0 \xrightarrow{b} q_2$</li>
+<li>$q_1 \xrightarrow{a} q_0$</li>
+<li>$q_1 \xrightarrow{e} q_2$</li>
+<li>$q_1 \xrightarrow{e} q_3$</li>
+<li>$q_1 \xrightarrow{a} q_4$</li>
+<li>$q_2 \xrightarrow{b} q_4$</li>
+<li>$q_3 \xrightarrow{a} q_4$</li>
+<li>$q_3 \xrightarrow{e} q_4$</li>
+<li>$q_4 \xrightarrow{e} q_3$</li>
+</ul>
+<p>$$E(q_0) = \{q_0,q_1,q_2,q_3\} \qquad E(q_1) = \{q_1,q_2,q_3\}$$
+$$E(q_2) = \{q_2\} \qquad E(q_3) = \{q_3\}$$
+$$E(q_4) = \{q_3,q_4\}$$</p>
+<h4 id="t02-p25">第 25 页</h4>
+<p><strong>I. Formal Definition of DFA</strong></p>
+<p>NFA $M = (K, \Sigma, \Delta, s, F)$.</p>
+<p>To construct an equivalent DFA $M' = (K', \Sigma, \delta, s', F')$.</p>
+<ul>
+<li>Let $K' = 2^K$</li>
+<li>Let $s' = E(s)$</li>
+<li>Let $F' = \{Q \mid Q \subseteq K, Q \cap F \neq \emptyset\}$</li>
+<li>For each $Q \subseteq K$ and $\forall a \in \Sigma$,
+  Let $\delta(Q, a) = \cup\{E(p) \mid p \in K \text{ and } (q, a, p) \in \Delta \text{ for some } q \in Q\}$</li>
+</ul>
+<h4 id="t02-p26">第 26 页</h4>
+<p class="cb cb-example"><strong>Example: (continued)</strong></p>
+<p>状态图描述：</p>
+<ul>
+<li>状态集合 $K = \{q_0, q_1, q_2, q_3, q_4\}$，输入字母表含符号 $a, b$，并含空串边标签 $e$。</li>
+<li>初态：$q_0$（左侧带初始箭头）。</li>
+<li>终态：$q_4$（双圈）。</li>
+<li>每条边（起点 / 终点 / label）：</li>
+<li>$q_0 \xrightarrow{\,e\,} q_1$</li>
+<li>$q_0 \xrightarrow{\,b\,} q_2$</li>
+<li>$q_1 \xrightarrow{\,e\,} q_2$</li>
+<li>$q_1 \xrightarrow{\,e\,} q_3$</li>
+<li>$q_1 \xrightarrow{\,a\,} q_0$</li>
+<li>$q_1 \xrightarrow{\,a\,} q_4$</li>
+<li>$q_2 \xrightarrow{\,b\,} q_4$</li>
+<li>$q_3 \xrightarrow{\,a\,} q_4$</li>
+<li>$q_4 \xrightarrow{\,e\,} q_3$</li>
+</ul>
+<p>转移表（行 = 状态，列 = 输入符号；表内为转移到的状态集合）：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+<th>$e$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$\emptyset$</td>
+<td>$\{q_2\}$</td>
+<td>$\{q_1\}$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\{q_0, q_4\}$</td>
+<td>$\emptyset$</td>
+<td>$\{q_2, q_3\}$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$\emptyset$</td>
+<td>$\{q_4\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$\{q_4\}$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{q_3\}$</td>
+</tr>
+</tbody>
+</table></div>
+<p>空串闭包（红色方框）：</p>
+<p>$$E(q_0) = \{q_0, q_1, q_2, q_3\}$$
+$$E(q_1) = \{q_1, q_2, q_3\}$$
+$$E(q_2) = \{q_2\}$$
+$$E(q_3) = \{q_3\}$$
+$$E(q_4) = \{q_3, q_4\}$$</p>
+<p>$$s' = E(q_0) = \{q_0, q_1, q_2, q_3\}$$</p>
+<p>（红色方框）since $(q_1, a, q_4), (q_1, a, q_0) \in \Delta$</p>
+<p>$$\delta(\{q_1\}, a) = E(q_0) \cup E(q_4) = \{q_0, q_1, q_2, q_3, q_4\}$$</p>
+<h4 id="t02-p27">第 27 页</h4>
+<p><strong>II. NFA $\Rightarrow$ DFA construction: verification</strong></p>
+<p>（方框内）We next show:</p>
+<ul>
+<li>$\underline{M'}$ is deterministic</li>
+<li>$\underline{M'}$ is equivalent to $\underline{M}$.</li>
+</ul>
+<h4 id="t02-p28">第 28 页</h4>
+<ul>
+<li>
+<p><strong>M' is deterministic:</strong></p>
+</li>
+<li>
+<p>$\delta$ is a single-valued and well defined on all $Q \in K'$ and $a \in \Sigma$ by the way it is constructed.</p>
+</li>
+<li>
+<p>For some $Q \in K'$ and $a \in \Sigma$, $\delta(Q, a) = \emptyset$ does not mean $\delta$ is not well defined; $\emptyset$ is a member of $K'$.</p>
+</li>
+</ul>
+<h4 id="t02-p29">第 29 页</h4>
+<ul>
+<li>$M'$ <strong>is equivalent to</strong> $M$.</li>
+</ul>
+<p class="cb cb-claim"><strong>Claim:</strong> For any string $w \in \Sigma^*$ and any states $p, q \in K$,</p>
+<p>$$(q, w) \vdash_M^* (p, e) \iff (E(q), w) \vdash_{M'}^* (P, e)$$</p>
+<p>for some set $P$ containing $p$.</p>
+<p>Consider any string $w \in \Sigma^*$.</p>
+<p>$$w \in L(M) \iff (s, w) \vdash_M^* (f, e) \text{ for some } f \in F \quad \text{[definition]}$$
+$$\iff (E(s), w) \vdash_{M'}^* (Q, e) \text{ for some } f \in Q \quad \text{[claim]}$$
+$$\iff (s', w) \vdash_{M'}^* (Q, e) \text{ with } Q \in F'$$
+$$\iff w \in L(M')$$</p>
+<p>From the claim, $M'$ is equivalent to $M$.</p>
+<h4 id="t02-p30">第 30 页</h4>
+<ul>
+<li class="cb cb-proof"><strong>Proof of Claim:</strong></li>
+</ul>
+<p><strong>Basis step:</strong></p>
+<p>For $|w| = 0$, i.e. $w = e$, we must show that</p>
+<p>$$(q, e) \vdash_M^* (p, e) \iff (E(q), e) \vdash_{M'}^* (P, e)$$</p>
+<p>for some set $P$ containing $p$.</p>
+<p>（红色方框）</p>
+<p>$$(q, e) \vdash_M^* (p, e) \iff p \in E(q)$$</p>
+<p>（红色方框）</p>
+<p>$$\text{$M'$ is deterministic}$$
+$$(E(q), e) \vdash_{M'}^* (P, e) \iff P = E(q)$$</p>
+<p>$$p \in P \Rightarrow p \in E(q)$$</p>
+<h4 id="t02-p31">第 31 页</h4>
+<p><strong>Induction hypothesis:</strong></p>
+<p>Suppose the claim is true for all string $w$ of length $k$ or less for some $k \geq 0$.</p>
+<p><strong>Induction step:</strong></p>
+<p>Let $|w| = k + 1$. $w = va$, where $a \in \Sigma, v \in \Sigma^*$.</p>
+<p>$\Rightarrow$（红色方框）</p>
+<p>$$(q, w) \vdash_M^* (p, e) \iff (E(q), w) \vdash_{M'}^* (P, e)$$</p>
+<p>$$(q, w) \vdash_M^* (p, e) \iff \exists \text{ states } r_1 \text{ and } r_2 \text{ such that}$$
+$$(q, va) \vdash_M^* (r_1, a) \vdash_M (r_2, e) \vdash_M^* (p, e)$$</p>
+<h4 id="t02-p32">第 32 页</h4>
+<p><strong>I</strong></p>
+<p>$$(q, va) \vdash_M^* (r_1, a) \iff (q, v) \vdash_M^* (r_1, e)$$
+$$\iff (E(q), v) \vdash_{M'}^* (R_1, e) \text{ for some } R_1, r_1 \in R_1$$</p>
+<p>（红色方框）<strong>Induction hypothesis</strong></p>
+<p><strong>II</strong></p>
+<p>$$(r_1, a) \vdash_M (r_2, e) \iff (r_1, a, r_2) \in \Delta$$
+$$\Rightarrow E(r_2) \subseteq \delta(R_1, a)$$</p>
+<p>（红色方框）<strong>Definition of $\delta(R_1, a)$</strong>　　（云朵气泡）$p \in \delta(R_1, a)$</p>
+<p><strong>III</strong></p>
+<p>$$(r_2, e) \vdash_M^* (p, e) \Rightarrow p \in E(r_2)$$</p>
+<p>$$\Rightarrow (E(q), va) \vdash_{M'}^* (R_1, a) \vdash_{M'}^* (P, e).$$</p>
+<p>（方框）$P = \delta(R_1, a)$</p>
+<h4 id="t02-p33">第 33 页</h4>
+<p>（$\Leftarrow$ 方向）</p>
+<ul>
+<li>$(E(q), va) \vdash_{M'}^* (R_1, a) \vdash_{M'}^* (P, e)$ for some $p \in P$</li>
+<li>$(R_1, a) \vdash_{M'}^* (P, e) \Rightarrow P = \delta(R_1, a)$</li>
+<li>$\delta(R_1, a) = \cup\{E(r_2) : \exists r_2 \in K \text{ and } (r_1, a, r_2) \in \Delta \text{ for some } r_1 \in R_1\}$</li>
+</ul>
+<p>$$p \in P \Rightarrow \exists r_2 \text{ such that } p \in E(r_2) \text{ and for some } r_1 \in R_1, (r_1, a, r_2) \in \Delta$$</p>
+<ul>
+<li>By IH,</li>
+</ul>
+<p>$$(q, va) \vdash_M^* (r_1, a)$$</p>
+<p>Therefore,</p>
+<p>$$(q, va) \vdash_M^* (r_1, a) \vdash_M^* (r_2, e) \vdash_M^* (p, e).$$</p>
+<h4 id="t02-p34">第 34 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>1) Size of new DFA can be exponential in size of old NFA!</p>
+<p>2) The proof of theorem provides an actual algorithm for constructing an equivalent DFA from any NFA.</p>
+<h4 id="t02-p35">第 35 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Convert the NFA in example(this section) to a DFA.</p>
+<p>$$|K| = 5 \Rightarrow |K'| = 2^5 = 32.$$</p>
+<p>— Only a few of these states will be relevant to the operation of $M$.</p>
+<p>（云朵气泡）$(q_1, a, q_0), (q_1, a, q_4), (q_3, a, q_4)$ are all the transitions for some $q \in s'$.</p>
+<p>$$s' = E(q_0) = \{q_0, q_1, q_2, q_3\}$$
+$$\delta(s', a) = E(q_0) \cup E(q_4) = \{q_0, q_1, q_2, q_3, q_4\}$$
+$$\delta(s', b) = E(q_2) \cup E(q_4) = \{q_2, q_3, q_4\}$$</p>
+<p>（右下角状态图：与第 26 页相同，$q_0$ 为初态，$q_4$ 为终态；边 $q_0 \xrightarrow{e} q_1$、$q_0 \xrightarrow{b} q_2$、$q_1 \xrightarrow{e} q_2$、$q_1 \xrightarrow{e} q_3$、$q_1 \xrightarrow{a} q_0$、$q_1 \xrightarrow{a} q_4$、$q_2 \xrightarrow{b} q_4$、$q_3 \xrightarrow{a} q_4$、$q_4 \xrightarrow{e} q_3$。）</p>
+<h4 id="t02-p36">第 36 页</h4>
+<p>$$\delta(\{q_0, q_1, q_2, q_3, q_4\}, a) = \{q_0, q_1, q_2, q_3, q_4\}$$
+$$\delta(\{q_0, q_1, q_2, q_3, q_4\}, b) = \{q_2, q_3, q_4\}$$
+$$\delta(\{q_2, q_3, q_4\}, a) = \{q_3, q_4\}$$
+$$\delta(\{q_2, q_3, q_4\}, b) = \{q_3, q_4\}$$
+$$\delta(\{q_3, q_4\}, a) = \{q_3, q_4\}, \quad \delta(\{q_3, q_4\}, b) = \emptyset$$
+$$\delta(\emptyset, a) = \delta(\emptyset, b) = \emptyset$$</p>
+<p>（右上角状态图：与第 26 页相同的 NFA：$q_0 \xrightarrow{e} q_1$、$q_0 \xrightarrow{b} q_2$、$q_1 \xrightarrow{e} q_2$、$q_1 \xrightarrow{e} q_3$、$q_1 \xrightarrow{a} q_0$、$q_1 \xrightarrow{a} q_4$、$q_2 \xrightarrow{b} q_4$、$q_3 \xrightarrow{a} q_4$、$q_4 \xrightarrow{e} q_3$；初态 $q_0$，终态 $q_4$。）</p>
+<p><strong>构造得到的 DFA 状态图（下方）：</strong></p>
+<ul>
+<li>状态集合：$\{q_0, q_1, q_2, q_3\}$、$\{q_0, q_1, q_2, q_3, q_4\}$、$\{q_2, q_3, q_4\}$、$\{q_3, q_4\}$、$\emptyset$。</li>
+<li>初态：$\{q_0, q_1, q_2, q_3\}$（左侧带初始箭头）。</li>
+<li>终态（双圈）：$\{q_0, q_1, q_2, q_3, q_4\}$、$\{q_2, q_3, q_4\}$、$\{q_3, q_4\}$。</li>
+<li>每条边（起点 / 终点 / label）：</li>
+<li>$\{q_0, q_1, q_2, q_3\} \xrightarrow{\,a\,} \{q_0, q_1, q_2, q_3, q_4\}$</li>
+<li>$\{q_0, q_1, q_2, q_3\} \xrightarrow{\,b\,} \{q_2, q_3, q_4\}$</li>
+<li>$\{q_0, q_1, q_2, q_3, q_4\} \xrightarrow{\,a\,} \{q_0, q_1, q_2, q_3, q_4\}$（自环）</li>
+<li>$\{q_0, q_1, q_2, q_3, q_4\} \xrightarrow{\,b\,} \{q_2, q_3, q_4\}$</li>
+<li>$\{q_2, q_3, q_4\} \xrightarrow{\,a\,} \{q_3, q_4\}$</li>
+<li>$\{q_2, q_3, q_4\} \xrightarrow{\,b\,} \{q_3, q_4\}$</li>
+<li>$\{q_3, q_4\} \xrightarrow{\,a\,} \{q_3, q_4\}$（自环）</li>
+<li>$\{q_3, q_4\} \xrightarrow{\,b\,} \emptyset$</li>
+<li>$\emptyset \xrightarrow{\,a\,} \emptyset$（自环），$\emptyset \xrightarrow{\,b\,} \emptyset$（自环）</li>
+</ul>
+<p>转移表（行 = DFA 状态，列 = 输入符号）：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\{q_0, q_1, q_2, q_3\}$</td>
+<td>$\{q_0, q_1, q_2, q_3, q_4\}$</td>
+<td>$\{q_2, q_3, q_4\}$</td>
+</tr>
+<tr>
+<td>$\{q_0, q_1, q_2, q_3, q_4\}$</td>
+<td>$\{q_0, q_1, q_2, q_3, q_4\}$</td>
+<td>$\{q_2, q_3, q_4\}$</td>
+</tr>
+<tr>
+<td>$\{q_2, q_3, q_4\}$</td>
+<td>$\{q_3, q_4\}$</td>
+<td>$\{q_3, q_4\}$</td>
+</tr>
+<tr>
+<td>$\{q_3, q_4\}$</td>
+<td>$\{q_3, q_4\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p37">第 37 页</h4>
+<p><strong>2.3 Finite Automata &amp; Regular Expressions</strong></p>
+<p>（关系图）</p>
+<ul>
+<li>Languages accepted by <strong>DFA</strong> $\longleftrightarrow$ Languages accepted by <strong>NFA</strong>（Section 2.2）</li>
+<li>上述两者 $\longrightarrow$（Section 2.3）Languages described by <strong>Regular Expressions</strong></li>
+<li>Languages described by <strong>Regular Expressions</strong> $\longleftrightarrow$ <strong>Regular Languages</strong></li>
+</ul>
+<h4 id="t02-p38">第 38 页</h4>
+<p>$\square$ <strong>Closure Properties of Regular Languages</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> The class of languages accepted by FA is <strong>closed</strong> under</p>
+<p>(a) Union
+(b) Concatenation
+(c) Kleene star
+(d) Complementation
+(e) Intersection</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>（红框）<strong>Main idea</strong> To construct an FA that accept the appropriate language in each case.</p>
+<h4 id="t02-p39">第 39 页</h4>
+<p><strong>(a) Union:</strong></p>
+<p>Let $M_i = (K_i, \Sigma, \Delta_i, s_i, F_i)$ $(i = 1, 2)$ be two NFA.</p>
+<p>$\Rightarrow$ construct a NFA $M = (K, \Sigma, \Delta, s, F)$, such that</p>
+<p>$$L(M) = L(M_1) \cup L(M_2).$$</p>
+<p>Where</p>
+<ul>
+<li>$K = K_1 \cup K_2 \cup \{s\}$</li>
+<li>$F = F_1 \cup F_2$</li>
+<li>$\Delta = \Delta_1 \cup \Delta_2 \cup \{(s, e, s_1), (s, e, s_2)\}$</li>
+</ul>
+<p>（右侧示意图：新增初态 $s$，两条 $e$ 边分别指向子自动机 $M_1$ 与 $M_2$。）</p>
+<p class="cb cb-note"><strong>Note:</strong> Any finite union of regular sets is regular. Inifinite unions may not be regular.</p>
+<h4 id="t02-p40">第 40 页</h4>
+<p><strong>(b) Concatenation:</strong></p>
+<p>Let $M_1 = (K_1, \Sigma, \Delta_1, s_1, F_1)$ and $M_2 = (K_2, \Sigma, \Delta_2, s_2, F_2)$ be two NFA.</p>
+<p>$\Rightarrow$ construct a NFA $M = (K, \Sigma, \Delta, s, F)$, such that</p>
+<p>$$L(M) = L(M_1) \circ L(M_2).$$</p>
+<p>（示意图：$M_1$ 的终态经一条 $e$ 边连到 $M_2$ 的初态。）</p>
+<p>Where</p>
+<ul>
+<li>$K = K_1 \cup K_2$</li>
+<li>$F = F_2$</li>
+<li>$\Delta = \Delta_1 \cup \Delta_2 \cup \{(q_i, e, s_2) : q_i \in F_1\}$</li>
+</ul>
+<h4 id="t02-p41">第 41 页</h4>
+<p><strong>(c) Kleene star:</strong></p>
+<p>Let $M_1 = (K_1, \Sigma, \Delta_1, s_1, F_1)$ be a NFA.</p>
+<p>$\Rightarrow$ construct a NFA $M = (K, \Sigma, \Delta, s, F)$, such that</p>
+<p>$$L(M) = L(M_1)^*.$$</p>
+<p>（示意图：新增初态 $s_1'$（同时为终态），$s_1' \xrightarrow{e} s_1$；$M_1$ 的各终态经 $e$ 边回到 $s_1$。）</p>
+<p>Where</p>
+<ul>
+<li>$K = K_1 \cup \{s_1'\}$</li>
+<li>$F = F_1 \cup \{s_1'\}$</li>
+<li>$\Delta = \Delta_1 \cup \{(q_i, e, s_1) : q_i \in F_1\} \cup \{(s_1', e, s_1)\}$</li>
+</ul>
+<h4 id="t02-p42">第 42 页</h4>
+<p><strong>(d) Complementation:</strong></p>
+<p>Let $M_1 = (K_1, \Sigma, \delta_1, s_1, F_1)$ be a <strong>DFA</strong>.</p>
+<p>$\Rightarrow$ construct a DFA $M = (K, \Sigma, \delta, s, F)$, such that</p>
+<p>$$L(M) = \overline{L(M_1)} = \Sigma^* - L(M_1).$$</p>
+<p>Where</p>
+<ul>
+<li>$K = K_1$</li>
+<li>$s = s_1$</li>
+<li>$F = K - F_1$</li>
+<li>$\delta = \delta_1$</li>
+</ul>
+<h4 id="t02-p43">第 43 页</h4>
+<p><strong>(e) Intersection:</strong></p>
+<p>（红色方框）</p>
+<p>$$L(M_1) \cap L(M_2) = \Sigma^* - ((\Sigma^* - L(M_1)) \cup (\Sigma^* - L(M_2)))$$</p>
+<p>Let $M_i = (K_i, \Sigma, \delta_i, s_i, F_i)$ $(i = 1, 2)$ be two DFA.</p>
+<p>$\Rightarrow$ construct a DFA $M = (K, \Sigma, \delta, s, F)$, such that</p>
+<p>$$L(M) = L(M_1) \cap L(M_2).$$</p>
+<p>Where</p>
+<ul>
+<li>$K = K_1 \times K_2$</li>
+<li>$s = (s_1, s_2)$</li>
+<li>$F = F_1 \times F_2$</li>
+<li>$\delta : K \times \Sigma \rightarrow K$
+  $$\delta((q_1, q_2), a) = (\delta_1(q_1, a), \delta_2(q_2, a))$$</li>
+</ul>
+<p>（云朵气泡）"parallel" simulation!</p>
+<p>（红框）How about $L(M_1) \cup L(M_2)$?</p>
+<h4 id="t02-p44">第 44 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Consider the regular expression $(ab \cup aab)^*$. A NFA accepting the language denoted by this regular expression can be shown as following:</p>
+<p><strong>状态图描述：</strong></p>
+<ul>
+<li>状态：$s$（双圈，初始态且为终态，左侧带初始箭头）、$m$（普通状态）、上分支 $u_1, u_2, u_3$、终态 $f_1$（双圈）、下分支 $w_1, w_2, w_3, w_4, w_5$、终态 $f_2$（双圈）。</li>
+<li>每条边（起点 / 终点 / label）：</li>
+<li>$s \xrightarrow{\,e\,} m$</li>
+<li>$m \xrightarrow{\,e\,} u_1$</li>
+<li>$m \xrightarrow{\,e\,} w_1$</li>
+<li>上分支：$u_1 \xrightarrow{\,a\,} u_2$，$u_2 \xrightarrow{\,e\,} u_3$，$u_3 \xrightarrow{\,b\,} f_1$</li>
+<li>下分支：$w_1 \xrightarrow{\,a\,} w_2$，$w_2 \xrightarrow{\,e\,} w_3$，$w_3 \xrightarrow{\,a\,} w_4$，$w_4 \xrightarrow{\,e\,} w_5$，$w_5 \xrightarrow{\,b\,} f_2$</li>
+<li>另有一条较长的 $e$ 边连接 $m$ 与上分支终态 $f_1$（图中方向不易辨认 [?]；按 Kleene star 构造应为终态回到 $m$ 的 $e$ 边）。</li>
+</ul>
+<p>转移表（行 = 状态，列 = 输入符号；表内为转移到的状态集合）：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+<th>$e$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$s$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{m\}$</td>
+</tr>
+<tr>
+<td>$m$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{u_1, w_1\}$（另含通往 $f_1$ 的长 $e$ 边 [?]）</td>
+</tr>
+<tr>
+<td>$u_1$</td>
+<td>$\{u_2\}$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$u_2$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{u_3\}$</td>
+</tr>
+<tr>
+<td>$u_3$</td>
+<td>$\emptyset$</td>
+<td>$\{f_1\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$f_1$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$（若含 star 回路则 $f_1 \xrightarrow{e} m$ [?]）</td>
+</tr>
+<tr>
+<td>$w_1$</td>
+<td>$\{w_2\}$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$w_2$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{w_3\}$</td>
+</tr>
+<tr>
+<td>$w_3$</td>
+<td>$\{w_4\}$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$w_4$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\{w_5\}$</td>
+</tr>
+<tr>
+<td>$w_5$</td>
+<td>$\emptyset$</td>
+<td>$\{f_2\}$</td>
+<td>$\emptyset$</td>
+</tr>
+<tr>
+<td>$f_2$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+<td>$\emptyset$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t02-p45">第 45 页</h4>
+<p>$\square$ <strong>FA and Regular Express are equivalent</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> A language is regular iff it is accepted by a FA.</p>
+<p class="cb cb-proof"><strong>Proof:</strong> $\Rightarrow$</p>
+<p>（红色方框）The class of regular languages is the smallest class of languages containing $\emptyset$ and the singletons $\{a|a \in \Sigma\}$, and closed under <strong>union</strong>, <strong>concatenation</strong>, and <strong>Kleene star</strong>.</p>
+<p>（红色方框）$\emptyset$ and the singletons $\{a|a \in \Sigma\}$ are accepted by FA.</p>
+<p>$\Rightarrow$ every regular language is accepted by some FA.</p>
+<h4 id="t02-p46">第 46 页</h4>
+<p>（$\Leftarrow$ 方向）</p>
+<p>（方框）Let $M = (K, \Sigma, \Delta, s, F)$ be a FA.
+To construct a regular expression $R$, s. t. $L(M) = L(R)$.</p>
+<p>Let $K = \{q_1, \cdots, q_n\}$ and $s = q_1$.</p>
+<p>We'll do induction over $k$ for executions that use only states in $\{q_1, \cdots, q_k\}$</p>
+<p>（右侧示意图：一个椭圆区域标注 "States numbered $\le k$"，其中包含 $q_1$ 与 $q_i$，并有一条虚线路径连到区域外的 $q_j$。）</p>
+<h4 id="t02-p47">第 47 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> For $i, j = 1, \cdots, n$ and $k = 0, \cdots, n$, define $R(i, j, k)$ as the set of all strings in $\Sigma^*$ that may drive $M$ from state $q_i$ to state $q_j$ without passing through any intermediate state numbered $k + 1$ or greater.</p>
+<p>（红色方框）</p>
+<p>$$R(i, j, 0) = \begin{cases} \{a \in \Sigma \cup \{e\} \mid (q_i, a, q_j) \in \Delta\} &amp; \text{if } i \neq j \\ \{a \in \Sigma \cup \{e\} \mid (q_i, a, q_j) \in \Delta\} \cup \{e\} &amp; \text{if } i = j \end{cases}$$</p>
+<p class="cb cb-note"><strong>Note:</strong></p>
+<p>$$R(i, j, n) = \{\, w \mid w \in \Sigma^*, (q_i, w) \vdash_M^* (q_j, e) \,\}$$
+$$L(M) = \cup\{\, R(1, j, n) \mid q_j \in F \,\}$$</p>
+<h4 id="t02-p48">第 48 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong> $R(i, j, k)$ are regular languages.</p>
+<p class="cb cb-proof"><strong>Proof:</strong> By induction on $k$.
+<strong>Basis step:</strong> $k = 0$</p>
+<p>$$R(i, j, 0) = \begin{cases} \{a \in \Sigma \cup \{e\} \mid (q_i, a, q_j) \in \Delta\} &amp; \text{if } i \neq j \\ \{a \in \Sigma \cup \{e\} \mid (q_i, a, q_j) \in \Delta\} \cup \{e\} &amp; \text{if } i = j \end{cases}$$</p>
+<p><strong>Induction step:</strong></p>
+<p>$$R(i, j, k) = R(i, j, k - 1) \cup R(i, k, k - 1) R(k, k, k - 1)^* R(k, j, k - 1)$$</p>
+<p>$\Rightarrow R(i, j, k)$ is regular for all $i, j, k$.</p>
+<h3 id="t02-h3">2.3（续）从 DFA 构造正则表达式</h3>
+<h4 id="t02-p49">第 49 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Construct a regular expression for the language</p>
+<p>$$L = \{\,w \in \{a,b\}^* : w \text{ has } 3k+1\ b\text{'s for some } k \in \mathbb{N}\,\}$$</p>
+<p>accepted by the following DFA.</p>
+<p><strong>状态图文字描述：</strong></p>
+<ul>
+<li>状态集合 $K = \{q_1, q_2, q_3\}$；</li>
+<li>初态 $s = q_1$；</li>
+<li>终态 $F = \{q_3\}$；</li>
+<li>各条边（起点 / 终点 / label）：</li>
+<li>$q_1 \xrightarrow{\,a\,} q_1$（自环）</li>
+<li>$q_1 \xrightarrow{\,b\,} q_3$</li>
+<li>$q_3 \xrightarrow{\,a\,} q_3$（自环）</li>
+<li>$q_3 \xrightarrow{\,b\,} q_2$</li>
+<li>$q_2 \xrightarrow{\,a\,} q_2$（自环）</li>
+<li>$q_2 \xrightarrow{\,b\,} q_1$</li>
+</ul>
+<p><strong>转移表：</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$\delta$</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_1$</td>
+<td>$q_1$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_2$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_3$</td>
+<td>$q_2$</td>
+</tr>
+</tbody>
+</table></div>
+<p>（终态 $q_3$ 对应“已读入的 $b$ 的个数 $\equiv 1 \pmod 3$”。）</p>
+<h4 id="t02-p50">第 50 页</h4>
+<p><strong>Assume that the DFA $M$ has two simple properties:</strong>
+1) It has a single final state, $F = \{f\}$.
+2) If $(q, u, p) \in \Delta$, then $q \neq f$ and $p \neq s$.</p>
+<p><strong>状态图文字描述（改造后的 FA）：</strong></p>
+<ul>
+<li>初态 $q_4$（新引入的初态），终态 $q_5$（新引入的唯一终态）；</li>
+<li>各条边：</li>
+<li>$q_4 \xrightarrow{\,e\,} q_1$</li>
+<li>$q_1 \xrightarrow{\,a\,} q_1$（自环），$q_1 \xrightarrow{\,b\,} q_3$</li>
+<li>$q_3 \xrightarrow{\,a\,} q_3$（自环），$q_3 \xrightarrow{\,b\,} q_2$，$q_3 \xrightarrow{\,e\,} q_5$</li>
+<li>$q_2 \xrightarrow{\,a\,} q_2$（自环），$q_2 \xrightarrow{\,b\,} q_1$</li>
+</ul>
+<p><strong>转移表：</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$\delta$</th>
+<th>$a$</th>
+<th>$b$</th>
+<th>$e$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_4$</td>
+<td>—</td>
+<td>—</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$q_1$</td>
+<td>$q_3$</td>
+<td>—</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_2$</td>
+<td>$q_1$</td>
+<td>—</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_3$</td>
+<td>$q_2$</td>
+<td>$q_5$</td>
+</tr>
+<tr>
+<td>$q_5$</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>注释框：<strong>Any DFA $\Rightarrow$ An equivalent FA with properties 1)2).</strong></p>
+</blockquote>
+<p>Let $K = \{q_1, q_2, \cdots, q_n\}$, so that $s = q_{n-1}$, $f = q_n$.</p>
+<p>$\Rightarrow$ The regular expression $R(n-1, n, n) = L(M)$.</p>
+<p>We compute</p>
+<p>$$R(i,j,0) \to R(i,j,1) \to \cdots \to R(i,j,n)$$</p>
+<h4 id="t02-p51">第 51 页</h4>
+<p>消除状态的四个阶段（子图 (a)–(d)）：</p>
+<p><strong>(a) 原始 FA</strong>（与第 50 页同）：</p>
+<ul>
+<li>初态 $q_4$，终态 $q_5$；</li>
+<li>$q_4 \xrightarrow{e} q_1$；$q_1 \xrightarrow{a} q_1$（自环），$q_1 \xrightarrow{b} q_3$；$q_3 \xrightarrow{a} q_3$（自环），$q_3 \xrightarrow{b} q_2$，$q_3 \xrightarrow{e} q_5$；$q_2 \xrightarrow{a} q_2$（自环），$q_2 \xrightarrow{b} q_1$。</li>
+</ul>
+<p><strong>(b) 消去 $q_1$ 后：</strong></p>
+<ul>
+<li>$q_4 \xrightarrow{\,a^*b\,} q_3$</li>
+<li>$q_2 \xrightarrow{\,ba^*b\,} q_3$</li>
+<li>$q_3 \xrightarrow{a} q_3$（自环），$q_3 \xrightarrow{b} q_2$，$q_2 \xrightarrow{a} q_2$（自环），$q_3 \xrightarrow{e} q_5$。</li>
+</ul>
+<p><strong>(c) 消去 $q_2$ 后：</strong></p>
+<ul>
+<li>$q_3$ 自环 label 变为 $\;a \cup ba^*ba^*b$</li>
+<li>$q_4 \xrightarrow{\,a^*b\,} q_3$，$q_3 \xrightarrow{e} q_5$。</li>
+</ul>
+<p><strong>(d) 消去 $q_3$ 后：</strong></p>
+<ul>
+<li>$q_4 \xrightarrow{\;a^*b\,(a \cup ba^*ba^*b)^*\;} q_5$</li>
+</ul>
+<p>即所得正则表达式为 $\;a^*b\,(a \cup ba^*ba^*b)^*$。</p>
+<h4 id="t02-p52">第 52 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong> In general, for each pair of states $q_i \neq q$ and $q_j \neq q$, eliminate state $q$ as following:</p>
+<p><strong>状态图文字描述：</strong></p>
+<ul>
+<li>左图：$q_i \xrightarrow{\delta} q_j$；$q_i \xrightarrow{\alpha} q$；$q \xrightarrow{\gamma} q$（自环）；$q \xrightarrow{\beta} q_j$。</li>
+<li>右图（消去 $q$ 后）：$q_i \xrightarrow{\;\delta \cup \alpha\gamma^*\beta\;} q_j$。</li>
+</ul>
+<p>$$\delta \;\Rightarrow\; \delta \cup \alpha\gamma^*\beta$$</p>
+<h3 id="t02-h4">2.4 Languages that are and are not Regular</h3>
+<h4 id="t02-p53">第 53 页</h4>
+<p><strong>2.4 Languages that are and are not Regular</strong></p>
+<p>“To show a language be <strong>Regular</strong>” 的三条途径：</p>
+<ul>
+<li>Accepted by <strong>FA</strong></li>
+<li>Specified by <strong>Regular Expressions</strong></li>
+<li>Closure properties of <strong>Regular Languages</strong></li>
+</ul>
+<h4 id="t02-p54">第 54 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Let $\Sigma = \{0, 1, \cdots, 9\}$.
+$L = \{\,w : w \in \Sigma^* \text{ be the decimal representation for non-negative integers (without redundant leading 0's) divisible by 2 and 3}\,\}$. Then $L$ is regular.</p>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<ul>
+<li>
+<p>Let $L_1$ be the set of decimal representation of nonnegative integers.
+  $$L_1 = 0 \cup \{1,2,\cdots,9\}\,\Sigma^*$$</p>
+</li>
+<li>
+<p>Let $L_2$ be the set of decimal representation of nonnegative integers divisible by 2.
+  $$L_2 = L_1 \cap \Sigma^*\{0,2,4,6,8\}$$</p>
+</li>
+</ul>
+<h4 id="t02-p55">第 55 页</h4>
+<ul>
+<li>Let $L_3$ be the set of decimal representation of nonnegative integers divisible by 3. $L_3$ can be accepted by the following FA.</li>
+</ul>
+<p><strong>状态图文字描述</strong>（三个状态，记上方状态为 $A$、左下状态为 $B$、右下状态为 $C$）：</p>
+<ul>
+<li>状态集合 $K = \{A, B, C\}$；</li>
+<li>初态 $s = B$；终态 $F = \{B\}$；</li>
+<li>各条边（label 为数字集合）：</li>
+<li>$A \xrightarrow{\,0,3,6,9\,} A$（自环）</li>
+<li>$A \xrightarrow{\,1,4,7\,} C$</li>
+<li>$A \xrightarrow{\,2,5,8\,} B$</li>
+<li>$B \xrightarrow{\,0,3,6,9\,} B$（自环）</li>
+<li>$B \xrightarrow{\,1,4,7\,} A$</li>
+<li>$B \xrightarrow{\,2,5,8\,} C$</li>
+<li>$C \xrightarrow{\,0,3,6,9\,} C$（自环）</li>
+<li>$C \xrightarrow{\,1,4,7\,} B$</li>
+<li>$C \xrightarrow{\,2,5,8\,} A$</li>
+</ul>
+<p><strong>转移表：</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$\delta$</th>
+<th>$0,3,6,9$</th>
+<th>$1,4,7$</th>
+<th>$2,5,8$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A$（上）</td>
+<td>$A$</td>
+<td>$C$</td>
+<td>$B$</td>
+</tr>
+<tr>
+<td>$B$（左下，初态/终态）</td>
+<td>$B$</td>
+<td>$A$</td>
+<td>$C$</td>
+</tr>
+<tr>
+<td>$C$（右下）</td>
+<td>$C$</td>
+<td>$B$</td>
+<td>$A$</td>
+</tr>
+</tbody>
+</table></div>
+<p>右侧方框：</p>
+<p>$$L = L_2 \cap L_3$$</p>
+<ul>
+<li>$L$ is regular.</li>
+</ul>
+<h4 id="t02-p56">第 56 页</h4>
+<p>$\square$ <strong>What languages are not regular?</strong></p>
+<p class="cb cb-intuition"><strong>Intuition:</strong>
+Since a FA has only finite state, it can “remember” only a finite number of things.</p>
+<ul>
+<li>Some things we would expect are not regular</li>
+<li><em>Balanced parentheses (have to remember an arbitrary nesting depth)</em></li>
+<li>$\{\,a^n b^n : n \geq 0\,\}$</li>
+</ul>
+<h4 id="t02-p57">第 57 页</h4>
+<blockquote>
+<p>红框：If a FA accepts a string that is “long enough”, it must repeat a state</p>
+</blockquote>
+<p><strong>状态图文字描述：</strong></p>
+<ul>
+<li>$q_0 \xrightarrow{\,a_1 a_2 \cdots a_j\,} q_j = q_k$</li>
+<li>$q_j = q_k$ 处有自环 label $\;a_{j+1} a_{j+2} \cdots a_k$</li>
+<li>
+<p>$q_k \xrightarrow{\,a_{k+1} \cdots a_m\,} q_m$</p>
+</li>
+<li>
+<p>$\{\,a^n : n \geq 1 \text{ is a prime}\,\}$ is not regular.</p>
+</li>
+</ul>
+<h4 id="t02-p58">第 58 页</h4>
+<p class="cb cb-theorem"><strong>Theorem: (Pumping Theorem)</strong> Let $L$ be a regular language. $\exists$ an integer $n \geq 1$ such that any string $w \in L$ with $|w| \geq n$ can be written as $w = xyz$ such that</p>
+<ul>
+<li>$y \neq e$</li>
+<li>$|xy| \leq n$</li>
+<li>for each $i \geq 0 \;\; xy^i z \in L$</li>
+</ul>
+<h4 id="t02-p59">第 59 页</h4>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>Let $L$ be a regular language, accepted by a DFA $M$ with $n$ states, and string $w$, $|w| \geq n$.</p>
+<p>Consider the first $n$ steps of computation of $M$:</p>
+<p>$$(q_0, a_1 \cdots a_n) \vdash_M (q_1, a_2 \cdots a_n) \vdash_M \cdots \vdash_M (q_n, e)$$</p>
+<blockquote>
+<p>红框：<strong>Pigeonhole Principle</strong></p>
+</blockquote>
+<p>$\Rightarrow \exists i, j,\ 0 \leq i &lt; j \leq n$, such that $q_i = q_j$</p>
+<p>Let $y = a_i \cdots a_j$, $x = a_1 \cdots a_{i-1}$, $z = a_{j+1} \cdots a_m$.</p>
+<h4 id="t02-p60">第 60 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Show $L = \{\,a^i b^i \mid i \geq 0\,\}$ is not regular.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>Assume $L$ regular. By Pumping Theorem, $\exists$ integer $n$.
+Consider the string $w = a^n b^n \in L$.</p>
+<p>It can be written as $w = xyz$ such that</p>
+<ul>
+<li>$|xy| \leq n$</li>
+<li>$y \neq e$</li>
+</ul>
+<p>$\Rightarrow y = a^i$ for some $i &gt; 0$</p>
+<p>But $xz = a^{\,n-i}\,b^n \notin L$</p>
+<blockquote>
+<p>红框：<strong>contradiction!!</strong></p>
+</blockquote>
+<h4 id="t02-p61">第 61 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong> Proving that a language is not regular:</p>
+<ul>
+<li>Let $L$ be the proposed regular language</li>
+<li>There is some $n$, by the pumping lemma</li>
+<li>Choose a string $s$, longer than $n$ symbols, in the language $L$</li>
+<li>Using the pumping lemma, construct a new string $s'$ that is not in the language</li>
+</ul>
+<h4 id="t02-p62">第 62 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Show $L = \{\,a^n \mid n \text{ is prime}\,\}$ is not regular.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>Assume $L$ regular. $\exists w = xyz$, and $x = a^p$, $y = a^q$ and $z = a^r$, where $p, r \geq 0$ and $q &gt; 0$.</p>
+<p>By Pumping theorem, $xy^n z \in L$ for each $n \geq 0$; that is, $p + nq + r$ is prime for each $n \geq 0$.</p>
+<p>But it is impossible; for let $n = p + 2q + r + 2$; then $p + nq + r = (q+1)\cdot(p + 2q + r)$.</p>
+<blockquote>
+<p>红框：<strong>contradiction!!</strong></p>
+</blockquote>
+<h4 id="t02-p63">第 63 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Show
+$$L = \{\,w \in \{a,b\}^* : w \text{ has an equal number of } a\text{'s and } b\text{'s}\,\}$$
+is not regular.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>If $L$ is regular, then so would be $L \cap a^*b^*$.</p>
+<blockquote>
+<p>红框：<strong>Closure under intersection of regular language</strong></p>
+</blockquote>
+<p>But $L \cap a^*b^* = \{\,a^n b^n : n \geq 0\,\}$ — not regular language.</p>
+<p>$L$ is not regular.</p>
+<h4 id="t02-p64">第 64 页</h4>
+<p>$\square$ <strong>Reprise on FA and Regular Languages</strong></p>
+<p>Which of the following are necessarily regular?</p>
+<ul>
+<li>A finite language</li>
+<li>A union of a finite number of regular languages</li>
+<li>A union of a countable number of regular languages</li>
+<li>An intersection of a countable number of regular languages</li>
+<li>$\{\,x : x \in L_1 \text{ and } x \notin L_2\,\}$, $L_1$ and $L_2$ are both regular</li>
+<li>A subset of a regular language</li>
+</ul>
+<blockquote>
+<p>红框：
+$$\bigcup_{i=0}^{\infty} L_i \;=\; \overline{\bigcap_{i=0}^{\infty} \overline{L_i}}$$</p>
+</blockquote>
+<h3 id="t02-h5">2.5 State Minimization</h3>
+<h4 id="t02-p65">第 65 页</h4>
+<p><strong>2.5 State Minimization*</strong></p>
+<p class="cb cb-objective"><strong>Objective:</strong>
+To find the smallest DFA equivalent to a given DFA</p>
+<ul>
+<li><em>Smallest: Fewest states</em></li>
+<li><em>Equivalent: Accepts the same language</em></li>
+</ul>
+<p><strong>Our method:</strong>
+We will show that for any regular language $L$, there is a unique, “standard” DFA associated with $L$ (up to renaming the states)</p>
+<h4 id="t02-p66">第 66 页</h4>
+<p class="cb cb-question"><strong>Question:</strong> Minimization the following DFA</p>
+<p><strong>状态图文字描述</strong>（状态 $q_1, \dots, q_8$）：</p>
+<ul>
+<li>初态 $s = q_1$；终态 $F = \{q_1, q_3, q_7\}$（双圈状态）；</li>
+<li>各条边：</li>
+<li>$q_1 \xrightarrow{\,b\,} q_1$（自环）</li>
+<li>$q_1 \xrightarrow{\,a\,} q_2$</li>
+<li>$q_4 \xrightarrow{\,a\,} q_1$</li>
+<li>$q_2 \xrightarrow{\,b\,} q_3$（上弧）</li>
+<li>$q_3 \xrightarrow{\,a\,} q_2$（下弧）</li>
+<li>$q_2 \xrightarrow{\,a\,} q_5$</li>
+<li>$q_4 \xrightarrow{\,b\,} q_5$</li>
+<li>$q_5 \xrightarrow{\,a,b\,} q_5$（自环）</li>
+<li>$q_3 \xrightarrow{\,b\,} q_6$</li>
+<li>$q_6 \xrightarrow{\,b\,} q_3$</li>
+<li>$q_5 \xrightarrow{\,b\,} q_6$</li>
+<li>$q_6 \xrightarrow{\,a\,} q_7$</li>
+<li>$q_3 \xrightarrow{\,b\,} q_8$ <code>[?]</code></li>
+<li>$q_7 \xrightarrow{\,b\,} q_8$ <code>[?]</code>（红色边）</li>
+<li>$q_8 \xrightarrow{\,a\,} q_7$ <code>[?]</code>（红色边）</li>
+</ul>
+<p><strong>转移表</strong>（<code>?</code> 表示该处 label 辨认不清）：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$\delta$</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_1$</td>
+<td>$q_2$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_5$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_2$</td>
+<td>$q_6$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$q_1$</td>
+<td>$q_5$</td>
+</tr>
+<tr>
+<td>$q_5$</td>
+<td>$q_5$</td>
+<td>$q_6$</td>
+</tr>
+<tr>
+<td>$q_6$</td>
+<td>$q_7$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_7$</td>
+<td>?</td>
+<td>$q_8$ <code>[?]</code></td>
+</tr>
+<tr>
+<td>$q_8$</td>
+<td>$q_7$ <code>[?]</code></td>
+<td>?</td>
+</tr>
+</tbody>
+</table></div>
+<p>右侧文字：</p>
+<ul>
+<li>
+<p>The DFA accepts language
+  $$L = (ab \cup ba)^*$$</p>
+</li>
+<li>
+<p>States $q_7$ and $q_8$: — <em>unreachable.</em></p>
+</li>
+</ul>
+<h4 id="t02-p67">第 67 页</h4>
+<p><strong>Step 1.</strong> Remove all unreachable states</p>
+<p><strong>状态图文字描述</strong>（删去 $q_7, q_8$ 后）：</p>
+<ul>
+<li>初态 $s = q_1$；终态 $F = \{q_1, q_3\}$；</li>
+<li>各条边：</li>
+<li>$q_1 \xrightarrow{\,b\,} q_1$（自环）</li>
+<li>$q_1 \xrightarrow{\,a\,} q_2$</li>
+<li>$q_4 \xrightarrow{\,a\,} q_1$</li>
+<li>$q_2 \xrightarrow{\,b\,} q_3$（上弧）</li>
+<li>$q_3 \xrightarrow{\,a\,} q_2$（下弧）</li>
+<li>$q_2 \xrightarrow{\,a\,} q_5$</li>
+<li>$q_4 \xrightarrow{\,b\,} q_5$</li>
+<li>$q_5 \xrightarrow{\,a,b\,} q_5$（自环）</li>
+<li>$q_3 \xrightarrow{\,b\,} q_6$</li>
+<li>$q_6 \xrightarrow{\,b\,} q_3$</li>
+<li>$q_5 \xrightarrow{\,b\,} q_6$</li>
+</ul>
+<p><strong>转移表</strong>（<code>?</code> 表示该处 label 辨认不清）：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$\delta$</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_1$</td>
+<td>$q_2$</td>
+<td>$q_1$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_5$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_2$</td>
+<td>$q_6$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$q_1$</td>
+<td>$q_5$</td>
+</tr>
+<tr>
+<td>$q_5$</td>
+<td>$q_5$</td>
+<td>$q_6$</td>
+</tr>
+<tr>
+<td>$q_6$</td>
+<td>?</td>
+<td>$q_3$</td>
+</tr>
+</tbody>
+</table></div>
+<p>Identifying the reachable states is easy to do in polynomial time.</p>
+<h4 id="t02-p68">第 68 页</h4>
+<ul>
+<li>Compute the set of reachable states
+  — the transitive closure of $\{s\}$ under the relation $\{(p,q) : \delta(p,a) = q \text{ for some } a \in \Sigma\}$.</li>
+</ul>
+<p class="cb cb-algorithm"><strong>Algorithm:</strong> Computing the set of reachable states</p>
+<pre><code>R := {s}
+While ∃ a state p ∈ R and a ∈ Σ such that δ(p, a) ∉ R do
+    add δ(p, a) to R
+</code></pre>
+<h4 id="t02-p69">第 69 页</h4>
+<p><strong>Step 2.</strong> Merge the equivalent states</p>
+<ul>
+<li>
+<p>Consider states $q_4$ and $q_6$.
+  — equivalent</p>
+</li>
+<li>
+<p>Intuitively, the states are equivalent:
+  — <em>from either state, precisely the same string lead the automaton to acceptance.</em></p>
+</li>
+</ul>
+<h4 id="t02-p70">第 70 页</h4>
+<p>$\square$ <strong>Decomposition of $\Sigma^*$ into Equivalence Classes with respect to Language</strong></p>
+<p class="cb cb-definition"><strong>Definition</strong> Let $L \subseteq \Sigma^*$ be a language, and let $x, y \in \Sigma^*$. We say $x$ and $y$ are <strong>equivalent with respect to $L$</strong>, denoted $\boxed{x \approx_L y}$, if for all $z \in \Sigma^*$, $xz \in L$ iff $yz \in L$.</p>
+<p class="cb cb-remark"><strong>Remark:</strong>  （方框：$z = e$）</p>
+<ul>
+<li>$x \approx_L y$ if either both strings belong to $L$ or neither is in $L$</li>
+<li>$x \approx_L y$: appending any fixed string to both $x$ and $y$ results in two strings are either both in $L$ or both not in $L$</li>
+</ul>
+<h4 id="t02-p71">第 71 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> If $x \in \Sigma^*$, denote by $[x]$ the equivalence class with respect to $L$, where $L = (ab \cup ba)^*$.</p>
+<p>It is not hard to see that $\approx_L$ has four equivalence classes:</p>
+<p>$$
+\begin{aligned}
+&amp;1)\ [e] = L \\
+&amp;2)\ [a] = La \\
+&amp;3)\ [b] = Lb \\
+&amp;4)\ [aa] = L(aa \cup bb)\Sigma^*.
+\end{aligned}
+$$</p>
+<p>（第 49–71 页，共 23 页，全部覆盖。）</p>
+<h4 id="t02-p72">第 72 页</h4>
+<h3 id="t02-h6">□ Decomposition via a DFA</h3>
+<p class="cb cb-definition"><strong>Definition</strong> Let $M = (K, \Sigma, \delta, s, F)$ be a DFA. We say two strings $x, y \in \Sigma^*$ are <strong>equivalent with respect to $M$</strong>, denoted $x \sim_M y$, if, intuitively, they both drive $M$ from $s$ to the same state. Formally,</p>
+<p>$$x \sim_M y \iff \exists q \in K \ \text{s.t.}\ ((s, x) \vdash_M^* (q, e)) \wedge ((s, y) \vdash_M^* (q, e))$$</p>
+<p class="cb cb-remark"><strong>Remark:</strong>
+The equivalence classes can be identified by the states of $M$.
+— denoted by $E_q$</p>
+<h4 id="t02-p73">第 73 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> $L = (ab \cup ba)^*$ is the language accepted by $M$.</p>
+<p><strong>状态图描述：</strong></p>
+<ul>
+<li>状态集合 $K = \{q_1, q_2, q_3, q_4, q_5, q_6\}$。</li>
+<li>初态：$q_1$（带初始箭头）。</li>
+<li>终态：$q_1$、$q_3$（双圈）。</li>
+<li>各条边（起点 → 终点，label）：</li>
+<li>$q_1 \xrightarrow{a} q_2$</li>
+<li>$q_1 \xrightarrow{b} q_4$</li>
+<li>$q_4 \xrightarrow{a} q_1$</li>
+<li>$q_2 \xrightarrow{b} q_3$（上方弧线）</li>
+<li>$q_3 \xrightarrow{a} q_2$（下方弧线）</li>
+<li>$q_2 \xrightarrow{a} q_5$</li>
+<li>$q_3 \xrightarrow{b} q_6$</li>
+<li>$q_6 \xrightarrow{a} q_3$</li>
+<li>$q_4 \xrightarrow{b} q_5$</li>
+<li>$q_6 \xrightarrow{b} q_5$</li>
+<li>$q_5 \xrightarrow{a, b} q_5$（自环）</li>
+</ul>
+<p><strong>转移表：</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_1$</td>
+<td>$q_2$</td>
+<td>$q_4$</td>
+</tr>
+<tr>
+<td>$q_2$</td>
+<td>$q_5$</td>
+<td>$q_3$</td>
+</tr>
+<tr>
+<td>$q_3$</td>
+<td>$q_2$</td>
+<td>$q_6$</td>
+</tr>
+<tr>
+<td>$q_4$</td>
+<td>$q_1$</td>
+<td>$q_5$</td>
+</tr>
+<tr>
+<td>$q_5$</td>
+<td>$q_5$</td>
+<td>$q_5$</td>
+</tr>
+<tr>
+<td>$q_6$</td>
+<td>$q_3$</td>
+<td>$q_5$</td>
+</tr>
+</tbody>
+</table></div>
+<p>（初态 $q_1$；终态 $q_1, q_3$。）</p>
+<p>右侧方框：</p>
+<p>The equivalence class as following:</p>
+<p>(1) $E_{q_1} = (ba)^*$
+(2) $E_{q_2} = La$
+(3) $E_{q_3} = (ba)^* abL$
+(4) $E_{q_4} = (ba)^* b$
+(5) $E_{q_5} = L(bb \cup aa)\Sigma^*$
+(6) $E_{q_6} = (ba)^* abLb$</p>
+<h4 id="t02-p74">第 74 页</h4>
+<h3 id="t02-h7">□ Relationship Between Two Equivalent Relations</h3>
+<p class="cb cb-theorem"><strong>Theorem</strong> For any DFA $M = (K, \Sigma, \delta, s, F)$ and any strings $x, y \in \Sigma^*$. If $x \sim_M y$, then $x \approx_{L(M)} y$.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<ul>
+<li>For any string $x \in \Sigma^*$, let $q(x) \in K$ be unique state such that $(s, x) \vdash_M^* (q(x), e)$.</li>
+<li>
+<p>Notice that, for any $x, z \in \Sigma^*$,
+  $$xz \in L(M) \iff (q(x), z) \vdash_M^* (f, e) \text{ for some } f \in F$$</p>
+</li>
+<li>
+<p>If $x \sim_M y$ then, by the definition of $\sim_M$, $q(x) = q(y)$.</p>
+</li>
+</ul>
+<h4 id="t02-p75">第 75 页</h4>
+<ul>
+<li>$x \sim_M y$ implies that the following holds:
+  $$xz \in L(M) \iff yz \in L(M) \text{ for all } z \in \Sigma^*$$
+  which is the same as $x \approx_{L(M)} y$.</li>
+</ul>
+<p class="cb cb-definition"><strong>Definition:</strong> An equivalence relation $\sim$ is a refinement of another $\approx$, if
+$$\forall x, y \ \ x \sim y \Rightarrow x \approx y.$$</p>
+<ul>
+<li>If $\sim$ is a refinement of $\approx$, then each equivalence class of $\sim$ is contained in some equivalence class of $\approx$.</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong>
+Equivalence relation $\sim_M$ is a <strong>refinement</strong> of $\approx_{L_M}$.</p>
+<h4 id="t02-p76">第 76 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (continued)</p>
+<p>$\approx_{L(M)}$ equivalence classes:</p>
+<p>(1) $[e] = L$
+(2) $[a] = La$
+(3) $[b] = Lb$
+(4) $[aa] = L(aa \cup bb)\Sigma^*$.</p>
+<p>（右侧栏）</p>
+<p>(1) $E_{q_1} = (ba)^*$
+(2) $E_{q_2} = La$
+(3) $E_{q_3} = (ba)^* abL$
+(4) $E_{q_4} = (ba)^* b$
+(5) $E_{q_5} = L(bb \cup aa)\Sigma^*$
+(6) $E_{q_6} = (ba)^* abLb$</p>
+<p>方框：</p>
+<p>$\sim_M$ is the refinement of $\approx_{L(M)}$.
+$$E_{q_1} \cup E_{q_3} = [e], \quad E_{q_5} = [aa], \quad E_{q_2} = [a], \quad E_{q_4} \cup E_{q_6} = [b]$$</p>
+<p class="cb cb-remark"><strong>Remark:</strong> The numbers of states of any FA equivalent to $M$ must be at least as large as the number of equivalence classes of $L(M)$. — <strong>a natural lower bound.</strong></p>
+<p>（气泡标注）Can this lower bound be archived?（原文如此）</p>
+<h4 id="t02-p77">第 77 页</h4>
+<p class="cb cb-lemma"><strong>Lemma</strong> Let $L \subseteq \Sigma^*$ be a regular language. Then there is a DFA with precisely states as there are equivalence classes in $\approx_L$ that accepts $L$.</p>
+<p class="cb cb-proof"><strong>Proof:</strong> Define $[x]$ to be the equivalence class containing $x$. Construct DFA $M = (K, \Sigma, \delta, s, F)$ from $\approx_L$</p>
+<ul>
+<li>Let $K = \{[x] : x \in \Sigma^*\}$, the set of equivalence classes under $\approx_L$</li>
+<li>Let $s = [e]$</li>
+<li>Let $F = \{[x] \mid x \in L\}$</li>
+<li>For any $[x] \in K$ and any $a \in \Sigma$, define $\delta([x], a) = [xa]$</li>
+</ul>
+<h4 id="t02-p78">第 78 页</h4>
+<h3 id="t02-h8">□ DFA construction</h3>
+<p>（示意图：一个平行四边形平面表示等价类集合，其上标注若干节点 $[e], [x], [y], [xb], [yb], [xa], [ya]$，并有红色箭头连接。）</p>
+<ul>
+<li>左侧红箭头指向平面内的节点 $[e]$，标注 <strong>Initial state $s \to$</strong>。</li>
+<li>顶部节点 $[x]$、其下方 $[y]$；中左 $[xb]$、其下 $[yb]$；右侧 $[xa]$、其下 $[ya]$。</li>
+<li>红色边表示转移，方向为：$[x] \to [xa]$、$[x] \to [xb]$；$[y] \to [ya]$、$[y] \to [yb]$（即对某输入符号，$[x]$ 分别落到 $[xa]$ 与 $[xb]$，$[y]$ 分别落到 $[ya]$ 与 $[yb]$）。</li>
+<li>底部标注 <strong>$\leftarrow$ Final state $F$</strong>。</li>
+</ul>
+<p>图下方文字：</p>
+<p>$k =$ Equivalence classes of $\approx_L$</p>
+<h4 id="t02-p79">第 79 页</h4>
+<p>We next show:</p>
+<p>□ $K$ is finite</p>
+<p>□ $\delta([x], a)$ is a function</p>
+<p>□ $L = L(M)$</p>
+<h4 id="t02-p80">第 80 页</h4>
+<p><strong>Part 1. K is finite</strong></p>
+<p>Let $L$ be a regular language, and so it is accepted by some DFA $M'$.</p>
+<p>$\Rightarrow \sim_{M'}$ is a refinement of $\approx_L$.</p>
+<p>$\Rightarrow$ The number of equivalence classes of $\approx_L$
+$\quad \le$ The number of equivalence classes of $\sim_{M'}$
+$\quad =$ The number of states of $M'$</p>
+<p>$\Rightarrow K$ is finite.</p>
+<h4 id="t02-p81">第 81 页</h4>
+<p><strong>Part 2. $\delta([x], a)$ is well-defined</strong></p>
+<p>$\delta([x], a) = [xa]$ is independent of the string of $x \in [x]$, because
+$$x \approx_L x' \Rightarrow xa \approx_L x'a.$$</p>
+<p><strong>Part 3. $L = L(M)$</strong></p>
+<p>□ $\forall x, y \in \Sigma^* \quad ([x], y) \vdash_M^* ([xy], e)$</p>
+<p>□ $\forall x \in \Sigma^* \quad x \in L(M) \iff ([e], x) \vdash_M^* (q, e)$ for some $q \in F$
+$\quad\quad\quad\quad\quad\quad\quad \iff q = [x] \in F$
+$\quad\quad\quad\quad\quad\quad\quad \iff x \in L$ By definition of DFA $M$</p>
+<h4 id="t02-p82">第 82 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (continued)</p>
+<p>The standard FA corresponding to the language $L = (ab \cup ba)^*$ is shown following:</p>
+<p>左侧方框：</p>
+<p>1) $[e] = L$
+2) $[a] = La$
+3) $[b] = Lb$
+4) $[aa] = L(aa \cup bb)\Sigma^*$.</p>
+<p><strong>状态图描述（standard FA / 最小 DFA）：</strong></p>
+<ul>
+<li>状态（以等价类命名，并标注其对应的原状态集合）：</li>
+<li>$[e] = \{q_1, q_3\}$</li>
+<li>$[a] = \{q_2\}$</li>
+<li>$[b] = \{q_4, q_6\}$</li>
+<li>$[aa] = \{q_5\}$</li>
+<li>初态：$[e]$（带初始箭头）。</li>
+<li>终态：图中 $[e]$ 与 $[aa]$ 均画为双圈。</li>
+<li>各条边（起点 → 终点，label）：</li>
+<li>$[e] \xrightarrow{a} [a]$（上方弧线）</li>
+<li>$[a] \xrightarrow{b} [e]$（下方弧线）</li>
+<li>$[e] \xrightarrow{b} [b]$</li>
+<li>$[b] \xrightarrow{a} [e]$</li>
+<li>$[a] \xrightarrow{a} [aa]$</li>
+<li>$[b] \xrightarrow{b} [aa]$</li>
+<li>$[aa] \xrightarrow{a, b} [aa]$（自环）</li>
+</ul>
+<p><strong>转移表：</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>$a$</th>
+<th>$b$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$[e]=\{q_1,q_3\}$</td>
+<td>$[a]$</td>
+<td>$[b]$</td>
+</tr>
+<tr>
+<td>$[a]=\{q_2\}$</td>
+<td>$[aa]$</td>
+<td>$[e]$</td>
+</tr>
+<tr>
+<td>$[b]=\{q_4,q_6\}$</td>
+<td>$[e]$</td>
+<td>$[aa]$</td>
+</tr>
+<tr>
+<td>$[aa]=\{q_5\}$</td>
+<td>$[aa]$</td>
+<td>$[aa]$</td>
+</tr>
+</tbody>
+</table></div>
+<p>（初态 $[e]$；图中终态画为 $[e]$、$[aa]$。）</p>
+<h4 id="t02-p83">第 83 页</h4>
+<p class="cb cb-theorem"><strong>Theorem</strong> (The Myhill-Nerode theorem) A language $L$ is regular iff $\approx_L$ has <em>finitely</em> many equivalence classes.</p>
+<p class="cb cb-proof"><strong>Proof:</strong> $\Rightarrow$</p>
+<p>$L$ is regular
+$\Rightarrow L = L(M)$ for some DFA $M$ and $M$ has at least as many states as $\approx_L$ has equivalence classes
+$\Rightarrow$ There are finitely many equivalence classes in $\approx_L$</p>
+<p>$\Leftarrow$</p>
+<p>If $\approx_L$ has finitely many equivalence classes
+$\Rightarrow$ The standard DFA $M_L$ accepts $L$.</p>
+<h4 id="t02-p84">第 84 页</h4>
+<h3 id="t02-h9">□ Application of Myhill-Nerode Theorem</h3>
+<p>Alternate proof that $L = \{a^n b^n : n \ge 0\}$ is not regular:</p>
+<p>$$a^i \approx_L a^j \iff i = j$$</p>
+<p>$(\Rightarrow)$ If $i \ne j$ then $a^i b^i \in L$, but $a^j b^i \notin L$
+$(\Leftarrow)$ Obvious.</p>
+<p>Thus, $\approx_L$ has infinitely many equivalent classes. By Myhill-Nerode theorem, $L$ must not be regular.</p>
+<h4 id="t02-p85">第 85 页</h4>
+<h3 id="t02-h10">□ Construction of the Standard DFA Equivalent to a Given DFA $M$</h3>
+<ul>
+<li>
+<p>The minimum automaton accepting a language $L$ is unique (up to renaming of states), and is given by the construction in the Myhill-Nerode theorem.</p>
+</li>
+<li>
+<p>An algorithm is a procedure that always terminates (with the right answer)</p>
+</li>
+</ul>
+<h4 id="t02-p86">第 86 页</h4>
+<h3 id="t02-h11">□ Minimization algorithm</h3>
+<ul>
+<li>Let $M = (K, \Sigma, \delta, s, F)$ be a DFA.</li>
+<li>Define $p \equiv q$ iff for each $z \in \Sigma^*$,
+  $$\delta(p, z) \in F \iff \delta(q, z) \in F \qquad (*)$$</li>
+</ul>
+<p>方框 <strong>Basic idea:</strong></p>
+<ul>
+<li>The standard DFA is constructed by clumping together the equivalence classes under $\equiv$</li>
+<li>To find $\equiv$: form a sequence of equivalence relations: $\equiv_0, \equiv_1, \cdots, \equiv_n$, where:
+  $$p \equiv_n q \text{ iff } (*) \text{ holds for all } z \text{ of length } |z| \le n$$</li>
+</ul>
+<h4 id="t02-p87">第 87 页</h4>
+<h3 id="t02-h12">□ Finding $\equiv$</h3>
+<ul>
+<li>
+<p>$\equiv_0$ has just two equivalence classes: $F$ and $K - F$</p>
+</li>
+<li>
+<p>$p \equiv_{n+1} q$ iff</p>
+</li>
+<li>$p \equiv_n q$</li>
+<li>For all $a \in \Sigma$, $\delta(q, a) \equiv_n \delta(p, a)$</li>
+</ul>
+<p>（方框）$\equiv_{n+1}$ is a refinement of $\equiv_n$.</p>
+<p>Since $K$ is finite, eventually there is an $n$ such that $\equiv_n$ and $\equiv_{n+1}$ are the same: this is $\equiv$.</p>
+<h4 id="t02-p88">第 88 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (continued)</p>
+<p><strong>$\equiv_0$ 分划</strong>（将 $K$ 分为 $F$ 与 $\overline{F}$）：</p>
+<ul>
+<li>$F$：类 $A$，含 $q_1, q_3$</li>
+<li>$q_1$：$a \to B$，$b \to B$</li>
+<li>$q_3$：$a \to B$，$b \to B$</li>
+<li>$\overline{F}$：类 $B$，含 $q_2, q_4, q_5, q_6$</li>
+<li>$q_2$：$a \to B$，$b \to A$</li>
+<li>$q_4$：$a \to A$，$b \to B$</li>
+<li>$q_5$：$a \to B$，$b \to B$</li>
+<li>$q_6$：$a \to A$，$b \to B$</li>
+</ul>
+<p>（其中 $A$ 表示落入 $F$ 类，$B$ 表示落入 $\overline{F}$ 类。）</p>
+<p><strong>$\equiv_1$ 分划</strong>（类 $A, C, D, E$）：</p>
+<ul>
+<li>类 $A$：含 $q_1, q_3$</li>
+<li>$q_1$：$a \to C$，$b \to D$</li>
+<li>$q_3$：$a \to C$，$b \to D$</li>
+<li>类 $C$：含 $q_2$（单独节点，无展开）</li>
+<li>类 $D$：含 $q_4, q_6$</li>
+<li>$q_4$：$a \to A$，$b \to E$</li>
+<li>$q_6$：$a \to A$，$b \to E$</li>
+<li>类 $E$：含 $q_5$（单独节点，无展开）</li>
+</ul>
+<p>（右下角标注）$\Rightarrow \equiv$ is $\equiv_1$.</p>
+<h4 id="t02-p89">第 89 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> The language $L \subseteq \{a_1, \cdots, a_n\}^*$ of all strings that do not contain occurrences of all $n$ symbols, and corresponding DFA with $2^n$ states.</p>
+<ul>
+<li>
+<p>$\approx_L$ has $2^n$ equivalence classes.</p>
+</li>
+<li>
+<p>Let $A \subseteq \Sigma$, $L_A = \{w : w \in \Sigma^*, w \text{ contains occurrences of all symbols in } A, \text{ and of no symbols in } \Sigma - A\}$.</p>
+</li>
+</ul>
+<p>The $2^n$ sets $L_A$ are precisely the equivalence classes of $\approx_L$.</p>
+<h4 id="t02-p90">第 90 页</h4>
+<h3 id="t02-h13">2.6 Algorithms for Finite Automata*</h3>
+<p class="cb cb-question"><strong>Question:</strong> Convert a NFA $(K, \Sigma, \Delta, s, F)$ to a DFA.</p>
+<ul>
+<li>Computation of all $E(q)$ $\cdots\cdots \mathcal{O}(|K|^3)$</li>
+</ul>
+<p>（方框）
+For each $Q \subseteq K$, $\forall a \in \Sigma$,
+$$\delta(Q, a) = \cup\{E(p) \mid p \in K \text{ and } (q, a, p) \in \Delta \text{ for some } q \in Q\}$$</p>
+<ul>
+<li>Computation of all $\delta(Q, a)$ $\cdots\cdots \mathcal{O}(|\Delta||K|^2)$</li>
+</ul>
+<p>The total complexity: $\mathcal{O}(2^{|K|}|K|^3|\Sigma||\Delta||K|^2)$.</p>
+<h4 id="t02-p91">第 91 页</h4>
+<ul>
+<li>
+<p>Convert a regular expression $R$ into an equivalent NFA. No more than $4|R|^2$ transitions.</p>
+</li>
+<li>
+<p>Turning a given FA $M = (K, \Sigma, \Delta, s, F)$. The resulting regular expressions may have length as large as $3^{|K|}$.</p>
+</li>
+<li>
+<p>The total complexity of the minimization algorithm is $\mathcal{O}(|\Sigma||K|^3)$.</p>
+</li>
+</ul>
+<h4 id="t02-p92">第 92 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong></p>
+<p>(a) There is an exponential algorithm which, given a NFA, constructs an equivalent DFA.
+(b) There is a polynomial algorithm which, given a regular expressions, constructs an equivalent NFA.
+(c) There is an exponential algorithm which, given a NFA, constructs an equivalent regular expression.
+(d) There is a polynomial algorithm which, given a DFA, constructs an equivalent DFA with the smallest possible number of states.</p>
+<h4 id="t02-p93">第 93 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong> (Continued)</p>
+<p>(e) There is a polynomial algorithm which, given two DFA, decides whether they are equivalent.
+(f) There is an exponential algorithm which, given two NFA, decides whether they are equivalent; similarly for the equivalence of two regular expressions.</p>
+<h4 id="t02-p94">第 94 页</h4>
+<h3 id="t02-h14">□ FA as Algorithms</h3>
+<p>A DFA $M$ is an efficient algorithm for deciding whether a given string is in $L(M)$.</p>
+<p class="cb cb-theorem"><strong>Theorem</strong> If $L$ is a regular language, then there is an algorithm which, given $w \in \Sigma^*$, tests whether it is in $L$ in $\mathcal{O}(|w|)$ time.</p>
+<p class="cb cb-theorem"><strong>Theorem</strong> If $M = (K, \Sigma, \Delta, s, F)$ is a NFA, then there is an algorithm which, given $w \in \Sigma^*$, tests whether it is in $L$ in $\mathcal{O}(|K|^2|w|)$ time.</p>
+    </section>
+  </main>
+</div>
+
+<button id="toTop" title="回到顶部">↑</button>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false,
+      errorColor: "#dc2626",
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "option"]
+    });
+  }
+
+  // 目录过滤（支持页码 / 关键词）
+  var filter = document.getElementById("tocFilter");
+  function filterToc() {
+    var q = (filter.value || "").trim().toLowerCase();
+    var items = document.querySelectorAll(".sidebar li");
+    items.forEach(function (li) {
+      if (!q) { li.style.display = ""; return; }
+      var txt = li.textContent.toLowerCase();
+      var hit = txt.indexOf(q) >= 0;
+      if (!hit && /^\d+$/.test(q)) hit = txt.indexOf("第 " + q + " 页") >= 0;
+      li.style.display = hit ? "" : "none";
+    });
+  }
+  filter.addEventListener("input", filterToc);
+
+  // 回到顶部
+  var btn = document.getElementById("toTop");
+  window.addEventListener("scroll", function () {
+    btn.classList.toggle("show", window.scrollY > 600);
+  });
+  btn.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  // 当前小节高亮
+  var heads = Array.prototype.slice.call(document.querySelectorAll(".panel h3[id], .panel h4[id]"));
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY + 120, cur = null;
+    for (var i = 0; i < heads.length; i++) {
+      if (heads[i].offsetTop <= y) cur = heads[i].id; else break;
+    }
+    if (cur) {
+      document.querySelectorAll(".toc-list a").forEach(function (a) {
+        a.classList.toggle("cur", a.getAttribute("href") === "#" + cur);
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
