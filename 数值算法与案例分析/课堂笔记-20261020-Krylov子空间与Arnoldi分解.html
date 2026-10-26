@@ -96,9 +96,66 @@ table.apx th:nth-child(4),table.apx td:nth-child(4){width:104px}
 .qrdemo-bar i{display:block; height:100%; width:0; background:var(--ok); border-radius:3px; transition:width .12s ease}
 figure{margin:26px 0}
 figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
 </style>
 </head>
 <body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+
 <div class="wrap">
 
 <p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-10-20 课堂</p>
@@ -3982,6 +4039,86 @@ T_{ii}Y-YT_{jj}=-T_{ij};
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else { boot(); }
+})();
+</script>
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
 })();
 </script>
 </body>
