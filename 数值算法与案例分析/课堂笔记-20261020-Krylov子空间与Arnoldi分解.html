@@ -147,7 +147,7 @@ figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
 <li><a href="#p7">QR 方法：从 Hessenberg 到全部特征值</a>
   <ol>
     <li><a href="#s530">§7.1 全景：一次 eig 调用背后其实只有三步</a></li>
-    <li><a href="#s531">§7.2 显式 QR 迭代与收敛性（交互演示 / 微观·宏观 / 收口 / <strong>⇒ Schur 分解</strong> / 严格证明 / 四个视角）</a></li>
+    <li><a href="#s531">§7.2 显式 QR 迭代与收敛性（交互演示 / 微观·宏观 / 收口 / 严格证明 / 四个视角）</a></li>
     <li><a href="#s532">§7.3 实 Schur 标准型</a></li>
     <li><a href="#s533">§7.4 上 Hessenberg 分解</a></li>
     <li><a href="#s534">§7.5 Hessenberg 阵的显式 QR 迭代</a></li>
@@ -2216,42 +2216,6 @@ A_k\ \longrightarrow\ R\Lambda R^{-1}=
 
 <p>即<strong>线性收敛</strong>，速率由特征值分离程度决定。这也解释了为什么 $\lambda_{n-1}$ 与 $\lambda_n$ 靠得近时，最后那个次对角元会拖很久——正是 §7.6 要用位移来救它的原因。</p>
 
-<h4 id="schur">最后一步：这就是 Schur 分解，而且是被算法<em>构造</em>出来的</h4>
-
-<p>前面五步只说了「$A_k$ 收敛到一个上三角阵 $T$」。但特征值问题是关于 <strong>$A$ 本身</strong>的，$A_k$ 收敛并不等于 $A$ 被分解了。把这一步补上——它只差一行代数。</p>
-
-<p>由 $A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k$，两边左乘 $\tilde Q_k$、右乘 $\tilde Q_k^{\mathsf T}$（$\tilde Q_k$ 正交，所以 $\tilde Q_k^{-1}=\tilde Q_k^{\mathsf T}$）：</p>
-
-\[
-A=\tilde Q_k\,A_k\,\tilde Q_k^{\mathsf T}\qquad\text{对一切 }k\ \text{都成立（不是近似！）}
-\]
-
-<p>现在让 $k\to\infty$。右边两个因子都有极限：$\tilde Q_k\to Q$（第 4 步）、$A_k\to T$（第 5 步），于是</p>
-
-\[
-\boxed{\;A=Q\,T\,Q^{\mathsf T},\qquad Q\ \text{正交},\quad T\ \text{上三角、对角元为 }\lambda_1,\dots,\lambda_n\;}
-\]
-
-<div class="box key">
-<p class="label">这就是 Schur 分解</p>
-<p>它不是「另外一个定理」，<strong>它就是前面五步的另一种写法</strong>：$Q$ 是那组收敛的正交基，$T$ 是 $A_k$ 的极限。特征值全在 $T$ 的对角线上，而 $A$ 与 $T$ 正交相似——一个特征值都没变。</p>
-<p>而且这是<strong>构造性</strong>的：教材证 Schur 分解通常走「对维数归纳 + 取一个单位特征向量 + 降一阶」，只给存在性、不给算法。这里给出的是一条算得出来的路——<strong>QR 迭代本身就是 Schur 分解的算法</strong>：跑够步数，$\tilde Q_k$ 收敛到 $Q$，$A_k$ 收敛到 $T$。这正是 LAPACK 的 <code>dhseqr</code> 同时返回 $T$ 和 $Q$ 的原因。</p>
-</div>
-
-<p>三个直接推论，后面都要用：</p>
-
-<ul>
-<li><strong>$Q$ 的列不是特征向量，是「Schur 向量」。</strong>它们只是一组把 $A$ 变成上三角的正交基。要拿真正的特征向量，还得在 $T$ 上回代（解 $(T-\lambda_iI)v=0$，再 $x=Qv$）——这就是 <code>dtrevc</code> 干的事。这一步不能省，也是「QR 方法求特征向量比求特征值贵」的根源。</li>
-<li><strong>$T$ 的对角元就是特征值</strong>，所以只要特征值的话根本不必累积 $Q$——正是 §7.9 里「只算特征值 $10n^3$，要 $Q$ 再加 $10n^3$」的来源。</li>
-<li><strong>排序与块对角化都在 $T$ 上做</strong>（§7.10）：因为 $T$ 已经是上三角，交换相邻对角块只需要一个局部的 $2\times2$ 正交变换。</li>
-</ul>
-
-<div class="box warn">
-<p class="label">这条证明的适用范围（别当成无条件成立）</p>
-<p>五步推导用到了三个假设：<strong>特征值模两两不同</strong>（否则第 1 步的「衰减」不成立）、<strong>$A$ 可对角化</strong>、<strong>$Y=X^{-1}$ 有 LU 分解</strong>。这三条正好也是下面严格证明里「三个必须记住的前提」。</p>
-<p>一般情形（重特征值、等模特征值）需要更细的技术：先化 Hessenberg，再用带位移的隐式 QR + deflation，收敛性对每个不可约块分别成立（§7.4–§7.9）。<strong>但结论不变</strong>——$A=QTQ^{\mathsf T}$ 对任意方阵都成立，这就是 Schur 定理。</p>
-</div>
-
 <h4 id="thm">收敛性定理与严格证明</h4>
 
 <p>上面的论证是<strong>直观版</strong>：说清了「为什么塌、塌了之后为什么是上三角」。它的软肋在第 4 步——「$\tilde Q_k\to Q$」这句话只给了直觉，没有给出定量控制。下面把它换成一次<strong>纯粹的代数操作</strong>：不引用任何极限的几何直观，直接构造出 $A^k$ 的 QR 分解，再与 $A_k$ 的表达式对号入座，一步拿到严格结论和误差阶。两条路结论相同，可以互相对照。</p>
@@ -2477,18 +2441,7 @@ Q^{\mathsf T}AQ=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&
 </ul>
 </div>
 
-<p>上一节已经<strong>构造性地</strong>证出了 $A=QTQ^{\mathsf T}$：$Q$ 正交、$T$ 上三角。但那个证明有个前提——$\{A_k\}$ 的严格下三角能一路压到 0。<strong>一旦 $A$ 有复共轭特征值，实运算就做不到了</strong>：一对共轭特征值 $\alpha\pm i\beta$ 在实矩阵里只能挤在一个 $2\times2$ 的实块里，那个块的下三角元永远压不下去。于是 $\{A_k\}$ 的极限不再是上三角，而是上面的<strong>拟上三角</strong>——这就是为什么定理 ② 里 $Q^{\mathsf T}AQ$ 只到「拟上三角」为止，而不是上三角。</p>
-
-<div class="box key">
-<p class="label">把两条路接起来</p>
-<ul>
-<li><strong>存在性</strong>：Schur 定理（对维数归纳）保证任意方阵都能<strong>酉</strong>相似到上三角（复情形）/ 拟上三角（实情形）。它只告诉你「有这么个 $T$」，不告诉你「怎么算」。</li>
-<li><strong>构造性</strong>：§7.2 的 QR 迭代给出了算法——$Q=\lim_k\tilde Q_k$、$T=\lim_kA_k$。在「模互不相同 + $Y$ 有 LU」的假设下已经证完；一般情形靠 Hessenberg 约化 + 位移 + deflation 逐块处理（§7.4–§7.9），每一步都是正交相似，所以 $T$ 始终与 $A$ 相似。</li>
-<li><strong>所以</strong>：QR 迭代不是「碰巧把矩阵变成三角」，它是 <strong>Schur 分解的一个构造性证明</strong>。下面讨论实情形时，把「上三角」换成「拟上三角」，其余论证结构完全不变。</li>
-</ul>
-</div>
-
-<p>下面如无特别说明，默认给定的方阵 $A$ 是实方阵。</p>
+<p>我们不难想到，只涉及实数运算的 QR 算法产生的序列 $\{A_k\}$ 应当逼近实方阵 $A$ 的<strong>实 Schur 标准型</strong>。在下面的讨论中，如无特别说明，我们默认给定的方阵 $A$ 是实方阵。</p>
 
 <div class="box warn">
 <p class="label">为什么这个「显式格式」还不能用</p>
@@ -2806,6 +2759,86 @@ h_{n,n-1}^{(k+1)} &= \big(-s\bar h_{n-1,n-1}^{(k)}+ch_{n,n-1}^{(k)}\big)\cdot c+
 <li>最后一行用了「$h_{n,n-1}^{(k)}$ 趋于零，故可假设 $|h_{n,n-1}^{(k)}|$ 远小于 $|\bar h_{n-1,n-1}^{(k)}|$ 和 $|\bar h_{n-1,n}^{(k)}|$」。</li>
 </ul>
 <p>这表明通过取位移因子 $\mu_k=h_{nn}^{(k)}$，可让特征值的渐近收敛速度从<strong>线性收敛加速为二次收敛</strong>。</p>
+
+<h4 id="det-shift">位移为什么能让右下角塌掉：一个行列式论证</h4>
+
+<p>上面证的是「<strong>有多快</strong>」（二次）。但还有个更基本的问题没答：<strong>位移凭什么能让次对角元塌下去</strong>？这件事只用行列式就能说清，而且比 Gershgorin 更直接。</p>
+
+<p><strong>① 位移靠近特征值时，$H_k-\mu I$ 接近奇异。</strong>因为 $H_k$ 与 $A$ 相似，特征值仍是 $\lambda_i$，所以</p>
+
+\[
+\det\big(H_k-\mu I\big)=\prod_{i=1}^{n}\big(\lambda_i-\mu\big).
+\]
+
+<p>取 $\mu\approx\lambda_n$ 时，因子 $(\lambda_n-\mu)$ 很小，<strong>整个乘积跟着很小</strong>——$H_k-\mu I$ 接近奇异。</p>
+
+<p><strong>② 这个「接近奇异」会原封不动传给 $R_k$。</strong>对 $H_k-\mu I$ 做 QR 分解 $H_k-\mu I=Q_kR_k$，两边取行列式：</p>
+
+\[
+\det R_k=\frac{\det(H_k-\mu I)}{\det Q_k},
+\qquad\text{而 } Q_k\ \text{正交}\Rightarrow|\det Q_k|=1,
+\]
+
+<p>所以</p>
+
+\[
+\big|\det R_k\big|=\big|\det(H_k-\mu I)\big|=\prod_{i=1}^{n}\big|\lambda_i-\mu\big|\ \approx\ 0 .
+\]
+
+<p><strong>③ 上三角阵的行列式就是对角元之积。</strong>于是</p>
+
+\[
+\det R_k=r_{11}r_{22}\cdots r_{nn}\approx0
+\quad\Longrightarrow\quad
+\text{至少有一个 }|r_{ii}|\text{ 很小}.
+\]
+
+<p>而且塌的正是<strong>右下角那个</strong> $r_{nn}$：前 $n-1$ 个 Givens 变换只碰左上角，最后一步才处理右下 $2\times2$ 块，而 $H_k-\mu I$ 的近奇异恰恰体现在那块上——取 $\mu=h_{nn}^{(k)}$ 之后，那块的 $(2,2)$ 元正好被减成 $0$：</p>
+
+\[
+\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&h_{nn}^{(k)}-\mu\end{bmatrix}
+=\begin{bmatrix}h_{n-1,n-1}^{(k)}&h_{n-1,n}^{(k)}\\ h_{n,n-1}^{(k)}&0\end{bmatrix},
+\qquad \det=-h_{n-1,n}^{(k)}h_{n,n-1}^{(k)}\ \text{已经很小}.
+\]
+
+<p><strong>④ 于是下一次迭代的<em>整个最后一行</em>都塌了。</strong>由 $H_{k+1}=R_kQ_k+\mu I$，而 $R_k$ 的最后一行只有 $r_{nn}$ 非零：</p>
+
+\[
+H_{k+1}\ \text{的最后一行}=r_{nn}\,q_n^{\mathsf T}+\mu\,e_n^{\mathsf T}
+=\big(\underbrace{r_{nn}q_{n1}}_{\approx0},\ \dots,\ \underbrace{r_{nn}q_{n,n-1}}_{\approx0},\ \underbrace{r_{nn}q_{nn}+\mu}_{\approx\,\mu}\big),
+\]
+
+<p>其中 $q_n^{\mathsf T}$ 是 $Q_k$ 的最后一行。逐项读出来就是</p>
+
+\[
+h_{n,n-1}^{(k+1)}=r_{nn}q_{n,n-1}\approx0
+\qquad\text{（这就是 deflation 的判据）},
+\]
+\[
+h_{nn}^{(k+1)}=r_{nn}q_{nn}+\mu\approx\mu\approx\lambda_n .
+\]
+
+<div class="box key">
+<p class="label">一句话</p>
+<p><strong>位移的作用，就是把 $H_k-\mu I$ 推到奇异边缘。</strong>于是</p>
+\[
+\det(H_k-\mu I)\approx0
+\ \Longrightarrow\
+\det R_k\approx0
+\ \Longrightarrow\
+r_{11}\cdots r_{nn}\approx0
+\ \Longrightarrow\
+r_{nn}\approx0
+\ \Longrightarrow\
+\begin{cases}h_{n,n-1}^{(k+1)}\approx0\ (\text{可以 deflation})\\ h_{nn}^{(k+1)}\approx\mu\approx\lambda_n\ (\text{特征值到手})\end{cases}
+\]
+<p>反过来也说得通：若 $\mu$ 离所有特征值都远，$\det R_k$ 是 $O(1)$，$r_{nn}$ 不塌，迭代就只能按原来的线性速度慢慢磨——这正是「位移要选得准」的全部理由。</p>
+</div>
+
+<div class="box ok">
+<p class="label">和下面那个 Gershgorin 观点的关系</p>
+<p>下面「邵老师提供的观点」是从「$R_k$ 的右下角是 $\varepsilon$」这个<strong>假设</strong>出发，用 Gershgorin 圆盘说明 $h_{nn}+\varepsilon$ 可以当特征值。而这里的 ①②③ 正好回答了那个假设<strong>从哪来</strong>：$\varepsilon$ 之所以存在，是因为 $\det R_k\approx0$ 逼着对角元之积趋零。两段接起来，就是「位移 → 近奇异 → $r_{nn}$ 塌 → deflation」的完整链条。</p>
+</div>
 
 <div class="box">
 <p class="label">邵老师提供的观点：为什么 $h_{nn}^{(k)}$ 有资格当特征值</p>
