@@ -124,7 +124,7 @@ figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
     <li><a href="#s31">从 $k=1$ 到 $k\gt 1$</a></li>
     <li><a href="#s32">迭代格式与板书原文</a></li>
     <li><a href="#s33">为什么每一步都必须重做 QR</a></li>
-    <li><a href="#s34">收敛速度与那个被圈出来的 $\lambda_{k+1}$</a></li>
+    <li><a href="#s34">收敛速度与那个被圈出来的 $\lambda_{k+1}$（矩阵推导 + Wilkinson 反例）</a></li>
   </ol>
 </li>
 <li><a href="#p4">Krylov 子空间与 Arnoldi 分解</a>
@@ -410,7 +410,12 @@ v_k:=\lambda_1^k\sum_{i=2}^n \alpha_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^k q_i
 <li><strong>重特征值需要一整个子空间。</strong>若 $\lambda_1=\lambda_2$ 但 $q_1,q_2$ 张成一个二维特征子空间，单个向量只会落到其中<strong>某一个</strong>方向上（取决于 $x_0$），另一个方向丢了。要抓住整个特征子空间，必须推一个<strong>子空间</strong>而不是一个向量。</li>
 </ol>
 
-<p>所以对象从 $x_k\in\mathbb{C}^n$ 换成 $X_i\in\mathbb{C}^{n\times k}$（$k$ 列），目标是让 $X_i$ 的列空间收敛到 $\mathrm{span}\{q_1,\dots,q_k\}$。</p>
+<p>所以对象从 $x_k\in\mathbb{C}^n$ 换成 $X_i\in\mathbb{C}^{n\times k}$（$k$ 列），目标是让 $X_i$ 的<strong>列空间</strong>收敛到 $\mathrm{span}\{q_1,\dots,q_k\}$——注意要的是「空间」，不是某几个具体向量。</p>
+
+<div class="box">
+<p class="label">$k=1$ 时退化成什么</p>
+<p>取 $k=1$，三步走变成「$\tilde x=A x$ → 归一化 → $x\leftarrow\tilde x/\|\tilde x\|$」，正好是<strong>幂法</strong>。而「归一化」这一步就是 $1\times1$ 的 QR 分解：$R$ 就是那个范数 $\|\tilde x\|$。所以幂法不是一个特例技巧，它是子空间迭代在 $p=1$ 时的样子。</p>
+</div>
 
 <h3 id="s32">§3.2 迭代格式与板书原文<span class="tag">板书 170（右）</span></h3>
 
@@ -444,6 +449,12 @@ x_i^{(j)}=\lambda_1^i\Big(\alpha_1^{(j)}q_1+\sum_{m=2}^{n}\alpha_m^{(j)}\Big(\fr
 <p>当 $i$ 变大，括号里第一项（沿 $q_1$ 的分量）占绝对优势，$q_2,\dots,q_k$ 的系数按 $(\lambda_m/\lambda_1)^i$ 衰减到舍入误差以下。于是<strong>每一列都近似等于 $c_j\lambda_1^iq_1$</strong>，其中 $c_j=\alpha_1^{(j)}$ 只差一个<strong>标量</strong>。$k$ 列互相只差一个倍数，矩阵的秩实际塌成 1，$Q$ 里剩下的方向全是噪声。</p>
 
 <p>QR 的作用就是每步把「已经占优的 $q_1$ 方向」从第 2 到第 $k$ 列里<strong>减掉</strong>（正交化的效果），让它们带着自己的 $q_2,\dots,q_k$ 分量继续往下走。这和 Arnoldi 里 $Aq_j$ 减去前面所有方向是同一个动作。</p>
+
+<div class="box">
+<p class="label">还有第二层病：不归一化会直接溢出</p>
+<p>上面说的是<strong>数学</strong>上的病（秩塌成 1）。还有一层<strong>数值</strong>上的病：$A^i$ 的元素按 $|\lambda_1|^i$ 增长。若 $|\lambda_1|\approx10$，$i=308$ 时就是 $10^{308}$，<strong>直接顶到双精度上限</strong>（Overflow）；反过来若 $|\lambda_1|\lt1$，则一路下溢成 $0$。所以实现里<strong>绝不可能</strong>写成 <code>X = A*X</code> 的死循环，必须每步 QR 把长度压回 1。</p>
+<p>顺带说清 $R$ 去哪了：<strong>$R$ 不是垃圾</strong>。$\tilde X_{i+1}=Q_{i+1}R_{i+1}$ 里，$R_{i+1}$ 的对角元记的正是「各方向这一轮被放大了多少倍」，它的对角元趋向 $\lambda_1,\dots,\lambda_k$；$Q_{i+1}$ 才是剥掉长度、只剩方向的子空间。所以「扔掉 $R$」只是扔掉<strong>这一轮</strong>的尺度，尺度下一步又会长回来。</p>
+</div>
 
 <figure>
 <svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="fig3t fig3d">
@@ -498,6 +509,95 @@ x_i^{(j)}=\lambda_1^i\Big(\alpha_1^{(j)}q_1+\sum_{m=2}^{n}\alpha_m^{(j)}\Big(\fr
 <li><strong>捣乱的是</strong>第 $k+1$ 个方向 $q_{k+1}$：它在 $i$ 步之后带着 $(\lambda_{k+1}/\lambda_1)^i$ 的权重混在子空间里。要把它压到 $q_k$ 的量级以下，需要 $(\lambda_{k+1}/\lambda_1)^i\lesssim(\lambda_k/\lambda_1)^i$，即两者之比起作用。</li>
 <li>所以<strong>决定速度的是 $|\lambda_{k+1}/\lambda_k|$</strong>：这个比值越小（$q_k$ 与 $q_{k+1}$ 分得越开），子空间分得越快。板书把 $\lambda_{k+1}$ 圈起来，就是因为整个算法的收敛性只取决于这一个数。</li>
 </ul>
+
+<h4 id="si-matrix">把它写成矩阵：收敛因子 $|\lambda_{p+1}/\lambda_p|$ 是怎么掉出来的</h4>
+
+<p>上面是「一列一列」的直观说法。写成矩阵形式更干净，而且能顺带看清 $R$ 的对角元为什么可以当特征值用。</p>
+
+<p>设 $A=V\Lambda V^{-1}$，$V=[v_1,\dots,v_n]$。初始的 $n\times p$ 矩阵 $X_0$ 每一列都是 $V$ 的列的线性组合，所以可以写成</p>
+
+\[
+X_0=V\,C,\qquad C\in\mathbb{C}^{n\times p},
+\]
+
+<p>其中 $C$ 的第 $i$ 行记着「$v_i$ 在各列里占多少权重」。迭代 $i$ 步（先不管归一化）：</p>
+
+\[
+X_i=A^iX_0=A^iV\,C=V\Lambda^iC
+=\lambda_p^{i}\,V\,
+\operatorname{diag}\!\left[\Big(\frac{\lambda_1}{\lambda_p}\Big)^{i},\ \dots,\ \Big(\frac{\lambda_{p-1}}{\lambda_p}\Big)^{i},\ 1,\ \Big(\frac{\lambda_{p+1}}{\lambda_p}\Big)^{i},\ \dots,\ \Big(\frac{\lambda_n}{\lambda_p}\Big)^{i}\right]C .
+\]
+
+<p>把 $\lambda_p^{i}$ 提出来之后，方括号里就是<strong>每个特征方向相对于 $v_p$ 的「存活率」</strong>：</p>
+
+<ul>
+<li>$i\le p$：$\big|\lambda_i/\lambda_p\big|\ge1$，权重<strong>不衰减</strong>，前 $p$ 个方向稳稳留住；</li>
+<li>$i\gt p$：$\big|\lambda_i/\lambda_p\big|\lt1$，权重按 $i$ 次方衰减——这些就是「污染」，会被排挤出子空间；</li>
+<li>被淘汰的那批里<strong>衰减最慢的是 $i=p+1$</strong>（它的 $\lambda_i$ 最大）。</li>
+</ul>
+
+<div class="box key">
+<p class="label">收敛因子只有一个数</p>
+\[
+\rho=\left|\frac{\lambda_{p+1}}{\lambda_p}\right|
+\]
+<p>整个子空间迭代的误差按 $\rho^{i}$ 衰减。这就是板书把 $\lambda_{k+1}$ 圈出来的原因：<strong>$\lambda_{p+1}$ 是离你最近的「不要的」特征值，$\lambda_p$ 是「要的」里面最小的那个，两者之比决定收敛快慢。</strong></p>
+<p>$\rho\lt1$ 就收敛（$0.5^i$、$0.8^i$ 这样缩）；<strong>$\rho=1$ 时误差是 $1^i=1$，永远不减小，算法彻底卡死</strong>——下一小节就是这个情形。</p>
+</div>
+
+<h4 id="wilkinson-demo">反例：$21\times21$ Wilkinson 矩阵，$p=5$ 卡死、$p=6$ 就通</h4>
+
+<p>这不是编出来的，是数值代数里的标准例子，也是「$\rho=1$ 会怎样」最好的演示。</p>
+
+<p><strong>矩阵。</strong>取 $W_{10}$（$2\times10+1=21$ 阶 Wilkinson 矩阵）：主对角线是 $10,9,\dots,1,0,1,\dots,9,10$，次对角线全是 $1$，对称三对角。它的特征值是</p>
+
+\[
+\pm\lambda_1,\ \pm\lambda_2,\ \dots,\ \pm\lambda_{10},\ 0
+\]
+
+<p>——<strong>成对出现、符号相反</strong>。前几个大约是 $\pm10.09,\ \pm9.54,\ \pm8.35,\dots$</p>
+
+<p><strong>取 $p=5$ 会怎样。</strong>按绝对值排序：</p>
+
+\[
+\lambda_1,\ -\lambda_1,\ \lambda_2,\ -\lambda_2,\ \lambda_3\ \Big|\ -\lambda_3,\ \lambda_4,\ -\lambda_4,\ \dots
+\]
+
+<p>竖线左边是「要的」5 个，右边第一个是 $\lambda_6=-\lambda_3$。于是</p>
+
+\[
+\rho=\left|\frac{\lambda_6}{\lambda_5}\right|=\left|\frac{-\lambda_3}{\lambda_3}\right|=1 .
+\]
+
+<p><strong>$\rho=1$，误差一步都不降。</strong>具体地说：$\lambda_5$ 与 $\lambda_6$ 模相同，迭代中长得一样快，算法<strong>没有任何信息可以区分「哪个才是第 5 个」</strong>。子空间最后收敛到的是 $\operatorname{span}\{v_5,v_6\}$ 里<strong>某个</strong>二维子空间（取决于初值 $X_0$ 的噪声），而不是 $\operatorname{span}\{v_1,\dots,v_5\}$。</p>
+
+<div class="box warn">
+<p class="label">实际跑起来不是「一步不降」，而是「降到 $10^{-8}$ 就停」</p>
+<p>理论上误差不降。但浮点里每步 QR 都带舍入误差 $\varepsilon_{\text{mach}}\approx10^{-16}$，正交化不断把新噪声注入那两个等模方向；噪声被放大到与真信号同量级后就形成平台，于是误差停在</p>
+\[
+\sqrt{\varepsilon_{\text{mach}}}\ \approx\ 10^{-8}
+\]
+<p>附近——这就是这类实验曲线「先降后平台」的原因。<strong>看到 $10^{-8}$ 的平台，八成不是代码写错了，而是 $\rho=1$。</strong>（是 $10^{-8}$ 而不是 $10^{-16}$，因为这里的「误差」是角度的量级：噪声幅度是 $\varepsilon$，角度就是 $\sqrt{\varepsilon}$。）</p>
+</div>
+
+<p><strong>取 $p=6$ 为什么就好了。</strong>因为 6 恰好<strong>把整对 $\pm\lambda_3$ 都包含进来</strong>：</p>
+
+\[
+\underbrace{\lambda_1,\,-\lambda_1,\,\lambda_2,\,-\lambda_2,\,\lambda_3,\,-\lambda_3}_{\text{要的 6 个}}\ \Big|\ \lambda_4,\ -\lambda_4,\ \dots
+\]
+
+<p>现在被淘汰的第一个是 $\lambda_7=-\lambda_4$，于是</p>
+
+\[
+\rho=\left|\frac{\lambda_7}{\lambda_6}\right|=\left|\frac{\lambda_4}{\lambda_3}\right|\lt 1 ,
+\]
+
+<p>误差重新按 $\rho^{i}$ 指数衰减，一路降到 $10^{-12}$ 量级的机器精度。图上看就是：$p=5$ 的曲线卡在 $10^{-8}$，$p=6$ 的曲线一路到底。</p>
+
+<div class="box ok">
+<p class="label">可操作的结论：多取一列</p>
+<p><strong>要 $p$ 个特征值时，别只开 $p$ 列。</strong>只要矩阵有对称性、成对特征值或重特征值，就让迭代跑 $p+1$（甚至 $p+2$）列，算完再丢掉多余的那几列。多一列只多一次 matvec，却能绕开 $\rho=1$ 的死局——这也是 ARPACK、MATLAB <code>eigs</code> 这类实现默认多取几个向量的原因。</p>
+</div>
 
 <div class="box warn">
 <p class="label">板书这块的读法，有一个地方要小心</p>
