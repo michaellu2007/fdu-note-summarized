@@ -818,7 +818,8 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
       <tr><td><b>相似</b></td><td>$D\prec D'$：某一步展开 $A$、下一步展开 $B$（$A$ 在 $B$ 左边）</td>
           <td>相似是等价关系；<b>同一等价类 ⟺ 同一棵分析树</b>。</td><td>P22–P23</td></tr>
       <tr><td><b>歧义</b></td><td>某个词有<b>两棵</b>分析树</td>
-          <td>$E\to E+E\mid E*E\mid(E)\mid id$ 是歧义文法。</td><td>P26–P27</td></tr>
+          <td>$R=\{E\to E+E,\ E\to E*E,\ E\to (E),\ E\to id\}$ 是歧义文法
+              （常简写为 $E\to E+E\mid E*E\mid(E)\mid id$，竖线读作「或」）。</td><td>P26–P27</td></tr>
       <tr><td><b>PDA</b></td>
           <td class="tex">$M=(K,\Sigma,\Gamma,\Delta,s,F)$，$\Delta\subseteq(K\times(\Sigma\cup\{e\})\times\Gamma^*)\times(K\times\Gamma^*)$</td>
           <td>六元组；<b>非确定性</b>；有 $e$-转移（不读输入只动栈）。</td><td>P29–P31</td></tr>
@@ -909,11 +910,11 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <thead><tr><th>运算</th><th>CFL 是否封闭</th><th>怎么证 / 反例</th><th>页</th></tr></thead>
     <tbody>
       <tr><td>并 $L_1\cup L_2$</td><td><b>封闭</b></td>
-          <td>文法层面加 $S\to S_1\mid S_2$。</td><td>P58–P59</td></tr>
+          <td>文法层面加规则 $S\to S_1$、$S\to S_2$。</td><td>P58–P59</td></tr>
       <tr><td>连接 $L_1L_2$</td><td><b>封闭</b></td>
           <td>加 $S\to S_1S_2$。</td><td>P59</td></tr>
       <tr><td>Kleene 星 $L_1^*$</td><td><b>封闭</b></td>
-          <td>加 $S\to e\mid SS_1$。</td><td>P60</td></tr>
+          <td>加规则 $S\to e$、$S\to SS_1$。</td><td>P60</td></tr>
       <tr><td>CFL ∩ <b>正则</b>语言</td><td><b>封闭</b></td>
           <td><b>PDA 与 DFA 并行模拟</b>，状态取乘积 $K=K_1\times K_2$。</td><td>P61–P62</td></tr>
       <tr><td>CFL ∩ CFL</td><td><b>不封闭</b></td>
@@ -983,6 +984,10 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
         —— 这正是「歧义」的来源（P25 的 $D_1,D_2,D_3$ 相似，但那个 $D$ 不相似）。</li>
     <li><b>四等价定理（P24）</b>：$A\Rightarrow^*w$ ⟺ 有分析树 ⟺ 有最左推导 ⟺ 有最右推导。</li>
     <li><b>单字母表上的 CFL 一定是正则的</b>（P72 的 Remark），是个常考的「意外」结论。</li>
+    <li><b>文法里的竖线 $\mid$ 读作「或」，不是「such that」。</b>
+        $E\to E+E\mid E*E\mid(E)\mid id$ 是「$E$ 有 4 条产生式」的简写，等价于课件 P27 的
+        集合写法 $R=\{E\to E+E,\ E\to E*E,\ E\to (E),\ E\to id\}$；
+        而 $\{a^n\mid n \text{ 是素数}\}$ 里的竖线才是集合构造的「such that」。</li>
   </ol>
 
   <h2 id="ov-howto">7. 今晚的复习路线（建议 2.5–3 小时）</h2>
