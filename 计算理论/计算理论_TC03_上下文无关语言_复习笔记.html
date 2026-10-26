@@ -126,7 +126,7 @@ body {
 /* ---------- 布局 ---------- */
 .layout {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 26px;
   max-width: 1440px;
   margin: 0 auto;
@@ -184,6 +184,104 @@ body {
 .toc-list .toc-h3 a { font-weight: 600; color: var(--text); margin-top: 6px; }
 .toc-list .toc-h4 a { padding-left: 24px; color: var(--muted); font-size: 12.5px; }
 .toc-list .toc-h4 a:hover { color: var(--blue); }
+
+/* ---------- 小节导航 ---------- */
+.secnav {
+  padding: 4px 8px 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+.secnav-item { margin-bottom: 9px; }
+.secnav-item:last-child { margin-bottom: 2px; }
+
+.secnav-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+.secnav-head a {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.35;
+  min-width: 0;
+}
+.secnav-head a:hover { color: var(--blue); }
+.secnav-range {
+  flex: none;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.secnav-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px 4px 0;
+}
+.secnav-pages a {
+  display: inline-block;
+  min-width: 24px;
+  padding: 1px 4px;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  transition: all .12s;
+}
+.secnav-pages a:hover {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.secnav-pages a.cur {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+  font-weight: 700;
+}
+
+/* ---------- 完整页码索引（折叠） ---------- */
+.toc-full { margin-top: 4px; }
+.toc-full > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 6px;
+  user-select: none;
+  transition: background .12s, color .12s;
+}
+.toc-full > summary::-webkit-details-marker { display: none; }
+.toc-full > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform .15s;
+}
+.toc-full[open] > summary::before { transform: rotate(90deg); }
+.toc-full > summary:hover { background: var(--bg-soft); color: var(--blue); }
+.toc-full > .toc-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  margin-left: 10px;
+  padding-left: 2px;
+}
+.toc-full > .toc-list::-webkit-scrollbar { width: 6px; }
+.toc-full > .toc-list::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; }
 
 /* ---------- 内容面板 ---------- */
 .content { min-width: 0; }
@@ -514,100 +612,120 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
 </div>
 <div class="toc-group" data-panel="panel-t03">
 <div class="toc-title">Chapter 3 · Context-Free Languages</div>
-<ul class="toc-list">
-<li class="toc-h4"><a href="#t03-p1">第 1 页</a></li>
-<li class="toc-h4"><a href="#t03-p2">第 2 页</a></li>
-<li class="toc-h4"><a href="#t03-p3">第 3 页</a></li>
-<li class="toc-h4"><a href="#t03-p4">第 4 页</a></li>
-<li class="toc-h4"><a href="#t03-p5">第 5 页</a></li>
-<li class="toc-h4"><a href="#t03-p6">第 6 页</a></li>
-<li class="toc-h4"><a href="#t03-p7">第 7 页</a></li>
-<li class="toc-h4"><a href="#t03-p8">第 8 页</a></li>
-<li class="toc-h4"><a href="#t03-p9">第 9 页</a></li>
-<li class="toc-h4"><a href="#t03-p10">第 10 页</a></li>
-<li class="toc-h4"><a href="#t03-p11">第 11 页</a></li>
-<li class="toc-h4"><a href="#t03-p12">第 12 页</a></li>
-<li class="toc-h4"><a href="#t03-p13">第 13 页</a></li>
-<li class="toc-h4"><a href="#t03-p14">第 14 页</a></li>
-<li class="toc-h4"><a href="#t03-p15">第 15 页</a></li>
-<li class="toc-h4"><a href="#t03-p16">第 16 页</a></li>
-<li class="toc-h4"><a href="#t03-p17">第 17 页</a></li>
-<li class="toc-h4"><a href="#t03-p18">第 18 页</a></li>
-<li class="toc-h4"><a href="#t03-p19">第 19 页</a></li>
-<li class="toc-h4"><a href="#t03-p20">第 20 页</a></li>
-<li class="toc-h4"><a href="#t03-p21">第 21 页</a></li>
-<li class="toc-h4"><a href="#t03-p22">第 22 页</a></li>
-<li class="toc-h4"><a href="#t03-p23">第 23 页</a></li>
-<li class="toc-h3"><a href="#t03-h1">3.2 推导、分析树与歧义（续）</a></li>
-<li class="toc-h4"><a href="#t03-p24">第 24 页</a></li>
-<li class="toc-h4"><a href="#t03-p25">第 25 页</a></li>
-<li class="toc-h4"><a href="#t03-p26">第 26 页</a></li>
-<li class="toc-h4"><a href="#t03-p27">第 27 页</a></li>
-<li class="toc-h4"><a href="#t03-p28">第 28 页</a></li>
-<li class="toc-h3"><a href="#t03-h2">3.3 Pushdown Automata</a></li>
-<li class="toc-h4"><a href="#t03-p29">第 29 页</a></li>
-<li class="toc-h4"><a href="#t03-p30">第 30 页</a></li>
-<li class="toc-h4"><a href="#t03-p31">第 31 页</a></li>
-<li class="toc-h4"><a href="#t03-p32">第 32 页</a></li>
-<li class="toc-h4"><a href="#t03-p33">第 33 页</a></li>
-<li class="toc-h4"><a href="#t03-p34">第 34 页</a></li>
-<li class="toc-h4"><a href="#t03-p35">第 35 页</a></li>
-<li class="toc-h4"><a href="#t03-p36">第 36 页</a></li>
-<li class="toc-h4"><a href="#t03-p37">第 37 页</a></li>
-<li class="toc-h4"><a href="#t03-p38">第 38 页</a></li>
-<li class="toc-h3"><a href="#t03-h3">3.4 Pushdown Automata and Context-Free Language</a></li>
-<li class="toc-h4"><a href="#t03-p39">第 39 页</a></li>
-<li class="toc-h4"><a href="#t03-p40">第 40 页</a></li>
-<li class="toc-h4"><a href="#t03-p41">第 41 页</a></li>
-<li class="toc-h4"><a href="#t03-p42">第 42 页</a></li>
-<li class="toc-h4"><a href="#t03-p43">第 43 页</a></li>
-<li class="toc-h4"><a href="#t03-p44">第 44 页</a></li>
-<li class="toc-h4"><a href="#t03-p45">第 45 页</a></li>
-<li class="toc-h4"><a href="#t03-p46">第 46 页</a></li>
-<li class="toc-h4"><a href="#t03-p47">第 47 页</a></li>
-<li class="toc-h4"><a href="#t03-p48">第 48 页</a></li>
-<li class="toc-h4"><a href="#t03-p49">第 49 页</a></li>
-<li class="toc-h4"><a href="#t03-p50">第 50 页</a></li>
-<li class="toc-h4"><a href="#t03-p51">第 51 页</a></li>
-<li class="toc-h4"><a href="#t03-p52">第 52 页</a></li>
-<li class="toc-h4"><a href="#t03-p53">第 53 页</a></li>
-<li class="toc-h4"><a href="#t03-p54">第 54 页</a></li>
-<li class="toc-h4"><a href="#t03-p55">第 55 页</a></li>
-<li class="toc-h4"><a href="#t03-p56">第 56 页</a></li>
-<li class="toc-h4"><a href="#t03-p57">第 57 页</a></li>
-<li class="toc-h4"><a href="#t03-p58">第 58 页</a></li>
-<li class="toc-h4"><a href="#t03-p59">第 59 页</a></li>
-<li class="toc-h4"><a href="#t03-p60">第 60 页</a></li>
-<li class="toc-h4"><a href="#t03-p61">第 61 页</a></li>
-<li class="toc-h4"><a href="#t03-p62">第 62 页</a></li>
-<li class="toc-h4"><a href="#t03-p63">第 63 页</a></li>
-<li class="toc-h4"><a href="#t03-p64">第 64 页</a></li>
-<li class="toc-h4"><a href="#t03-p65">第 65 页</a></li>
-<li class="toc-h4"><a href="#t03-p66">第 66 页</a></li>
-<li class="toc-h4"><a href="#t03-p67">第 67 页</a></li>
-<li class="toc-h4"><a href="#t03-p68">第 68 页</a></li>
-<li class="toc-h4"><a href="#t03-p69">第 69 页</a></li>
-<li class="toc-h4"><a href="#t03-p70">第 70 页</a></li>
-<li class="toc-h4"><a href="#t03-p71">第 71 页</a></li>
-<li class="toc-h4"><a href="#t03-p72">第 72 页</a></li>
-<li class="toc-h4"><a href="#t03-p73">第 73 页</a></li>
-<li class="toc-h4"><a href="#t03-p74">第 74 页</a></li>
-<li class="toc-h4"><a href="#t03-p75">第 75 页</a></li>
-<li class="toc-h4"><a href="#t03-p76">第 76 页</a></li>
-<li class="toc-h4"><a href="#t03-p77">第 77 页</a></li>
-<li class="toc-h4"><a href="#t03-p78">第 78 页</a></li>
-<li class="toc-h4"><a href="#t03-p79">第 79 页</a></li>
-<li class="toc-h4"><a href="#t03-p80">第 80 页</a></li>
-<li class="toc-h4"><a href="#t03-p81">第 81 页</a></li>
-<li class="toc-h4"><a href="#t03-p82">第 82 页</a></li>
-<li class="toc-h4"><a href="#t03-p83">第 83 页</a></li>
-<li class="toc-h4"><a href="#t03-p84">第 84 页</a></li>
-<li class="toc-h4"><a href="#t03-p85">第 85 页</a></li>
-<li class="toc-h4"><a href="#t03-p86">第 86 页</a></li>
-<li class="toc-h4"><a href="#t03-p87">第 87 页</a></li>
-<li class="toc-h4"><a href="#t03-p88">第 88 页</a></li>
-<li class="toc-h4"><a href="#t03-p89">第 89 页</a></li>
-</ul>
+<div class="secnav">
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p3">3.1 Context-Free Grammars</a><span class="secnav-range">P3–P16</span></div>
+<div class="secnav-pages">
+<a href="#t03-p3" title="第 3 页">3</a>
+<a href="#t03-p4" title="第 4 页">4</a>
+<a href="#t03-p5" title="第 5 页">5</a>
+<a href="#t03-p6" title="第 6 页">6</a>
+<a href="#t03-p7" title="第 7 页">7</a>
+<a href="#t03-p8" title="第 8 页">8</a>
+<a href="#t03-p9" title="第 9 页">9</a>
+<a href="#t03-p10" title="第 10 页">10</a>
+<a href="#t03-p11" title="第 11 页">11</a>
+<a href="#t03-p12" title="第 12 页">12</a>
+<a href="#t03-p13" title="第 13 页">13</a>
+<a href="#t03-p14" title="第 14 页">14</a>
+<a href="#t03-p15" title="第 15 页">15</a>
+<a href="#t03-p16" title="第 16 页">16</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p17">3.2 Parse Tree（推导、分析树与歧义）</a><span class="secnav-range">P17–P27</span></div>
+<div class="secnav-pages">
+<a href="#t03-p17" title="第 17 页">17</a>
+<a href="#t03-p18" title="第 18 页">18</a>
+<a href="#t03-p19" title="第 19 页">19</a>
+<a href="#t03-p20" title="第 20 页">20</a>
+<a href="#t03-p21" title="第 21 页">21</a>
+<a href="#t03-p22" title="第 22 页">22</a>
+<a href="#t03-p23" title="第 23 页">23</a>
+<a href="#t03-p24" title="第 24 页">24</a>
+<a href="#t03-p25" title="第 25 页">25</a>
+<a href="#t03-p26" title="第 26 页">26</a>
+<a href="#t03-p27" title="第 27 页">27</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p28">3.3 Pushdown Automata</a><span class="secnav-range">P28–P37</span></div>
+<div class="secnav-pages">
+<a href="#t03-p28" title="第 28 页">28</a>
+<a href="#t03-p29" title="第 29 页">29</a>
+<a href="#t03-p30" title="第 30 页">30</a>
+<a href="#t03-p31" title="第 31 页">31</a>
+<a href="#t03-p32" title="第 32 页">32</a>
+<a href="#t03-p33" title="第 33 页">33</a>
+<a href="#t03-p34" title="第 34 页">34</a>
+<a href="#t03-p35" title="第 35 页">35</a>
+<a href="#t03-p36" title="第 36 页">36</a>
+<a href="#t03-p37" title="第 37 页">37</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p38">3.4 PDA and Context-Free Language</a><span class="secnav-range">P38–P57</span></div>
+<div class="secnav-pages">
+<a href="#t03-p38" title="第 38 页">38</a>
+<a href="#t03-p39" title="第 39 页">39</a>
+<a href="#t03-p40" title="第 40 页">40</a>
+<a href="#t03-p41" title="第 41 页">41</a>
+<a href="#t03-p42" title="第 42 页">42</a>
+<a href="#t03-p43" title="第 43 页">43</a>
+<a href="#t03-p44" title="第 44 页">44</a>
+<a href="#t03-p45" title="第 45 页">45</a>
+<a href="#t03-p46" title="第 46 页">46</a>
+<a href="#t03-p47" title="第 47 页">47</a>
+<a href="#t03-p48" title="第 48 页">48</a>
+<a href="#t03-p49" title="第 49 页">49</a>
+<a href="#t03-p50" title="第 50 页">50</a>
+<a href="#t03-p51" title="第 51 页">51</a>
+<a href="#t03-p52" title="第 52 页">52</a>
+<a href="#t03-p53" title="第 53 页">53</a>
+<a href="#t03-p54" title="第 54 页">54</a>
+<a href="#t03-p55" title="第 55 页">55</a>
+<a href="#t03-p56" title="第 56 页">56</a>
+<a href="#t03-p57" title="第 57 页">57</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p58">3.5 Languages that are and are not Context-Free</a><span class="secnav-range">P58–P74</span></div>
+<div class="secnav-pages">
+<a href="#t03-p58" title="第 58 页">58</a>
+<a href="#t03-p59" title="第 59 页">59</a>
+<a href="#t03-p60" title="第 60 页">60</a>
+<a href="#t03-p61" title="第 61 页">61</a>
+<a href="#t03-p62" title="第 62 页">62</a>
+<a href="#t03-p63" title="第 63 页">63</a>
+<a href="#t03-p64" title="第 64 页">64</a>
+<a href="#t03-p65" title="第 65 页">65</a>
+<a href="#t03-p66" title="第 66 页">66</a>
+<a href="#t03-p67" title="第 67 页">67</a>
+<a href="#t03-p68" title="第 68 页">68</a>
+<a href="#t03-p69" title="第 69 页">69</a>
+<a href="#t03-p70" title="第 70 页">70</a>
+<a href="#t03-p71" title="第 71 页">71</a>
+<a href="#t03-p72" title="第 72 页">72</a>
+<a href="#t03-p73" title="第 73 页">73</a>
+<a href="#t03-p74" title="第 74 页">74</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t03-p75">3.6 Algorithms for Context-Free Grammar</a><span class="secnav-range">P75–P89</span></div>
+<div class="secnav-pages">
+<a href="#t03-p75" title="第 75 页">75</a>
+<a href="#t03-p76" title="第 76 页">76</a>
+<a href="#t03-p77" title="第 77 页">77</a>
+<a href="#t03-p78" title="第 78 页">78</a>
+<a href="#t03-p79" title="第 79 页">79</a>
+<a href="#t03-p80" title="第 80 页">80</a>
+<a href="#t03-p81" title="第 81 页">81</a>
+<a href="#t03-p82" title="第 82 页">82</a>
+<a href="#t03-p83" title="第 83 页">83</a>
+<a href="#t03-p84" title="第 84 页">84</a>
+<a href="#t03-p85" title="第 85 页">85</a>
+<a href="#t03-p86" title="第 86 页">86</a>
+<a href="#t03-p87" title="第 87 页">87</a>
+<a href="#t03-p88" title="第 88 页">88</a>
+<a href="#t03-p89" title="第 89 页">89</a>
+</div></div>
+</div>
+<details class="toc-full"><summary>完整页码索引（89 页）</summary><ul class="toc-list"><li class="toc-h4"><a href="#t03-p1">第 1 页</a></li><li class="toc-h4"><a href="#t03-p2">第 2 页</a></li><li class="toc-h4"><a href="#t03-p3">第 3 页</a></li><li class="toc-h4"><a href="#t03-p4">第 4 页</a></li><li class="toc-h4"><a href="#t03-p5">第 5 页</a></li><li class="toc-h4"><a href="#t03-p6">第 6 页</a></li><li class="toc-h4"><a href="#t03-p7">第 7 页</a></li><li class="toc-h4"><a href="#t03-p8">第 8 页</a></li><li class="toc-h4"><a href="#t03-p9">第 9 页</a></li><li class="toc-h4"><a href="#t03-p10">第 10 页</a></li><li class="toc-h4"><a href="#t03-p11">第 11 页</a></li><li class="toc-h4"><a href="#t03-p12">第 12 页</a></li><li class="toc-h4"><a href="#t03-p13">第 13 页</a></li><li class="toc-h4"><a href="#t03-p14">第 14 页</a></li><li class="toc-h4"><a href="#t03-p15">第 15 页</a></li><li class="toc-h4"><a href="#t03-p16">第 16 页</a></li><li class="toc-h4"><a href="#t03-p17">第 17 页</a></li><li class="toc-h4"><a href="#t03-p18">第 18 页</a></li><li class="toc-h4"><a href="#t03-p19">第 19 页</a></li><li class="toc-h4"><a href="#t03-p20">第 20 页</a></li><li class="toc-h4"><a href="#t03-p21">第 21 页</a></li><li class="toc-h4"><a href="#t03-p22">第 22 页</a></li><li class="toc-h4"><a href="#t03-p23">第 23 页</a></li><li class="toc-h3"><a href="#t03-h1">3.2 推导、分析树与歧义（续）</a></li><li class="toc-h4"><a href="#t03-p24">第 24 页</a></li><li class="toc-h4"><a href="#t03-p25">第 25 页</a></li><li class="toc-h4"><a href="#t03-p26">第 26 页</a></li><li class="toc-h4"><a href="#t03-p27">第 27 页</a></li><li class="toc-h4"><a href="#t03-p28">第 28 页</a></li><li class="toc-h3"><a href="#t03-h2">3.3 Pushdown Automata</a></li><li class="toc-h4"><a href="#t03-p29">第 29 页</a></li><li class="toc-h4"><a href="#t03-p30">第 30 页</a></li><li class="toc-h4"><a href="#t03-p31">第 31 页</a></li><li class="toc-h4"><a href="#t03-p32">第 32 页</a></li><li class="toc-h4"><a href="#t03-p33">第 33 页</a></li><li class="toc-h4"><a href="#t03-p34">第 34 页</a></li><li class="toc-h4"><a href="#t03-p35">第 35 页</a></li><li class="toc-h4"><a href="#t03-p36">第 36 页</a></li><li class="toc-h4"><a href="#t03-p37">第 37 页</a></li><li class="toc-h4"><a href="#t03-p38">第 38 页</a></li><li class="toc-h3"><a href="#t03-h3">3.4 Pushdown Automata and Context-Free Language</a></li><li class="toc-h4"><a href="#t03-p39">第 39 页</a></li><li class="toc-h4"><a href="#t03-p40">第 40 页</a></li><li class="toc-h4"><a href="#t03-p41">第 41 页</a></li><li class="toc-h4"><a href="#t03-p42">第 42 页</a></li><li class="toc-h4"><a href="#t03-p43">第 43 页</a></li><li class="toc-h4"><a href="#t03-p44">第 44 页</a></li><li class="toc-h4"><a href="#t03-p45">第 45 页</a></li><li class="toc-h4"><a href="#t03-p46">第 46 页</a></li><li class="toc-h4"><a href="#t03-p47">第 47 页</a></li><li class="toc-h4"><a href="#t03-p48">第 48 页</a></li><li class="toc-h4"><a href="#t03-p49">第 49 页</a></li><li class="toc-h4"><a href="#t03-p50">第 50 页</a></li><li class="toc-h4"><a href="#t03-p51">第 51 页</a></li><li class="toc-h4"><a href="#t03-p52">第 52 页</a></li><li class="toc-h4"><a href="#t03-p53">第 53 页</a></li><li class="toc-h4"><a href="#t03-p54">第 54 页</a></li><li class="toc-h4"><a href="#t03-p55">第 55 页</a></li><li class="toc-h4"><a href="#t03-p56">第 56 页</a></li><li class="toc-h4"><a href="#t03-p57">第 57 页</a></li><li class="toc-h4"><a href="#t03-p58">第 58 页</a></li><li class="toc-h4"><a href="#t03-p59">第 59 页</a></li><li class="toc-h4"><a href="#t03-p60">第 60 页</a></li><li class="toc-h4"><a href="#t03-p61">第 61 页</a></li><li class="toc-h4"><a href="#t03-p62">第 62 页</a></li><li class="toc-h4"><a href="#t03-p63">第 63 页</a></li><li class="toc-h4"><a href="#t03-p64">第 64 页</a></li><li class="toc-h4"><a href="#t03-p65">第 65 页</a></li><li class="toc-h4"><a href="#t03-p66">第 66 页</a></li><li class="toc-h4"><a href="#t03-p67">第 67 页</a></li><li class="toc-h4"><a href="#t03-p68">第 68 页</a></li><li class="toc-h4"><a href="#t03-p69">第 69 页</a></li><li class="toc-h4"><a href="#t03-p70">第 70 页</a></li><li class="toc-h4"><a href="#t03-p71">第 71 页</a></li><li class="toc-h4"><a href="#t03-p72">第 72 页</a></li><li class="toc-h4"><a href="#t03-p73">第 73 页</a></li><li class="toc-h4"><a href="#t03-p74">第 74 页</a></li><li class="toc-h4"><a href="#t03-p75">第 75 页</a></li><li class="toc-h4"><a href="#t03-p76">第 76 页</a></li><li class="toc-h4"><a href="#t03-p77">第 77 页</a></li><li class="toc-h4"><a href="#t03-p78">第 78 页</a></li><li class="toc-h4"><a href="#t03-p79">第 79 页</a></li><li class="toc-h4"><a href="#t03-p80">第 80 页</a></li><li class="toc-h4"><a href="#t03-p81">第 81 页</a></li><li class="toc-h4"><a href="#t03-p82">第 82 页</a></li><li class="toc-h4"><a href="#t03-p83">第 83 页</a></li><li class="toc-h4"><a href="#t03-p84">第 84 页</a></li><li class="toc-h4"><a href="#t03-p85">第 85 页</a></li><li class="toc-h4"><a href="#t03-p86">第 86 页</a></li><li class="toc-h4"><a href="#t03-p87">第 87 页</a></li><li class="toc-h4"><a href="#t03-p88">第 88 页</a></li><li class="toc-h4"><a href="#t03-p89">第 89 页</a></li></ul></details>
 </div>
   </aside>
 
@@ -2374,13 +2492,29 @@ $(()(())) \in L(G)$?</p>
     var activePanel = document.querySelector(".panel.active").id;
     var group = document.querySelector('.toc-group[data-panel="' + activePanel + '"]');
     if (!group) return;
-    var items = group.querySelectorAll("li");
-    items.forEach(function (li) {
+
+    // 1) 平铺目录项
+    group.querySelectorAll(".toc-list li").forEach(function (li) {
       if (!q) { li.style.display = ""; return; }
       var txt = li.textContent.toLowerCase();
       var hit = txt.indexOf(q) >= 0;
       if (!hit && /^\d+$/.test(q)) hit = txt.indexOf("第 " + q + " 页") >= 0;
       li.style.display = hit ? "" : "none";
+    });
+
+    // 2) 小节导航：命中页码或小节名则保留该页码块
+    group.querySelectorAll(".secnav-item").forEach(function (item) {
+      if (!q) { item.style.display = ""; return; }
+      var head = item.querySelector(".secnav-head").textContent.toLowerCase();
+      var headHit = head.indexOf(q) >= 0;
+      var anyHit = false;
+      item.querySelectorAll(".secnav-pages a").forEach(function (a) {
+        var t = a.textContent.trim();
+        var hit = headHit || (q && t.indexOf(q) === 0 && /^\d+$/.test(q));
+        a.style.display = hit ? "" : "none";
+        if (hit) anyHit = true;
+      });
+      item.style.display = anyHit ? "" : "none";
     });
   }
   filter.addEventListener("input", filterToc);
@@ -2401,6 +2535,9 @@ $(()(())) \in L(G)$?</p>
     }
     if (cur) {
       document.querySelectorAll(".toc-list a").forEach(function (a) {
+        a.classList.toggle("cur", a.getAttribute("href") === "#" + cur);
+      });
+      document.querySelectorAll(".secnav-pages a").forEach(function (a) {
         a.classList.toggle("cur", a.getAttribute("href") === "#" + cur);
       });
     }
