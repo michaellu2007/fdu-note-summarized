@@ -2645,28 +2645,7 @@ A_ke_1=\tilde Q_k^{*}A\tilde Q_ke_1=\tilde Q_k^{*}\big(Aq_1^{(k)}\big)\;\longrig
 
 <p>然而，此时由于<strong>复共轭特征值</strong>的存在，我们不再期望序列 $\{A_k\}$ 仍然逼近一个上三角阵——一个实矩阵根本不可能只用实相似变换化成上三角（复特征值无处安放）。那么 $\{A_k\}$ 会趋向于什么呢？</p>
 
-<div class="box">
-<p class="label">定理（实 Schur 分解，Matrix Analysis 定理 2.3.4）</p>
-<p>任意给定一个实方阵 $A\in\mathbb{R}^{n\times n}$：</p>
-<p><strong>①</strong> 存在一个实的<strong>非奇异阵</strong> $S\in\mathbb{R}^{n\times n}$ 使得 $S^{-1}AS$ 是实的<strong>拟上三角阵</strong>（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
-\[
-S^{-1}AS=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
-\]
-<ul>
-<li>它的 $1\times1$ 对角块给出 $A$ 的<strong>实特征值</strong>；</li>
-<li>它的 $2\times2$ 对角块 $\begin{bmatrix}\alpha&\beta\\-\beta&\alpha\end{bmatrix}$ 给出 $A$ 的一对<strong>共轭的复特征值</strong> $\alpha\pm i\beta$；</li>
-<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照<strong>任意预先指定的次序</strong>出现。</li>
-</ul>
-<p><strong>②</strong> 存在一个实<strong>正交阵</strong> $Q\in\mathbb{R}^{n\times n}$ 使得 $Q^{\mathsf T}AQ$ 是实的拟上三角阵（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
-\[
-Q^{\mathsf T}AQ=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
-\]
-<ul>
-<li>它的 $1\times1$ 对角块给出 $A$ 的实特征值；</li>
-<li>它的 $2\times2$ 对角块<strong>不一定有特殊的形式</strong>（但和形如 $\begin{bmatrix}\alpha&-\beta\\\beta&\alpha\end{bmatrix}$ 的矩阵相似），给出 $A$ 的一对共轭的复特征值 $\alpha\pm i\beta$；</li>
-<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照任意预先指定的次序出现。</li>
-</ul>
-</div>
+<p>这里要用的结论只有一句话：<strong>任意实方阵都能用<em>实正交</em>相似变换化成<em>拟上三角阵</em></strong>（对角块是 $1\times1$ 或 $2\times2$）。完整陈述——两种形式（非奇异 $S$ 与正交 $Q$）、$2\times2$ 块怎样对应一对复共轭特征值、对角块可以按任意指定次序排列——不是本课重点，放在 <a href="#schur-thm"><strong>附录 §8.3 备查</strong></a>，需要时再翻。</p>
 
 <p>我们不难想到，只涉及实数运算的 QR 算法产生的序列 $\{A_k\}$ 应当逼近实方阵 $A$ 的<strong>实 Schur 标准型</strong>。在下面的讨论中，如无特别说明，我们默认给定的方阵 $A$ 是实方阵。</p>
 
@@ -4084,6 +4063,35 @@ T_{ii}Y-YT_{jj}=-T_{ij};
 </table>
 
 <p>建议读法：<strong>先看本笔记第四部分建立几何直觉，再回补课笔记 §2.4.3 看伴随矩阵那条推导和伪代码</strong>。前者回答「为什么要这样」，后者回答「代码怎么写」。</p>
+
+<h3 id="schur-thm">§8.3 备查：实 Schur 分解定理<span class="tag o">教材引用</span></h3>
+
+<p>正文 <a href="#s532">§7.3</a> 只用到「实正交相似 $\to$ 拟上三角」这一句，定理的完整陈述抄录如下，需要时查。读的时候只需要记住三件事：<strong>$1\times1$ 块给实特征值、$2\times2$ 块给一对共轭复特征值、块的次序可以随便排</strong>。</p>
+
+<div class="box">
+<p class="label">定理（实 Schur 分解，Matrix Analysis 定理 2.3.4）</p>
+<p>任意给定一个实方阵 $A\in\mathbb{R}^{n\times n}$：</p>
+<p><strong>①</strong> 存在一个实的<strong>非奇异阵</strong> $S\in\mathbb{R}^{n\times n}$ 使得 $S^{-1}AS$ 是实的<strong>拟上三角阵</strong>（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
+\[
+S^{-1}AS=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
+\]
+<ul>
+<li>它的 $1\times1$ 对角块给出 $A$ 的<strong>实特征值</strong>；</li>
+<li>它的 $2\times2$ 对角块 $\begin{bmatrix}\alpha&\beta\\-\beta&\alpha\end{bmatrix}$ 给出 $A$ 的一对<strong>共轭的复特征值</strong> $\alpha\pm i\beta$；</li>
+<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照<strong>任意预先指定的次序</strong>出现。</li>
+</ul>
+<p><strong>②</strong> 存在一个实<strong>正交阵</strong> $Q\in\mathbb{R}^{n\times n}$ 使得 $Q^{\mathsf T}AQ$ 是实的拟上三角阵（对角块都是 $1\times1$ 或 $2\times2$ 的）：</p>
+\[
+Q^{\mathsf T}AQ=\begin{bmatrix}A_1&*&\cdots&*\\&A_2&\ddots&\vdots\\&&\ddots&*\\&&&A_j\end{bmatrix}
+\]
+<ul>
+<li>它的 $1\times1$ 对角块给出 $A$ 的实特征值；</li>
+<li>它的 $2\times2$ 对角块<strong>不一定有特殊的形式</strong>（但和形如 $\begin{bmatrix}\alpha&-\beta\\\beta&\alpha\end{bmatrix}$ 的矩阵相似），给出 $A$ 的一对共轭的复特征值 $\alpha\pm i\beta$；</li>
+<li>它的对角块由 $A$ 的特征值完全确定，并且可以按照任意预先指定的次序出现。</li>
+</ul>
+</div>
+
+<p class="footnote">两条形式里，<strong>②（正交 $Q$）才是 QR 迭代实际给出的那一条</strong>：$Q_k$ 始终正交，所以极限只能是 $Q^{\mathsf T}AQ$；① 里的 $S$ 只保证相似，不保证正交，对应的算法是「非正交相似化三角」，数值上不稳定，不用。</p>
 
 <p class="footnote" style="margin-top:40px">整理自：2026-10-20 课堂板书（照片 162–166）、同次拍摄的手写笔记页 154，以及主人与 AI 的对话记录（2026-10-20，主题为「Krylov 子空间分解为什么用 $Aq_j$ 而不是 $A^jr$」）。板书 167–183 与手写页 155–161 经核对属上一堂课内容，已在<a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a>中覆盖，本笔记仅作对照列出。<strong>明确标注为「教材补充」的段落课上没有讲</strong>：<a href="#s23">§2.3</a>（三条推广线索与 Chebyshev 界）、<a href="#s33">§3.3</a>（为什么必须重做 QR）、<a href="#s34">§3.4</a> 末尾的「充要条件」、<a href="#s42">§4.2</a>（条件数表与数值）、<a href="#s44">§4.4</a> 的完整归纳证明与「次数恰好为 $j$」、<a href="#s45">§4.5</a> 的「Arnoldi 保空间」归纳、<a href="#s48">§4.8</a>（余项的四重身份）、<a href="#s410">§4.10</a>（Hessenberg 上半部分的四层含义）、<a href="#p5">第五部分</a> 全部、<a href="#p6">第六部分</a> 的对比表。§4.11 的接口表取自讲义 PDF 4 §4.2–§4.4，课上未讲。图 1–9 均为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
 
