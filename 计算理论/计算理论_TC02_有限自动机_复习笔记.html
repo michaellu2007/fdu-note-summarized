@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chapter 2 · Finite Automata · 复习笔记</title>
+<title>计算理论 · 第 2 章 有限自动机 复习笔记（LaTeX 渲染）</title>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
 <style>/* ===== 计算理论学习笔记 · 亮色主题 ===== */
 :root {
@@ -475,21 +475,14 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   h3, h4 { break-after: avoid; }
 }
 </style>
-<style>
-/* 单章版：章节主色 */
-.chapter-head { border-left-color: var(--accent); }
-.chapter-head .ch-kicker { color: var(--accent); }
-.panel h3 { color: var(--accent); border-left-color: var(--accent); }
-.panel h4[id]::before { background: var(--accent); }
-</style>
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>
     <div>
-      <div class="brand-title">Chapter 2 · Finite Automata · 复习笔记</div>
-      <div class="brand-sub">TC02.pdf · 94 页 · 正则语言 · 复旦大学《计算理论》课件精读 · 公式 KaTeX 离线渲染</div>
+      <div class="brand-title">计算理论 · 学习笔记</div>
+      <div class="brand-sub">第 2 章 Finite Automata · 94 页 · 有限自动机与正则语言 · 复旦大学《计算理论》课件精读</div>
     </div>
   </div>
   <div class="search">
@@ -497,137 +490,166 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   </div>
 </header>
 
+<nav class="tabs">
+  <button class="tab active" data-target="panel-ov">总览与分析</button>
+<button class="tab" data-target="panel-t02">第 2 章 Finite Automata</button>
+</nav>
+
 <div class="layout">
   <aside class="sidebar">
-    <div class="toc-group">
-      <div class="toc-title">复习导读</div>
-      <ul class="toc-list">
-        ['<li class="toc-h3"><a href="#r-0">这份文档怎么用</a></li>', '<li class="toc-h3"><a href="#r-1">本章主线</a></li>', '<li class="toc-h3"><a href="#r-2">核心定义速查</a></li>', '<li class="toc-h3"><a href="#r-3">定理与构造清单</a></li>', '<li class="toc-h3"><a href="#r-4">易错点</a></li>', '<li class="toc-h3"><a href="#r-5">复习路线建议</a></li>']
-      </ul>
-    </div>
-    <div class="toc-group">
-      <div class="toc-title">逐页转写</div>
-      <ul class="toc-list">
-        <li class="toc-h4"><a href="#t02-p1">第 1 页</a></li>
-        <li class="toc-h4"><a href="#t02-p2">第 2 页</a></li>
-        <li class="toc-h4"><a href="#t02-p3">第 3 页</a></li>
-        <li class="toc-h4"><a href="#t02-p4">第 4 页</a></li>
-        <li class="toc-h4"><a href="#t02-p5">第 5 页</a></li>
-        <li class="toc-h4"><a href="#t02-p6">第 6 页</a></li>
-        <li class="toc-h4"><a href="#t02-p7">第 7 页</a></li>
-        <li class="toc-h4"><a href="#t02-p8">第 8 页</a></li>
-        <li class="toc-h4"><a href="#t02-p9">第 9 页</a></li>
-        <li class="toc-h4"><a href="#t02-p10">第 10 页</a></li>
-        <li class="toc-h4"><a href="#t02-p11">第 11 页</a></li>
-        <li class="toc-h4"><a href="#t02-p12">第 12 页</a></li>
-        <li class="toc-h4"><a href="#t02-p13">第 13 页</a></li>
-        <li class="toc-h4"><a href="#t02-p14">第 14 页</a></li>
-        <li class="toc-h4"><a href="#t02-p15">第 15 页</a></li>
-        <li class="toc-h4"><a href="#t02-p16">第 16 页</a></li>
-        <li class="toc-h4"><a href="#t02-p17">第 17 页</a></li>
-        <li class="toc-h4"><a href="#t02-p18">第 18 页</a></li>
-        <li class="toc-h4"><a href="#t02-p19">第 19 页</a></li>
-        <li class="toc-h4"><a href="#t02-p20">第 20 页</a></li>
-        <li class="toc-h4"><a href="#t02-p21">第 21 页</a></li>
-        <li class="toc-h4"><a href="#t02-p22">第 22 页</a></li>
-        <li class="toc-h4"><a href="#t02-p23">第 23 页</a></li>
-        <li class="toc-h4"><a href="#t02-p24">第 24 页</a></li>
-        <li class="toc-h4"><a href="#t02-p25">第 25 页</a></li>
-        <li class="toc-h4"><a href="#t02-p26">第 26 页</a></li>
-        <li class="toc-h4"><a href="#t02-p27">第 27 页</a></li>
-        <li class="toc-h4"><a href="#t02-p28">第 28 页</a></li>
-        <li class="toc-h4"><a href="#t02-p29">第 29 页</a></li>
-        <li class="toc-h4"><a href="#t02-p30">第 30 页</a></li>
-        <li class="toc-h4"><a href="#t02-p31">第 31 页</a></li>
-        <li class="toc-h4"><a href="#t02-p32">第 32 页</a></li>
-        <li class="toc-h4"><a href="#t02-p33">第 33 页</a></li>
-        <li class="toc-h4"><a href="#t02-p34">第 34 页</a></li>
-        <li class="toc-h4"><a href="#t02-p35">第 35 页</a></li>
-        <li class="toc-h4"><a href="#t02-p36">第 36 页</a></li>
-        <li class="toc-h4"><a href="#t02-p37">第 37 页</a></li>
-        <li class="toc-h4"><a href="#t02-p38">第 38 页</a></li>
-        <li class="toc-h4"><a href="#t02-p39">第 39 页</a></li>
-        <li class="toc-h4"><a href="#t02-p40">第 40 页</a></li>
-        <li class="toc-h4"><a href="#t02-p41">第 41 页</a></li>
-        <li class="toc-h4"><a href="#t02-p42">第 42 页</a></li>
-        <li class="toc-h4"><a href="#t02-p43">第 43 页</a></li>
-        <li class="toc-h4"><a href="#t02-p44">第 44 页</a></li>
-        <li class="toc-h4"><a href="#t02-p45">第 45 页</a></li>
-        <li class="toc-h4"><a href="#t02-p46">第 46 页</a></li>
-        <li class="toc-h4"><a href="#t02-p47">第 47 页</a></li>
-        <li class="toc-h4"><a href="#t02-p48">第 48 页</a></li>
-        <li class="toc-h4"><a href="#t02-p49">第 49 页</a></li>
-        <li class="toc-h4"><a href="#t02-p50">第 50 页</a></li>
-        <li class="toc-h4"><a href="#t02-p51">第 51 页</a></li>
-        <li class="toc-h4"><a href="#t02-p52">第 52 页</a></li>
-        <li class="toc-h4"><a href="#t02-p53">第 53 页</a></li>
-        <li class="toc-h4"><a href="#t02-p54">第 54 页</a></li>
-        <li class="toc-h4"><a href="#t02-p55">第 55 页</a></li>
-        <li class="toc-h4"><a href="#t02-p56">第 56 页</a></li>
-        <li class="toc-h4"><a href="#t02-p57">第 57 页</a></li>
-        <li class="toc-h4"><a href="#t02-p58">第 58 页</a></li>
-        <li class="toc-h4"><a href="#t02-p59">第 59 页</a></li>
-        <li class="toc-h4"><a href="#t02-p60">第 60 页</a></li>
-        <li class="toc-h4"><a href="#t02-p61">第 61 页</a></li>
-        <li class="toc-h4"><a href="#t02-p62">第 62 页</a></li>
-        <li class="toc-h4"><a href="#t02-p63">第 63 页</a></li>
-        <li class="toc-h4"><a href="#t02-p64">第 64 页</a></li>
-        <li class="toc-h4"><a href="#t02-p65">第 65 页</a></li>
-        <li class="toc-h4"><a href="#t02-p66">第 66 页</a></li>
-        <li class="toc-h4"><a href="#t02-p67">第 67 页</a></li>
-        <li class="toc-h4"><a href="#t02-p68">第 68 页</a></li>
-        <li class="toc-h4"><a href="#t02-p69">第 69 页</a></li>
-        <li class="toc-h4"><a href="#t02-p70">第 70 页</a></li>
-        <li class="toc-h4"><a href="#t02-p71">第 71 页</a></li>
-        <li class="toc-h4"><a href="#t02-p72">第 72 页</a></li>
-        <li class="toc-h4"><a href="#t02-p73">第 73 页</a></li>
-        <li class="toc-h4"><a href="#t02-p74">第 74 页</a></li>
-        <li class="toc-h4"><a href="#t02-p75">第 75 页</a></li>
-        <li class="toc-h4"><a href="#t02-p76">第 76 页</a></li>
-        <li class="toc-h4"><a href="#t02-p77">第 77 页</a></li>
-        <li class="toc-h4"><a href="#t02-p78">第 78 页</a></li>
-        <li class="toc-h4"><a href="#t02-p79">第 79 页</a></li>
-        <li class="toc-h4"><a href="#t02-p80">第 80 页</a></li>
-        <li class="toc-h4"><a href="#t02-p81">第 81 页</a></li>
-        <li class="toc-h4"><a href="#t02-p82">第 82 页</a></li>
-        <li class="toc-h4"><a href="#t02-p83">第 83 页</a></li>
-        <li class="toc-h4"><a href="#t02-p84">第 84 页</a></li>
-        <li class="toc-h4"><a href="#t02-p85">第 85 页</a></li>
-        <li class="toc-h4"><a href="#t02-p86">第 86 页</a></li>
-        <li class="toc-h4"><a href="#t02-p87">第 87 页</a></li>
-        <li class="toc-h4"><a href="#t02-p88">第 88 页</a></li>
-        <li class="toc-h4"><a href="#t02-p89">第 89 页</a></li>
-        <li class="toc-h4"><a href="#t02-p90">第 90 页</a></li>
-        <li class="toc-h4"><a href="#t02-p91">第 91 页</a></li>
-        <li class="toc-h4"><a href="#t02-p92">第 92 页</a></li>
-        <li class="toc-h4"><a href="#t02-p93">第 93 页</a></li>
-        <li class="toc-h4"><a href="#t02-p94">第 94 页</a></li>
-      </ul>
-    </div>
+    <div class="toc-group" data-panel="panel-ov">
+<div class="toc-title">总览与分析</div>
+<ul class="toc-list">
+<li class="toc-h3"><a href="#ov-intro">0. 这份材料是什么</a></li>
+        <li class="toc-h3"><a href="#ov-map">1. 本章主线</a></li>
+        <li class="toc-h3"><a href="#ov-models">2. 核心定义速查</a></li>
+        <li class="toc-h3"><a href="#ov-thm">3. 定理与构造清单</a></li>
+        <li class="toc-h3"><a href="#ov-pit">4. 易错点</a></li>
+        <li class="toc-h3"><a href="#ov-howto">5. 复习路线建议</a></li>
+</ul>
+</div>
+<div class="toc-group" data-panel="panel-t02">
+<div class="toc-title">Chapter 2 · Finite Automata</div>
+<ul class="toc-list">
+<li class="toc-h4"><a href="#t02-p1">第 1 页</a></li>
+<li class="toc-h4"><a href="#t02-p2">第 2 页</a></li>
+<li class="toc-h4"><a href="#t02-p3">第 3 页</a></li>
+<li class="toc-h3"><a href="#t02-h1">2.1 Deterministic Finite Automata</a></li>
+<li class="toc-h4"><a href="#t02-p4">第 4 页</a></li>
+<li class="toc-h4"><a href="#t02-p5">第 5 页</a></li>
+<li class="toc-h4"><a href="#t02-p6">第 6 页</a></li>
+<li class="toc-h4"><a href="#t02-p7">第 7 页</a></li>
+<li class="toc-h4"><a href="#t02-p8">第 8 页</a></li>
+<li class="toc-h4"><a href="#t02-p9">第 9 页</a></li>
+<li class="toc-h4"><a href="#t02-p10">第 10 页</a></li>
+<li class="toc-h4"><a href="#t02-p11">第 11 页</a></li>
+<li class="toc-h3"><a href="#t02-h2">2.2 Nondeterministic Finite Automata</a></li>
+<li class="toc-h4"><a href="#t02-p12">第 12 页</a></li>
+<li class="toc-h4"><a href="#t02-p13">第 13 页</a></li>
+<li class="toc-h4"><a href="#t02-p14">第 14 页</a></li>
+<li class="toc-h4"><a href="#t02-p15">第 15 页</a></li>
+<li class="toc-h4"><a href="#t02-p16">第 16 页</a></li>
+<li class="toc-h4"><a href="#t02-p17">第 17 页</a></li>
+<li class="toc-h4"><a href="#t02-p18">第 18 页</a></li>
+<li class="toc-h4"><a href="#t02-p19">第 19 页</a></li>
+<li class="toc-h4"><a href="#t02-p20">第 20 页</a></li>
+<li class="toc-h4"><a href="#t02-p21">第 21 页</a></li>
+<li class="toc-h4"><a href="#t02-p22">第 22 页</a></li>
+<li class="toc-h4"><a href="#t02-p23">第 23 页</a></li>
+<li class="toc-h4"><a href="#t02-p24">第 24 页</a></li>
+<li class="toc-h4"><a href="#t02-p25">第 25 页</a></li>
+<li class="toc-h4"><a href="#t02-p26">第 26 页</a></li>
+<li class="toc-h4"><a href="#t02-p27">第 27 页</a></li>
+<li class="toc-h4"><a href="#t02-p28">第 28 页</a></li>
+<li class="toc-h4"><a href="#t02-p29">第 29 页</a></li>
+<li class="toc-h4"><a href="#t02-p30">第 30 页</a></li>
+<li class="toc-h4"><a href="#t02-p31">第 31 页</a></li>
+<li class="toc-h4"><a href="#t02-p32">第 32 页</a></li>
+<li class="toc-h4"><a href="#t02-p33">第 33 页</a></li>
+<li class="toc-h4"><a href="#t02-p34">第 34 页</a></li>
+<li class="toc-h4"><a href="#t02-p35">第 35 页</a></li>
+<li class="toc-h4"><a href="#t02-p36">第 36 页</a></li>
+<li class="toc-h4"><a href="#t02-p37">第 37 页</a></li>
+<li class="toc-h4"><a href="#t02-p38">第 38 页</a></li>
+<li class="toc-h4"><a href="#t02-p39">第 39 页</a></li>
+<li class="toc-h4"><a href="#t02-p40">第 40 页</a></li>
+<li class="toc-h4"><a href="#t02-p41">第 41 页</a></li>
+<li class="toc-h4"><a href="#t02-p42">第 42 页</a></li>
+<li class="toc-h4"><a href="#t02-p43">第 43 页</a></li>
+<li class="toc-h4"><a href="#t02-p44">第 44 页</a></li>
+<li class="toc-h4"><a href="#t02-p45">第 45 页</a></li>
+<li class="toc-h4"><a href="#t02-p46">第 46 页</a></li>
+<li class="toc-h4"><a href="#t02-p47">第 47 页</a></li>
+<li class="toc-h4"><a href="#t02-p48">第 48 页</a></li>
+<li class="toc-h3"><a href="#t02-h3">2.3（续）从 DFA 构造正则表达式</a></li>
+<li class="toc-h4"><a href="#t02-p49">第 49 页</a></li>
+<li class="toc-h4"><a href="#t02-p50">第 50 页</a></li>
+<li class="toc-h4"><a href="#t02-p51">第 51 页</a></li>
+<li class="toc-h4"><a href="#t02-p52">第 52 页</a></li>
+<li class="toc-h3"><a href="#t02-h4">2.4 Languages that are and are not Regular</a></li>
+<li class="toc-h4"><a href="#t02-p53">第 53 页</a></li>
+<li class="toc-h4"><a href="#t02-p54">第 54 页</a></li>
+<li class="toc-h4"><a href="#t02-p55">第 55 页</a></li>
+<li class="toc-h4"><a href="#t02-p56">第 56 页</a></li>
+<li class="toc-h4"><a href="#t02-p57">第 57 页</a></li>
+<li class="toc-h4"><a href="#t02-p58">第 58 页</a></li>
+<li class="toc-h4"><a href="#t02-p59">第 59 页</a></li>
+<li class="toc-h4"><a href="#t02-p60">第 60 页</a></li>
+<li class="toc-h4"><a href="#t02-p61">第 61 页</a></li>
+<li class="toc-h4"><a href="#t02-p62">第 62 页</a></li>
+<li class="toc-h4"><a href="#t02-p63">第 63 页</a></li>
+<li class="toc-h4"><a href="#t02-p64">第 64 页</a></li>
+<li class="toc-h3"><a href="#t02-h5">2.5 State Minimization</a></li>
+<li class="toc-h4"><a href="#t02-p65">第 65 页</a></li>
+<li class="toc-h4"><a href="#t02-p66">第 66 页</a></li>
+<li class="toc-h4"><a href="#t02-p67">第 67 页</a></li>
+<li class="toc-h4"><a href="#t02-p68">第 68 页</a></li>
+<li class="toc-h4"><a href="#t02-p69">第 69 页</a></li>
+<li class="toc-h4"><a href="#t02-p70">第 70 页</a></li>
+<li class="toc-h4"><a href="#t02-p71">第 71 页</a></li>
+<li class="toc-h4"><a href="#t02-p72">第 72 页</a></li>
+<li class="toc-h3"><a href="#t02-h6">□ Decomposition via a DFA</a></li>
+<li class="toc-h4"><a href="#t02-p73">第 73 页</a></li>
+<li class="toc-h4"><a href="#t02-p74">第 74 页</a></li>
+<li class="toc-h3"><a href="#t02-h7">□ Relationship Between Two Equivalent Relations</a></li>
+<li class="toc-h4"><a href="#t02-p75">第 75 页</a></li>
+<li class="toc-h4"><a href="#t02-p76">第 76 页</a></li>
+<li class="toc-h4"><a href="#t02-p77">第 77 页</a></li>
+<li class="toc-h4"><a href="#t02-p78">第 78 页</a></li>
+<li class="toc-h3"><a href="#t02-h8">□ DFA construction</a></li>
+<li class="toc-h4"><a href="#t02-p79">第 79 页</a></li>
+<li class="toc-h4"><a href="#t02-p80">第 80 页</a></li>
+<li class="toc-h4"><a href="#t02-p81">第 81 页</a></li>
+<li class="toc-h4"><a href="#t02-p82">第 82 页</a></li>
+<li class="toc-h4"><a href="#t02-p83">第 83 页</a></li>
+<li class="toc-h4"><a href="#t02-p84">第 84 页</a></li>
+<li class="toc-h3"><a href="#t02-h9">□ Application of Myhill-Nerode Theorem</a></li>
+<li class="toc-h4"><a href="#t02-p85">第 85 页</a></li>
+<li class="toc-h3"><a href="#t02-h10">□ Construction of the Standard DFA Equivalent to a Given DFA $M$</a></li>
+<li class="toc-h4"><a href="#t02-p86">第 86 页</a></li>
+<li class="toc-h3"><a href="#t02-h11">□ Minimization algorithm</a></li>
+<li class="toc-h4"><a href="#t02-p87">第 87 页</a></li>
+<li class="toc-h3"><a href="#t02-h12">□ Finding $\equiv$</a></li>
+<li class="toc-h4"><a href="#t02-p88">第 88 页</a></li>
+<li class="toc-h4"><a href="#t02-p89">第 89 页</a></li>
+<li class="toc-h4"><a href="#t02-p90">第 90 页</a></li>
+<li class="toc-h3"><a href="#t02-h13">2.6 Algorithms for Finite Automata*</a></li>
+<li class="toc-h4"><a href="#t02-p91">第 91 页</a></li>
+<li class="toc-h4"><a href="#t02-p92">第 92 页</a></li>
+<li class="toc-h4"><a href="#t02-p93">第 93 页</a></li>
+<li class="toc-h4"><a href="#t02-p94">第 94 页</a></li>
+<li class="toc-h3"><a href="#t02-h14">□ FA as Algorithms</a></li>
+</ul>
+</div>
   </aside>
 
   <main class="content">
-    <section class="panel active">
-      <div class="chapter-head">
-        <div class="ch-kicker">TC02.pdf · 94 页</div>
-        <h1>Chapter 2 · Finite Automata · 复习笔记</h1>
-        <p>有限自动机：从确定性到非确定性，再到正则表达式、泵引理与状态最小化。</p>
-      </div>
-      
+    <section id="panel-ov" class="panel active">
 <section class="overview">
-  <h2 id="r-0">这份文档怎么用</h2>
-  <p>这是 <b>TC02.pdf</b>（Chapter 2 Finite Automata，共 94 页）的<b>逐页忠实转写</b>，
-  公式全部用 LaTeX（KaTeX）离线渲染。左侧目录可点击，也可用左上角输入框<b>按页码或关键词过滤</b>
-  （例如输入 <code>58</code> 直接跳到第 58 页，输入 <code>泵</code> 列出所有相关页）。</p>
+  <h2 id="ov-intro">0. 这份材料是什么</h2>
+
+  <p>这是 <b>TC02.pdf</b>（<i>Elements of the Theory of Computation</i>,
+  Lewis &amp; Papadimitriou, 2nd ed.，Chapter 2 Finite Automata，共 94 页）的
+  <b>逐页忠实转写</b>，公式全部按原式重新排版为 LaTeX（KaTeX 离线渲染）。
+  本页导读是这份笔记额外撰写的复习提纲，<b>与课件原文分开</b>。</p>
+
+  <table class="kv">
+    <thead><tr><th>文件</th><th>页数</th><th>对应章节</th><th>主题</th></tr></thead>
+    <tbody>
+      <tr><td><code>TC02.pdf</code></td><td>94</td><td><b>Chapter 2</b></td>
+          <td>Finite Automata（有限自动机）— 正则语言</td></tr>
+    </tbody>
+  </table>
 
   <div class="note-box">
     <b>符号约定：</b>课件沿用 Lewis &amp; Papadimitriou 的写法，用斜体 <span class="tex">$e$</span>
     表示<b>空串</b>（即常见的 <span class="tex">$\varepsilon$</span>）；状态集用 <span class="tex">$K$</span>，
     NFA 转移关系用 <span class="tex">$\Delta$</span>，DFA 转移函数用 <span class="tex">$\delta$</span>。
-    转写保留原写法，未作改动。
+    转写<b>保留原写法</b>，未作改动。
   </div>
 
-  <h2 id="r-1">本章主线</h2>
+  <h2 id="ov-map">1. 本章主线</h2>
+
   <div class="fig">
     <svg viewBox="0 0 900 200" role="img" aria-label="第2章推进顺序">
       <defs><style>
@@ -643,7 +665,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
 
         <rect x="156" y="60" width="120" height="56" rx="9" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
         <text x="216" y="84" class="lbl" fill="#1e40af" text-anchor="middle">NFA</text>
-        <text x="216" y="103" class="sub" fill="#3b82f6" text-anchor="middle">ε-转移</text>
+        <text x="216" y="103" class="sub" fill="#3b82f6" text-anchor="middle">e-转移</text>
 
         <rect x="296" y="60" width="140" height="56" rx="9" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
         <text x="366" y="84" class="lbl" fill="#3730a3" text-anchor="middle">子集构造</text>
@@ -674,39 +696,47 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </svg>
   </div>
 
-  <h2 id="r-2">核心定义速查</h2>
+  <h2 id="ov-models">2. 核心定义速查</h2>
+
   <div class="tbl-wrap">
   <table>
-    <thead><tr><th>对象</th><th>形式定义</th><th>一句话</th></tr></thead>
+    <thead><tr><th>对象</th><th>形式定义</th><th>一句话理解</th></tr></thead>
     <tbody>
-      <tr><td><b>DFA</b></td><td class="tex">$M=(K,\Sigma,\delta,s,F)$</td>
+      <tr><td><b>DFA</b><br><span class="muted">确定性有限自动机</span></td>
+          <td class="tex">$(K,\Sigma,\delta,s,F)$</td>
           <td class="tex">$\delta:K\times\Sigma\to K$ 是<b>函数</b>，下一状态唯一确定。</td></tr>
-      <tr><td><b>NFA</b></td><td class="tex">$M=(K,\Sigma,\Delta,s,F)$</td>
+      <tr><td><b>NFA</b><br><span class="muted">非确定性有限自动机</span></td>
+          <td class="tex">$(K,\Sigma,\Delta,s,F)$</td>
           <td class="tex">$\Delta\subseteq K\times(\Sigma\cup\{e\})\times K$ 是<b>关系</b>，可以「猜」。</td></tr>
-      <tr><td><b>子集构造</b></td><td class="tex">$K'=2^K$</td>
+      <tr><td><b>子集构造</b></td>
+          <td class="tex">$K'=2^K$</td>
           <td>把 $K$ 的每个子集当新状态；初态 $E(s)$，终态 $\{Q: Q\cap F\neq\emptyset\}$。</td></tr>
-      <tr><td><b>正则表达式</b></td><td>由 $\emptyset,\{a\}$ 经 $\cup,\circ,{}^*$ 生成</td>
+      <tr><td><b>正则表达式</b></td>
+          <td>由 $\emptyset,\{a\}$ 经 $\cup,\circ,{}^*$ 生成</td>
           <td>正则语言 = 含平凡语言、且对三种运算封闭的<b>最小</b>语言类。</td></tr>
-      <tr><td><b>泵引理</b></td><td class="tex">$w=xyz,\ y\neq e,\ |xy|\le n,\ xy^iz\in L$</td>
+      <tr><td><b>泵引理</b></td>
+          <td class="tex">$w=xyz,\ y\neq e,\ |xy|\le n,\ xy^iz\in L$</td>
           <td>长串中有一段「可任意重复」的短片段。</td></tr>
-      <tr><td><b>Myhill-Nerode</b></td><td class="tex">$\approx_L$ 等价类</td>
+      <tr><td><b>Myhill-Nerode</b></td>
+          <td class="tex">$\approx_L$ 等价类</td>
           <td>最小 DFA 状态数 = 等价类个数。</td></tr>
     </tbody>
   </table>
   </div>
 
-  <h2 id="r-3">定理与构造清单</h2>
+  <h2 id="ov-thm">3. 定理与构造清单</h2>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>#</th><th>结论</th><th>要点 / 代价</th><th>页码</th></tr></thead>
     <tbody>
       <tr><td>1</td><td>NFA 与 DFA 等价</td>
           <td>子集构造：状态数可能<b>指数爆炸</b>。</td><td>P22–P36</td></tr>
-      <tr><td>2</td><td>FA 封闭于并、连接、星、补、交</td>
+      <tr><td>2</td><td>FA 封闭于并、连接、Kleene 星、补、交</td>
           <td>补要求是 <b>DFA</b> 且只改 $F$；交用乘积构造 $K=K_1\times K_2$。</td><td>P38–P43</td></tr>
       <tr><td>3</td><td>正则表达式与 FA 等价</td>
           <td>反向用 $R(i,j,k)$ 归纳。</td><td>P45–P51</td></tr>
-      <tr><td>4</td><td>泵引理</td>
+      <tr><td>4</td><td>泵引理（Pumping Theorem）</td>
           <td>靠<b>鸽笼原理</b>证；只是<b>必要条件</b>。</td><td>P57–P63</td></tr>
       <tr><td>5</td><td>Myhill–Nerode 定理</td>
           <td>$L$ 正则 $\iff$ $\approx_L$ 只有有限个等价类。</td><td>P70–P84</td></tr>
@@ -719,9 +749,11 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   </table>
   </div>
 
-  <h2 id="r-4">易错点</h2>
+  <h2 id="ov-pit">4. 易错点</h2>
+
   <ol class="tips">
-    <li><b>空串写作 <span class="tex">$e$</span></b>，不是 <span class="tex">$\varepsilon$</span>。$q_0\xrightarrow{e}q_1$ 是空转移。</li>
+    <li><b>空串写作 <span class="tex">$e$</span></b>，不是 <span class="tex">$\varepsilon$</span>。
+        $q_0\xrightarrow{e}q_1$ 是空转移。</li>
     <li><b>NFA 的 $\Delta$ 是关系不是函数。</b>$\delta(q_0,b)=\emptyset$ 与「未定义」是两回事，
         空集本身是子集构造里的合法状态。</li>
     <li><b>子集构造要算 $e$-闭包 $E(q)$。</b>初态是 $E(s)$ 而不是 $\{s\}$。</li>
@@ -732,7 +764,8 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <li><b>最小化要分两步</b>：先删不可达状态，再划分等价类。跳过第一步会得到错误结果。</li>
   </ol>
 
-  <h2 id="r-5">复习路线建议</h2>
+  <h2 id="ov-howto">5. 复习路线建议</h2>
+
   <ul class="tips">
     <li><b>第一遍（重建骨架，1 小时）</b>：P5–P12 定义与配置 → P22–P36 子集构造 → P45–P51 正则表达式。</li>
     <li><b>第二遍（攻证明，1.5 小时）</b>：P38–P43 闭包性质 → P57–P63 泵引理 → P70–P84 Myhill-Nerode。</li>
@@ -740,7 +773,13 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <li>每看完一块，用目录输入框回查相关页，把公式与表格重推一遍（尤其是子集构造的 $E(q)$ 与最小化的划分过程）。</li>
   </ul>
 </section>
-
+</section>
+    <section id="panel-t02" class="panel">
+      <div class="chapter-head">
+        <div class="ch-kicker">TC02.pdf · 94 页</div>
+        <h1>Chapter 2 · Finite Automata</h1>
+        <p>有限自动机：从确定性到非确定性，再到正则表达式、泵引理与状态最小化。</p>
+      </div>
       <h4 id="t02-p1">第 1 页</h4>
 <p>（封面）Chapter 2 Finite Automata</p>
 <h4 id="t02-p2">第 2 页</h4>
@@ -2679,6 +2718,7 @@ $$\delta(Q, a) = \cup\{E(p) \mid p \in K \text{ and } (q, a, p) \in \Delta \text
 <script src="assets/katex/contrib/auto-render.min.js"></script>
 <script>
 (function () {
+  // 公式渲染
   if (window.renderMathInElement) {
     renderMathInElement(document.body, {
       delimiters: [
@@ -2691,11 +2731,31 @@ $$\delta(Q, a) = \cup\{E(p) \mid p \in K \text{ and } (q, a, p) \in \Delta \text
     });
   }
 
+  // Tab 切换
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var groups = Array.prototype.slice.call(document.querySelectorAll(".toc-group"));
+
+  function activate(id) {
+    tabs.forEach(function (t) { t.classList.toggle("active", t.dataset.target === id); });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === id); });
+    groups.forEach(function (g) { g.style.display = (g.dataset.panel === id) ? "" : "none"; });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    filterToc();
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activate(t.dataset.target); });
+  });
+  activate("panel-ov");
+
   // 目录过滤（支持页码 / 关键词）
   var filter = document.getElementById("tocFilter");
   function filterToc() {
     var q = (filter.value || "").trim().toLowerCase();
-    var items = document.querySelectorAll(".sidebar li");
+    var activePanel = document.querySelector(".panel.active").id;
+    var group = document.querySelector('.toc-group[data-panel="' + activePanel + '"]');
+    if (!group) return;
+    var items = group.querySelectorAll("li");
     items.forEach(function (li) {
       if (!q) { li.style.display = ""; return; }
       var txt = li.textContent.toLowerCase();

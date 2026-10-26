@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chapter 3 · Context-Free Languages · 复习笔记</title>
+<title>计算理论 · 第 3 章 上下文无关语言 复习笔记（LaTeX 渲染）</title>
 <link rel="stylesheet" href="assets/katex/katex.min.css">
 <style>/* ===== 计算理论学习笔记 · 亮色主题 ===== */
 :root {
@@ -475,21 +475,14 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   h3, h4 { break-after: avoid; }
 }
 </style>
-<style>
-/* 单章版：章节主色 */
-.chapter-head { border-left-color: var(--accent); }
-.chapter-head .ch-kicker { color: var(--accent); }
-.panel h3 { color: var(--accent); border-left-color: var(--accent); }
-.panel h4[id]::before { background: var(--accent); }
-</style>
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>
     <div>
-      <div class="brand-title">Chapter 3 · Context-Free Languages · 复习笔记</div>
-      <div class="brand-sub">TC03.pdf · 89 页 · 上下文无关语言与下推自动机 · 复旦大学《计算理论》课件精读 · 公式 KaTeX 离线渲染</div>
+      <div class="brand-title">计算理论 · 学习笔记</div>
+      <div class="brand-sub">第 3 章 Context-Free Languages · 89 页 · 上下文无关语言与下推自动机 · 复旦大学《计算理论》课件精读</div>
     </div>
   </div>
   <div class="search">
@@ -497,125 +490,142 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   </div>
 </header>
 
+<nav class="tabs">
+  <button class="tab active" data-target="panel-ov">总览与分析</button>
+<button class="tab" data-target="panel-t03">第 3 章 Context-Free Languages</button>
+</nav>
+
 <div class="layout">
   <aside class="sidebar">
-    <div class="toc-group">
-      <div class="toc-title">复习导读</div>
-      <ul class="toc-list">
-        ['<li class="toc-h3"><a href="#r-0">上课进度与今晚的复习范围</a></li>', '<li class="toc-h3"><a href="#r-1">本章主线：两个「生成器/识别器」的对偶</a></li>', '<li class="toc-h3"><a href="#r-2">核心定义速查（考试直接默写级）</a></li>', '<li class="toc-h3"><a href="#r-3">两大核心证明（今晚重点）</a></li>', '<li class="toc-h3"><a href="#r-4">闭包性质：记「封什么、不封什么」</a></li>', '<li class="toc-h3"><a href="#r-5">CFL 泵引理：与第 2 章的对比 + 使用模板</a></li>', '<li class="toc-h3"><a href="#r-6">其他易错点</a></li>', '<li class="toc-h3"><a href="#r-7">今晚的复习路线（建议 2.5–3 小时）</a></li>']
-      </ul>
-    </div>
-    <div class="toc-group">
-      <div class="toc-title">逐页转写</div>
-      <ul class="toc-list">
-        <li class="toc-h4"><a href="#t03-p1">第 1 页</a></li>
-        <li class="toc-h4"><a href="#t03-p2">第 2 页</a></li>
-        <li class="toc-h4"><a href="#t03-p3">第 3 页</a></li>
-        <li class="toc-h4"><a href="#t03-p4">第 4 页</a></li>
-        <li class="toc-h4"><a href="#t03-p5">第 5 页</a></li>
-        <li class="toc-h4"><a href="#t03-p6">第 6 页</a></li>
-        <li class="toc-h4"><a href="#t03-p7">第 7 页</a></li>
-        <li class="toc-h4"><a href="#t03-p8">第 8 页</a></li>
-        <li class="toc-h4"><a href="#t03-p9">第 9 页</a></li>
-        <li class="toc-h4"><a href="#t03-p10">第 10 页</a></li>
-        <li class="toc-h4"><a href="#t03-p11">第 11 页</a></li>
-        <li class="toc-h4"><a href="#t03-p12">第 12 页</a></li>
-        <li class="toc-h4"><a href="#t03-p13">第 13 页</a></li>
-        <li class="toc-h4"><a href="#t03-p14">第 14 页</a></li>
-        <li class="toc-h4"><a href="#t03-p15">第 15 页</a></li>
-        <li class="toc-h4"><a href="#t03-p16">第 16 页</a></li>
-        <li class="toc-h4"><a href="#t03-p17">第 17 页</a></li>
-        <li class="toc-h4"><a href="#t03-p18">第 18 页</a></li>
-        <li class="toc-h4"><a href="#t03-p19">第 19 页</a></li>
-        <li class="toc-h4"><a href="#t03-p20">第 20 页</a></li>
-        <li class="toc-h4"><a href="#t03-p21">第 21 页</a></li>
-        <li class="toc-h4"><a href="#t03-p22">第 22 页</a></li>
-        <li class="toc-h4"><a href="#t03-p23">第 23 页</a></li>
-        <li class="toc-h4"><a href="#t03-p24">第 24 页</a></li>
-        <li class="toc-h4"><a href="#t03-p25">第 25 页</a></li>
-        <li class="toc-h4"><a href="#t03-p26">第 26 页</a></li>
-        <li class="toc-h4"><a href="#t03-p27">第 27 页</a></li>
-        <li class="toc-h4"><a href="#t03-p28">第 28 页</a></li>
-        <li class="toc-h4"><a href="#t03-p29">第 29 页</a></li>
-        <li class="toc-h4"><a href="#t03-p30">第 30 页</a></li>
-        <li class="toc-h4"><a href="#t03-p31">第 31 页</a></li>
-        <li class="toc-h4"><a href="#t03-p32">第 32 页</a></li>
-        <li class="toc-h4"><a href="#t03-p33">第 33 页</a></li>
-        <li class="toc-h4"><a href="#t03-p34">第 34 页</a></li>
-        <li class="toc-h4"><a href="#t03-p35">第 35 页</a></li>
-        <li class="toc-h4"><a href="#t03-p36">第 36 页</a></li>
-        <li class="toc-h4"><a href="#t03-p37">第 37 页</a></li>
-        <li class="toc-h4"><a href="#t03-p38">第 38 页</a></li>
-        <li class="toc-h4"><a href="#t03-p39">第 39 页</a></li>
-        <li class="toc-h4"><a href="#t03-p40">第 40 页</a></li>
-        <li class="toc-h4"><a href="#t03-p41">第 41 页</a></li>
-        <li class="toc-h4"><a href="#t03-p42">第 42 页</a></li>
-        <li class="toc-h4"><a href="#t03-p43">第 43 页</a></li>
-        <li class="toc-h4"><a href="#t03-p44">第 44 页</a></li>
-        <li class="toc-h4"><a href="#t03-p45">第 45 页</a></li>
-        <li class="toc-h4"><a href="#t03-p46">第 46 页</a></li>
-        <li class="toc-h4"><a href="#t03-p47">第 47 页</a></li>
-        <li class="toc-h4"><a href="#t03-p48">第 48 页</a></li>
-        <li class="toc-h4"><a href="#t03-p49">第 49 页</a></li>
-        <li class="toc-h4"><a href="#t03-p50">第 50 页</a></li>
-        <li class="toc-h4"><a href="#t03-p51">第 51 页</a></li>
-        <li class="toc-h4"><a href="#t03-p52">第 52 页</a></li>
-        <li class="toc-h4"><a href="#t03-p53">第 53 页</a></li>
-        <li class="toc-h4"><a href="#t03-p54">第 54 页</a></li>
-        <li class="toc-h4"><a href="#t03-p55">第 55 页</a></li>
-        <li class="toc-h4"><a href="#t03-p56">第 56 页</a></li>
-        <li class="toc-h4"><a href="#t03-p57">第 57 页</a></li>
-        <li class="toc-h4"><a href="#t03-p58">第 58 页</a></li>
-        <li class="toc-h4"><a href="#t03-p59">第 59 页</a></li>
-        <li class="toc-h4"><a href="#t03-p60">第 60 页</a></li>
-        <li class="toc-h4"><a href="#t03-p61">第 61 页</a></li>
-        <li class="toc-h4"><a href="#t03-p62">第 62 页</a></li>
-        <li class="toc-h4"><a href="#t03-p63">第 63 页</a></li>
-        <li class="toc-h4"><a href="#t03-p64">第 64 页</a></li>
-        <li class="toc-h4"><a href="#t03-p65">第 65 页</a></li>
-        <li class="toc-h4"><a href="#t03-p66">第 66 页</a></li>
-        <li class="toc-h4"><a href="#t03-p67">第 67 页</a></li>
-        <li class="toc-h4"><a href="#t03-p68">第 68 页</a></li>
-        <li class="toc-h4"><a href="#t03-p69">第 69 页</a></li>
-        <li class="toc-h4"><a href="#t03-p70">第 70 页</a></li>
-        <li class="toc-h4"><a href="#t03-p71">第 71 页</a></li>
-        <li class="toc-h4"><a href="#t03-p72">第 72 页</a></li>
-        <li class="toc-h4"><a href="#t03-p73">第 73 页</a></li>
-        <li class="toc-h4"><a href="#t03-p74">第 74 页</a></li>
-        <li class="toc-h4"><a href="#t03-p75">第 75 页</a></li>
-        <li class="toc-h4"><a href="#t03-p76">第 76 页</a></li>
-        <li class="toc-h4"><a href="#t03-p77">第 77 页</a></li>
-        <li class="toc-h4"><a href="#t03-p78">第 78 页</a></li>
-        <li class="toc-h4"><a href="#t03-p79">第 79 页</a></li>
-        <li class="toc-h4"><a href="#t03-p80">第 80 页</a></li>
-        <li class="toc-h4"><a href="#t03-p81">第 81 页</a></li>
-        <li class="toc-h4"><a href="#t03-p82">第 82 页</a></li>
-        <li class="toc-h4"><a href="#t03-p83">第 83 页</a></li>
-        <li class="toc-h4"><a href="#t03-p84">第 84 页</a></li>
-        <li class="toc-h4"><a href="#t03-p85">第 85 页</a></li>
-        <li class="toc-h4"><a href="#t03-p86">第 86 页</a></li>
-        <li class="toc-h4"><a href="#t03-p87">第 87 页</a></li>
-        <li class="toc-h4"><a href="#t03-p88">第 88 页</a></li>
-        <li class="toc-h4"><a href="#t03-p89">第 89 页</a></li>
-      </ul>
-    </div>
+    <div class="toc-group" data-panel="panel-ov">
+<div class="toc-title">总览与分析</div>
+<ul class="toc-list">
+<li class="toc-h3"><a href="#ov-intro">0. 上课进度与今晚的复习范围</a></li>
+        <li class="toc-h3"><a href="#ov-map">1. 本章主线：两个「生成器 / 识别器」的对偶</a></li>
+        <li class="toc-h3"><a href="#ov-models">2. 核心定义速查（考试直接默写级）</a></li>
+        <li class="toc-h3"><a href="#ov-thm">3. 两大核心证明（今晚重点）</a></li>
+        <li class="toc-h4"><a href="#ov-thm-a">证明 A：CFG → PDA（P38–P46）</a></li>
+        <li class="toc-h4"><a href="#ov-thm-b">证明 B：PDA → CFG（P47–P57）</a></li>
+        <li class="toc-h3"><a href="#ov-closure">4. 闭包性质：记「封什么、不封什么」</a></li>
+        <li class="toc-h3"><a href="#ov-pump">5. CFL 泵引理：与第 2 章的对比 + 使用模板</a></li>
+        <li class="toc-h3"><a href="#ov-pit">6. 其他易错点</a></li>
+        <li class="toc-h3"><a href="#ov-howto">7. 今晚的复习路线（建议 2.5–3 小时）</a></li>
+</ul>
+</div>
+<div class="toc-group" data-panel="panel-t03">
+<div class="toc-title">Chapter 3 · Context-Free Languages</div>
+<ul class="toc-list">
+<li class="toc-h4"><a href="#t03-p1">第 1 页</a></li>
+<li class="toc-h4"><a href="#t03-p2">第 2 页</a></li>
+<li class="toc-h4"><a href="#t03-p3">第 3 页</a></li>
+<li class="toc-h4"><a href="#t03-p4">第 4 页</a></li>
+<li class="toc-h4"><a href="#t03-p5">第 5 页</a></li>
+<li class="toc-h4"><a href="#t03-p6">第 6 页</a></li>
+<li class="toc-h4"><a href="#t03-p7">第 7 页</a></li>
+<li class="toc-h4"><a href="#t03-p8">第 8 页</a></li>
+<li class="toc-h4"><a href="#t03-p9">第 9 页</a></li>
+<li class="toc-h4"><a href="#t03-p10">第 10 页</a></li>
+<li class="toc-h4"><a href="#t03-p11">第 11 页</a></li>
+<li class="toc-h4"><a href="#t03-p12">第 12 页</a></li>
+<li class="toc-h4"><a href="#t03-p13">第 13 页</a></li>
+<li class="toc-h4"><a href="#t03-p14">第 14 页</a></li>
+<li class="toc-h4"><a href="#t03-p15">第 15 页</a></li>
+<li class="toc-h4"><a href="#t03-p16">第 16 页</a></li>
+<li class="toc-h4"><a href="#t03-p17">第 17 页</a></li>
+<li class="toc-h4"><a href="#t03-p18">第 18 页</a></li>
+<li class="toc-h4"><a href="#t03-p19">第 19 页</a></li>
+<li class="toc-h4"><a href="#t03-p20">第 20 页</a></li>
+<li class="toc-h4"><a href="#t03-p21">第 21 页</a></li>
+<li class="toc-h4"><a href="#t03-p22">第 22 页</a></li>
+<li class="toc-h4"><a href="#t03-p23">第 23 页</a></li>
+<li class="toc-h3"><a href="#t03-h1">3.2 推导、分析树与歧义（续）</a></li>
+<li class="toc-h4"><a href="#t03-p24">第 24 页</a></li>
+<li class="toc-h4"><a href="#t03-p25">第 25 页</a></li>
+<li class="toc-h4"><a href="#t03-p26">第 26 页</a></li>
+<li class="toc-h4"><a href="#t03-p27">第 27 页</a></li>
+<li class="toc-h4"><a href="#t03-p28">第 28 页</a></li>
+<li class="toc-h3"><a href="#t03-h2">3.3 Pushdown Automata</a></li>
+<li class="toc-h4"><a href="#t03-p29">第 29 页</a></li>
+<li class="toc-h4"><a href="#t03-p30">第 30 页</a></li>
+<li class="toc-h4"><a href="#t03-p31">第 31 页</a></li>
+<li class="toc-h4"><a href="#t03-p32">第 32 页</a></li>
+<li class="toc-h4"><a href="#t03-p33">第 33 页</a></li>
+<li class="toc-h4"><a href="#t03-p34">第 34 页</a></li>
+<li class="toc-h4"><a href="#t03-p35">第 35 页</a></li>
+<li class="toc-h4"><a href="#t03-p36">第 36 页</a></li>
+<li class="toc-h4"><a href="#t03-p37">第 37 页</a></li>
+<li class="toc-h4"><a href="#t03-p38">第 38 页</a></li>
+<li class="toc-h3"><a href="#t03-h3">3.4 Pushdown Automata and Context-Free Language</a></li>
+<li class="toc-h4"><a href="#t03-p39">第 39 页</a></li>
+<li class="toc-h4"><a href="#t03-p40">第 40 页</a></li>
+<li class="toc-h4"><a href="#t03-p41">第 41 页</a></li>
+<li class="toc-h4"><a href="#t03-p42">第 42 页</a></li>
+<li class="toc-h4"><a href="#t03-p43">第 43 页</a></li>
+<li class="toc-h4"><a href="#t03-p44">第 44 页</a></li>
+<li class="toc-h4"><a href="#t03-p45">第 45 页</a></li>
+<li class="toc-h4"><a href="#t03-p46">第 46 页</a></li>
+<li class="toc-h4"><a href="#t03-p47">第 47 页</a></li>
+<li class="toc-h4"><a href="#t03-p48">第 48 页</a></li>
+<li class="toc-h4"><a href="#t03-p49">第 49 页</a></li>
+<li class="toc-h4"><a href="#t03-p50">第 50 页</a></li>
+<li class="toc-h4"><a href="#t03-p51">第 51 页</a></li>
+<li class="toc-h4"><a href="#t03-p52">第 52 页</a></li>
+<li class="toc-h4"><a href="#t03-p53">第 53 页</a></li>
+<li class="toc-h4"><a href="#t03-p54">第 54 页</a></li>
+<li class="toc-h4"><a href="#t03-p55">第 55 页</a></li>
+<li class="toc-h4"><a href="#t03-p56">第 56 页</a></li>
+<li class="toc-h4"><a href="#t03-p57">第 57 页</a></li>
+<li class="toc-h4"><a href="#t03-p58">第 58 页</a></li>
+<li class="toc-h4"><a href="#t03-p59">第 59 页</a></li>
+<li class="toc-h4"><a href="#t03-p60">第 60 页</a></li>
+<li class="toc-h4"><a href="#t03-p61">第 61 页</a></li>
+<li class="toc-h4"><a href="#t03-p62">第 62 页</a></li>
+<li class="toc-h4"><a href="#t03-p63">第 63 页</a></li>
+<li class="toc-h4"><a href="#t03-p64">第 64 页</a></li>
+<li class="toc-h4"><a href="#t03-p65">第 65 页</a></li>
+<li class="toc-h4"><a href="#t03-p66">第 66 页</a></li>
+<li class="toc-h4"><a href="#t03-p67">第 67 页</a></li>
+<li class="toc-h4"><a href="#t03-p68">第 68 页</a></li>
+<li class="toc-h4"><a href="#t03-p69">第 69 页</a></li>
+<li class="toc-h4"><a href="#t03-p70">第 70 页</a></li>
+<li class="toc-h4"><a href="#t03-p71">第 71 页</a></li>
+<li class="toc-h4"><a href="#t03-p72">第 72 页</a></li>
+<li class="toc-h4"><a href="#t03-p73">第 73 页</a></li>
+<li class="toc-h4"><a href="#t03-p74">第 74 页</a></li>
+<li class="toc-h4"><a href="#t03-p75">第 75 页</a></li>
+<li class="toc-h4"><a href="#t03-p76">第 76 页</a></li>
+<li class="toc-h4"><a href="#t03-p77">第 77 页</a></li>
+<li class="toc-h4"><a href="#t03-p78">第 78 页</a></li>
+<li class="toc-h4"><a href="#t03-p79">第 79 页</a></li>
+<li class="toc-h4"><a href="#t03-p80">第 80 页</a></li>
+<li class="toc-h4"><a href="#t03-p81">第 81 页</a></li>
+<li class="toc-h4"><a href="#t03-p82">第 82 页</a></li>
+<li class="toc-h4"><a href="#t03-p83">第 83 页</a></li>
+<li class="toc-h4"><a href="#t03-p84">第 84 页</a></li>
+<li class="toc-h4"><a href="#t03-p85">第 85 页</a></li>
+<li class="toc-h4"><a href="#t03-p86">第 86 页</a></li>
+<li class="toc-h4"><a href="#t03-p87">第 87 页</a></li>
+<li class="toc-h4"><a href="#t03-p88">第 88 页</a></li>
+<li class="toc-h4"><a href="#t03-p89">第 89 页</a></li>
+</ul>
+</div>
   </aside>
 
   <main class="content">
-    <section class="panel active">
-      <div class="chapter-head">
-        <div class="ch-kicker">TC03.pdf · 89 页</div>
-        <h1>Chapter 3 · Context-Free Languages · 复习笔记</h1>
-        <p>上下文无关文法、分析树与歧义、下推自动机、PDA⇄CFG 等价、闭包性质、泵引理与 CNF 成员判定。</p>
-      </div>
-      
+    <section id="panel-ov" class="panel active">
 <section class="overview">
-  <h2 id="r-0">上课进度与今晚的复习范围</h2>
+  <h2 id="ov-intro">0. 上课进度与今晚的复习范围</h2>
+
   <div class="note-box">
     <b>课堂进度：</b>上节课讲到 <b>第 74 页</b>（Theorem：CFL <b>不</b>封闭于交与补）。
     因此今晚把 <b>第 1–74 页</b>从头串一遍；<b>第 75–89 页</b>（3.6 算法、CNF、动态规划成员判定）
     是<b>明天新课</b>，本文档里也有完整转写，可提前扫一眼。
   </div>
+
+  <p>这是 <b>TC03.pdf</b>（<i>Elements of the Theory of Computation</i>,
+  Lewis &amp; Papadimitriou, 2nd ed.，Chapter 3 Context-Free Languages，共 89 页）的
+  <b>逐页忠实转写</b>，公式全部按原式重新排版为 LaTeX（KaTeX 离线渲染）。
+  本页导读是这份笔记额外撰写的复习提纲，<b>与课件原文分开</b>。</p>
 
   <div class="tbl-wrap">
   <table>
@@ -624,14 +634,15 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
       <tr><td>3.1 CFG</td><td>P3–P16</td><td>文法四元组、推导、$L(G)$；<b>正则语言 ⊆ CFL</b> 的构造</td><td>需复习</td></tr>
       <tr><td>3.2 分析树与歧义</td><td>P17–P27</td><td>parse tree、similar 关系、<b>四等价定理</b>、歧义文法</td><td>需复习</td></tr>
       <tr><td>3.3 PDA</td><td>P28–P37</td><td>六元组、配置、$\vdash_M$、接受条件、三个设计例</td><td>需复习</td></tr>
-      <tr><td>3.4 PDA ⇄ CFG</td><td>P38–P57</td><td><b>本Chapter 两大证明</b>：CFG→PDA、PDA→CFG</td><td><b>重点</b></td></tr>
+      <tr><td>3.4 PDA ⇄ CFG</td><td>P38–P57</td><td><b>本章两大证明</b>：CFG→PDA、PDA→CFG</td><td><b>重点</b></td></tr>
       <tr><td>3.5 闭包性质与泵引理</td><td>P58–P74</td><td>并/连接/星；<b>CFL ∩ 正则</b>；CFL 泵引理；<b>不封闭于交/补</b></td><td><b>重点</b></td></tr>
       <tr><td>3.6 算法</td><td>P75–P89</td><td>CNF 变换、动态规划成员判定</td><td>明天新课</td></tr>
     </tbody>
   </table>
   </div>
 
-  <h2 id="r-1">本章主线：两个「生成器/识别器」的对偶</h2>
+  <h2 id="ov-map">1. 本章主线：两个「生成器 / 识别器」的对偶</h2>
+
   <div class="fig">
     <svg viewBox="0 0 900 250" role="img" aria-label="第3章主线">
       <defs><style>
@@ -673,7 +684,8 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </svg>
   </div>
 
-  <h2 id="r-2">核心定义速查（考试直接默写级）</h2>
+  <h2 id="ov-models">2. 核心定义速查（考试直接默写级）</h2>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>对象</th><th>形式定义</th><th>要点</th><th>页</th></tr></thead>
@@ -682,12 +694,15 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
           <td>左部必须是<b>单个非终结符</b>，所以叫「上下文无关」。</td><td>P5</td></tr>
       <tr><td><b>推导</b></td><td class="tex">$A\Rightarrow_G v \iff (A,v)\in R$；$L(G)=\{w:S\Rightarrow_G^* w\}$</td>
           <td>$\Rightarrow_G^*$ 是自反传递闭包。</td><td>P6</td></tr>
-      <tr><td><b>parse tree</b></td><td>根为 $S$、叶为终结符，<b>yield</b> = 叶标号从左到右拼接</td>
+      <tr><td><b>分析树<br><span class="muted">parse tree</span></b></td>
+          <td>根为 $S$、叶为终结符，<b>yield</b> = 叶标号从左到右拼接</td>
           <td>三种定义方式：终结符单节点 / $A\to e$ / 规则 $A\to A_1\cdots A_n$ 拼 $n$ 棵子树。</td><td>P19–P21</td></tr>
       <tr><td><b>相似</b></td><td>$D\prec D'$：某一步展开 $A$、下一步展开 $B$（$A$ 在 $B$ 左边）</td>
           <td>相似是等价关系；<b>同一等价类 ⟺ 同一棵分析树</b>。</td><td>P22–P23</td></tr>
-      <tr><td><b>歧义</b></td><td>某个词有<b>两棵</b>分析树</td><td>$E\to E+E\mid E*E\mid(E)\mid id$ 是歧义文法。</td><td>P26–P27</td></tr>
-      <tr><td><b>PDA</b></td><td class="tex">$M=(K,\Sigma,\Gamma,\Delta,s,F)$，$\Delta\subseteq(K\times(\Sigma\cup\{e\})\times\Gamma^*)\times(K\times\Gamma^*)$</td>
+      <tr><td><b>歧义</b></td><td>某个词有<b>两棵</b>分析树</td>
+          <td>$E\to E+E\mid E*E\mid(E)\mid id$ 是歧义文法。</td><td>P26–P27</td></tr>
+      <tr><td><b>PDA</b></td>
+          <td class="tex">$M=(K,\Sigma,\Gamma,\Delta,s,F)$，$\Delta\subseteq(K\times(\Sigma\cup\{e\})\times\Gamma^*)\times(K\times\Gamma^*)$</td>
           <td>六元组；<b>非确定性</b>；有 $e$-转移（不读输入只动栈）。</td><td>P29–P31</td></tr>
       <tr><td><b>配置</b></td><td class="tex">$(q,w,\alpha)\in K\times\Sigma^*\times\Gamma^*$</td>
           <td>三元组：状态、剩余输入、栈内容（栈顶在<b>左</b>）。</td><td>P31</td></tr>
@@ -699,13 +714,15 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
   </table>
   </div>
 
-  <h2 id="r-3">两大核心证明（今晚重点）</h2>
+  <h2 id="ov-thm">3. 两大核心证明（今晚重点）</h2>
 
-  <h3 id="r-3a">证明 A：CFG → PDA（P38–P46）</h3>
+  <h3 id="ov-thm-a">证明 A：CFG → PDA（P38–P46）</h3>
+
   <div class="note-box">
     <b>一句话主轴：</b>让 PDA 的栈<b>模拟最左推导</b>。栈里存着「还没展开的非终结符」，
     栈顶就是当前要展开的那一个。
   </div>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>步骤</th><th>做什么</th><th>细节</th></tr></thead>
@@ -718,14 +735,17 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </tbody>
   </table>
   </div>
+
   <p><b>验证用的 Claim（双向靠它）：</b></p>
   $$S\xRightarrow{L}{}^*w\alpha \iff (q,w,S)\vdash_M^*(q,e,\alpha)$$
   <p>证明用<b>对最左推导长度归纳</b>：基始步（长度 0，$w=e,\alpha=S$）；
   归纳步把 $u_n=xA\beta$ 拆开，$A$ 是最左非终结符，$u_{n+1}=x\gamma\beta$，
   于是 $(q,e,A\beta)\vdash(q,e,\gamma\beta)$ 一步对应一条规则。</p>
 
-  <h3 id="r-3b">证明 B：PDA → CFG（P47–P57）</h3>
+  <h3 id="ov-thm-b">证明 B：PDA → CFG（P47–P57）</h3>
+
   <p>这个方向更难，课件分<b>三步</b>走（<b>这个三段式结构一定要记住</b>）：</p>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>步骤</th><th>做什么</th><th>关键构造</th><th>页</th></tr></thead>
@@ -746,6 +766,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </tbody>
   </table>
   </div>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>规则</th><th>形式</th><th>说明</th></tr></thead>
@@ -759,10 +780,12 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </tbody>
   </table>
   </div>
+
   <p><b>收尾 Claim：</b>$\langle q,A,p\rangle\Rightarrow_G^* x \iff (q,x,A)\vdash_M^*(p,e,e)$，
   取 $S\to\langle s,Z,f'\rangle$ 即得 $L(G)=L(M)$。<b>整条链条的逻辑闭环就在这一行。</b></p>
 
-  <h2 id="r-4">闭包性质：记「封什么、不封什么」</h2>
+  <h2 id="ov-closure">4. 闭包性质：记「封什么、不封什么」</h2>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>运算</th><th>CFL 是否封闭</th><th>怎么证 / 反例</th><th>页</th></tr></thead>
@@ -783,13 +806,15 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </tbody>
   </table>
   </div>
+
   <div class="note-box">
     <b>解题口诀：</b>「<b>并、连、星</b>必封闭；<b>跟正则求交</b>也封闭；
     <b>两个 CFL 求交、求补</b>不封闭。」<br>
     「某语言是 CFL」的证明，往往就是把它拆成 <b>CFL ∩ 正则</b>（P63 的例题就是这个套路）。
   </div>
 
-  <h2 id="r-5">CFL 泵引理：与第 2 章的对比 + 使用模板</h2>
+  <h2 id="ov-pump">5. CFL 泵引理：与第 2 章的对比 + 使用模板</h2>
+
   <div class="tbl-wrap">
   <table>
     <thead><tr><th></th><th>正则语言泵引理（P57–P63）</th><th>CFL 泵引理（P64–P68）</th></tr></thead>
@@ -807,6 +832,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     </tbody>
   </table>
   </div>
+
   <p><b>证「某语言不是 CFL」的标准五步（P71 的 Remark 就是这个模板）：</b></p>
   <ol class="tips">
     <li>设 $L$ 是待证的 CFL。</li>
@@ -815,6 +841,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <li>用泵引理得到 $w=uvxyz$，$|vy|\ge1$，$uv^nxy^nz\in L$。</li>
     <li>讨论 $v,y$ 的落点，<b>造出矛盾</b>：要么三段符号数量不匹配，要么 $uv^2xy^2z\notin L$。</li>
   </ol>
+
   <p><b>现成的三个例子</b>（P69 / P72 / P73），可直接套模板：</p>
   <ul class="tips">
     <li><b>$a^nb^nc^n$</b>（P69–P70）：取 $w=a^nb^nc^n$，$n>\phi(G)^{|V-\Sigma|}/3$。
@@ -825,7 +852,8 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
         后半部分是正则语言，所以<b>不能</b>用「CFL ∩ 正则」把它变成 CFL。</li>
   </ul>
 
-  <h2 id="r-6">其他易错点</h2>
+  <h2 id="ov-pit">6. 其他易错点</h2>
+
   <ol class="tips">
     <li><b>空串写作 <span class="tex">$e$</span></b>，不是 <span class="tex">$\varepsilon$</span>。
         注意 P28 幻灯片里把栈顶写成 <span class="tex">$a$</span> 是笔误。</li>
@@ -839,7 +867,8 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <li><b>单字母表上的 CFL 一定是正则的</b>（P72 的 Remark），是个常考的「意外」结论。</li>
   </ol>
 
-  <h2 id="r-7">今晚的复习路线（建议 2.5–3 小时）</h2>
+  <h2 id="ov-howto">7. 今晚的复习路线（建议 2.5–3 小时）</h2>
+
   <ol class="tips">
     <li><b>第一遍 · 骨架（40 分钟）</b>：P5–P6 定义 → P19–P24 分析树与四等价 → P29–P33 PDA 定义与接受条件。
         <b>目标</b>：能不看书写出 CFG 四元组、PDA 六元组、配置三元组。</li>
@@ -852,10 +881,17 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
     <li><b>第四遍 · 查漏 + 预习（20 分钟）</b>：扫 P75–P89（明天新课：CNF 变换三步、
         动态规划成员判定），把不熟的页码记下来。</li>
   </ol>
+
   <p class="muted">提示：左侧目录输入框支持按<b>页码</b>（如 <code>57</code>）或<b>关键词</b>
   （如 <code>泵</code>、<code>闭包</code>、<code>歧义</code>）过滤，复习时按主题来回跳会快很多。</p>
 </section>
-
+</section>
+    <section id="panel-t03" class="panel">
+      <div class="chapter-head">
+        <div class="ch-kicker">TC03.pdf · 89 页</div>
+        <h1>Chapter 3 · Context-Free Languages</h1>
+        <p>上下文无关文法、分析树与歧义、下推自动机、闭包性质、泵引理与 CNF 成员判定。</p>
+      </div>
       <h4 id="t03-p1">第 1 页</h4>
 <p><strong>Chapter 3 Context-Free Language</strong>（封面页）</p>
 <h4 id="t03-p2">第 2 页</h4>
@@ -2301,6 +2337,7 @@ $(()(())) \in L(G)$?</p>
 <script src="assets/katex/contrib/auto-render.min.js"></script>
 <script>
 (function () {
+  // 公式渲染
   if (window.renderMathInElement) {
     renderMathInElement(document.body, {
       delimiters: [
@@ -2313,11 +2350,31 @@ $(()(())) \in L(G)$?</p>
     });
   }
 
+  // Tab 切换
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var groups = Array.prototype.slice.call(document.querySelectorAll(".toc-group"));
+
+  function activate(id) {
+    tabs.forEach(function (t) { t.classList.toggle("active", t.dataset.target === id); });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === id); });
+    groups.forEach(function (g) { g.style.display = (g.dataset.panel === id) ? "" : "none"; });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    filterToc();
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activate(t.dataset.target); });
+  });
+  activate("panel-ov");
+
   // 目录过滤（支持页码 / 关键词）
   var filter = document.getElementById("tocFilter");
   function filterToc() {
     var q = (filter.value || "").trim().toLowerCase();
-    var items = document.querySelectorAll(".sidebar li");
+    var activePanel = document.querySelector(".panel.active").id;
+    var group = document.querySelector('.toc-group[data-panel="' + activePanel + '"]');
+    if (!group) return;
+    var items = group.querySelectorAll("li");
     items.forEach(function (li) {
       if (!q) { li.style.display = ""; return; }
       var txt = li.textContent.toLowerCase();
