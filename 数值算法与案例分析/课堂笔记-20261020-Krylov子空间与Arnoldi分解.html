@@ -2026,134 +2026,199 @@ A^ke_1=\tilde Q_k\tilde R_ke_1=\tilde Q_k\big(r_{11}^{(k)}e_1\big)=r_{11}^{(k)}q
 <figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 12 · QR 迭代的循环，以及它与幂法的接口</figcaption>
 </figure>
 
-<h4 id="punch">收口：为什么极限一定是对角线为 $\lambda$ 的上三角</h4>
+<h4 id="punch">收口：为什么极限是对角线为 $\lambda$ 的上三角</h4>
 
-<p>到这里我们只证明了两个<strong>恒等式</strong>：$A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k$（微观）与 $A^k=\tilde Q_k\tilde R_k$（宏观）。可这两个式子本身并没有说 $A_k$ 会变成上三角——任何相似变换都能写成第一个式子。真正要证的是：<strong>当 $k\to\infty$ 时，$\tilde Q_k$ 这组基恰好把 $A$ 逼近成上三角，而且对角元就是特征值。</strong>下面四步把它做完。</p>
-
-<h4>第一步：$A^k$ 的列，一列一列地被 $\lambda_1$ 吃掉</h4>
-
-<p>设 $A=X\Lambda X^{-1}$，$X=[x_1,\dots,x_n]$ 是右特征向量，$Y=X^{-1}$ 的第 $i$ 行记为 $y_i^{\mathsf T}$（左特征向量）。则</p>
-
-\[
-A^k=X\Lambda^kY=\sum_{i=1}^{n}\lambda_i^{k}\,x_i\,y_i^{\mathsf T},
-\]
-
-<p>它的第 $j$ 列是</p>
-
-\[
-(A^k)e_j=\sum_{i=1}^{n}\lambda_i^{k}y_{ij}\,x_i
-=\lambda_1^{k}\Bigg[y_{1j}x_1+\sum_{i\ge2}\Big(\frac{\lambda_i}{\lambda_1}\Big)^{k}y_{ij}x_i\Bigg].
-\]
-
-<p>因为 $\big|\lambda_i/\lambda_1\big|<1$，方括号里<strong>第二项指数衰减</strong>。所以 $A^k$ 的每一列都越来越贴近 $x_1$ 方向——这正是幂法，只不过这里 $n$ 列同时在跑。</p>
-
-<h4>第二步：前 $j$ 列张成的空间收敛到 $\operatorname{span}\{x_1,\dots,x_j\}$</h4>
-
-<p>只证「每列都趋于 $x_1$」是不够的（那只能得到第 1 列塌掉）。要的是更强的<strong>嵌套</strong>结论：</p>
-
-\[
-\operatorname{span}\big\{(A^k)e_1,\dots,(A^k)e_j\big\}\ \xrightarrow{\ k\to\infty\ }\ \operatorname{span}\{x_1,\dots,x_j\},
-\qquad j=1,2,\dots,n.
-\]
-
-<p><strong>为什么。</strong>把这 $j$ 列写成 $X\big(\Lambda^kY_j\big)$，其中 $Y_j$ 是 $Y$ 的前 $j$ 列。$\Lambda^k$ 的作用只是<strong>按行</strong>给不同权重 $\lambda_i^k$：第 $i$ 行整体乘 $\lambda_i^k$。于是把整个矩阵按 $\lambda_j^k$ 归一化之后，第 $i$ 行变成 $\big(\lambda_i/\lambda_j\big)^{k}$ 倍——</p>
-
-<ul>
-<li>$i\lt j$：$\big|\lambda_i/\lambda_j\big|>1$，这些行<strong>爆炸</strong>；</li>
-<li>$i>j$：$\big|\lambda_i/\lambda_j\big|<1$，这些行<strong>衰减到 0</strong>。</li>
-</ul>
-
-<p>所以 $\Lambda^kY_j$ 的列空间被压到前 $j$ 个坐标上，再乘 $X$ 就得到 $\operatorname{span}\{x_1,\dots,x_j\}$。这一步严格成立需要一个条件：<strong>$Y$ 的前 $j$ 阶顺序主子阵非奇异</strong>（否则「压到前 $j$ 个坐标」时信息会丢，$j$ 列可能只张成更低维的空间）。对一切 $j$ 都要求这一条，正是「$Y$ 有 LU 分解」——和下面定理里的假设是同一个。</p>
-
-<h4>第三步：Gram–Schmidt 让正交基跟着走</h4>
-
-<p>$\tilde Q_k$ 是 $A^k$ 的 QR 分解的正交因子，也就是把 $A^k$ 的 $n$ 列做 Gram–Schmidt 得到的正交基。Gram–Schmidt 的关键性质是<strong>逐列保持张成的空间</strong>：</p>
-
-\[
-\operatorname{span}\big\{q_1^{(k)},\dots,q_j^{(k)}\big\}=\operatorname{span}\big\{(A^k)e_1,\dots,(A^k)e_j\big\},
-\qquad j\le k .
-\]
-
-<p>右边第二步已经知道收敛到 $\operatorname{span}\{x_1,\dots,x_j\}$，所以左边也收敛到它。又因为 $q_j^{(k)}$ 是「这个空间里垂直于前 $j-1$ 个向量的那个方向」，而前 $j-1$ 个向量张成 $\operatorname{span}\{x_1,\dots,x_{j-1}\}$，于是</p>
-
-\[
-q_j^{(k)}\ \longrightarrow\ \pm\frac{x_j}{\|x_j\|_2}
-\qquad(j=1,\dots,n).
-\]
+<p>前面两步只证了两个恒等式，还没证结论。这一节把结论证出来。整条论证其实只靠一句话：</p>
 
 <div class="box key">
-<p class="label">这一步就是全部秘密</p>
-<p><strong>$\tilde Q_k$ 在逐列收敛到特征向量矩阵 $X$（差一些正负号和长度）。</strong>换句话说：QR 迭代迭代了 $k$ 步之后，那组正交基已经把 $A$ 的每个特征方向都「认出来了」，而且第 $j$ 列认的是<strong>第 $j$ 个</strong>特征方向——所以顺序一定是按 $|\lambda_1|>|\lambda_2|>\cdots$ 排的。</p>
+<p class="label">一句话</p>
+<p><strong>$A^k$ 的每一列都在做幂法</strong>——所以它的列一列接一列地塌向 $x_1,x_2,x_3,\dots$；而 QR 迭代的正交因子 $\tilde Q_k$ 正是把 $A^k$ 的列正交化的结果，于是 $\tilde Q_k$ 的列也跟着塌向「$x_j$ 的正交化版本」；$A$ 在这组基下的矩阵自然就成了上三角。</p>
 </div>
 
-<h4>第四步：把 $A_k$ 的元素算出来</h4>
+<p>先看一个 $2\times2$ 的例子，所有数字都能手算核对；再讲一般情形。</p>
 
-<p>由 $A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k$，它的 $(i,j)$ 元就是 Rayleigh 商型的量</p>
-
-\[
-\big(A_k\big)_{ij}=\big(q_i^{(k)}\big)^{\mathsf T}A\,q_j^{(k)} .
-\]
-
-<p>分三种情形，用的都是同一招——<strong>把 $Aq_j^{(k)}$ 写成 $\lambda_jq_j^{(k)}$ 加一个残量</strong>：</p>
+<h4>例子：$2\times2$，一眼看到全部现象</h4>
 
 \[
-\big(A_k\big)_{ij}=\big(q_i^{(k)}\big)^{\mathsf T}\big(Aq_j^{(k)}-\lambda_jq_j^{(k)}\big)+\lambda_j\,\big(q_i^{(k)}\big)^{\mathsf T}q_j^{(k)} .
+A=\begin{bmatrix}1&1\\-2&4\end{bmatrix},
+\qquad \lambda_1=3,\ \lambda_2=2,
+\qquad x_1=\begin{bmatrix}1\\2\end{bmatrix},\ x_2=\begin{bmatrix}1\\1\end{bmatrix}.
 \]
 
-<p>后一项在 $i\ne j$ 时为 $0$（正交），在 $i=j$ 时为 $\lambda_j$。前一项的量级是 $\|Aq_j^{(k)}-\lambda_jq_j^{(k)}\|$，而 $q_j^{(k)}\to\pm x_j/\|x_j\|$、$Ax_j=\lambda_jx_j$，所以它趋于 $0$。于是：</p>
+<p>（验算：$Ax_1=(3,6)^{\mathsf T}=3x_1$，$Ax_2=(2,2)^{\mathsf T}=2x_2$。）</p>
+
+<p><strong>① 先看 $A^k$ 的第 1 列。</strong>它在做幂法：</p>
 
 <table>
-<tr><th>位置</th><th>$(A_k)_{ij}$ 的行为</th><th>原因</th></tr>
-<tr><td>$i>j$（严格下三角）</td><td>$\to 0$</td><td>残量项 $\to0$，正交项 $=0$：<strong>必为零</strong></td></tr>
-<tr><td>$i=j$（对角）</td><td>$\to\lambda_j$</td><td>残量项 $\to0$，正交项 $=1$：<strong>就是特征值</strong></td></tr>
-<tr><td>$i\lt j$（严格上三角）</td><td>一般不收敛</td><td>被相位 $D_1^{(k)}$ 一直旋转（见下面严格证明的 ⑤），但我们<strong>不需要</strong>它收敛</td></tr>
+<tr><th>$k$</th><th>$A^k$ 的第 1 列</th><th>归一化后的方向</th></tr>
+<tr><td>$1$</td><td>$(1,\,-2)$</td><td>$(0.447,\,-0.894)$</td></tr>
+<tr><td>$2$</td><td>$(-1,\,-10)$</td><td>$(-0.100,\,-0.995)$</td></tr>
+<tr><td>$3$</td><td>$(-11,\,-38)$</td><td>$(-0.278,\,-0.961)$</td></tr>
+<tr><td>$5$</td><td>$(-179,\,-422)$</td><td>$(-0.391,\,-0.921)$</td></tr>
+<tr><td>$6$</td><td>$(-601,\,-1330)$</td><td>$(-0.412,\,-0.911)$</td></tr>
+<tr><td>$\to\infty$</td><td>——</td><td>$\pm(0.447,\,0.894)=\pm\dfrac{x_1}{\|x_1\|}$</td></tr>
 </table>
 
-<div class="box key">
-<p class="label">结论</p>
+<p>方向确实在往 $x_1=(1,2)$ 靠（前几步符号在翻，这是幂法的老毛病，不影响方向）。</p>
+
+<p><strong>② 再看 QR 迭代的 $A_k$。</strong></p>
+
+<table>
+<tr><th>$k$</th><th>$a_{11}$</th><th>$a_{12}$（右上）</th><th>$a_{21}$（左下）</th><th>$a_{22}$</th></tr>
+<tr><td>$1$</td><td>$3.800$</td><td>$0.600$</td><td>$-2.400$</td><td>$1.200$</td></tr>
+<tr><td>$2$</td><td>$3.871$</td><td>$2.287$</td><td>$-0.713$</td><td>$1.129$</td></tr>
+<tr><td>$3$</td><td>$3.501$</td><td>$2.724$</td><td>$-0.276$</td><td>$1.499$</td></tr>
+<tr><td>$5$</td><td>$3.183$</td><td>$2.926$</td><td>$-0.074$</td><td>$1.817$</td></tr>
+<tr><td>$8$</td><td>$3.049$</td><td>$2.983$</td><td>$-0.017$</td><td>$1.951$</td></tr>
+<tr><td>$12$</td><td>$3.009$</td><td>$2.997$</td><td>$-0.003$</td><td>$1.991$</td></tr>
+<tr><td>$20$</td><td>$3.000$</td><td>$3.000$</td><td>$-0.000$</td><td>$2.000$</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">三件事，一眼可见</p>
+<ol>
+<li><strong>左下角 $-2.4\to0$</strong>：下三角在灭。</li>
+<li><strong>对角线 $3.8\to3.000$、$1.2\to2.000$</strong>：正好是 $\lambda_1=3$、$\lambda_2=2$，而且按模从大到小排。</li>
+<li><strong>右上角 $0.6\to3.000$，不趋于 0！</strong>所以极限是 $\begin{bmatrix}3&3\\0&2\end{bmatrix}$——<strong>上三角，不是对角</strong>。</li>
+</ol>
+</div>
+
+<p>下面把这三件事各自「为什么」说清楚。</p>
+
+<h4>第 1 步：$A^k$ 的第 1 列 $\to x_1$（这就是幂法）</h4>
+
+<p>设 $A=X\Lambda X^{-1}$，把初始向量 $e_1$ 按特征向量展开，$e_1=c_1x_1+\cdots+c_nx_n$，则</p>
+
 \[
-A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k\ \longrightarrow\
+A^ke_1=\sum_{i=1}^{n}c_i\lambda_i^kx_i
+=\lambda_1^k\Big[c_1x_1+\sum_{i\ge2}c_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^{k}x_i\Big].
+\]
+
+<p>因为 $\big|\lambda_i/\lambda_1\big|\lt 1$，方括号里第二项指数衰减，所以<strong>方向趋于 $x_1$</strong>。这一步就是幂法，第一部分的结论直接搬过来用。</p>
+
+<h4>第 2 步：$\tilde Q_k$ 的第 1 列 $\to x_1$，于是 $A_k$ 的第 1 列塌掉</h4>
+
+<p>$\tilde Q_k$ 是 $A^k$ 的 QR 分解的正交因子，它的第 1 列就是「$A^k$ 第 1 列归一化」，所以</p>
+
+\[
+q_1^{(k)}\ \longrightarrow\ \frac{x_1}{\|x_1\|}.
+\]
+
+<p>而 $A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k$ 的第 1 列是 $(q_1^{\mathsf T}Aq_1,\;q_2^{\mathsf T}Aq_1,\;\dots)^{\mathsf T}$。对 $i\ge2$：</p>
+
+\[
+\big(q_i^{(k)}\big)^{\mathsf T}Aq_1^{(k)}
+=\big(q_i^{(k)}\big)^{\mathsf T}\big(\lambda_1q_1^{(k)}+\underbrace{(Aq_1^{(k)}-\lambda_1q_1^{(k)})}_{\to\,0}\big)
+=\lambda_1\underbrace{\big(q_i^{(k)}\big)^{\mathsf T}q_1^{(k)}}_{=\,0}+\;o(1)\ \longrightarrow\ 0 .
+\]
+
+<p>于是<strong>$A_k$ 的第 1 列趋于 $(\lambda_1,0,\dots,0)^{\mathsf T}$</strong>：第 1 列下面全是 0，$(1,1)$ 元是 $\lambda_1$。这正是 §1.5 的降阶（deflation），只不过在这里是自动发生的。</p>
+
+<h4>第 3 步：第 2 列塌向的不是 $x_2$，而是「$x_2$ 扣掉 $x_1$ 之后」</h4>
+
+<div class="box warn">
+<p class="label">这里有个坑，必须说清楚</p>
+<p>很多讲义会直接写「$q_j^{(k)}\to x_j$」。<strong>这只在 $A$ 是正规阵时才对</strong>。一般情况下 $x_1,x_2$ 并不正交，而 $q_1,q_2$ 必须正交，两者不可能都成立。看上面的例子：$q_2$ 只能落在 $q_1$ 的正交补里，所以它趋于的是 $(1,2)$ 的正交方向 $(-2,1)$，而不是 $x_2=(1,1)$。</p>
+</div>
+
+<p>正确的说法是：<strong>第 $j$ 列塌向「$x_j$ 扣掉前 $j-1$ 个方向之后剩下的那部分」</strong>。看 $j=2$：</p>
+
+\[
+A^ke_2=\lambda_1^k\Big[c_1'x_1+\cdots\Big]+\lambda_2^k\,c_2'x_2+\cdots
+\]
+
+<p>它主要也指向 $x_1$（因为 $\lambda_1$ 最大）。但 $q_2$ 的定义是「$A^k$ 第 2 列减去它在 $q_1$ 上的投影，再归一化」——<strong>这一步恰好把 $x_1$ 那一大块扣掉了</strong>，剩下的主导项就是 $\lambda_2^kc_2'x_2$。所以</p>
+
+\[
+q_2^{(k)}\ \longrightarrow\ \pm\,\frac{x_2-\big(q_1^{\mathsf T}x_2\big)q_1}{\big\|x_2-\big(q_1^{\mathsf T}x_2\big)q_1\big\|},
+\qquad q_1=\frac{x_1}{\|x_1\|}.
+\]
+
+<p>右边这个东西不是 $x_2$，而是 <strong>$x_2$ 的 Gram–Schmidt 版本</strong>——也就是把 $X=[x_1,x_2]$ 做 QR 分解 $X=QR$ 之后 $Q$ 的第 2 列。</p>
+
+<h4>第 4 步：一路推下去（这就是「等」）</h4>
+
+<p>同样的道理，第 $j$ 列在扣掉前 $j-1$ 个方向后，剩下的主导项是 $\lambda_j^kc_j^{(j)}x_j$，所以</p>
+
+\[
+q_j^{(k)}\ \longrightarrow\ Q\ \text{的第 }j\text{ 列},\qquad X=QR\ \text{是}\ X\ \text{的 QR 分解}.
+\]
+
+<p>换句话说：<strong>$\tilde Q_k\to Q$，而 $Q$ 就是把特征向量矩阵 $X$ 正交化的结果。</strong>（第 1 步～第 3 步分别是 $j=1,2$ 的特例，所以这三步和这句话是一回事。）</p>
+
+<h4>第 5 步：算 $A_k$ 的元素，收网</h4>
+
+<p>既然 $\tilde Q_k\to Q$，那么</p>
+
+\[
+A_k=\tilde Q_k^{\mathsf T}A\tilde Q_k\ \longrightarrow\ Q^{\mathsf T}AQ .
+\]
+
+<p>而 $A=X\Lambda X^{-1}=(QR)\Lambda(QR)^{-1}=Q\,(R\Lambda R^{-1})\,Q^{\mathsf T}$，所以</p>
+
+\[
+Q^{\mathsf T}AQ=R\Lambda R^{-1}.
+\]
+
+<div class="box key">
+<p class="label">收网</p>
+<p>$R$ 上三角、$\Lambda$ 对角、$R^{-1}$ 上三角 ⟹ <strong>$R\Lambda R^{-1}$ 是上三角阵</strong>，对角元是 $r_{ii}\lambda_ir_{ii}^{-1}=\lambda_i$。于是</p>
+\[
+A_k\ \longrightarrow\ R\Lambda R^{-1}=
 \begin{bmatrix}
 \lambda_1&*&\cdots&*\\
 &\lambda_2&\ddots&\vdots\\
 &&\ddots&*\\
 &&&\lambda_n
 \end{bmatrix}
-\qquad(k\to\infty)
 \]
 <p><strong>严格下三角全部趋于 0，对角线上是全部特征值，且按模从大到小排列。</strong></p>
-<p>这就是 QR 方法成立的全部理由：不是「换个乘法顺序就换出了三角」，而是 <strong>$A^k$ 的列按幂法的次序一列接一列地塌向特征方向 ⟹ 那组正交基逐列逼近特征向量 ⟹ $A$ 在这组基下的矩阵逐列失去下三角</strong>。</p>
+<p>整个论证只用了一句话：$A^k$ 的列在做幂法 ⟹ 它的正交化结果 $Q$ 就是 $X$ 的正交化结果 ⟹ $A$ 在这组基下变成 $R\Lambda R^{-1}$。</p>
 </div>
 
-<h4>顺带回答一个自然的问题：为什么是上三角，不是对角？</h4>
-
-<p>因为第三步给的只是<strong>嵌套的不变子空间</strong>：$\operatorname{span}\{q_1,\dots,q_j\}\to\operatorname{span}\{x_1,\dots,x_j\}$，而后者对 $A$ 不变。所以 $Aq_j$ 只落在前 $j$ 个方向上，$(i,j)$ 元在 $i>j$ 时为 0——<strong>这就是上三角</strong>。</p>
-
-<p>至于右上角（$i\lt j$）为什么一般<strong>不</strong>为 0：把第四步的极限算到底，</p>
+<p>逐元素地看，就是第 2 步那个计算的推广：</p>
 
 \[
-\big(A_k\big)_{ij}=q_i^{\mathsf T}Aq_j\ \longrightarrow\ \pm\frac{\lambda_j\,x_i^{\mathsf T}x_j}{\|x_i\|_2\,\|x_j\|_2}\qquad(i\lt j).
+\big(A_k\big)_{ij}=\big(q_i^{(k)}\big)^{\mathsf T}Aq_j^{(k)}
+=\lambda_j\big(q_i^{(k)}\big)^{\mathsf T}q_j^{(k)}+\big(q_i^{(k)}\big)^{\mathsf T}\big(Aq_j^{(k)}-\lambda_jq_j^{(k)}\big).
 \]
 
-<p>这个极限一般<strong>不是 0</strong>，因为特征向量之间并不正交（$x_i^{\mathsf T}x_j\ne0$）；而且正负号会被相位 $D_1^{(k)}$ 一步一翻，所以<strong>序列本身可能不收敛、但绝对值收敛</strong>。这正好解释了下面严格证明里那个 warn 框说的「严格上三角元不一定收敛，而我们并不需要它收敛」。</p>
+<ul>
+<li>$i\gt j$：第一项因正交为 0，第二项因残量 $\to0$ 为 0 ⟹ <strong>严格下三角必为 0</strong>；</li>
+<li>$i=j$：第一项为 $\lambda_j$，第二项为 0 ⟹ <strong>对角线就是特征值</strong>（这就是 Rayleigh 商收敛到特征值）；</li>
+<li>$i\lt j$：第二项是残量在 $q_i$ 上的分量，<strong>一般不为 0</strong> ⟹ 右上角留着。</li>
+</ul>
+
+<h4>为什么是上三角，不是对角</h4>
+
+<p>就落在上面第三行：右上角等于「残量在 $q_i$ 上的分量」，而残量是 $Aq_j-\lambda_jq_j$，它躺在 $\operatorname{span}\{x_1,\dots,x_j\}$ 里；$q_i$（$i\lt j$）也在这个空间里，两者<strong>不正交</strong>，内积就不为 0。</p>
+
+<p>回到例子：$\lambda_2=2$，$q_1\to(1,2)/\sqrt5$，$q_2\to(-2,1)/\sqrt5$，于是</p>
+
+\[
+\big(A_k\big)_{12}=q_1^{\mathsf T}Aq_2\ \longrightarrow\ \frac{1}{5}(1,2)\begin{bmatrix}1&1\\-2&4\end{bmatrix}\begin{bmatrix}-2\\1\end{bmatrix}
+=\frac{1}{5}(1,2)\begin{bmatrix}-1\\8\end{bmatrix}=\frac{15}{5}=3,
+\]
+
+<p>正好对上表里的 $3.000$。</p>
 
 <div class="box ok">
-<p class="label">一个特例说明了差别</p>
-<p>若 $A$ 是<strong>正规阵</strong>（$A^*A=AA^*$，对称 / Hermite 是其特例），特征向量可以取成一组<strong>正交</strong>基，于是 $X$ 本身就是正交阵、$q_j^{(k)}\to\pm x_j$ 时各列之间也互相正交，右上角跟着一起趋于 0——极限是<strong>对角阵</strong>。非正规矩阵没有这个福气，只能到上三角为止。</p>
-<p>这也正好对上实 Schur 定理（§7.3）：一般矩阵只能酉相似到<strong>上三角</strong>，正规矩阵才能酉相似到对角。</p>
+<p class="label">什么情况下会退化成对角</p>
+<p>如果 $A$ 是<strong>正规阵</strong>（$A^*A=AA^*$，对称 / Hermite 是特例），特征向量可以取成一组正交基，于是 $X$ 本身就是正交阵，$X=QR$ 里的 $R$ 是对角阵（差符号），$R\Lambda R^{-1}=\Lambda$——<strong>右上角一起归零，极限是对角阵</strong>。</p>
+<p>非正规阵没有这个福气，只能到上三角为止。这正是实 Schur 定理（§7.3）说的：一般矩阵只能酉相似到<strong>上三角</strong>，正规矩阵才能酉相似到对角。</p>
 </div>
 
-<p><strong>收敛速度。</strong>第四步里的残量 $\|Aq_j^{(k)}-\lambda_jq_j^{(k)}\|$ 与 $q_j^{(k)}$ 的误差同阶，而后者由第二步的「行压缩」决定，于是</p>
+<p><strong>收敛速度。</strong>第 3、4 步里「扣掉前面方向后剩下的杂质」每步乘一个 $\big|\lambda_{j+1}/\lambda_j\big|$，于是</p>
 
 \[
-\big|\big(A_k\big)_{ij}\big|=O\!\left(\left|\frac{\lambda_i}{\lambda_j}\right|^{k}\right)\qquad(i>j),
+\big|\big(A_k\big)_{ij}\big|=O\!\left(\left|\frac{\lambda_i}{\lambda_j}\right|^{k}\right)\qquad(i\gt j),
 \]
 
-<p>即<strong>线性收敛</strong>，速率由特征值的分离程度决定。这就是为什么 $\lambda_{n-1}$ 与 $\lambda_n$ 靠得很近时，最后那个次对角元会拖很久——也正是 §7.6 要用位移来救它的原因。</p>
+<p>即<strong>线性收敛</strong>，速率由特征值分离程度决定。这也解释了为什么 $\lambda_{n-1}$ 与 $\lambda_n$ 靠得近时，最后那个次对角元会拖很久——正是 §7.6 要用位移来救它的原因。</p>
 
 <h4 id="thm">收敛性定理与严格证明</h4>
 
-<p>上面四步是<strong>几何论证</strong>：说清了「为什么会塌、塌了之后为什么是上三角」。它唯一的软肋是「$\Lambda^kY_j$ 的列空间被压到前 $j$ 个坐标上」这句话——这在 $k\to\infty$ 的极限意义下是对的，但没给出定量控制。下面把它换成一次<strong>纯粹的代数操作</strong>，一步到位地拿到严格结论和误差阶；两条路结论相同，可以互相对照。</p>
+<p>上面的论证是<strong>直观版</strong>：说清了「为什么塌、塌了之后为什么是上三角」。它的软肋在第 4 步——「$\tilde Q_k\to Q$」这句话只给了直觉，没有给出定量控制。下面把它换成一次<strong>纯粹的代数操作</strong>：不引用任何极限的几何直观，直接构造出 $A^k$ 的 QR 分解，再与 $A_k$ 的表达式对号入座，一步拿到严格结论和误差阶。两条路结论相同，可以互相对照。</p>
 
 <div class="box">
 <p class="label">定理（数值线性代数，定理 6.4.1）</p>
