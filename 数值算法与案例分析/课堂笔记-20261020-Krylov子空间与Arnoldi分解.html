@@ -66,7 +66,7 @@ hr{border:0; border-top:1px solid var(--line); margin:44px 0}
 .box.key{background:var(--accent-bg); border-color:transparent}
 .box.warn{background:var(--warn-bg); border-color:transparent}
 .box.ok{background:var(--ok-bg); border-color:transparent}
-.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px; text-transform:uppercase}
+.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px}
 .box.key .label{color:var(--accent)}
 .box.warn .label{color:var(--warn)}
 .box.ok .label{color:var(--ok)}
@@ -182,6 +182,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
     <li><a href="#s32">迭代格式与板书原文</a></li>
     <li><a href="#s33">为什么每一步都必须重做 QR</a></li>
     <li><a href="#s34">收敛速度与那个被圈出来的 $\lambda_{k+1}$（矩阵推导 + Wilkinson 反例）</a></li>
+    <li><a href="#s35">$R$ 的对角元：特征值的影子</a></li>
   </ol>
 </li>
 <li><a href="#p4">Krylov 子空间与 Arnoldi 分解</a>
@@ -555,6 +556,30 @@ x_i^{(j)}=\lambda_1^i\Big(\alpha_1^{(j)}q_1+\sum_{m=2}^{n}\alpha_m^{(j)}\Big(\fr
 <figcaption>图 3 · 子空间迭代里 QR 的唯一作用：把已经占优的方向从其余列里剥掉，防止 $k$ 列退化成同一个方向。</figcaption>
 </figure>
 
+<h4 id="si-geometry">几何直觉：QR 就是「按资排辈」</h4>
+
+<p>把 $p=2$ 走一遍，机制就全看清了。设 $\lambda_1\gt\lambda_2\gt\lambda_3\gt\cdots$，$X_0=[x_1^{(0)},x_2^{(0)}]$ 两列都「不纯」，各掺着所有特征向量的成分。</p>
+
+<p><strong>第一次迭代。</strong>先乘 $A$：$y_1=Ax_1^{(0)}$、$y_2=Ax_2^{(0)}$。两列里 $v_1$ 的成分都被放大得最狠，占了绝对主导——但它们<strong>不垂直</strong>。接着做 QR：</p>
+
+<ul>
+<li>$q_1=y_1/\|y_1\|_2$：因为 $v_1$ 被放大得最多，$q_1$ 已经<strong>非常接近 $v_1$</strong>；</li>
+<li>$y_2'=y_2-\big(q_1^{\mathsf T}y_2\big)q_1$：这一步是关键。$q_1^{\mathsf T}y_2$ 是 $y_2$ 在 $q_1$（$\approx v_1$）上的投影，减掉它，等于把 $y_2$ 里的 $v_1$ 成分<strong>像剥洋葱一样剥掉</strong>；剩下的主要是 $v_2$ 以及更小的成分，归一化得 $q_2$。</li>
+</ul>
+
+<p><strong>第二次迭代。</strong>$y_1=Aq_1$、$y_2=Aq_2$。$q_1$ 更纯了；$q_2$ 主要是 $v_2$ 但还混着一点 $v_3$，乘 $A$ 后 $v_2$ 放大 $\lambda_2$、$v_3$ 放大 $\lambda_3$——因为 $\lambda_2\gt\lambda_3$，$v_3$ 相对又弱了一截。再做 QR，再用 $q_1$ 把 $q_2$ 里残留的 $v_1$ 抠掉。</p>
+
+<div class="box key">
+<p class="label">一句话：按资排辈</p>
+<ul>
+<li>第 1 列放大最快，<strong>抢先占住 $v_1$</strong>；</li>
+<li>第 2 列被迫扣掉 $v_1$ 的投影，<strong>只能去占 $v_2$</strong>；</li>
+<li>第 3 列被 $v_1,v_2$ 联合「霸凌」，扣掉两个大头的投影后<strong>只剩 $v_3$</strong>；</li>
+<li>……依此类推。</li>
+</ul>
+<p>所谓「分离」，本质就是<strong>高阶成分对低阶成分的强制投影消除</strong>。乘 $A$ 负责「论功行赏」（放大 $\lambda$ 大的），QR 负责「强制分家」（扣掉前面几个的投影）。两者缺一不可：只乘 $A$ 不分家，$k$ 列全挤向 $v_1$；只分家不乘 $A$，$A$ 的信息根本进不来。</p>
+</div>
+
 <h3 id="s34">§3.4 收敛速度与那个被圈出来的 $\lambda_{k+1}$<span class="tag">板书 170（右）</span></h3>
 
 <p><strong>一句话：</strong>$\mathrm{span}(X_i)\to\mathrm{span}\{q_1,\dots,q_k\}$ 的速度是 $|\lambda_{k+1}/\lambda_k|$；板书把 $\lambda_{k+1}$ <strong>圈出来</strong>，就是在标「污染源」。</p>
@@ -651,6 +676,8 @@ X_i=A^iX_0=A^iV\,C=V\Lambda^iC
 
 <p>误差重新按 $\rho^{i}$ 指数衰减，一路降到 $10^{-12}$ 量级的机器精度。图上看就是：$p=5$ 的曲线卡在 $10^{-8}$，$p=6$ 的曲线一路到底。</p>
 
+<p>换个说法更直观。<strong>$p=5$ 时第 5 列被要求「在 $v_5$ 与 $v_6$ 之间选一个」</strong>，可这两条路的放大倍数一模一样（$|-8.35|/8.35=1$），它选哪个都「不算错」，于是只能在两者之间打转；<strong>$p=6$ 时 $\{v_5,v_6\}$ 这个二维空间被整块收进来</strong>，第 5、6 列在里面各占一个方向，<strong>不再有「漏在外面的那一个」</strong>，纠缠就消失了。这正是「多取一列」为什么管用：不是多算了一个特征值，而是<strong>把一个分不开的对子整块包住</strong>。</p>
+
 <div class="box ok">
 <p class="label">可操作的结论：多取一列</p>
 <p><strong>要 $p$ 个特征值时，别只开 $p$ 列。</strong>只要矩阵有对称性、成对特征值或重特征值，就让迭代跑 $p+1$（甚至 $p+2$）列，算完再丢掉多余的那几列。多一列只多一次 matvec，却能绕开 $\rho=1$ 的死局——这也是 ARPACK、MATLAB <code>eigs</code> 这类实现默认多取几个向量的原因。</p>
@@ -671,6 +698,49 @@ X_i=A^iX_0=A^iV\,C=V\Lambda^iC
 <p class="label">子空间迭代的代价：这是引出 Krylov 的动机</p>
 <p>要维持一个 $k$ 维子空间，子空间迭代<strong>每推进一步就要 $k$ 次 matvec</strong>（$k$ 列各乘一次 $A$），再加一次 $n\times k$ 的 QR（$O(nk^2)$）。而且它<strong>没有嵌套性</strong>：想从 $k=5$ 加到 $k=6$，前面算的 5 维子空间几乎用不上，得重来。</p>
 <p>Krylov 子空间的好处正是这两条的反面：$k$ 维子空间只要 $k-1$ 次 matvec，而且 $\mathcal{K}_1\subset\mathcal{K}_2\subset\cdots$ 天然嵌套。见 <a href="#p6">第六部分</a> 的对照表。</p>
+</div>
+
+<h3 id="s35">§3.5 $R$ 的对角元：特征值的影子<span class="tag o">教材补充</span></h3>
+
+<p><strong>一句话：</strong>算法每步都把 $R$ 扔掉了，但 $R$ 的对角元 $r_{11},r_{22},\dots$ 正好在<strong>逼近 $\lambda_1,\dots,\lambda_p$</strong>。所以子空间迭代不只能给特征向量，还能顺手给出特征值。</p>
+
+<p>用 Gram–Schmidt 的公式直接读。设 $Y=AQ_{i-1}$ 的两列是 $y_1,y_2$，$Y=Q_iR_i$，则</p>
+
+\[
+q_1=\frac{y_1}{r_{11}}\ \Rightarrow\ r_{11}=\|y_1\|_2,
+\qquad
+q_2=\frac{y_2-r_{12}q_1}{r_{22}}\ \Rightarrow\
+\begin{cases}r_{12}=q_1^{\mathsf T}y_2,&\text{（投影系数）}\\[2pt] r_{22}=\|y_2-r_{12}q_1\|_2&\text{（剥掉投影后剩下的长度）}\end{cases}
+\]
+
+<p>当算法稳定下来、$q_1\approx v_1$ 时，$y_1=Aq_1\approx Av_1=\lambda_1v_1$，于是</p>
+
+\[
+r_{11}=\|y_1\|_2\ \approx\ |\lambda_1| .
+\]
+
+<p>而 $r_{22}$ 是「剥掉 $v_1$ 之后剩下的那一段」的长度，那一段主要是 $v_2$，所以 $r_{22}\approx|\lambda_2|$。一般地（对称情形，$\lambda$ 都是实数）</p>
+
+\[
+r_{jj}\ \longrightarrow\ |\lambda_j|,\qquad j=1,\dots,p .
+\]
+
+<div class="box key">
+<p class="label">实现上的意义：别把 R 当垃圾</p>
+<p>标准的子空间迭代循环体应该写成</p>
+<pre><code>[Q, R] = qr(A * Q);      % 每步都留着 R
+lam    = diag(R);        % 特征值估计直接读出来</code></pre>
+<p>$R$ 的对角元是<strong>这一步的特征值估计</strong>，而且精度和 $Q$ 的收敛同步——不用另外算 Rayleigh 商。这也解释了 §3.3 那句「扔掉 $R$ 只是扔掉这一轮的尺度」：尺度里装的正是特征值。</p>
+</div>
+
+<div class="box warn">
+<p class="label">一个容易搞错的点：$r_{jj}$ 不是 Rayleigh 商</p>
+<ul>
+<li><strong>$q_j^{\mathsf T}Aq_j$（Rayleigh 商）</strong>收敛到 $\lambda_j$，<strong>带符号</strong>；</li>
+<li><strong>$r_{jj}$</strong>是长度，按 QR 的约定恒非负，所以收敛到 $|\lambda_j|$。</li>
+</ul>
+<p>遇到负特征值（Wilkinson 矩阵就有一半是负的）时，两者差一个符号。实用做法：<strong>用 <code>diag(R)</code> 定量级，用 $q_j^{\mathsf T}Aq_j$ 定符号</strong>。</p>
+<p>非对称情形下 $r_{jj}$ 不再精确等于 $|\lambda_j|$（复特征值时更是如此），但它仍然是「这一步 $q_j$ 方向被放大了多少倍」的可靠度量，量级上照样能用。</p>
 </div>
 
 <hr>
