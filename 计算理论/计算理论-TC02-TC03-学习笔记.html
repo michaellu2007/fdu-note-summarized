@@ -893,20 +893,20 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
 
       <!-- 四层嵌套 -->
       <rect x="20" y="46" width="420" height="262" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6"/>
-      <text x="36" y="72" class="ft lbl" fill="#92400e">Unrestricted Grammar</text>
-      <text x="36" y="90" class="ft sub" fill="#b45309">识别器：Turing Machine</text>
+      <text x="36" y="72" class="ft lbl" fill="#92400e">0 型文法（无限制文法）</text>
+      <text x="36" y="90" class="ft sub" fill="#b45309">识别器：图灵机</text>
 
       <rect x="46" y="102" width="368" height="192" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.6"/>
-      <text x="62" y="128" class="ft lbl" fill="#5b21b6">Context-Sensitive Grammar</text>
-      <text x="62" y="146" class="ft sub" fill="#7c3aed">识别器：Linear Bounded Automaton</text>
+      <text x="62" y="128" class="ft lbl" fill="#5b21b6">1 型文法（上下文相关文法）</text>
+      <text x="62" y="146" class="ft sub" fill="#7c3aed">识别器：线性有界自动机</text>
 
       <rect x="72" y="158" width="316" height="122" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="1.6"/>
-      <text x="88" y="184" class="ft lbl" fill="#065f46">Context-Free Grammar　（第 3 章）</text>
-      <text x="88" y="202" class="ft sub" fill="#047857">识别器：Pushdown Automaton（加栈）</text>
+      <text x="88" y="184" class="ft lbl" fill="#065f46">2 型文法（上下文无关文法，第 3 章）</text>
+      <text x="88" y="202" class="ft sub" fill="#047857">识别器：下推自动机（加栈）</text>
 
       <rect x="98" y="214" width="264" height="52" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.6"/>
-      <text x="114" y="236" class="ft lbl" fill="#1e40af">Regular Grammar　（第 2 章）</text>
-      <text x="114" y="254" class="ft sub" fill="#1d4ed8">识别器：Finite Automaton（无额外存储）</text>
+      <text x="114" y="236" class="ft lbl" fill="#1e40af">3 型文法（正则文法，第 2 章）</text>
+      <text x="114" y="254" class="ft sub" fill="#1d4ed8">识别器：有限自动机（无额外存储）</text>
 
       <!-- 右侧对偶 -->
       <text x="480" y="28" class="ft lbl" fill="#1e293b">贯穿两章的“识别 / 生成”对偶</text>
@@ -916,7 +916,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
       <text x="570" y="90" class="ft sub" fill="#3b82f6" text-anchor="middle">识别器（第 2 章）</text>
 
       <rect x="700" y="46" width="180" height="58" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-      <text x="790" y="72" class="ft lbl" fill="#1e40af" text-anchor="middle">Regular Expression</text>
+      <text x="790" y="72" class="ft lbl" fill="#1e40af" text-anchor="middle">正则表达式</text>
       <text x="790" y="90" class="ft sub" fill="#3b82f6" text-anchor="middle">生成器（第 2 章）</text>
       <path d="M662 75 H698" stroke="#3b82f6" stroke-width="2"/>
       <path d="M690 69 L700 75 L690 81" fill="none" stroke="#3b82f6" stroke-width="2"/>
@@ -954,7 +954,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
         .s2{font-size:11.5px;}
       </style></defs>
       <rect x="0" y="0" width="900" height="250" fill="#ffffff"/>
-      <text x="20" y="26" class="ft2 t2" fill="#1e293b">第 2 章 Finite Automata 的推进顺序</text>
+      <text x="20" y="26" class="ft2 t2" fill="#1e293b">第 2 章 有限自动机 的推进顺序</text>
       <g class="ft2">
         <rect x="20" y="40" width="120" height="54" rx="9" fill="#dbeafe" stroke="#3b82f6"/>
         <text x="80" y="63" class="t2" fill="#1e40af" text-anchor="middle">DFA</text>
@@ -962,7 +962,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
 
         <rect x="160" y="40" width="120" height="54" rx="9" fill="#dbeafe" stroke="#3b82f6"/>
         <text x="220" y="63" class="t2" fill="#1e40af" text-anchor="middle">NFA</text>
-        <text x="220" y="81" class="s2" fill="#3b82f6" text-anchor="middle">2.2 ε-转移</text>
+        <text x="220" y="81" class="s2" fill="#3b82f6" text-anchor="middle">2.2 空转移（ε）</text>
 
         <rect x="300" y="40" width="140" height="54" rx="9" fill="#e0e7ff" stroke="#6366f1"/>
         <text x="370" y="63" class="t2" fill="#3730a3" text-anchor="middle">子集构造</text>
@@ -978,7 +978,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
 
         <rect x="770" y="40" width="110" height="54" rx="9" fill="#fef3c7" stroke="#f59e0b"/>
         <text x="825" y="63" class="t2" fill="#92400e" text-anchor="middle">最小化</text>
-        <text x="825" y="81" class="s2" fill="#d97706" text-anchor="middle">2.5 Myhill-Nerode</text>
+        <text x="825" y="81" class="s2" fill="#d97706" text-anchor="middle">2.5 Myhill-Nerode 定理</text>
       </g>
       <g stroke="#94a3b8" stroke-width="1.6" fill="none">
         <path d="M140 67 H158"/><path d="M152 62 L160 67 L152 72"/>
@@ -988,7 +988,7 @@ table.kv th { background: var(--blue-soft); color: var(--blue); }
         <path d="M750 67 H768"/><path d="M762 62 L770 67 L762 72"/>
       </g>
 
-      <text x="20" y="136" class="ft2 t2" fill="#1e293b">第 3 章 Context-Free Languages 的推进顺序</text>
+      <text x="20" y="136" class="ft2 t2" fill="#1e293b">第 3 章 上下文无关语言 的推进顺序</text>
       <g class="ft2">
         <rect x="20" y="150" width="130" height="54" rx="9" fill="#d1fae5" stroke="#10b981"/>
         <text x="85" y="173" class="t2" fill="#065f46" text-anchor="middle">CFG</text>
