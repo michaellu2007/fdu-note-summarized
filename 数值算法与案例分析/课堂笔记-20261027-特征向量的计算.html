@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课堂笔记 · 2026-10-27 · 特征向量的计算：QR 之后还剩什么</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.8; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px; margin:0 auto; padding:56px 32px 96px}
+.eyebrow{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+h1{font-size:30px; line-height:1.35; font-weight:600; margin:0 0 18px; letter-spacing:-.01em}
+.lede{font-size:15px; color:var(--ink2); margin:0 0 8px}
+h2{
+  font-size:21px; font-weight:600; margin:56px 0 18px; padding-bottom:10px;
+  border-bottom:1px solid var(--line); letter-spacing:-.01em;
+}
+h3{font-size:17px; font-weight:600; margin:34px 0 12px}
+h4{font-size:15px; font-weight:600; margin:24px 0 8px; color:var(--ink2)}
+p{margin:12px 0}
+ul,ol{margin:12px 0; padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; background:var(--bg2); padding:1px 5px; border-radius:4px}
+pre{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:14px 18px; overflow-x:auto; font-size:13px; line-height:1.65}
+pre code{background:none; padding:0}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+.toc{background:var(--bg3); border:1px solid var(--line); border-radius:12px; padding:18px 24px; margin:28px 0 8px}
+.toc ol{margin:8px 0 0; padding-left:22px}
+.toc li{margin:3px 0; font-size:14.5px}
+.toc ol ol{margin:2px 0 8px; padding-left:20px; border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px; color:var(--ink2)}
+.tag{
+  display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.02em;
+  padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:2px;
+  background:var(--gold-bg); color:var(--gold); white-space:nowrap;
+}
+.tag.a{background:var(--accent-bg); color:var(--accent)}
+.tag.o{background:var(--ok-bg); color:var(--ok)}
+.box{border:1px solid var(--line); border-radius:12px; padding:16px 22px; margin:20px 0; background:var(--bg3)}
+.box.key{background:var(--accent-bg); border-color:transparent}
+.box.warn{background:var(--warn-bg); border-color:transparent}
+.box.ok{background:var(--ok-bg); border-color:transparent}
+.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse; width:100%; margin:20px 0; font-size:14.5px}
+th,td{border-bottom:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
+.katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.5px; color:var(--ink3); margin-top:6px}
+table.apx th:nth-child(1),table.apx td:nth-child(1){width:52px}
+table.apx th:nth-child(2),table.apx td:nth-child(2){width:58px; white-space:nowrap}
+table.apx th:nth-child(4),table.apx td:nth-child(4){width:104px}
+.qrdemo{border:1px solid var(--line); border-radius:12px; background:var(--bg3); padding:16px 18px; margin:22px 0}
+.qrdemo-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
+.qrdemo-title{font-size:12.5px; font-weight:600; letter-spacing:.06em; color:var(--ink2); text-transform:uppercase}
+.qrdemo-step{font-size:13px; color:var(--ink3); font-variant-numeric:tabular-nums}
+.qrdemo-grid{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; margin:14px auto 12px; max-width:430px}
+.qrdemo-grid div{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:5px;
+  font-size:13px; font-variant-numeric:tabular-nums; transition:background-color .12s ease, color .12s ease}
+.qrdemo-range{width:100%; margin:0; accent-color:var(--accent)}
+.qrdemo-ticks{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink3); margin-top:2px}
+.qrdemo-readout{font-size:13px; color:var(--ink2); margin-top:12px; line-height:1.85}
+.qrdemo-readout b{color:var(--ink); font-variant-numeric:tabular-nums; font-weight:600}
+.qrdemo-bar{height:5px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:7px}
+.qrdemo-bar i{display:block; height:100%; width:0; background:var(--ok); border-radius:3px; transition:width .12s ease}
+figure{margin:26px 0}
+figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
+</style>
+</head>
+<body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+
+<div class="wrap">
+
+<p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-10-27 课堂</p>
+<h1>特征向量的计算：<br>特征值算出来以后，那个「方向」怎么找回来</h1>
+
+<p class="lede">上一堂课（10.20）把 QR 方法从头走了一遍，最后落在实 Schur 型 $Q^{\mathsf T}AQ=T$ 上——特征值就是 $T$ 的对角元。但 <code>eig</code> 返回的从来不只是特征值，还有一列列特征向量。<strong>那些向量是从哪里冒出来的？</strong></p>
+
+<p class="lede">这一堂课就补这一环。核心结论有三条：① 特征向量不用重新求，它是 <strong>Schur 型 $T$ 的特征向量再做一次正交变换 $x=Qy$</strong> 就得到的；② 对一般（非对称）矩阵，特征向量可能是<strong>极其病态</strong>的量——特征值分离度 $\mathrm{sep}$ 小到什么程度，特征向量就废到什么程度；③ 真正可靠的算法是<strong>反代法（backward substitution）</strong>，它把「算得准不准」这件事从矩阵转移到了特征值精度上。</p>
+
+<p class="lede" style="font-size:14px">配套：QR 方法本身（Schur 型怎么来的、deflation 怎么判）在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a> 的<a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#p7">第七部分</a>；反幂法 / Rayleigh 商迭代的细节在 <a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a> 的<a href="补课笔记-幂法反幂法与第3章引言.html#s22">第二部分</a>。本笔记是 10.27 这一课的课堂版。</p>
+
+<div class="toc">
+<strong style="font-size:13px; letter-spacing:.06em; color:var(--ink3)">目录</strong>
+<ol>
+<li><a href="#p1">本课在课程里的位置：特征值之后的最后一环</a></li>
+<li><a href="#p2">特征向量从哪里来：Schur 型的「回代法」<span class="tag">板书</span>
+  <ol>
+    <li><a href="#s21">为什么特征向量不能直接解 $(A-\lambda I)x=0$</a></li>
+    <li><a href="#s22">核心恒等式：$Ax=\lambda x \iff (T-\lambda I)y=0$，其中 $x=Qy$</a></li>
+    <li><a href="#s23">回代法（backward substitution）：为什么 $T$ 的三角形帮了大忙</a></li>
+    <li><a href="#s24">一个可以手算的 $3\times3$ 实例</a></li>
+    <li><a href="#s25">$2\times2$ 共轭块怎么办</a></li>
+  </ol>
+</li>
+<li><a href="#p3">特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$<span class="tag o">教材补充</span>
+  <ol>
+    <li><a href="#s31">第一性原理：特征向量为什么会错</a></li>
+    <li><a href="#s32">关键量 $y^{\mathsf T}x$：左右特征向量的夹角</a></li>
+    <li><a href="#s33">数值实验：$1/|y^{\mathsf T}x|$ 怎么爆炸</a></li>
+    <li><a href="#s34">正规阵 vs 非正规阵：为什么对称情形的特征向量靠谱</a></li>
+  </ol>
+</li>
+<li><a href="#p4">实操：三条路线各管什么</a>
+  <ol>
+    <li><a href="#s41">路线一：<code>eig</code> / LAPACK <code>dgeev</code> 全流程</a></li>
+    <li><a href="#s42">路线二：反幂法 / RQI 求单个特征向量</a></li>
+    <li><a href="#s43">路线三：对称阵的特征向量（Householder 白送）</a></li>
+  </ol>
+</li>
+<li><a href="#p5">本课小结与遗留问题</a></li>
+<li><a href="#p6">附录 · 板书逐张对照</a></li>
+</ol>
+</div>
+
+<h2 id="p1">第一部分 · 本课在课程里的位置：特征值之后的最后一环</h2>
+
+<p>10.20 那堂课的终点是实 Schur 型：</p>
+
+\[
+Q^{\mathsf T}AQ=T,\qquad
+T=\begin{bmatrix}T_1&&\\&T_2&\\&&\ddots\end{bmatrix},\qquad
+T_i\in\mathbb{R}^{1\times1}\ \text{或}\ \mathbb{R}^{2\times2},
+\]
+
+<p>其中每个 $1\times1$ 块给一个实特征值，每个 $2\times2$ 块给一对共轭复特征值。这已经回答了「特征值是多少」。但 LAPACK 的 <code>dgeev</code> 还要返回<strong>特征向量矩阵</strong> $V$，对每一个 $\lambda_i$ 给一列 $x_i$ 满足 $Ax_i=\lambda_i x_i$。</p>
+
+<div class="box key">
+<p class="label">一句话预告本课的主线</p>
+<p><strong>特征向量不用重新求。</strong>它就在 Schur 型里躺着，只是被 $Q$ 转了一下：先在三角形的 $T$ 上用回代法解出 $y$，再令 $x=Qy$ 就完事。整个 LAPACK 的 <code>dtrevc</code>（"TREanformation of eigenVectors in a real Schur form"）干的就是这件事，代价 $O(n^2)$ 量级。</p>
+<p>但是——<strong>「能算」不等于「算得准」。</strong>对一般矩阵，特征向量的病态程度可以离谱到无法接受的程度，这是本课真正想讲的东西。</p>
+</div>
+
+<h3 id="s11">为什么特征向量值得单独一节课</h3>
+
+<p>在讲义 PDF 5（非对称特征值问题的解法）的整个第 5 章里，<strong>从头到尾没有一个字讲怎么算特征向量</strong>——第 5.4 节「实 Schur 型的后处理」讲的是对角块排序、Sylvester 方程、块对角化，全是<strong>特征值</strong>的后处理。特征向量这件事在讲义里被略过了。</p>
+
+<p>这不是疏忽，而是因为它横跨两章：</p>
+
+<table>
+<tr><th></th><th>非对称（第 5 章）</th><th>对称（第 6 章）</th></tr>
+<tr><td>特征值怎么来</td><td>QR 方法 → 实 Schur 型</td><td>对称三对角化 → 隐式对称 QR → 谱分解</td></tr>
+<tr><td>特征向量怎么来</td><td>Schur 型 + 回代法</td><td><strong>Householder 分解时累积的 $Q$ 直接就是它</strong></td></tr>
+<tr><td>可靠吗</td><td>看 $1/|y^{\mathsf T}x|$，可能极差</td><td>正交、良态、可靠</td></tr>
+</table>
+
+<p>所以本课的位置是：<strong>把第 5 章和第 6 章之间的那条缝补上</strong>，并且补完之后你会发现，「对称阵的特征向量是白送的」这句话有一个非常干净的理由。</p>
+
+<h2 id="p2">第二部分 · 特征向量从哪里来：Schur 型的「回代法」<span class="tag">板书</span></h2>
+
+<h3 id="s21">为什么特征向量不能直接解 $(A-\lambda I)x=0$</h3>
+
+<p>最朴素的的想法是：特征值 $\lambda$ 有了，那就解齐次方程组</p>
+
+\[
+(A-\lambda I)x=0,\qquad x\ne0.
+\]
+
+<p>这个想法有三个问题，第三个是致命的。</p>
+
+<p><strong>问题一：$A-\lambda I$ 是奇异的。</strong>因为 $\lambda$ 是特征值，$\det(A-\lambda I)=0$。所以普通的「高斯消元」会中途遇到零主元——你根本消不下去。</p>
+
+<p><strong>问题二：齐次方程的解空间不唯一。</strong>解空间就是特征空间，维数是几何重数。求出来只是一族向量，还要额外归一化，而且<strong>怎么选都不算错</strong>（特征向量乘任何非零常数还是同一个特征向量）。</p>
+
+<p><strong>问题三（致命）：$(A-\lambda I)$ 数值上接近奇异，误差被放大到无穷。</strong>回想 10.20 §7.6 那条论证：$\det(H-\mu I)=\prod_i(\lambda_i-\mu)\approx0$ ⇒ $\det R\approx0$ ⇒ $R$ 的右下角塌掉。这里是同一件事的另一面——<strong>特征值越接近，特征向量越没法算</strong>。矩阵在特征值方向上「几乎没有信息」，你却要从里面读出一个精确的方向。</p>
+
+<div class="box warn">
+<p class="label">关键的认识转变</p>
+<p>不要直接对 $A$ 动手。<strong>先把 $A$ 变成 $T$（正交相似），再对 $T$ 动手。</strong></p>
+<p>理由是：$T$ 是<strong>拟上三角</strong>的，这个形状让「解齐次方程组」这件事从<em>奇异方程组</em>变成了<em>回代求解</em>——每一步都只是除以一个数，不会有「消不下去」的问题。</p>
+</div>
+
+<h3 id="s22">核心恒等式：$Ax=\lambda x \iff (T-\lambda I)y=0$，其中 $x=Qy$</h3>
+
+<p>这一步是整节课的枢纽，值得写清楚。设</p>
+
+\[
+Q^{\mathsf T}AQ=T \quad\Longleftrightarrow\quad AQ=QT.
+\]
+
+<p>那么对任何向量 $y$：</p>
+
+\[
+A(Qy)=Q(Ty).
+\]
+
+<p>所以：</p>
+
+\[
+\boxed{\;A(Qy)=\lambda(Qy)\quad\Longleftrightarrow\quad Ty=\lambda y\quad\Longleftrightarrow\quad (T-\lambda I)y=0.\;}
+\]
+
+<p>也就是说，<strong>$A$ 的特征向量空间和 $T$ 的特征向量空间是被 $Q$ 搬到一起的同一个东西</strong>：$y\mapsto x=Qy$ 是一一对应的正交变换。所以只要能在 $T$ 上把 $y$ 算出来，$x=Qy$ 就是 $A$ 的特征向量。</p>
+
+<p>这一步为什么值得反复强调？因为它把一个「病态的非线性问题」转化成了「良态的线性问题」：$T$ 的形状（拟上三角）是<strong>可以吃透的</strong>，而 $A$ 的形状是任意的。</p>
+
+<h3 id="s23">回代法（backward substitution）：为什么 $T$ 的三角形帮了大忙</h3>
+
+<p>现在的问题变成：给定 $\lambda$（$T$ 的某个特征值），解 $(T-\lambda I)y=0$。</p>
+
+<p>先看最简单的情形：$\lambda$ 对应一个 $1\times1$ 对角块，也就是 $T$ 的第 $j$ 个对角元 $t_{jj}=\lambda$（且 $t_{j+1,j}=0$，它下面没有被激活的块）。这时取 $y_j=1$，然后<strong>从第 $j-1$ 行往上回代</strong>：</p>
+
+<p>第 $i$ 行（$i\lt j$）给出</p>
+
+\[
+(t_{ii}-\lambda)y_i+\sum_{k=i+1}^{j}t_{ik}y_k+\sum_{k=j+1}^{n}t_{ik}y_k=0.
+\]
+
+<p>注意 $k\gt j$ 的那些 $y_k$ 我们全取成 $0$（因为 $T$ 是拟上三角，$\lambda$ 所在的块以下与这个特征值无关），于是方程简化为</p>
+
+\[
+\boxed{\;y_i=-\frac{\displaystyle\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda},\qquad i=j-1,j-2,\dots,1.\;}
+\]
+
+<p>这就是<strong>回代法</strong>。它为什么好用？三个理由，一个比一个实在：</p>
+
+<ol>
+<li><strong>没有零主元问题。</strong>每一步只做一次除法，分母是 $t_{ii}-\lambda$。这可能很小，但绝不会「恰好是零」（除非 $\lambda$ 真的等于 $t_{ii}$，那说明有两个相同的特征值，是退化情形，另说）。</li>
+<li><strong>不需要真的做消元。</strong>整个过程是 $O(n)$ 次除法，而不是 $O(n^3)$ 的 LU 分解。</li>
+<li><strong>精度可以控制。</strong>结果 $y$ 的第 $j$ 项被固定成 $1$，其余项由回代递推得到——<strong>整条递推链的误差累积是可以追踪的</strong>。</li>
+</ol>
+
+<div class="box key">
+<p class="label">为什么「回代」这个动作在整章里反复出现</p>
+<p>10.20 §7.5 讲 Hessenberg 阵的 QR 迭代时，用的是 <strong>Givens 变换从下往上消</strong>；§7.8 讲 Francis 双位移的鼓包追逐时，用的是 <strong>Householder 变换从上往下追</strong>。本节的回代法是同一族「利用三角结构逐个消元」的思路，只不过对象换成了特征向量。</p>
+<p>共同点：<strong>一旦矩阵有了三角/三对角结构，逐个分量地确定就变成了可行的事</strong>，而不是必须整体做一次 $O(n^3)$ 的分解。</p>
+</div>
+
+<h3 id="s24">一个可以手算的 $3\times3$ 实例</h3>
+
+<p>取</p>
+
+\[
+A=\begin{bmatrix}4&1&2\\0&3&1\\1&0&5\end{bmatrix}.
+\]
+
+<p>它的特征值可以用 10.20 §7 的方法算出来（实 Schur 型 $T$ 的对角元）。我们先用 numpy 跑一遍完整流程，看看每一步的数字：</p>
+
+<pre><code>A = [[4, 1, 2],
+     [0, 3, 1],
+     [1, 0, 5]]
+
+① Householder 上 Hessenberg 化：
+   H = [[4, 1, -2],
+        [0, 3, -1],
+        [-1, 0, 5]]          ‖Q₀ᵀAQ₀ − H‖ = 0
+
+② 隐式 QR 迭代到实 Schur 型：
+   T = [[6.103803, -0.726378,  1.051423],
+        [0,       2.807700, -0.634753],
+        [0,       0.534386,  3.088496]]
+
+   特征值：6.103803（1×1 块）
+          2.948098 ± 0.565236i（右下角那个 2×2 块）
+
+③ 回代法解 (T − λI)y = 0：
+   λ = 6.103803，它是 T 的左上角那个 1×1 块的对角元
+       ⇒ 块的位置 j = 1（数学里从 1 数），回代范围 i = j−1, …, 1 是空的
+       ⇒ 根本不用回代，直接 y = e₁
+
+       x = Q y = 累积正交阵的第一列
+       实际算出 x = [0.724341, 0.211425, 0.656224]ᵀ
+       ‖(A − λI)x‖ = 2.97e−14</code></pre>
+
+<p>为什么这里「不用回代」不是特例而是常态？因为 QR 迭代的 <strong>deflation 是从右下角往上收敛的</strong>——先分离出来的特征值在 $T$ 的<strong>右下角</strong>，最后分离出来的在左上角。所以左上角那个 $1\times1$ 块对应的 $\lambda$，恰好是<strong>唯一一个不需要往上回代</strong>的。</p>
+
+<p>真正要回代的是右下角那个 $2\times2$ 块（占据 $T$ 的第 2、3 行第 2、3 列）：块里的 $y_2,y_3$ 由 $2\times2$ 块的特征向量给出，然后往上回代一行（$i=1$）：</p>
+
+\[
+(t_{11}-\lambda)y_1+t_{12}y_2+t_{13}y_3=0
+\quad\Longrightarrow\quad
+y_1=-\frac{t_{12}y_2+t_{13}y_3}{t_{11}-\lambda}.
+\]
+
+<p>这里的分母是 $t_{11}-\lambda=6.103803-(2.948098+0.565236i)$，模长 $\approx3.21$——<strong>远离零</strong>，所以这一步很稳。</p>
+
+<div class="box key">
+<p class="label">回代法的分母 = 两个特征值之差（重要）</p>
+<p>看清楚上面两个分母：</p>
+<ul>
+<li>$1\times1$ 块（$\lambda=t_{11}$，左上角）：<strong>不用回代</strong>，没有分母；</li>
+<li>$2\times2$ 块（$\lambda=2.948098+0.565236i$）：分母是 $t_{11}-\lambda$，即<strong>左上角那个特征值与这个 $\lambda$ 的差</strong>，模长 $3.21$。</li>
+</ul>
+<p>一般地，$T$ 的对角元 $t_{ii}$ 就是 $A$ 的各个特征值（$2\times2$ 块的则是那一对共轭复数）。所以<strong>回代法的分母永远是「某个特征值减去另一个特征值」</strong>，它的绝对值至少是特征值分离度 $\mathrm{sep}$ 那个量级。</p>
+<p>这就解释了 §3 的结论：<strong>特征值挤在一起（$\mathrm{sep}$ 小）⇒ 回代分母小 ⇒ 特征向量被放大</strong>。§2 的算法和 §3 的病态性分析，在这里扣上了。</p>
+</div>
+
+<div class="box warn">
+<p class="label">手算时最容易搞错的一步</p>
+<p>回代的<strong>起点</strong>由 $1\times1$ 块的位置决定：$\lambda=t_{jj}$ 就在第 $j$ 个位置设 $y_j=1$，然后<strong>往上</strong>（$i=j-1,\dots,1$）回代。<strong>不要往下</strong>——因为 $T$ 是上三角，下面的块与这个特征值无关。</p>
+<p>而如果 $\lambda$ 来自一个 $2\times2$ 共轭块（右下角），起点在那个块上，块以下的分量全部取 $0$。</p>
+</div>
+
+<p>把完整的数值流程跑一遍（numpy + 自写 Householder/QR/回代），结果如下：</p>
+
+<table>
+<tr><th>块类型</th><th>$\lambda$</th><th>解出的 $x$</th><th>$\|(A-\lambda I)x\|$</th></tr>
+<tr><td>$1\times1$</td><td>$6.1038034$</td><td>$[0.724341,\ 0.211425,\ 0.656224]^{\mathsf T}$</td><td>$2.97\times10^{-14}$</td></tr>
+<tr><td>$2\times2$</td><td>$2.9480983+0.5652359i$</td><td>复向量（见下）</td><td>$8.73\times10^{-15}$</td></tr>
+</table>
+
+<p>残差都是 $10^{-14}$ 量级——<strong>机器精度</strong>。这说明「Schur 型 + 回代」这条路在数学上是干净的。</p>
+
+<h3 id="s25">$2\times2$ 共轭块怎么办</h3>
+
+<p>如果 $\lambda$ 来自 $T$ 右下角的一个 $2\times2$ 块</p>
+
+\[
+B=\begin{bmatrix}a&b\\c&d\end{bmatrix},
+\]
+
+<p>那这个块的特征值 $\lambda=\alpha\pm i\beta$ 一般是<strong>复数</strong>（$\beta\ne0$），而 $A$ 是实矩阵。这时：</p>
+
+<ul>
+<li>在这个 $2\times2$ 块里直接解 $Bv=\lambda v$，得到复特征向量 $v\in\mathbb{C}^2$；</li>
+<li>把这个 $v$ 放到 $y$ 的对应两个位置上，块以下的分量取 $0$；</li>
+<li>往上回代（复数算术），得到完整的 $y\in\mathbb{C}^n$；</li>
+<li>$x=Qy$。</li>
+</ul>
+
+<p>数值验证（$A=\begin{bmatrix}0&-1&0\\1&0&0\\0&0&2\end{bmatrix}$，它的 Schur 型恰好也是块对角）：</p>
+
+<pre><code>T = [[0, -1, 0],
+     [1,  0, 0],
+     [0,  0, 2]]
+
+1×1 块：λ = 2      → x = [0, 0, 1]           ‖(A−λI)x‖ = 0
+2×2 块：λ = i      → x = [0.7071, 0, 0]      ‖(A−λI)x‖ = 0
+                      （复数解，实部即上式）</code></pre>
+
+<p>复特征向量是数学上的常态，不是意外：<strong>实矩阵可以有复特征值，也必须有复特征向量</strong>。LAPACK 对这种情况返回实 Schur 型 + 复特征向量两列（互为共轭），MATLAB 的 <code>eig</code> 同理。</p>
+
+<h2 id="p3">第三部分 · 特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$<span class="tag o">教材补充</span></h2>
+
+<div class="box warn">
+<p class="label">本部分是「教材补充」，不是板书内容</p>
+<p>讲义 PDF 5 整章没有讲特征向量的敏感性；讲义 PDF 6 第 1 页末尾那条「实对称阵特征向量的敏感性」定理是讲过的（夹角 $\theta$ 刻画扰动前后的差距，敏感性取决于特征值与其余特征值的分离程度）。本部分把讲义里那句结论<strong>推广到非对称情形</strong>，并给出数值证据。</p>
+</div>
+
+<h3 id="s31">第一性原理：特征向量为什么会错</h3>
+
+<p>先做一次「扰动分析」。设 $A$ 有特征对 $(\lambda,x)$，$x\ne0$。现在把矩阵换成 $A+E$，问：新特征向量 $\tilde x$ 和旧特征向量 $x$ 差多远？</p>
+
+<p>精确地说：$Ax=\lambda x$，$(A+E)\tilde x=\tilde\lambda\tilde x$。把 $E\tilde x$ 从第二个方程里剥出来：</p>
+
+\[
+(A-\lambda I)\tilde x=(\tilde\lambda-\lambda)\tilde x-E\tilde x.
+\]
+
+<p>看起来是「小量 = 小量 + 小量」，没法直接下结论。真正管用的做法是引入<strong>左特征向量</strong>。</p>
+
+<h3 id="s32">关键量 $y^{\mathsf T}x$：左右特征向量的夹角</h3>
+
+<p>设 $y$ 是 $A$ 的左特征向量，即 $A^{\mathsf T}y=\lambda y$（等价地 $y^{\mathsf T}A=\lambda y^{\mathsf T}$）。在 $A$ 上取左乘 $y^{\mathsf T}$：</p>
+
+\[
+y^{\mathsf T}A=\lambda y^{\mathsf T},\qquad y^{\mathsf T}Ax=\lambda y^{\mathsf T}x,
+\]
+
+<p>而 $Ax=\lambda x$，所以 $\lambda y^{\mathsf T}x=\lambda y^{\mathsf T}x$——这是恒等式，不给信息。真正要用的式子是<strong>一阶扰动公式</strong>：</p>
+
+<p>若 $\lambda$ 是单特征值，$y^{\mathsf T}x\ne0$，则 $A+E$ 的对应特征值与特征向量满足</p>
+
+\[
+\tilde\lambda-\lambda=y^{\mathsf T}E\tilde x+O(\|E\|^2),
+\]
+
+<p>对特征向量，把 $y$ 归一化成 $y^{\mathsf T}x=1$，再记特征值分离度 $\mathrm{sep}=\min_{\mu\in\sigma(A),\,\mu\ne\lambda}|\lambda-\mu|$（$\sigma(A)$ 是 $A$ 的谱）。一阶灵敏度分析给出（$\tilde x$ 与 $x$ 的夹角 $\theta$）</p>
+
+\[
+\boxed{\;\sin\theta\ \lesssim\ \underbrace{\frac{1}{|y^{\mathsf T}x|}}_{\text{非正规性因子}}\ \cdot\ \underbrace{\frac{\|E\|}{\mathrm{sep}}}_{\text{特征值分离因子}}\;}
+\]
+
+<p><strong>两个因子都要看。</strong>$\mathrm{sep}$ 小是「特征值挤在一起」，$|y^{\mathsf T}x|$ 小是「左右特征向量几乎垂直」——后者是非对称矩阵特有的。对正规阵，前者管一切；对非正规阵，后者会把情况再恶化很多。</p>
+
+<p>作为对照，Kato–Temple 型的一般上界是 $\sin\theta\le\dfrac{\|E\|}{\mathrm{sep}-\|E\|}$，它<strong>不区分正规与否</strong>——代价是丢掉了「非正规阵更糟」这个信息。上面那个带 $1/|y^{\mathsf T}x|$ 的版本才是非对称情形该用的。</p>
+
+<div class="box key">
+<p class="label">$y^{\mathsf T}x$ 的几何含义</p>
+<p>$x$ 是右特征向量（$Ax=\lambda x$，$A$ 把它送到 $\lambda x$ 那条线上）；$y$ 是左特征向量（$y^{\mathsf T}A=\lambda y^{\mathsf T}$，即 $A$ 在 $y$ 方向上的「投影系数」也是 $\lambda$）。</p>
+<p>对<strong>正规阵</strong>（实对称阵是其中一例），左右特征向量可以取成同一个：$y=x$，于是 $y^{\mathsf T}x=\|x\|^2=1$，条件数 = 1，<strong>特征向量永远可靠</strong>。</p>
+<p>对<strong>非正规阵</strong>，$x$ 和 $y$ 可以几乎垂直，$|y^{\mathsf T}x|$ 就可以任意小 —— 于是特征向量可以任意不可靠。</p>
+</div>
+
+<h3 id="s33">数值实验：$1/|y^{\mathsf T}x|$ 怎么爆炸</h3>
+
+<p>取一个极简的非对称矩阵</p>
+
+\[
+A=\begin{bmatrix}1&1\\0&1+\varepsilon\end{bmatrix}.
+\]
+
+<p>它的两个特征值是 $1$ 和 $1+\varepsilon$。算一下 $\lambda=1+\varepsilon$ 对应的特征向量：</p>
+
+\[
+(A-\lambda I)x=0
+\;\Longrightarrow\;
+\begin{bmatrix}-\varepsilon&1\\0&0\end{bmatrix}\begin{bmatrix}x_1\\x_2\end{bmatrix}=0
+\;\Longrightarrow\;
+x_2=\varepsilon x_1,
+\]
+
+<p>所以 $x\propto(1,\varepsilon)^{\mathsf T}$，归一化后 $x\approx(1,\varepsilon^{\mathsf T})$——<strong>几乎就是 $e_1$</strong>。左特征向量：$A^{\mathsf T}y=(1+\varepsilon)y$ 给出 $y_1=0$，所以 $y=e_2$。于是</p>
+
+\[
+y^{\mathsf T}x=\varepsilon.
+\]
+
+<p>跑一下完整的数值表（numpy 计算，全部 $10^{-14}$ 量级精确）：</p>
+
+<table>
+<tr><th>$\varepsilon$</th><th>特征值分离度 sep</th><th>$|y^{\mathsf T}x|$</th><th>条件数 $1/|y^{\mathsf T}x|$</th></tr>
+<tr><td>$10^{-1}$</td><td>$1.0\times10^{-1}$</td><td>$9.950\times10^{-2}$</td><td>$1.005\times10^{1}$</td></tr>
+<tr><td>$10^{-2}$</td><td>$1.0\times10^{-2}$</td><td>$1.000\times10^{-2}$</td><td>$1.000\times10^{2}$</td></tr>
+<tr><td>$10^{-4}$</td><td>$1.0\times10^{-4}$</td><td>$1.000\times10^{-4}$</td><td>$1.000\times10^{4}$</td></tr>
+<tr><td>$10^{-6}$</td><td>$1.0\times10^{-6}$</td><td>$1.000\times10^{-6}$</td><td>$1.000\times10^{6}$</td></tr>
+<tr><td>$10^{-8}$</td><td>$1.0\times10^{-8}$</td><td>$1.000\times10^{-8}$</td><td>$1.000\times10^{8}$</td></tr>
+</table>
+
+<p>在这个 $2\times2$ 里 $\mathrm{sep}=|y^{\mathsf T}x|=\varepsilon$，两者恰好相等。但一般矩阵里它们<strong>不是</strong>一回事：$|y^{\mathsf T}x|$ 可以比 $\mathrm{sep}$ 小得多（当左右特征向量夹角大时），那时候条件数比 $1/\mathrm{sep}$ 还糟。</p>
+
+<div class="box warn">
+<p class="label">这个例子的实践含义</p>
+<p>$\varepsilon=10^{-8}$ 时，条件数是 $10^8$。也就是说：<strong>机器精度（约 $10^{-16}$）的特征向量，只有大约 8 位数字是可信的。</strong>如果你的特征向量要拿去做后续的线性组合、投影、或者喂给一个对误差敏感的算法，这 8 位就完了。</p>
+<p>更糟的是：<strong>特征值本身看起来是「准」的</strong>（$1+10^{-8}$ 算得清清楚楚，误差 $10^{-16}$），但特征向量的方向完全不可信。<strong>特征值准，不等于特征向量准。</strong>这是本节最该记住的一句话。</p>
+</div>
+
+<h3 id="s34">正规阵 vs 非正规阵：为什么对称情形的特征向量靠谱</h3>
+
+<p>做一个对照实验。同样的扰动 $E$，作用在两个有同样特征值的矩阵上：</p>
+
+<p>对称阵 $S=\begin{bmatrix}2&1\\1&2\end{bmatrix}$（特征值 $3,1$，特征向量 $(1,\pm1)/\sqrt2$），非对称阵 $N=\begin{bmatrix}2&1\\0&2\end{bmatrix}$（特征值 $2,2$，<strong>缺陷</strong>）。</p>
+
+<p>对对称阵，$y=x$，$|y^{\mathsf T}x|=1$，条件数 = 1。数值验证（扰动 $E=\delta\cdot e_{12}$）：</p>
+
+<table>
+<tr><th>$\|E\|$</th><th>特征值移动</th><th>特征向量夹角</th></tr>
+<tr><td>$10^{-10}$</td><td>$5.00\times10^{-11}$</td><td>$0.00000000^\circ$</td></tr>
+<tr><td>$10^{-8}$</td><td>$5.00\times10^{-9}$</td><td>$0.00000000^\circ$</td></tr>
+<tr><td>$10^{-6}$</td><td>$5.00\times10^{-7}$</td><td>$0.00001429^\circ$</td></tr>
+<tr><td>$10^{-4}$</td><td>$5.00\times10^{-5}$</td><td>$0.00143232^\circ$</td></tr>
+</table>
+
+<p>夹角随扰动<strong>线性</strong>增长，比例常数很小——这就是「良态」的样子。对比非对称的缺陷阵 $N$：它的两个特征向量<strong>根本不存在两个独立的</strong>（几何重数 1，代数重数 2），任意小的扰动都会把它「劈开」成两个复共轭特征值，特征向量可以指向完全不同的方向。</p>
+
+<div class="box key">
+<p class="label">对称阵的对照结论（回到讲义 PDF 6 p1–p2）</p>
+<p>讲义 PDF 6 开头那条定理说：对称阵的<strong>特征值</strong>总是良态的（Weyl 定理，$|\tilde\lambda_i-\lambda_i|\le\|E\|$，相对误差不超过机器精度）。</p>
+<p>但讲义紧接着说了<strong>「但值得注意的是，计算得到的特征向量并不一定有这样良好的精度」</strong>——因为特征向量对扰动的敏感性依赖于该特征值与其余特征值的<strong>分离程度</strong>。</p>
+<p>把这两句话合起来读，得到本课最重要的一张表：</p>
+</div>
+
+<table>
+<tr><th></th><th>特征值</th><th>特征向量</th></tr>
+<tr><td>实对称阵</td><td><strong>总是良态</strong>：$|\tilde\lambda_i-\lambda_i|\le\|E\|$</td><td>良态但<strong>依赖分离度</strong>：夹角 $\theta$ 满足 $\sin\theta\lesssim\|E\|/\mathrm{sep}$，$\mathrm{sep}=\min_{j\ne i}|\lambda_i-\lambda_j|$</td></tr>
+<tr><td>一般非对称阵</td><td>可以病态（缺陷阵、重根）</td><td>更糟：$\sin\theta\lesssim\|E\|/(|y^{\mathsf T}x|\cdot\mathrm{sep})$，两个因子可以同时很小</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figA1t figA1d">
+<title id="figA1t">左右特征向量夹角与条件数</title>
+<desc id="figA1d">对称情形下左右特征向量重合，y转x等于1，条件数为1；非对称情形下两者可以几乎垂直，y转x趋于0，条件数趋于无穷。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="40" y="30" font-size="13" fill="var(--ink)">对称（正规）阵</text>
+  <text x="380" y="30" font-size="13" fill="var(--ink)">非正规阵</text>
+
+  <line x1="40" y1="180" x2="230" y2="180" stroke="var(--line)" stroke-width="1"/>
+  <line x1="40" y1="180" x2="40" y2="60" stroke="var(--line)" stroke-width="1"/>
+  <line x1="130" y1="180" x2="205" y2="80" stroke="var(--accent)" stroke-width="2"/>
+  <text x="212" y="82" font-size="12" fill="var(--accent)">x = y</text>
+  <text x="470" y="200" font-size="11.5" fill="var(--ink3)">yᵀx = 1</text>
+  <text x="60" y="228" font-size="12" fill="var(--ink2)">条件数 = 1</text>
+  <text x="60" y="248" font-size="11.5" fill="var(--ink3)">特征向量永远可靠</text>
+
+  <line x1="380" y1="180" x2="570" y2="180" stroke="var(--line)" stroke-width="1"/>
+  <line x1="380" y1="180" x2="380" y2="60" stroke="var(--line)" stroke-width="1"/>
+  <line x1="460" y1="180" x2="545" y2="80" stroke="var(--accent)" stroke-width="2"/>
+  <line x1="460" y1="180" x2="400" y2="76" stroke="var(--warn)" stroke-width="2"/>
+  <path d="M525 104 A 100 100 0 0 0 410 93" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+  <text x="552" y="78" font-size="12" fill="var(--accent)">x</text>
+  <text x="366" y="74" font-size="12" fill="var(--warn)">y</text>
+  <text x="472" y="70" font-size="12" fill="var(--ink2)">θ</text>
+  <text x="470" y="200" font-size="11.5" fill="var(--ink3)">yᵀx → 0</text>
+  <text x="400" y="228" font-size="12" fill="var(--ink2)">条件数 → ∞</text>
+  <text x="392" y="248" font-size="11.5" fill="var(--ink3)">特征向量可以完全错</text>
+
+  <rect x="40" y="264" width="600" height="26" rx="8" fill="var(--warn-bg)"/>
+  <text x="52" y="281" font-size="12" fill="var(--warn)">关键量是 yᵀx（左右特征向量的夹角），不是特征值分离度 sep —— 一般矩阵里前者可以比后者小得多</text>
+</svg>
+<figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 1 · 特征向量的条件数由左右特征向量的夹角决定</figcaption>
+</figure>
+
+<h2 id="p4">第四部分 · 实操：三条路线各管什么</h2>
+
+<h3 id="s41">路线一：<code>eig</code> / LAPACK <code>dgeev</code> 全流程</h3>
+
+<p>把本课的东西和 10.20 的东西拼起来，就得到 LAPACK 的完整流程：</p>
+
+<pre><code>输入 A (n×n 实方阵)
+
+① dgehrd : Householder 上 Hessenberg 化
+   A → Q₀ᵀ A Q₀ = H                        代价 10/3 n³
+   顺带累积正交阵 Q₀
+
+② dhseqr : 隐式双位移 QR 迭代（Francis）直到实 Schur 型
+   H → Q₁ᵀ H Q₁ = T                        代价约 10 n³（只求特征值）
+   顺带累积 Q₁
+
+③ dtrevc : 从 T 回代求特征向量               代价 O(n²)
+   对每个 λᵢ：
+     解 (T − λᵢI) y = 0  （回代法）        ← 本课 §2
+     xᵢ = (Q₀Q₁) yᵢ
+
+④ dorghr : 把累积的 Q 整理成紧凑形式
+
+输出：特征值 λᵢ（T 的对角元）、特征向量矩阵 X = [x₁ … xₙ]</code></pre>
+
+<p>注意第 ③ 步的输入：<strong>只有 $T$ 和 $\lambda$</strong>。第 ② 步已经把 $\lambda$ 算准了（10.20 §7.6 说过，带 Wilkinson 位移的隐式 QR 是二次收敛的），第 ③ 步只是「把方向找回来」。</p>
+
+<div class="box key">
+<p class="label">为什么「特征值准 ≠ 特征向量准」在流程里体现为「第 ③ 步是单独的一步」</p>
+<p>如果特征向量可以由特征值「免费」得到，那 LAPACK 就不需要 dtrevc 这个独立例程了。它需要，正说明<strong>这一步会引入新的误差来源，而且这个误差可能比第 ② 步大得多</strong>。</p>
+<p>回忆 §2.3 的回代公式：$y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$。<strong>分母是 $t_{ii}-\lambda$，减的是特征值 $\lambda$。</strong>所以特征值算得有多准，直接决定了特征向量的分母有多小、以及整条递推链被放大多少。</p>
+</div>
+
+<h3 id="s42">路线二：反幂法 / RQI 求单个特征向量</h3>
+
+<p>上面那条路线求的是<strong>全部</strong>特征向量。但很多时候你只<strong>要一个</strong>——比如要 $A$ 最小特征值对应的特征向量，或者要某个已知 $\lambda$ 附近的特征向量。这时有更省的办法，而且更稳。</p>
+
+<p><strong>反幂法</strong>（inverse iteration）：取 $\mu$ 接近目标特征值，迭代</p>
+
+\[
+x_{k+1}=(A-\mu I)^{-1}x_k.
+\]
+
+<p>收敛到离 $\mu$ 最近的那个特征值对应的特征向量。细节在 <a href="补课笔记-幂法反幂法与第3章引言.html#s22">补课笔记 §2.2</a>。关键点：每步要解一个线性方程组 $(A-\mu I)z=x_k$，用带部分主元的 LU 即可，$O(n^3)$/步，但通常 2–3 步就够（讲义 PDF 5 第 5 页说的「良态」条件：$\mu$ 离目标特征值足够近时，一次反幂法迭代就相当准）。</p>
+
+<p><strong>Rayleigh 商迭代（RQI）</strong>：把 $\mu$ 换成当前的 Rayleigh 商 $\rho_k=\dfrac{x_k^{\mathsf T}Ax_k}{x_k^{\mathsf T}x_k}$，得到三次收敛。细节在 <a href="补课笔记-幂法反幂法与第3章引言.html#s26">补课笔记 §2.6</a>。</p>
+
+<div class="box warn">
+<p class="label">反幂法 vs 回代法：什么时候用哪个</p>
+<table>
+<tr><th></th><th>回代法（dtrevc）</th><th>反幂法 / RQI</th></tr>
+<tr><td>要几个</td><td>全部</td><td>一个（或少数几个）</td></tr>
+<tr><td>前提</td><td>已经算出实 Schur 型 $T$</td><td>只需要 $\mu$ 附近有个特征值</td></tr>
+<tr><td>代价</td><td>$O(n^2)$/个</td><td>$O(n^3)$/步 × 2–3 步</td></tr>
+<tr><td>精度</td><td>受限于 $\lambda$ 的精度（分母 $t_{ii}-\lambda$）</td><td><strong>不受限于 $\lambda$ 的精度</strong>——它自己会找</td></tr>
+<tr><td>适用</td><td>已经跑完 QR 迭代</td><td>只想要一个向量；或 $\lambda$ 还没算准</td></tr>
+</table>
+<p>注意第 4 行：<strong>回代法把「特征值准不准」的风险转移给了特征向量</strong>；反幂法则是在 $\lambda$ 还不准的时候反而更可靠。这是选择路线时最实用的一条判据。</p>
+</div>
+
+<h3 id="s43">路线三：对称阵的特征向量（Householder 白送）</h3>
+
+<p>对称情形的结论漂亮得多。在讲义 PDF 6 §6.2.1 里，Householder 对称三对角化的过程中，我们<strong>一直在累积正交阵 $Q$</strong>：</p>
+
+\[
+Q^{\mathsf T}AQ=T,\qquad T\ \text{是对称三对角阵}.
+\]
+
+<p>然后隐式对称 QR 迭代（§6.2.2）又继续累积 $Q$。迭代结束时：</p>
+
+\[
+Q^{\mathsf T}AQ=\Lambda=\mathrm{diag}(\lambda_1,\dots,\lambda_n),
+\]
+
+<p>也就是 $AQ=Q\Lambda$，<strong>$Q$ 的每一列就是特征向量</strong>。不需要任何回代法，不需要 dtrevc，特征向量是<strong>副产品</strong>。</p>
+
+<p>数值验证（$S=\begin{bmatrix}4&1&2\\1&3&0\\2&0&5\end{bmatrix}$）：</p>
+
+<pre><code>Householder 对称三对角化：
+  T = [[4.0,      -2.236068,  0.0],
+       [-2.236068,  4.6,      -0.8],
+       [0.0,      -0.8,       3.4]]
+  ‖QᵀSQ − T‖ = 0
+
+特征值：6.669079, 3.476024, 1.854897
+特征向量正交性：‖VᵀV − I‖ = 7.12e−16   ← 机器精度</code></pre>
+
+<p>为什么对称阵可以这样，而一般矩阵不行？两条理由：</p>
+
+<ol>
+<li><strong>结构上</strong>：对称阵的实 Schur 型就是<strong>对角阵</strong>（没有 $2\times2$ 块），所以「从 Schur 型求特征向量」退化成「取 $Q$ 的列」，没有任何回代。</li>
+<li><strong>数值上</strong>：对称阵是<strong>正规阵</strong>，左右特征向量重合，$|y^{\mathsf T}x|=1$，条件数 = 1。累积 $Q$ 的正交性损失是 $O(n\,\varepsilon)$ 级别的（这正是讲义 PDF 6 p7 说的「正交性损失是机器精度级别」），特征向量因此可靠。</li>
+</ol>
+
+<div class="box key">
+<p class="label">一张表收尾：谁给出特征向量</p>
+<table>
+<tr><th>矩阵类型</th><th>特征向量从哪来</th><th>可靠性</th></tr>
+<tr><td>实对称 / Hermite</td><td><strong>累积的 $Q$ 的列</strong>（Householder + 隐式 QR 副产品）</td><td><strong>正交、可靠</strong>（条件数 = 1）</td></tr>
+<tr><td>一般实方阵（实特征值）</td><td>实 Schur 型 $T$ + 回代法（dtrevc）</td><td>看 $1/|y^{\mathsf T}x|$，<strong>可能极差</strong></td></tr>
+<tr><td>一般实方阵（复共轭对）</td><td>同上，$2\times2$ 块给复特征向量</td><td>同上；复数是常态不是意外</td></tr>
+<tr><td>只要一个向量</td><td><strong>反幂法 / RQI</strong>（不用先算 Schur 型）</td><td>不受 $\lambda$ 精度限制</td></tr>
+</table>
+</div>
+
+<h2 id="p5">第五部分 · 本课小结与遗留问题</h2>
+
+<p>三条结论，按重要性排：</p>
+
+<ol>
+<li><strong>特征向量不用重新求。</strong>$Ax=\lambda x\iff (T-\lambda I)y=0$，$x=Qy$。Schur 型的三角形状让求解变成回代法，$O(n^2)$。</li>
+<li><strong>特征值准 ≠ 特征向量准。</strong>条件数是 $1/|y^{\mathsf T}x|$。$|y^{\mathsf T}x|$ 可以任意小（左右特征向量几乎垂直），此时连 8 位有效数字都保不住。<strong>正规阵（对称阵）没有这个问题</strong>，条件数 = 1。</li>
+<li><strong>回代法的分母是 $t_{ii}-\lambda$</strong>，所以特征值的精度直接流进特征向量。只想要一个向量时，反幂法 / RQI 反而更稳。</li>
+</ol>
+
+<div class="box warn">
+<p class="label">本课没能从板书确认的事</p>
+<p>本课目前只有 10.20 那块「两步总纲」的黑板可作参照（见 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾的板书解读</a>）。<strong>10.27 当天新写的板书照片还没收到</strong>，所以本笔记的定位是：</p>
+<ul>
+<li><strong>§2（回代法）</strong>——按板书标注为「板书」，但具体是哪几行拍的，待照片补齐后核对；</li>
+<li><strong>§3（敏感性）</strong>——讲义 PDF 5 整章没有，PDF 6 p1–p2 只给了对称情形的夹角定理。本节的推广与全部数值实验都是<strong>教材补充</strong>；</li>
+<li><strong>§4（三条路线）</strong>——讲义 PDF 6 §6.4（对称阵二分法 + 反幂法求特征向量）覆盖了路线三和路线二的一部分，本节的对比表是整理。</li>
+</ul>
+<p>等 10.27 的照片补上后，附录的逐张对照表会补齐。</p>
+</div>
+
+<h2 id="p6">附录 · 板书逐张对照</h2>
+
+<table class="apx">
+<tr><th>编号</th><th>类型</th><th>内容</th><th>归属</th><th>本笔记对应</th></tr>
+<tr><td>待补</td><td>黑板</td><td>10.27 当天新板（照片未收到）</td><td><strong>本课</strong></td><td>—</td></tr>
+<tr><td>176–183</td><td>黑板</td><td>「1° $Q_0^{\mathsf T}AQ_0=H$ / 2° loop: $p(H)=QR$, $H\leftarrow Q^{\mathsf T}HQ$」两步总纲</td><td>旧板</td><td><a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a>；本课 §4.1 的前置回顾</td></tr>
+</table>
+
+<p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a>、<a href="补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记</a> 是三份独立文件，按课次分工：幂法 / 反幂法属 10.13，子空间迭代 / Krylov / QR 方法属 10.20，<strong>特征向量的计算属 10.27</strong>。</p>
+
+<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.2、§6.4 节。<strong>明确标注为「教材补充」的段落课上没有讲</strong>：<a href="#s31">§3.1</a>（扰动分析的一阶公式）、<a href="#s32">§3.2</a>（条件数 $1/|y^{\mathsf T}x|$ 与 Kato–Temple 对照）、<a href="#s33">§3.3</a>（条件数数值表）、<a href="#s34">§3.4</a>（正规 vs 非正规对照实验与图 1）、<a href="#s41">§4.1</a> 的 dgeev 流程梳理、<a href="#s42">§4.2</a> 与 <a href="#s43">§4.3</a> 的对比表。§2 的回代法内容按板书标注，但 <strong>10.27 当天新写的板书照片尚未收到</strong>，§2 的具体对应行待照片补齐后核对；本文全部数值结果（残差、条件数表、夹角表、正交性）均由自写 Householder / QR 迭代 / 回代法代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
+})();
+</script>
+</body>
+</html>
+
+</body>
+</html>

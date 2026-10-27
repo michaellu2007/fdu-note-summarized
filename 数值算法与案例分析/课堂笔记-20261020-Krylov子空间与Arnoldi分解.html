@@ -163,7 +163,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 
 <p class="lede">这堂课的主线只有一句话：<strong>把幂法从一个向量推广到一个 <em>k</em> 维子空间</strong>。先把「同时推 <em>k</em> 个向量」的子空间迭代讲通，再指出其中一个特殊选择——Krylov 子空间——可以由一次 matvec 长一维地造出来，于是有了 Arnoldi 分解 $AQ=QH$。本笔记按「收敛速度 → 子空间迭代 → Krylov → Arnoldi 分解 → 三个追问 → QR 方法」的顺序展开；最后一部分把 Arnoldi 造出来的 Hessenberg 阵一路推到特征值。</p>
 
-<p class="lede" style="font-size:14px">配套：本课用到的幂法 / 反幂法 / QR 方法细节见 <a href="补课笔记-幂法反幂法与第3章引言.html">《补课笔记 · 幂法 / 反幂法 + 第 2、3 章补充》</a>，特别是 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3 Arnoldi 过程</a>（讲义版）与 <a href="#s533">§7.4 上 Hessenberg 分解</a>（Householder 版，在本文第七部分）。本笔记讲的是<strong>课堂版</strong>，两者视角不同，不要当成重复。</p>
+<p class="lede" style="font-size:14px">配套：本课用到的幂法 / 反幂法 / QR 方法细节见 <a href="补课笔记-幂法反幂法与第3章引言.html">《补课笔记 · 幂法 / 反幂法 + 第 2、3 章补充》</a>，特别是 <a href="补课笔记-幂法反幂法与第3章引言.html#s243">§2.4.3 Arnoldi 过程</a>（讲义版）与 <a href="#s533">§7.4 上 Hessenberg 分解</a>（Householder 版，在本文第七部分）。本笔记讲的是<strong>课堂版</strong>，两者视角不同，不要当成重复。本课之后的 <a href="课堂笔记-20261027-特征向量的计算.html">10.27 课堂笔记</a> 补上了第三块拼图：<strong>特征向量怎么算</strong>（Schur 型 + 回代法 dtrevc、特征向量的条件数 $1/|y^{\mathsf T}x|$）。</p>
 
 <div class="toc">
 <strong style="font-size:13px; letter-spacing:.06em; color:var(--ink3)">目录</strong>
