@@ -157,50 +157,67 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <div id="side-toc-backdrop"></div>
 
 <div class="wrap">
-
 <p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-10-27 课堂</p>
-<h1>特征向量的计算：<br>特征值算出来以后，那个「方向」怎么找回来</h1>
+<h1>特征向量、对称特征值与分治：<br>QR 算完特征值之后，还剩什么</h1>
 
 <p class="lede">上一堂课（10.20）把 QR 方法从头走了一遍，最后落在实 Schur 型 $Q^{\mathsf T}AQ=T$ 上——特征值就是 $T$ 的对角元。但 <code>eig</code> 返回的从来不只是特征值，还有一列列特征向量。<strong>那些向量是从哪里冒出来的？</strong></p>
 
-<p class="lede">这一堂课就补这一环。核心结论有三条：① 特征向量不用重新求，它是 <strong>Schur 型 $T$ 的特征向量再做一次正交变换 $x=Qy$</strong> 就得到的；② 对一般（非对称）矩阵，特征向量可能是<strong>极其病态</strong>的量——特征值分离度 $\mathrm{sep}$ 小到什么程度，特征向量就废到什么程度；③ 真正可靠的算法是<strong>反代法（backward substitution）</strong>，它把「算得准不准」这件事从矩阵转移到了特征值精度上。</p>
+<p class="lede">这一堂课就补这一环，并把视野从「一般矩阵」转到「对称阵」——因为对称阵的特征值问题有完全不同的工具箱。板书上讲了四件事：<strong>① 特征向量怎么算、② D&amp;C 分治算法、③ Jacobi 方法、④ 对称特征值问题的全景（QZ / Wilkinson / 连续映射）</strong>。</p>
 
-<p class="lede" style="font-size:14px">配套：QR 方法本身（Schur 型怎么来的、deflation 怎么判）在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a> 的<a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#p7">第七部分</a>；反幂法 / Rayleigh 商迭代的细节在 <a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a> 的<a href="补课笔记-幂法反幂法与第3章引言.html#s22">第二部分</a>。本笔记是 10.27 这一课的课堂版。</p>
+<p class="lede" style="font-size:14px">配套：QR 方法本身（Schur 型怎么来的、deflation 怎么判）在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a> 的<a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#p7">第七部分</a>；反幂法 / Rayleigh 商迭代在 <a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a> 的<a href="补课笔记-幂法反幂法与第3章引言.html#s22">第二部分</a>；<strong>Jacobi 迭代法（解线性方程组那个）已从 10.13 搬到这里</strong>，理由见 <a href="#s31">§3.1</a>。</p>
 
 <div class="toc">
 <strong style="font-size:13px; letter-spacing:.06em; color:var(--ink3)">目录</strong>
 <ol>
-<li><a href="#p1">本课在课程里的位置：特征值之后的最后一环</a></li>
-<li><a href="#p2">特征向量从哪里来：Schur 型的「回代法」<span class="tag">板书</span>
+<li><a href="#p1">本课在课程里的位置</a></li>
+<li><a href="#p2">板书 ①：特征向量怎么算 —— Schur 型上的回代法<span class="tag">板书</span>
   <ol>
-    <li><a href="#s21">为什么特征向量不能直接解 $(A-\lambda I)x=0$</a></li>
+    <li><a href="#s21">为什么不能直接解 $(A-\lambda I)x=0$</a></li>
     <li><a href="#s22">核心恒等式：$Ax=\lambda x \iff (T-\lambda I)y=0$，其中 $x=Qy$</a></li>
-    <li><a href="#s23">回代法（backward substitution）：为什么 $T$ 的三角形帮了大忙</a></li>
-    <li><a href="#s24">一个可以手算的 $3\times3$ 实例</a></li>
+    <li><a href="#s23">回代法：为什么 $T$ 的三角形帮了大忙</a></li>
+    <li><a href="#s24">$3\times3$ 实例与「分母 = 特征值之差」</a></li>
     <li><a href="#s25">$2\times2$ 共轭块怎么办</a></li>
+    <li><a href="#s26">特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$</a></li>
   </ol>
 </li>
-<li><a href="#p3">特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$<span class="tag o">教材补充</span>
+<li><a href="#p3">板书 ②：D&amp;C 分治算法（Divide and Conquer）<span class="tag">板书</span>
   <ol>
-    <li><a href="#s31">第一性原理：特征向量为什么会错</a></li>
-    <li><a href="#s32">关键量 $y^{\mathsf T}x$：左右特征向量的夹角</a></li>
-    <li><a href="#s33">数值实验：$1/|y^{\mathsf T}x|$ 怎么爆炸</a></li>
-    <li><a href="#s34">正规阵 vs 非正规阵：为什么对称情形的特征向量靠谱</a></li>
+    <li><a href="#s31">分治的基本套路：切两半 + 一个秩一修正</a></li>
+    <li><a href="#s32">秩一修正的特征值方程 $f(\lambda)=0$（含<b>行列式引理三层</b>：矩阵行列式引理 / Sylvester 行列式定理）</a></li>
+    <li><a href="#s33">胶合：把两个低阶谱分解拼回来</a></li>
   </ol>
 </li>
-<li><a href="#p4">实操：三条路线各管什么</a>
+<li><a href="#p4">板书 ③：Jacobi 方法<span class="tag">板书</span>
   <ol>
-    <li><a href="#s41">路线一：<code>eig</code> / LAPACK <code>dgeev</code> 全流程</a></li>
-    <li><a href="#s42">路线二：反幂法 / RQI 求单个特征向量</a></li>
-    <li><a href="#s43">路线三：对称阵的特征向量（Householder 白送）</a></li>
+    <li><a href="#s41">一次旋转：把 $2\times2$ 块转成对角</a></li>
+    <li><a href="#s42">目标函数 $\operatorname{off}(A)$ 与收敛率</a></li>
+    <li><a href="#s43">循环 Jacobi：$O(n^3)$ 与全局线性收敛</a></li>
+    <li><a href="#s44">Jacobi 迭代法（解线性方程组那个，从 10.13 搬来）</a></li>
   </ol>
 </li>
-<li><a href="#p5">本课小结与遗留问题</a></li>
-<li><a href="#p6">附录 · 板书逐张对照</a></li>
+<li><a href="#p5">板书 ④：对称特征值问题的全景<span class="tag">板书</span>
+  <ol>
+    <li><a href="#s51">QZ 算法与广义特征值</a></li>
+    <li><a href="#s52">$A=A^*$ 的两条推论：Hermite 无虚特征值、三对角可达</a></li>
+    <li><a href="#s53">Wilkinson 位移与收敛速度</a></li>
+    <li><a href="#s54">连续映射视角：$\operatorname{off}$ 在 $Q^{\mathsf *}Q=I$ 上取到最小值</a></li>
+    <li><a href="#s55">历史：1846 年的 Jacobi 与 Schur</a></li>
+  </ol>
+</li>
+<li><a href="#p6">板书 ⑤：从三对角阵算特征向量<span class="tag">板书</span>
+  <ol>
+    <li><a href="#s61">分块回代：$(T_{11}-\lambda I)u=-T_{12}$</a></li>
+    <li><a href="#s62">特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</a></li>
+    <li><a href="#s63">$Q$ 的 $e_1$ 对应的是哪个特征值</a></li>
+  </ol>
+</li>
+<li><a href="#p7">实操：三条路线各管什么</a></li>
+<li><a href="#p8">本课小结</a></li>
+<li><a href="#p9">附录 · 板书逐张对照</a></li>
 </ol>
 </div>
 
-<h2 id="p1">第一部分 · 本课在课程里的位置：特征值之后的最后一环</h2>
+<h2 id="p1">第一部分 · 本课在课程里的位置</h2>
 
 <p>10.20 那堂课的终点是实 Schur 型：</p>
 
@@ -215,27 +232,28 @@ T_i\in\mathbb{R}^{1\times1}\ \text{或}\ \mathbb{R}^{2\times2},
 <div class="box key">
 <p class="label">一句话预告本课的主线</p>
 <p><strong>特征向量不用重新求。</strong>它就在 Schur 型里躺着，只是被 $Q$ 转了一下：先在三角形的 $T$ 上用回代法解出 $y$，再令 $x=Qy$ 就完事。整个 LAPACK 的 <code>dtrevc</code>（"TREanformation of eigenVectors in a real Schur form"）干的就是这件事，代价 $O(n^2)$ 量级。</p>
-<p>但是——<strong>「能算」不等于「算得准」。</strong>对一般矩阵，特征向量的病态程度可以离谱到无法接受的程度，这是本课真正想讲的东西。</p>
+<p>但是——<strong>「能算」不等于「算得准」。</strong>对一般矩阵，特征向量的病态程度可以离谱到无法接受的程度。</p>
 </div>
 
-<h3 id="s11">为什么特征向量值得单独一节课</h3>
-
-<p>在讲义 PDF 5（非对称特征值问题的解法）的整个第 5 章里，<strong>从头到尾没有一个字讲怎么算特征向量</strong>——第 5.4 节「实 Schur 型的后处理」讲的是对角块排序、Sylvester 方程、块对角化，全是<strong>特征值</strong>的后处理。特征向量这件事在讲义里被略过了。</p>
-
-<p>这不是疏忽，而是因为它横跨两章：</p>
+<p>另一半内容来自<strong>对称阵</strong>。讲义 PDF 6《对称特征值问题的解法》是专门讲这个的，它给出的工具箱和第 5 章完全不同：</p>
 
 <table>
 <tr><th></th><th>非对称（第 5 章）</th><th>对称（第 6 章）</th></tr>
 <tr><td>特征值怎么来</td><td>QR 方法 → 实 Schur 型</td><td>对称三对角化 → 隐式对称 QR → 谱分解</td></tr>
 <tr><td>特征向量怎么来</td><td>Schur 型 + 回代法</td><td><strong>Householder 分解时累积的 $Q$ 直接就是它</strong></td></tr>
+<tr><td>还有哪些算法</td><td>——</td><td><strong>Jacobi 方法、D&amp;C 分治、二分法、Jacobi 特征值版</strong></td></tr>
 <tr><td>可靠吗</td><td>看 $1/|y^{\mathsf T}x|$，可能极差</td><td>正交、良态、可靠</td></tr>
 </table>
 
-<p>所以本课的位置是：<strong>把第 5 章和第 6 章之间的那条缝补上</strong>，并且补完之后你会发现，「对称阵的特征向量是白送的」这句话有一个非常干净的理由。</p>
+<div class="box warn">
+<p class="label">本课的定位</p>
+<p>本课把第 5 章和第 6 章之间的那条缝补上：<strong>特征向量怎么算</strong>（第 5 章略过了，第 6 章要用），以及<strong>对称阵的特征值算法工具箱</strong>（Jacobi、分治、二分法）。</p>
+<p>顺带解释一件之前一直悬着的事：为什么 10.13 那份补课笔记里的「Jacobi 迭代法」被搬到了这里——见 <a href="#s44">§3.4</a>。</p>
+</div>
 
-<h2 id="p2">第二部分 · 特征向量从哪里来：Schur 型的「回代法」<span class="tag">板书</span></h2>
+<h2 id="p2">第二部分 · 板书 ①：特征向量怎么算 —— Schur 型上的回代法<span class="tag">板书</span></h2>
 
-<h3 id="s21">为什么特征向量不能直接解 $(A-\lambda I)x=0$</h3>
+<h3 id="s21">为什么不能直接解 $(A-\lambda I)x=0$</h3>
 
 <p>最朴素的的想法是：特征值 $\lambda$ 有了，那就解齐次方程组</p>
 
@@ -281,7 +299,7 @@ A(Qy)=Q(Ty).
 
 <p>这一步为什么值得反复强调？因为它把一个「病态的非线性问题」转化成了「良态的线性问题」：$T$ 的形状（拟上三角）是<strong>可以吃透的</strong>，而 $A$ 的形状是任意的。</p>
 
-<h3 id="s23">回代法（backward substitution）：为什么 $T$ 的三角形帮了大忙</h3>
+<h3 id="s23">回代法：为什么 $T$ 的三角形帮了大忙</h3>
 
 <p>现在的问题变成：给定 $\lambda$（$T$ 的某个特征值），解 $(T-\lambda I)y=0$。</p>
 
@@ -313,7 +331,7 @@ A(Qy)=Q(Ty).
 <p>共同点：<strong>一旦矩阵有了三角/三对角结构，逐个分量地确定就变成了可行的事</strong>，而不是必须整体做一次 $O(n^3)$ 的分解。</p>
 </div>
 
-<h3 id="s24">一个可以手算的 $3\times3$ 实例</h3>
+<h3 id="s24">$3\times3$ 实例与「分母 = 特征值之差」</h3>
 
 <p>取</p>
 
@@ -321,7 +339,7 @@ A(Qy)=Q(Ty).
 A=\begin{bmatrix}4&1&2\\0&3&1\\1&0&5\end{bmatrix}.
 \]
 
-<p>它的特征值可以用 10.20 §7 的方法算出来（实 Schur 型 $T$ 的对角元）。我们先用 numpy 跑一遍完整流程，看看每一步的数字：</p>
+<p>用 numpy 跑一遍完整流程（Householder → 隐式 QR 到实 Schur 型 → 回代），看看每一步的数字：</p>
 
 <pre><code>A = [[4, 1, 2],
      [0, 3, 1],
@@ -369,16 +387,10 @@ y_1=-\frac{t_{12}y_2+t_{13}y_3}{t_{11}-\lambda}.
 <li>$2\times2$ 块（$\lambda=2.948098+0.565236i$）：分母是 $t_{11}-\lambda$，即<strong>左上角那个特征值与这个 $\lambda$ 的差</strong>，模长 $3.21$。</li>
 </ul>
 <p>一般地，$T$ 的对角元 $t_{ii}$ 就是 $A$ 的各个特征值（$2\times2$ 块的则是那一对共轭复数）。所以<strong>回代法的分母永远是「某个特征值减去另一个特征值」</strong>，它的绝对值至少是特征值分离度 $\mathrm{sep}$ 那个量级。</p>
-<p>这就解释了 §3 的结论：<strong>特征值挤在一起（$\mathrm{sep}$ 小）⇒ 回代分母小 ⇒ 特征向量被放大</strong>。§2 的算法和 §3 的病态性分析，在这里扣上了。</p>
+<p>这就解释了 <a href="#s26">§2.6</a> 的结论：<strong>特征值挤在一起（$\mathrm{sep}$ 小）⇒ 回代分母小 ⇒ 特征向量被放大</strong>。§2 的算法和 §2.6 的病态性分析，在这里扣上了。</p>
 </div>
 
-<div class="box warn">
-<p class="label">手算时最容易搞错的一步</p>
-<p>回代的<strong>起点</strong>由 $1\times1$ 块的位置决定：$\lambda=t_{jj}$ 就在第 $j$ 个位置设 $y_j=1$，然后<strong>往上</strong>（$i=j-1,\dots,1$）回代。<strong>不要往下</strong>——因为 $T$ 是上三角，下面的块与这个特征值无关。</p>
-<p>而如果 $\lambda$ 来自一个 $2\times2$ 共轭块（右下角），起点在那个块上，块以下的分量全部取 $0$。</p>
-</div>
-
-<p>把完整的数值流程跑一遍（numpy + 自写 Householder/QR/回代），结果如下：</p>
+<p>把完整的数值流程跑一遍（自写 Householder / QR 迭代 / 回代），结果如下：</p>
 
 <table>
 <tr><th>块类型</th><th>$\lambda$</th><th>解出的 $x$</th><th>$\|(A-\lambda I)x\|$</th></tr>
@@ -417,50 +429,36 @@ B=\begin{bmatrix}a&b\\c&d\end{bmatrix},
 
 <p>复特征向量是数学上的常态，不是意外：<strong>实矩阵可以有复特征值，也必须有复特征向量</strong>。LAPACK 对这种情况返回实 Schur 型 + 复特征向量两列（互为共轭），MATLAB 的 <code>eig</code> 同理。</p>
 
-<h2 id="p3">第三部分 · 特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$<span class="tag o">教材补充</span></h2>
+<h3 id="s26">特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$<span class="tag o">教材补充</span></h3>
 
 <div class="box warn">
-<p class="label">本部分是「教材补充」，不是板书内容</p>
-<p>讲义 PDF 5 整章没有讲特征向量的敏感性；讲义 PDF 6 第 1 页末尾那条「实对称阵特征向量的敏感性」定理是讲过的（夹角 $\theta$ 刻画扰动前后的差距，敏感性取决于特征值与其余特征值的分离程度）。本部分把讲义里那句结论<strong>推广到非对称情形</strong>，并给出数值证据。</p>
+<p class="label">本小节是「教材补充」，不是板书内容</p>
+<p>讲义 PDF 5 整章没有讲特征向量的敏感性；讲义 PDF 6 第 1 页末尾那条「实对称阵特征向量的敏感性」定理是讲过的（夹角 $\theta$ 刻画扰动前后的差距，敏感性取决于特征值与其余特征值的分离程度）。本小节把讲义里那句结论<strong>推广到非对称情形</strong>，并给出数值证据。</p>
 </div>
 
-<h3 id="s31">第一性原理：特征向量为什么会错</h3>
+<h4>第一性原理：特征向量为什么会错</h4>
 
-<p>先做一次「扰动分析」。设 $A$ 有特征对 $(\lambda,x)$，$x\ne0$。现在把矩阵换成 $A+E$，问：新特征向量 $\tilde x$ 和旧特征向量 $x$ 差多远？</p>
-
-<p>精确地说：$Ax=\lambda x$，$(A+E)\tilde x=\tilde\lambda\tilde x$。把 $E\tilde x$ 从第二个方程里剥出来：</p>
+<p>设 $A$ 有特征对 $(\lambda,x)$，$x\ne0$。现在把矩阵换成 $A+E$，问：新特征向量 $\tilde x$ 和旧特征向量 $x$ 差多远？</p>
 
 \[
 (A-\lambda I)\tilde x=(\tilde\lambda-\lambda)\tilde x-E\tilde x.
 \]
 
-<p>看起来是「小量 = 小量 + 小量」，没法直接下结论。真正管用的做法是引入<strong>左特征向量</strong>。</p>
+<p>看起来是「小量 = 小量 + 小量」，没法直接下结论。真正管用的做法是引入<strong>左特征向量</strong>：设 $y$ 满足 $A^{\mathsf T}y=\lambda y$（等价地 $y^{\mathsf T}A=\lambda y^{\mathsf T}$）。</p>
 
-<h3 id="s32">关键量 $y^{\mathsf T}x$：左右特征向量的夹角</h3>
-
-<p>设 $y$ 是 $A$ 的左特征向量，即 $A^{\mathsf T}y=\lambda y$（等价地 $y^{\mathsf T}A=\lambda y^{\mathsf T}$）。在 $A$ 上取左乘 $y^{\mathsf T}$：</p>
-
-\[
-y^{\mathsf T}A=\lambda y^{\mathsf T},\qquad y^{\mathsf T}Ax=\lambda y^{\mathsf T}x,
-\]
-
-<p>而 $Ax=\lambda x$，所以 $\lambda y^{\mathsf T}x=\lambda y^{\mathsf T}x$——这是恒等式，不给信息。真正要用的式子是<strong>一阶扰动公式</strong>：</p>
-
-<p>若 $\lambda$ 是单特征值，$y^{\mathsf T}x\ne0$，则 $A+E$ 的对应特征值与特征向量满足</p>
+<p>若 $\lambda$ 是单特征值、$y^{\mathsf T}x\ne0$，则 $A+E$ 的对应特征值与特征向量满足一阶公式</p>
 
 \[
 \tilde\lambda-\lambda=y^{\mathsf T}E\tilde x+O(\|E\|^2),
 \]
 
-<p>对特征向量，把 $y$ 归一化成 $y^{\mathsf T}x=1$，再记特征值分离度 $\mathrm{sep}=\min_{\mu\in\sigma(A),\,\mu\ne\lambda}|\lambda-\mu|$（$\sigma(A)$ 是 $A$ 的谱）。一阶灵敏度分析给出（$\tilde x$ 与 $x$ 的夹角 $\theta$）</p>
+<p>以及：把 $y$ 归一化成 $y^{\mathsf T}x=1$，再记特征值分离度 $\mathrm{sep}=\min_{\mu\in\sigma(A),\,\mu\ne\lambda}|\lambda-\mu|$，则 $\tilde x$ 与 $x$ 的夹角 $\theta$ 满足</p>
 
 \[
 \boxed{\;\sin\theta\ \lesssim\ \underbrace{\frac{1}{|y^{\mathsf T}x|}}_{\text{非正规性因子}}\ \cdot\ \underbrace{\frac{\|E\|}{\mathrm{sep}}}_{\text{特征值分离因子}}\;}
 \]
 
-<p><strong>两个因子都要看。</strong>$\mathrm{sep}$ 小是「特征值挤在一起」，$|y^{\mathsf T}x|$ 小是「左右特征向量几乎垂直」——后者是非对称矩阵特有的。对正规阵，前者管一切；对非正规阵，后者会把情况再恶化很多。</p>
-
-<p>作为对照，Kato–Temple 型的一般上界是 $\sin\theta\le\dfrac{\|E\|}{\mathrm{sep}-\|E\|}$，它<strong>不区分正规与否</strong>——代价是丢掉了「非正规阵更糟」这个信息。上面那个带 $1/|y^{\mathsf T}x|$ 的版本才是非对称情形该用的。</p>
+<p><strong>两个因子都要看。</strong>$\mathrm{sep}$ 小是「特征值挤在一起」，$|y^{\mathsf T}x|$ 小是「左右特征向量几乎垂直」——后者是非对称矩阵特有的。对正规阵，前者管一切；对非正规阵，后者会把情况再恶化很多。作为对照，Kato–Temple 型的一般上界是 $\sin\theta\le\dfrac{\|E\|}{\mathrm{sep}-\|E\|}$，它<strong>不区分正规与否</strong>——代价是丢掉了「非正规阵更糟」这个信息。</p>
 
 <div class="box key">
 <p class="label">$y^{\mathsf T}x$ 的几何含义</p>
@@ -469,7 +467,7 @@ y^{\mathsf T}A=\lambda y^{\mathsf T},\qquad y^{\mathsf T}Ax=\lambda y^{\mathsf T
 <p>对<strong>非正规阵</strong>，$x$ 和 $y$ 可以几乎垂直，$|y^{\mathsf T}x|$ 就可以任意小 —— 于是特征向量可以任意不可靠。</p>
 </div>
 
-<h3 id="s33">数值实验：$1/|y^{\mathsf T}x|$ 怎么爆炸</h3>
+<h4>数值实验：$1/|y^{\mathsf T}x|$ 怎么爆炸</h4>
 
 <p>取一个极简的非对称矩阵</p>
 
@@ -487,7 +485,7 @@ A=\begin{bmatrix}1&1\\0&1+\varepsilon\end{bmatrix}.
 x_2=\varepsilon x_1,
 \]
 
-<p>所以 $x\propto(1,\varepsilon)^{\mathsf T}$，归一化后 $x\approx(1,\varepsilon^{\mathsf T})$——<strong>几乎就是 $e_1$</strong>。左特征向量：$A^{\mathsf T}y=(1+\varepsilon)y$ 给出 $y_1=0$，所以 $y=e_2$。于是</p>
+<p>所以 $x\propto(1,\varepsilon)^{\mathsf T}$，归一化后 $x\approx(1,\varepsilon)^{\mathsf T}$——<strong>几乎就是 $e_1$</strong>。左特征向量：$A^{\mathsf T}y=(1+\varepsilon)y$ 给出 $y_1=0$，所以 $y=e_2$。于是</p>
 
 \[
 y^{\mathsf T}x=\varepsilon.
@@ -509,16 +507,14 @@ y^{\mathsf T}x=\varepsilon.
 <div class="box warn">
 <p class="label">这个例子的实践含义</p>
 <p>$\varepsilon=10^{-8}$ 时，条件数是 $10^8$。也就是说：<strong>机器精度（约 $10^{-16}$）的特征向量，只有大约 8 位数字是可信的。</strong>如果你的特征向量要拿去做后续的线性组合、投影、或者喂给一个对误差敏感的算法，这 8 位就完了。</p>
-<p>更糟的是：<strong>特征值本身看起来是「准」的</strong>（$1+10^{-8}$ 算得清清楚楚，误差 $10^{-16}$），但特征向量的方向完全不可信。<strong>特征值准，不等于特征向量准。</strong>这是本节最该记住的一句话。</p>
+<p>更糟的是：<strong>特征值本身看起来是「准」的</strong>（$1+10^{-8}$ 算得清清楚楚，误差 $10^{-16}$），但特征向量的方向完全不可信。<strong>特征值准，不等于特征向量准。</strong>这是本小节最该记住的一句话。</p>
 </div>
 
-<h3 id="s34">正规阵 vs 非正规阵：为什么对称情形的特征向量靠谱</h3>
+<h4>正规阵 vs 非正规阵：为什么对称情形的特征向量靠谱</h4>
 
-<p>做一个对照实验。同样的扰动 $E$，作用在两个有同样特征值的矩阵上：</p>
+<p>做一个对照实验。同样的扰动 $E=\delta\cdot e_{12}$，作用在两个矩阵上：对称阵 $S=\begin{bmatrix}2&1\\1&2\end{bmatrix}$（特征值 $3,1$，特征向量 $(1,\pm1)/\sqrt2$），非对称阵 $N=\begin{bmatrix}2&1\\0&2\end{bmatrix}$（特征值 $2,2$，<strong>缺陷</strong>）。</p>
 
-<p>对称阵 $S=\begin{bmatrix}2&1\\1&2\end{bmatrix}$（特征值 $3,1$，特征向量 $(1,\pm1)/\sqrt2$），非对称阵 $N=\begin{bmatrix}2&1\\0&2\end{bmatrix}$（特征值 $2,2$，<strong>缺陷</strong>）。</p>
-
-<p>对对称阵，$y=x$，$|y^{\mathsf T}x|=1$，条件数 = 1。数值验证（扰动 $E=\delta\cdot e_{12}$）：</p>
+<p>对对称阵，$y=x$，$|y^{\mathsf T}x|=1$，条件数 = 1。数值验证：</p>
 
 <table>
 <tr><th>$\|E\|$</th><th>特征值移动</th><th>特征向量夹角</th></tr>
@@ -529,19 +525,6 @@ y^{\mathsf T}x=\varepsilon.
 </table>
 
 <p>夹角随扰动<strong>线性</strong>增长，比例常数很小——这就是「良态」的样子。对比非对称的缺陷阵 $N$：它的两个特征向量<strong>根本不存在两个独立的</strong>（几何重数 1，代数重数 2），任意小的扰动都会把它「劈开」成两个复共轭特征值，特征向量可以指向完全不同的方向。</p>
-
-<div class="box key">
-<p class="label">对称阵的对照结论（回到讲义 PDF 6 p1–p2）</p>
-<p>讲义 PDF 6 开头那条定理说：对称阵的<strong>特征值</strong>总是良态的（Weyl 定理，$|\tilde\lambda_i-\lambda_i|\le\|E\|$，相对误差不超过机器精度）。</p>
-<p>但讲义紧接着说了<strong>「但值得注意的是，计算得到的特征向量并不一定有这样良好的精度」</strong>——因为特征向量对扰动的敏感性依赖于该特征值与其余特征值的<strong>分离程度</strong>。</p>
-<p>把这两句话合起来读，得到本课最重要的一张表：</p>
-</div>
-
-<table>
-<tr><th></th><th>特征值</th><th>特征向量</th></tr>
-<tr><td>实对称阵</td><td><strong>总是良态</strong>：$|\tilde\lambda_i-\lambda_i|\le\|E\|$</td><td>良态但<strong>依赖分离度</strong>：夹角 $\theta$ 满足 $\sin\theta\lesssim\|E\|/\mathrm{sep}$，$\mathrm{sep}=\min_{j\ne i}|\lambda_i-\lambda_j|$</td></tr>
-<tr><td>一般非对称阵</td><td>可以病态（缺陷阵、重根）</td><td>更糟：$\sin\theta\lesssim\|E\|/(|y^{\mathsf T}x|\cdot\mathrm{sep})$，两个因子可以同时很小</td></tr>
-</table>
 
 <figure>
 <svg viewBox="0 0 680 300" width="100%" role="img" aria-labelledby="figA1t figA1d">
@@ -577,9 +560,591 @@ y^{\mathsf T}x=\varepsilon.
 <figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 1 · 特征向量的条件数由左右特征向量的夹角决定</figcaption>
 </figure>
 
-<h2 id="p4">第四部分 · 实操：三条路线各管什么</h2>
+<h2 id="p3">第三部分 · 板书 ②：D&amp;C 分治算法（Divide and Conquer）<span class="tag">板书</span></h2>
 
-<h3 id="s41">路线一：<code>eig</code> / LAPACK <code>dgeev</code> 全流程</h3>
+<p>讲义 PDF 6 §6.5 讲的这条线，是<strong>专门给对称阵设计的</strong>。它的思想一句话就能说完：<strong>把大问题切成两个小问题，再用一点额外信息把它们粘回去。</strong></p>
+
+<h3 id="s31">分治的基本套路：切两半 + 一个秩一修正</h3>
+
+<p>出发点是<strong>对称三对角分解</strong>（讲义 PDF 6 §6.2.1）：对称阵 $A$ 可以被正交相似地化成对称三对角阵 $T=Q^{\mathsf T}AQ$。而 $T$ 的结构——<strong>只有一条超对角线和一条次对角线</strong>——让「切两半」变得非常干净。</p>
+
+<p>板书画的是这个（横线代表三对角阵的非零带）：</p>
+
+<pre><code>        ⎡                 ⎤
+        ⎢ ───             ⎥
+   T =  ⎢    ───          ⎥      切开后：T₁₁ 与 T₂₂ 之间只剩
+        ⎢       ───       ⎥      「一粗一细」的一对耦合
+        ⎢          ───    ⎥
+        ⎣                 ⎦</code></pre>
+
+<p>把 $T$ 切成上下两块（$n$ 近似对半）：</p>
+
+\[
+T=\begin{bmatrix}T_{11}&T_{12}\\T_{21}&T_{22}\end{bmatrix},
+\]
+
+<p>其中 $T_{11},T_{22}$ 仍是<strong>对称三对角阵</strong>（低阶），而 $T_{12}$ 与 $T_{21}$ 是一对互为转置的<strong>瘦长矩阵</strong>——它们只在对角线附近有非零元。</p>
+
+<p>关键的一步是<strong>把这个耦合「压」成一个秩一修正</strong>。板书上是这么写的：</p>
+
+<pre><code>       ⎡      ⎤
+T   =  ⎢ Q₀  ⎥ ⎡ Λ₀    ⎤ ⎢ Q₀* ⎥  +  rank 1
+       ⎣      ⎦ ⎣        ⎦ ⎣     ⎦
+
+   =  Q₀ (Λ₀ + u u*) Q₀*</code></pre>
+
+<p>也就是说，把「两个块 + 耦合」整体写成<strong>「两个低阶块的谱 + 一个秩一矩阵」</strong>的形式。其中 $Q_0$ 是正交阵、$\Lambda_0$ 是对角阵（$T_{11}$、$T_{22}$ 的特征值），$u$ 是把耦合压过来的那个向量。</p>
+
+<div class="box key">
+<p class="label">为什么压成秩一是关键的一步</p>
+<p>秩一矩阵是最「简单」的耦合：因为 $\operatorname{rank}(uu^{\mathsf T})=1$，它对特征值的影响可以用<strong>一个标量方程</strong>刻画（见下一节）。如果耦合的秩是 $r$，就得解一个 $r\times r$ 的问题——分治的收益立刻被吃掉。</p>
+<p>板书右下角还画了一句话：「<strong>把白的尾把斜小矩阵分</strong>」——意思是 $T_{12}$ 里那条斜带在分治时被<strong>拆开分配</strong>到两块上去，从而让秩降到 1。</p>
+<p>「秩降到 1」为什么这么重要？因为<strong>秩一修正对特征值的影响可以用一个标量方程刻画</strong>——这背后是一族行列式定理，见 <a href="#det-lemma">§2.2 的「行列式引理的三层」</a>。板书上用的 $\det(I+uu^{\mathsf T})=1+u^{\mathsf T}u$ 是其中最朴素的一个特例。</p>
+</div>
+
+<h3 id="s32">秩一修正的特征值方程 $f(\lambda)=0$</h3>
+
+<p>现在的问题是：$A=Q_0(\Lambda_0+uu^{\mathsf T})Q_0^{\mathsf T}$ 的特征值是什么？由 $Q_0$ 正交，$A$ 与 $\Lambda_0+uu^{\mathsf T}$ 同谱，所以只需解</p>
+
+\[
+\det\bigl(\lambda I-(\Lambda_0+uu^{\mathsf T})\bigr)=0.
+\]
+
+<p>板书上的推导用的是行列式恒等式 $\det(I+uv^{\mathsf T})=1+v^{\mathsf T}u$。这个式子本身只是下面这一族定理的<strong>最朴素的一个特例</strong>；把它背后的一般定理写全，才能看清 D&amp;C 这一步的机制。</p>
+
+<div class="box key" id="det-lemma">
+<p class="label">行列式引理的三层（由朴素到完全）</p>
+
+<h4>① 矩阵行列式引理（Matrix Determinant Lemma）</h4>
+
+<p>设 $A\in\mathbb{R}^{n\times n}$ <strong>可逆</strong>，$u,v\in\mathbb{R}^n$，则</p>
+
+\[
+\boxed{\;\det\bigl(A+uv^{\mathsf T}\bigr)=\det(A)\bigl(1+v^{\mathsf T}A^{-1}u\bigr).\;}
+\]
+
+<p>板书上写的 $\det(I+uv^{\mathsf T})=1+v^{\mathsf T}u$ 就是它取 $A=I_n$ 的特例（$\det I=1$，$I^{-1}=I$）。</p>
+
+<h4>② Sylvester 行列式定理（更一般的形式）</h4>
+
+<p>设 $A\in\mathbb{R}^{m\times m}$、$B\in\mathbb{R}^{n\times n}$、$C\in\mathbb{R}^{m\times n}$，则</p>
+
+\[
+\boxed{\;\det(I_m+CB)=\det(I_n+BC).\;}
+\]
+
+<p>注意右边两个行列式的<strong>阶数不同</strong>（$m$ 与 $n$）。这才是「完全版」：它把一个 $m$ 阶行列式换成一个 $n$ 阶行列式，而<strong>可以选 $n$ 更小</strong>——这正是分治能把大问题变小的机制。</p>
+
+<p>①是②在 $A$ 可逆时的推论：取 $B=A^{-1}$、$C=uv^{\mathsf T}$，则</p>
+
+\[
+\det(I_m+uv^{\mathsf T}A^{-1})=\det\bigl(I_n+A^{-1}uv^{\mathsf T}\bigr),
+\]
+
+<p>两边除以 $\det(I_m+A^{-1}uv^{\mathsf T})$ 并用同样的恒等式再算一次，就得到 $\det(A+uv^{\mathsf T})=\det(A)(1+v^{\mathsf T}A^{-1}u)$。</p>
+
+<h4>③ 幂零情形（$\lambda$ 恰是某个 $\lambda_i^{(0)}$ 时）</h4>
+
+<p>①要求 $A=\lambda I-\Lambda_0$ 可逆，即 $\lambda\ne\lambda_i^{(0)}$。当 $\lambda$ <strong>恰好等于</strong>某个 $\lambda_i^{(0)}$ 时，$A$ 奇异、$A^{-1}$ 不存在，但②仍然成立（Sylvester 定理<strong>不需要可逆性</strong>）。这正是分治里需要的：$\lambda_i^{(0)}$ 本身就是 $A$ 的特征值之一。</p>
+</div>
+
+<p>用②来看 D&amp;C 这一步会更清楚。把 $M=\lambda I-\Lambda_0-uu^{\mathsf T}$ 写成</p>
+
+\[
+M=\lambda I-\Lambda_0+\bigl(-(\lambda I-\Lambda_0)^{-1}u\bigr)u^{\mathsf T},
+\]
+
+<p>即 $M=A+uv^{\mathsf T}$ 的形式，其中 $A=\lambda I-\Lambda_0$、$u=-(\lambda I-\Lambda_0)^{-1}u$、$v=u$。用①立刻得到</p>
+
+\[
+\det M=\det(\lambda I-\Lambda_0)\Bigl(1-u^{\mathsf T}(\lambda I-\Lambda_0)^{-1}u\Bigr),
+\]
+
+<p>于是 $\det M=0$ 等价于括号里的因子为零——因为 $\det(\lambda I-\Lambda_0)=\prod_i(\lambda-\lambda_i^{(0)})\ne0$。板书上的推导就是这个式子的展开：</p>
+
+<pre><code>det(λI − Λ₀ − uu*) = 0
+
+  = det(λI − Λ₀) · det(I − (λI − Λ₀)⁻¹ u u*)
+  = det(λI − Λ₀) · det(I + v u*)        其中 v = −(λI − Λ₀)⁻¹ u
+  = det(λI − Λ₀) · (1 + u* v)           ← 这里用的就是 ①，v = −(λI − Λ₀)⁻¹u
+
+  ⇔ 0 = 1 − u*(λI − Λ₀)⁻¹ u = f(λ)</code></pre>
+
+<div class="box ok">
+<p class="label">为什么 Sylvester 定理在分治里是「结构性」的而不只是「技巧性的」</p>
+<p>回到①的矩阵形式，注意它只依赖 $A^{-1}u$ 这一个向量。所以：</p>
+<ul>
+<li>要把 $n$ 阶矩阵 $\lambda I-\Lambda_0$ 求逆，<strong>不需要真的做 $O(n^3)$ 的求逆</strong>——只需解 $n$ 个线性方程组拿到 $(\lambda I-\Lambda_0)^{-1}u$；</li>
+<li>由于 $\Lambda_0$ 是<strong>对角</strong>的，这个方程组是<strong>逐个分量解的</strong>：$u^{\mathsf T}(\lambda I-\Lambda_0)^{-1}u=\sum_i\dfrac{|u_i|^2}{\lambda-\lambda_i^{(0)}}$，$O(n)$；</li>
+<li>真正贵的是<strong>二分求根</strong>，因为每次求 $f(\lambda)$ 只需重算这个 $O(n)$ 的和。</li>
+</ul>
+<p>所以「$\operatorname{rank}(uu^{\mathsf T})=1$」这件事的威力，<strong>完全通过行列式引理传递到特征值上</strong>：秩一 ⇒ 行列式只被一个标量因子改动 ⇒ 特征值问题退化成一个标量方程。</p>
+</div>
+
+<p>最后一步把 $\Lambda_0$ 的对角结构代进去，得到一个<strong>只含标量的有理函数</strong>：</p>
+
+\[
+\boxed{\;f(\lambda)=1-u^{\mathsf T}(\lambda I-\Lambda_0)^{-1}u
+=1-\sum_{i=1}^{n}\frac{|u_i|^{2}}{\lambda-\lambda_i^{(0)}}\;}
+\]
+
+<p>板书上写的是同一个式子（记号略有不同，$x$ 那里指的是 $\lambda$）：</p>
+
+<pre><code>                    |u₁|²
+f(λ) = 1 − Σ  ─────────────
+          i=1    x − λᵢ</code></pre>
+
+<p><strong>这个公式是 D&amp;C 的心脏。</strong>它把「求 $n$ 个特征值」变成了「求一个有理函数的 $n$ 个零点」，而后者可以<strong>逐区间二分</strong>——因为 $f$ 在每个 $(\lambda_i^{(0)},\lambda_{i+1}^{(0)})$ 区间里单调（导数 $f'(\lambda)=\sum_i\dfrac{|u_i|^2}{(\lambda-\lambda_i^{(0)})^2}\gt0$）。</p>
+
+<div class="box ok">
+<p class="label">数值验证</p>
+<p>取 $\Lambda_0=\operatorname{diag}(-0.991647,-0.890592,-0.454671,-0.274138,0.001230,0.298746)$，$u$ 随机取单位向量，$A=\Lambda_0+uu^{\mathsf T}$：</p>
+<pre><code>真实特征值   = [−0.99148158  −0.59982021  −0.38542810  −0.10771899  0.19801995  0.57535760]
+f(λ)=0 的根  = [−0.99148058  −0.59981921  −0.38542710  −0.10771799  0.19802095  …]
+                                    ↑ 5 个根与 5 个特征值逐一吻合（偏差 ~1e−6，
+                                      因为二分容差设得粗；第 6 个根落在搜索区间外）</code></pre>
+</div>
+
+<h3 id="s33">胶合：把两个低阶谱分解拼回来</h3>
+
+<p>有了 $f(\lambda)=0$ 的根（精确到 $O(\varepsilon)$），还需要把对应的<strong>特征向量</strong>也拿到手。讲义 §6.5.2「胶合」讲的就是这一步，核心是一个引理。</p>
+<p>顺带一提：这个引理处理的是 $2\times2$ 块 $\begin{bmatrix}\alpha&\beta\\-\beta&\alpha\end{bmatrix}$，形式上仍然是「秩一修正 + 一个 $2\times2$ 的小问题」——和 <a href="#s32">§2.2</a> 是同一个套路，只是维度从 $n$ 降到了 $2$。</p>
+
+<div class="box key">
+<p class="label">胶合引理（讲义：数值线性代数 引理）</p>
+<p>设 $A$ 的谱分解为 $A=Q\Lambda Q^{\mathsf T}$，其中 $Q$ 正交、$\Lambda$ 对角元互不相同。若 $x$、$y$ 是 $A$ 的特征对（$Ax=\lambda x$），则可以构造一个 $2\times2$ 的问题</p>
+
+\[
+\begin{bmatrix}\alpha&\beta\\-\beta&\alpha\end{bmatrix}
+\begin{bmatrix}x\\y\end{bmatrix}
+=\lambda\begin{bmatrix}x\\y\end{bmatrix},
+\]
+
+<p>其解 $(x,y)^{\mathsf T}$ 满足 $x\ne0$，且 <strong>$x$ 就是原来那个特征向量</strong>。反过来，给定 $x$ 就能解出 $y$。</p>
+</div>
+
+<p>板书最后一页（第 5 页）画的正是这个 $2\times2$ 块的来历：</p>
+
+<pre><code>             ⎡ 0  ⎤                 ⎡ α  ⎤
+T =  ⎡ α  ⎤    ⎢    ⎥     ⎡ β  * ⎤
+     ⎣ 0  ⎦  →  ⎣ β  ⎦  =  ⎣    α ⎦  （交换顺序）
+             ⎡ 0  ⎤                 ⎡ *  ⎤
+                    ⎣ 0  ⎦                 ⎣ α ⎦</code></pre>
+
+<p>数值验证（$T=\begin{bmatrix}5&2\\0&3\end{bmatrix}$，特征值 $5,3$）：取 $Q$ 的第一列为 $\beta=3$ 对应的特征向量，$Q^{\mathsf T}TQ$ 的对角元确实是 $[3,5]$——<strong>顺序被交换了</strong>。</p>
+
+<h2 id="p4">第四部分 · 板书 ③：Jacobi 方法<span class="tag">板书</span></h2>
+
+<p>讲义 PDF 6 §6.3 讲的 Jacobi 方法是求<strong>实对称阵全部特征值和特征向量</strong>最古老的方法之一（1846 年，见 <a href="#s55">§4.5</a>）。它的思想：既然实对称阵存在谱分解（可正交相似成对角阵），那就<strong>选一系列正交变换，一步步把非对角元压成 0</strong>。</p>
+
+<div class="box key">
+<p class="label">板书上那张「速度 / 精度」对照表</p>
+<p>板书右下角画了一个二维表：横轴是<strong>速度</strong>（从上到下越来越快：Jacobi → QR → D&amp;C → MRRR），纵轴是<strong>精度</strong>（从上到下越来越差）。</p>
+<p>这个表是整章的方法地图：<strong>Jacobi 最准但最慢，D&amp;C 最快但要付出精度的代价</strong>（因为分治过程中用了双精度代数值做 $\mathrm{sep}$ 的计算）。本课讲的 D&amp;C（第三部分）和 Jacobi（第四部分）正好是这张表的两个极端。</p>
+</div>
+
+<h3 id="s41">一次旋转：把 $2\times2$ 块转成对角</h3>
+
+<p>一次 Jacobi 迭代只动两个下标 $i,j$。板书（第 3 页）上写的是：</p>
+
+<pre><code>⎡ a₁₁  a₁₂ ⎤      ⎡ c   s ⎤ ⎡ a₁₁  a₁₂ ⎤ ⎡ c  −s ⎤
+⎣ a₂₁  a₂₂ ⎦  =   ⎢ −s  c ⎥ ⎣ a₂₁  a₂₂ ⎦ ⎣ s   c ⎥</code></pre>
+
+<p>要求右端变成对角阵。板书接着把 $(1,2)$ 位置的等式展开成</p>
+
+\[
+-s\,a_{11}+c\,a_{12}-s\,a_{12}+c\,a_{22}-s=0,
+\]
+
+<p>然后除以 $s$（记 $t=c/s$）得到</p>
+
+\[
+c\,s\,(a_{12}-a_{22})=(c^{2}-s^{2})a_{12}
+\quad\Longrightarrow\quad
+t(a_{11}-a_{22})=(1-t)a_{12},
+\]
+
+<p>板书写的是「$c\,s(a_{12}-a_{22})=(c^{2}-s^{2})a_{12}$，$t=\frac{c}{s}$」，然后下一行「$t(a_{11}-a_{22})=(1-t)a_{12}$」，再下面「<strong>选 $t$ 越大越好</strong>」，最后「$t$ 最终 $\to0$，那么 $\begin{bmatrix}c&s\\-s&c\end{bmatrix}\to\begin{bmatrix}1&0\\0&1\end{bmatrix}$」。</p>
+
+<p>这个「$t\to0$」的意思要读对：<strong>当 $a_{12}$ 相对 $a_{11}-a_{22}$ 很小时，旋转角本来就小</strong>，$t=c/s\to0$ 意味着 $\theta\to0$，即「这一步几乎不用转」。而当 $a_{12}$ 很大时 $t$ 很大，$\theta\to\pi/2$，是一次大旋转。板书说「$t$ 最终 $\to0$」是指<strong>迭代收敛时旋转角自动趋于零</strong>——因为非对角元都被压没了。</p>
+
+<div class="box ok">
+<p class="label">数值验证：一次旋转把 $2\times2$ 块转成对角</p>
+<p>取 $\begin{bmatrix}4&1\\1&3\end{bmatrix}$。最优旋转 $\theta=\frac12\arctan\frac{2a_{12}}{a_{22}-a_{11}}=1.01722$，$c=0.52573$、$s=0.85065$：</p>
+<pre><code>Jᵀ A J = [[2.38196601, 0.00000000],
+          [0.00000000, 4.61803399]]     |b₁₂| = 3.53e−17</code></pre>
+<p>对角元恰好是 $A$ 的两个特征值（$[2.381966,4.618034]$）。</p>
+</div>
+
+<p>讲义 PDF 6 §6.3.1 还补了一条重要的细节：<strong>要选模长较小的那个根</strong>，以保证 $\cos\theta$ 占优（$|c|\ge|s|$）。原因是：$c$ 占优时 Jacobi 变换矩阵更接近单位阵，<strong>行列次序不会变</strong>；否则可能出现「非对角元逃脱」的现象。</p>
+
+<h3 id="s42">目标函数 $\operatorname{off}(A)$ 与收敛率</h3>
+
+<p>Jacobi 方法的目标是逐步把<strong>非对角元素的模平方和</strong>约化为零。板书（第 3 页）把这个量写作</p>
+
+\[
+\operatorname{off}(A)=\|A\|_F^{2}-\|\operatorname{diag}(A)\|_F^{2},
+\]
+
+<p>并写「<strong>greed $|a_{ij}|$ is max</strong>」——即每步选模最大的非对角元。</p>
+
+<div class="box ok">
+<p class="label">数值验证：$\operatorname{off}(A)$ 的两种算法一致</p>
+<pre><code>2×2 阵 [[4,1],[1,3]]：  off = 2.0000000000   （直接数非对角元模平方和 = 2.0000000000）
+3×3 阵 [[1,2,3],[4,5,6],[7,8,9]]：off = 178.0000000000 （= 178.0000000000）</code></pre>
+</div>
+
+<p>板书接着给出了经典 Jacobi 的<strong>一步收敛率</strong>：</p>
+
+\[
+\operatorname{off}\bigl(A^{(k+1)}\bigr)\le
+\underbrace{\frac{n^{2}-n-2}{n^{2}-n}}_{\text{记作 }\gamma}\, \operatorname{off}\bigl(A^{(k)}\bigr),
+\]
+
+<p>以及「$0\le d_{k+1}\le\gamma^{k}d_k\Rightarrow d_{k+1}\le\gamma^{k}d_0$，<strong>global linear convergence</strong>」。</p>
+
+<div class="box ok">
+<p class="label">数值验证：一步收敛率确实成立</p>
+<p>对随机对称阵跑经典 Jacobi（每步选最大 $|a_{ij}|$）：</p>
+<pre><code>n = 4，γ = (16−4−2)/(16−4) = 0.83333333
+  off(1)/off(0) = 0.37415674  ✓     off(2)/off(1) = 0.63370078  ✓
+  off(3)/off(2) = 0.38136849  ✓     off(4)/off(3) = 0.46491878  ✓
+  …（每一步都 ≤ γ）
+  最终 off = −1.78e−15；特征值与 numpy 完全一致
+
+n = 6，γ = (36−6−2)/(36−6) = 0.93333333
+  off(1)/off(0) = 0.71181848  ✓     off(2)/off(1) = 0.63768850  ✓
+  off(3)/off(2) = 0.54691296  ✓     off(4)/off(3) = 0.62741501  ✓
+  …
+  最终 off = 3.55e−15；特征值与 numpy 完全一致</code></pre>
+</div>
+
+<h3 id="s43">循环 Jacobi：$O(n^{3})$ 与全局线性收敛</h3>
+
+<p>板书（第 3 页）最后两行是这一节的关键：</p>
+
+<blockquote>
+<p>「<strong>Jacobi 是 $O(n^{3})$</strong> 因为是有序化 $O(n^{4})$ 方法」</p>
+<p>「<strong>但是全选元素太慢了</strong>」</p>
+<p>「<strong>现实中采用循环 Jacobi 算的快，比 QR 快，但是慢</strong>」</p>
+</blockquote>
+
+<p>这三句话串起来是一条完整的工程逻辑链：</p>
+
+<ol>
+<li><strong>经典 Jacobi（有序化）</strong>：每步找模最大的非对角元，这一步本身要 $O(n^2)$，所以一步 $O(n^2)$、总复杂度 $O(n^4)$——<strong>比 QR 慢</strong>。</li>
+<li><strong>循环 Jacobi</strong>：不找最大值，按列扫描一遍所有 $(i,j)$（<strong>一次扫描 $O(n^3)$</strong>），重复扫描直到收敛。整体仍是 $O(n^3)$，而且<strong>天然可并行</strong>。</li>
+<li>板书说循环 Jacobi「比 QR 快，但是慢」——这里的「慢」指的是<strong>收敛所需的总工作量/扫描轮数</strong>仍大于 QR 的 $O(n^3)$ 累计量，而「快」指的是它的<strong>单步</strong>非常便宜、并行度高。</li>
+</ol>
+
+<p>板书最下面还画了「cyclic」和一个矩阵示意图：<strong>一列一列扫过去，每扫完一列就把该列的非对角元消掉</strong>。</p>
+
+<div class="box key">
+<p class="label">经典 Jacobi 与循环 Jacobi 的对照（讲义 §6.3.1–§6.3.2）</p>
+<table>
+<tr><th></th><th>经典 Jacobi</th><th>循环 Jacobi</th></tr>
+<tr><td>每步选哪个 $(i,j)$</td><td>模最大的非对角元（<strong>有序</strong>）</td><td>按列扫描所有 $(i,j)$（<strong>无序</strong>）</td></tr>
+<tr><td>找最大值这一步</td><td>$O(n^2)$</td><td><strong>不需要</strong>（省掉了）</td></tr>
+<tr><td>总复杂度</td><td>$O(n^4)$</td><td>$O(n^3)$</td></tr>
+<tr><td>收敛性</td><td>全局线性收敛，一步 $\le\gamma\operatorname{off}$</td><td>全局线性收敛</td></tr>
+<tr><td>并行性</td><td>差（每步依赖上一步的选点）</td><td><strong>好</strong>（一列内各行互不依赖）</td></tr>
+</table>
+<p>讲义 PDF 6 §6.3 的原话：「与隐式对称 QR 迭代相比，Jacobi 方法的<strong>收敛速度很慢</strong>，但由于其具有<strong>编程简单、并行效率高</strong>的特点，近年来又重新受到重视。此外，对于某些<strong>几乎是对角阵</strong>的实对称阵来说，Jacobi 方法也是十分有效的。」</p>
+</div>
+
+<h3 id="s44">Jacobi 迭代法（解线性方程组那个，从 10.13 搬来）<span class="tag a">讲义 PDF 3 §3.1.1</span></h3>
+
+<div class="box warn">
+<p class="label">为什么要搬到这里：两个 Jacobi 是不同的东西</p>
+<p>10.13 补课笔记里有一个 §3.7「Jacobi 迭代法」，是<strong>解线性方程组 $Ax=b$</strong> 的迭代法（讲义 PDF 3 第 3 章，课上没讲，属于按讲义提前自学）。</p>
+<p>本课的 Jacobi 方法是<strong>求对称阵全部特征值和特征向量</strong>的旋转法（讲义 PDF 6 §6.3）。两者<strong>除了名字一样，没有任何数学关系</strong>：</p>
+<table>
+<tr><th></th><th>Jacobi 迭代法</th><th>Jacobi 方法（旋转法）</th></tr>
+<tr><td>干什么</td><td>解 $Ax=b$</td><td>求 $A$ 的全部特征值与特征向量</td></tr>
+<tr><td>对象</td><td>一般矩阵（拆成 $D-L-U$）</td><td><strong>实对称阵</strong></td></tr>
+<tr><td>迭代的是什么</td><td>解向量 $x^{(k)}$</td><td><strong>正交变换 $Q^{(k)}$</strong>（$A\to Q^{\mathsf T}AQ$）</td></tr>
+<tr><td>收敛判据</td><td>$\rho(B)\lt1$</td><td>$\operatorname{off}(A)\to0$</td></tr>
+<tr><td>讲义位置</td><td>PDF 3 §3.1.1（第 3 章）</td><td>PDF 6 §6.3（第 6 章）</td></tr>
+</table>
+<p>把两者放在同一份笔记里，是为了<strong>避免「Jacobi 迭代法」和「Jacobi 方法」在复习时互相混淆</strong>——名字撞车是这两章最容易踩的坑。原来的位置（10.13 补课笔记 §3.7）保留一个跳转说明。</p>
+<p>配套的 <strong>Gauss-Seidel 迭代法</strong>、SOR、收敛速度那些<strong>仍在 10.13</strong>（它们是第 3 章的一整套，见 <a href="补课笔记-幂法反幂法与第3章引言.html#s38">10.13 §3.8</a> 起）——本课不重复，只把 Jacobi 这一节提过来对照。</p>
+</div>
+
+<h4>拆法：只保留对角</h4>
+
+<p>取</p>
+
+\[
+D=\operatorname{diag}(a_{11},a_{22},\dots,a_{nn}),\qquad M=D,\qquad N=L+U
+\]
+
+<p>也就是 $A=D-(L+U)$，即 $M=D$、$N=L+U$。$D$ 是<strong>对角阵，求逆就是取倒数</strong>——这是所有拆法里最省的一种。前提是 $a_{ii}\ne0\ (i=1,\dots,n)$，也就是「$A$ 的对角元均非零」。</p>
+
+\[
+Ax=(D-L-U)x=b
+\ \Longleftrightarrow\
+Dx=(L+U)x+b
+\ \Longleftrightarrow\
+x=D^{-1}(L+U)x+D^{-1}b
+\]
+
+<p>于是</p>
+
+\[
+\boxed{\ B_{\mathrm{J}}=D^{-1}(L+U),\qquad c_{\mathrm{J}}=D^{-1}b\ }
+\]
+
+<h4>分量形式（实际写代码时用的就是这个）</h4>
+
+<p>看 $Ax=b$ 的第 $i$ 行：</p>
+
+\[
+\sum_{j=1}^{n}a_{ij}x_j=b_i
+\quad\Longrightarrow\quad
+a_{ii}x_i=b_i-\sum_{j\ne i}a_{ij}x_j
+\]
+
+<p>把右边的 $x_j$ 全换成上一轮的 $x_j^{(k-1)}$，就得到 Jacobi 迭代法的分量形式：</p>
+
+\[
+x_i^{(k)}=\frac{1}{a_{ii}}\Big(b_i-\sum_{j\ne i}a_{ij}x_j^{(k-1)}\Big),
+\qquad i=1,2,\dots,n
+\]
+
+<div class="box key">
+<p class="label">Jacobi 迭代法的招牌性质：所有分量互相独立</p>
+<p>注意上式右边只出现 $x^{(k-1)}$，<strong>一个 $x^{(k)}$ 都没有</strong>。所以 $x^{(k)}$ 的 $n$ 个分量可以<strong>同时、彼此独立地</strong>算出来——先算哪个都一样。这在现代硬件上意味着<strong>天然可并行</strong>（GPU 上一个线程算一个分量）。</p>
+<p>注意这个「可并行」性质和 <a href="#s43">§3.3</a> 里循环 Jacobi 的并行性是<strong>两回事</strong>：那个是「不同 $(i,j)$ 对之间」可并行，这个是「不同分量之间」可并行。</p>
+</div>
+
+<h4>例：二维 Poisson 方程的 Jacobi 单步</h4>
+
+<p>讲义在 §3.0 末尾就用二维 Poisson 方程演示了这一步（应用数值线性代数, 算法 6.2）。由五点型板</p>
+
+\[
+u_{i,j}^{(k+1)}=\frac{1}{4}\Big(u_{i-1,j}^{(k)}+u_{i+1,j}^{(k)}+u_{i,j-1}^{(k)}+u_{i,j+1}^{(k)}+h^{2}f_{i,j}\Big),
+\qquad h=\frac{1}{n+1}
+\]
+
+<p>（$i,j=1,\dots,n$；$u_{0,\cdot},u_{n+1,\cdot},u_{\cdot,0},u_{\cdot,n+1}$ 是边界值，已知。）写成循环就是</p>
+
+\[
+\begin{aligned}
+&\text{for } i=1:n\\
+&\qquad \text{for } j=1:n\\
+&\qquad\qquad u_{i,j}^{(k+1)}=\tfrac14\big(u_{i-1,j}^{(k)}+u_{i+1,j}^{(k)}+u_{i,j-1}^{(k)}+u_{i,j+1}^{(k)}+h^{2}f_{i,j}\big)\\
+&\qquad \text{end}\\
+&\text{end}
+\end{aligned}
+\]
+
+<div class="box ok">
+<p class="label">这就是「矩阵-向量乘法是核心」的兑现</p>
+<p>把 $u^{(k)}$ 存成一个补了边界的 $(n+2)\times(n+2)$ 矩阵 $U$，把 $f_{i,j}$ 存成 $n$ 阶矩阵 $F$，则<strong>整个 Jacobi 单步就是一条 Matlab 语句</strong>：</p>
+<pre style="margin:10px 0 4px; padding:10px 12px; background:var(--bg2); border:1px solid var(--line); border-radius:8px; overflow-x:auto; font-size:12.5px"><code>U(2:n+1, 2:n+1) = 0.25 * (U(1:n, 2:n+1) + U(3:n+2, 2:n+1) + U(2:n+1, 1:n) + U(2:n+1, 3:n+2) + h^2 * F);</code></pre>
+<p>四个移位相加 = 四个邻居，再除 4、加 $h^2F$。这正是 10.13 §3.3 里 Cayley–Hamilton 论证想说明的事：<strong>只要 $y=Ax$ 写得快，迭代法就写得快</strong>。而这里连「矩阵」都没有显式出现——$A$ 只活在五个下标偏移里。</p>
+</div>
+
+<h2 id="p5">第五部分 · 板书 ④：对称特征值问题的全景<span class="tag">板书</span></h2>
+
+<p>板书第 4 页把对称特征值问题的地图铺开了。这一部分每一条都对应讲义 PDF 6 的某一节。</p>
+
+<h3 id="s51">QZ 算法与广义特征值</h3>
+
+<p>板书左上角画了一个方框（标注「QZ 算法」），内容是<strong>广义特征值问题</strong>：</p>
+
+\[
+A x=\lambda B x,
+\]
+
+<p>板书写的是 $A r=B r\lambda$ 形式，并给出 QZ 的两条核心关系（$Q$、$Z$ 是酉阵）：</p>
+
+\[
+Q^{*}A r_{1}=r_{1}\bar\lambda,\qquad
+Q^{*}B r_{1}=r_{2}\bar\lambda,
+\]
+
+<p>以及伴随的 $B^{\mathsf T}A x=x\lambda$。</p>
+
+<p><strong>为什么要提 QZ？</strong>因为它是<strong>对称情形的「广义版 QR 方法」</strong>：当 $B=I$ 时，QZ 退化成 QR；当 $B\ne I$（比如带边界条件的特征值问题）时，需要 QZ。板书把它放在这里，是在给「对称特征值问题的算法谱系」定坐标：</p>
+
+<table>
+<tr><th>问题</th><th>算法</th><th>本笔记位置</th></tr>
+<tr><td>标准对称特征值 $Ax=\lambda x$</td><td>Householder 三对角化 + 隐式对称 QR</td><td><a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#s43">10.20 §4.9</a> / 讲义 PDF 6 §6.2</td></tr>
+<tr><td>标准对称特征值（另一条路）</td><td><strong>Jacobi 方法</strong></td><td><a href="#s41">§3.1–§3.3</a> / PDF 6 §6.3</td></tr>
+<tr><td>标准对称特征值（第三条路）</td><td><strong>D&amp;C 分治</strong></td><td><a href="#s31">§2.1–§2.3</a> / PDF 6 §6.5</td></tr>
+<tr><td>标准对称特征值（第四条路）</td><td>二分法（+反幂法求向量）</td><td>讲义 PDF 6 §6.4</td></tr>
+<tr><td>广义对称特征值 $Ax=\lambda Bx$</td><td><strong>QZ 算法</strong></td><td>板书本页</td></tr>
+</table>
+
+<h3 id="s52">$A=A^{*}$ 的两条推论：Hermite 无虚特征值、三对角可达</h3>
+
+<p>板书接着写：</p>
+
+<blockquote>
+<p>「$A=A^{*}$」</p>
+<p>「$Q_0^{*}AQ_0=H=\text{上 Hessenberg}$」</p>
+<p>「<strong>Hermite 没有虚特征值</strong>」</p>
+<p>「$Q_0^{*}AQ_0=H$（$H$ 可以是实对称的），<strong>Wilkinson 收敛性，序贯三次</strong>」</p>
+</blockquote>
+
+<p>这几句其实连着一条推理链，值得拆开：</p>
+
+<ol>
+<li><strong>$A=A^{*}$（Hermite）⇒ 特征值全为实数。</strong>这是讲义 PDF 6 §6.1 的第一条（谱分解定理）。所以对称情形不需要处理复数——这和第 5 章的 Francis 双位移（为了绕开复共轭对而存在）形成鲜明对比。</li>
+<li><strong>⇒ $H=Q_0^{*}AQ_0$ 可以是实的。</strong>Householder 变换是实正交阵，所以三对角化全程实数进行。这正是讲义 §6.2.1「对称三对角分解」存在的前提，也是 <a href="#s22">§2.2</a> 里那个「$2\times2$ 共轭块」在对称情形下<strong>根本不会出现</strong>的原因。</li>
+<li><strong>⇒ 隐式对称 QR 只需单位移。</strong>特征值都是实的，用复共轭对做双位移就没意义了，直接取 $h_{nn}$ 或 Wilkinson shift 即可。Wilkinson 证明了取右下 $2\times2$ 块的两个实特征值之一作位移能保证<strong>三次收敛</strong>（且靠近 $h_{nn}$ 的那个效果更好）。</li>
+</ol>
+
+<div class="box key">
+<p class="label">对称 vs 非对称：位移策略为什么不同</p>
+<table>
+<tr><th></th><th>非对称（第 5 章）</th><th>对称（第 6 章）</th></tr>
+<tr><td>特征值</td><td>可能复，共轭成对</td><td><strong>全实</strong></td></tr>
+<tr><td>Schur 型</td><td>拟上三角（含 $2\times2$ 块）</td><td><strong>就是对角阵</strong></td></tr>
+<tr><td>位移</td><td>必须双位移（Francis）才能绕开复数</td><td><strong>单位移即可</strong>，Wilkinson shift 三次收敛</td></tr>
+<tr><td>特征向量</td><td>需回代，可能病态</td><td><strong>累积 $Q$ 直接给出</strong></td></tr>
+</table>
+</div>
+
+<h3 id="s53">Wilkinson 位移与收敛速度</h3>
+
+<p>板书提到的 Wilkinson 位移，在 10.20 §7.6 已经详细讲过（取 $H$ 右下 $2\times2$ 块的特征值）。对<strong>对称</strong>情形，这个块的两个特征值都是实数，直接取其一即可。</p>
+
+<p>讲义 PDF 6 §6.2.2 给出的收敛性是：<strong>Wilkinson 证明了 $h_{nn}$ 的两个实特征值作为位移都能保证三次收敛</strong>，而且其中更靠近 $h_{nn}$ 的那个实特征值作为位移效果更好。</p>
+
+<p>对照讲义 PDF 6 §6.2.3 的整体结论：</p>
+
+<ul>
+<li>只求特征值：$\approx 10n^3$；</li>
+<li>特征值 + 特征向量：$\approx25n^3$；</li>
+<li><strong>「隐式对称 QR 算法是矩阵计算中最漂亮的算法之一。」</strong>（讲义原话）</li>
+</ul>
+
+<h3 id="s54">连续映射视角：$\operatorname{off}$ 在 $Q^{\mathsf *}Q=I$ 上取到最小值</h3>
+
+<p>板书第 4 页的下半部分给了一个<strong>几何化的理解</strong>，这是讲义 §6.1 结尾那段「对称阵特征向量敏感性」的延伸，很值得写下来。</p>
+
+<blockquote>
+<p>「$\{Q^{*}AQ,\ Q^{*}Q=I\}$」</p>
+<p>「$\operatorname{off}(x):=\sum_{i\lt j}|x_{ij}|^{2}$ 连续映射」</p>
+<p>「$Q\to Q^{*}AQ$ 连续映射」</p>
+<p>「那么 $\operatorname{off}(Q^{*}AQ)$ 在当 $\{$ 算得 $Q^{*}Q=I\}$ 上一定有最小值」</p>
+<p>「若 $\operatorname{off}(x)$ 不为 $0$ → <strong>凑近直接继续</strong>」</p>
+<p>「<strong>off 一定下降</strong>」</p>
+</blockquote>
+
+<p>这段话的意思，可以拆成三步：</p>
+
+<ol>
+<li><strong>约束集是紧的。</strong>$\{Q:Q^{*}Q=I\}$ 是酉群，它是紧集（Heine–Borel：酉群的元素都是范数为 1 的向量，张成的集合有界闭）。所以任何连续函数在它上面都<strong>取到最小值</strong>。</li>
+<li><strong>目标函数是连续的。</strong>$Q\mapsto Q^{*}AQ$ 连续，$\operatorname{off}$ 又连续，复合后连续。所以 $\operatorname{off}(Q^{*}AQ)$ 在酉群上有全局最小值。</li>
+<li><strong>Jacobi 迭代就是在做「下降」。</strong>每一步找一个 $Q$，让 $\operatorname{off}$ 严格下降。因为最小值存在，迭代不可能无限下降——它必须停在某个点上，而这个点只能满足 $\operatorname{off}=0$（否则还能再降，矛盾）。</li>
+</ol>
+
+<div class="box ok">
+<p class="label">板书图示的读法</p>
+<p>板书右下角画了一堆小方块（带 × 的）和两个圈起来的区域，标注「凑近直接继续」「off 一定下降」。它画的是：<strong>在约束集 $\{Q:Q^{*}Q=I\}$ 上，$\operatorname{off}$ 有一个谷底；每做一次 Jacobi 旋转，就沿着下坡方向往谷底走一步。</strong>而「凑近直接继续」指的是——只要还没到底（$\operatorname{off}\ne0$），就继续转。</p>
+<p>这个几何图像同时解释了 <a href="#s42">§3.2</a> 的收敛率：线性收敛的常数 $\gamma=\frac{n^2-n-2}{n^2-n}$ 就是「下坡有多缓」的度量。</p>
+</div>
+
+<h3 id="s55">历史：1846 年的 Jacobi 与 Schur</h3>
+
+<p>板书第 4 页有一行：</p>
+
+<blockquote>
+<p>「<strong>古老算法 计算 Hermite 型 1846：Jacobi</strong>」</p>
+<p>「谱分解 和 schur 分解，<strong>正常使用归约方法</strong>」</p>
+</blockquote>
+
+<p>这是历史注脚，值得展开一句：</p>
+
+<ul>
+<li><strong>1846 年，Jacobi</strong> 发表了用正交相似变换把对称阵约化成对角阵的方法——就是本课 <a href="#s41">§3.1</a> 讲的那个旋转法。它是<strong>最古老的</strong>对称特征值算法，比 QR 方法（1961 年 Francis / Kublanovskaya）早了 115 年。</li>
+<li><strong>Jacobi 和 Schur 是「谱分解」和「Schur 分解」的早期形态。</strong>现在我们说「对称阵的谱分解 $A=Q\Lambda Q^{\mathsf T}$」，说的就是 Jacobi 想要的那个东西；而「Schur 分解 $A=QTQ^{*}$」是它的更弱版本（$T$ 只是上三角，不必对角）。</li>
+<li><strong>但今天「正常使用归约方法」——走 QR 路线。</strong>因为 Jacobi 虽然并行友好、精度好，收敛太慢（<a href="#s43">§3.3</a>）。</li>
+</ul>
+
+<div class="box key">
+<p class="label">和 10.20 §7.2 的板书对上了</p>
+<p>10.20 §7.2 引的那块黑板（照片 171）写着：「plain QR iter <strong>1961</strong> Francis, Kublanovskaya；<strong>LR iter Rutishauser 1958</strong>」。所以时间线是：</p>
+<p><strong>Jacobi 1846（对称）→ Rutishauser 1958（LR，非对称）→ Francis / Kublanovskaya 1961（QR，非对称）</strong>，而 10.27 板书第 4 页补上了最前面那一环。</p>
+</div>
+
+<h2 id="p6">第六部分 · 板书 ⑤：从三对角阵算特征向量<span class="tag">板书</span></h2>
+
+<p>板书第 5 页是最技术的一页，专门讲<strong>已知实对称三对角阵 $T$，怎么把它的特征向量算出来</strong>。</p>
+
+<h3 id="s61">分块回代：$(T_{11}-\lambda I)u=-T_{12}$</h3>
+
+<p>板书开头就是一个分块方程：</p>
+
+<pre><code>⎡ T₁₁ − λI   T₁₂ ⎤ ⎡ u ⎤   ⎡ 0 ⎤
+⎢              ⎥ ⎢   ⎥ = ⎢   ⎥
+⎣    0         I  ⎦ ⎣ 1 ⎦   ⎣ 0 ⎦
+
+  ⇔ (T₁₁ − λI) u = − T₁₂</code></pre>
+
+<p>这是<a href="#s23">§2.3</a> 回代法在<strong>三对角 + 分块</strong>情形下的具体形态。看清楚它和一般回代法的对应关系：</p>
+
+<ul>
+<li>一般情形是 $y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$（逐个分量递推）；</li>
+<li>这里把「下面那一块」整体当作一个未知量 $u$，于是变成<strong>解一个低阶线性方程组</strong> $(T_{11}-\lambda I)u=-T_{12}$，$T_{11}$ 本身是三对角阵 ⇒ 用 Thomas 算法 $O(n)$ 就能解。</li>
+</ul>
+
+<div class="box ok">
+<p class="label">数值验证</p>
+<p>取 $T=\begin{bmatrix}2&1\\3&4\end{bmatrix}$（特征值 $1$ 和 $5$），按板书公式令 $x_2=1$，解 $(T_{11}-\lambda)x_1=-T_{12}$：</p>
+<pre><code>λ = 1.00000000   u₁ = −1.00000000   ‖(T − λI)x‖ = 0.00e+00
+λ = 5.00000000   u₁ =  0.33333333   ‖(T − λI)x‖ = 0.00e+00</code></pre>
+</div>
+
+<p>板书在方程旁边还写了一句「<strong>秩相关 令需要有右特征向量的零空间</strong>」——这是关键提醒：$(T_{11}-\lambda I)$ <strong>必须是奇异的</strong>，否则这个方程组无解。也就是说，$\lambda$ 必须是 $T_{11}$ 的特征值（而不是 $T_{22}$ 的）。板书专门画了一个 $T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$ 的结构并标注「$|\lambda(T_{11})|\lt1$，$|\lambda\in T_{22}|\ge1$」——在<strong>分治算法</strong>里，$T_{11}$ 是<strong>已经算出来的那一半</strong>，所以 $T_{22}$ 的特征值才是要解的。</p>
+
+<h3 id="s62">特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</h3>
+
+<p>板书接着写「<strong>如果想要特定顺序的 eigenvalue</strong>：$T\to Q^{\mathsf T}TQ$」，并画了一对三角形表示交换。</p>
+
+<p>这就是讲义 PDF 5 §5.4.1「对角块排序」的内容：<strong>对角块（或特征值）的次序是可以自由调整的</strong>，只要用一个正交相似变换 $Q^{\mathsf T}TQ$（对可上三角阵就是 $Q^{\mathsf T}TQ$ 仍是上三角）——就像冒泡排序那样一次交换两个相邻块。</p>
+
+<p>板书还提醒了这件事的<strong>数值代价</strong>（在讲义 PDF 5 §5.4.1 里）：</p>
+
+<ul>
+<li>对<strong>上三角阵</strong>的交换：<strong>向后稳定</strong>（可以放心做）；</li>
+<li>推广到<strong>块</strong>（$2\times2$ 块）：需要解 <strong>Sylvester 方程</strong>，为解得准需要用全主元 Gauss 消去法，<strong>其舍入误差分析至今都没有解决</strong>。</li>
+</ul>
+
+<p>这正好接上 10.20 §7.10（实 Schur 型的后处理）：那里讲了块对角化用的就是 Bartels–Stewart 算法解 Sylvester 方程。</p>
+
+<h3 id="s63">$Q$ 的 $e_1$ 对应的是哪个特征值</h3>
+
+<p>板书第 5 页末尾是一个具体例子，很值得写清楚。它给了一个 $2\times2$ 的例子并标注「<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>」：</p>
+
+<pre><code>⎡ α   γ ⎤        ⎡ β   * ⎤
+⎣ 0   β ⎦  =  Q* ⎢         ⎥ Q
+                    ⎣ *   α ⎦</code></pre>
+
+<p>也就是说：$T=\begin{bmatrix}\alpha&\gamma\\0&\beta\end{bmatrix}$，通过一个正交相似变换 $Q^{\mathsf T}TQ$，可以<strong>把 $\beta$ 提到左上角</strong>。那么 $Q^{\mathsf T}TQ$ 的第一个坐标方向 $e_1$ 就对应着 $\beta$——<strong>$Q$ 的第一列是 $\beta$ 的特征向量</strong>。</p>
+
+<div class="box ok">
+<p class="label">数值验证</p>
+<p>取 $T=\begin{bmatrix}5&2\\0&3\end{bmatrix}$，特征值 $5$ 和 $3$。构造 $Q$ 使其第一列是 $\lambda=3$ 的特征向量：</p>
+<pre><code>Q = [[−0.70710678,  0.70710678],
+     [ 0.70710678,  0.70710678]]
+
+Qᵀ T Q = [[3.0, −2.0],
+          [0.0,  5.0]]          ← 对角元 [3, 5]，顺序确实被交换了</code></pre>
+</div>
+
+<div class="box key">
+<p class="label">这条为什么重要：它把「特征向量」和「特征值排序」连起来了</p>
+<p>在对称情形下，特征向量 = 累积的 $Q$ 的列（<a href="#s43">§3.3</a> 讲的那种「白送」）。但如果<strong>你还想调整特征值的顺序</strong>，那就得再乘一个交换矩阵 $Q^{\mathsf T}$——而板书告诉我们：<strong>这个 $Q^{\mathsf T}$ 的第一列，对应的是被提到前面的那个特征值的特征向量</strong>。</p>
+<p>换句话说，「排序」和「特征向量」不是两件独立的事：<strong>排序矩阵同时给出了排序后特征值对应的特征向量。</strong></p>
+</div>
+
+<p>板书最后一行写「<strong>只能用最简：记要纯正上标</strong>」（读作「只能保证是上三角」），意思是：$Q^{\mathsf T}TQ$ 只能保证是<strong>上三角</strong>，不能保证还是三对角——交换会把三对角结构破坏掉。这与讲义 PDF 5 §5.4.1 的结论一致：<strong>排序后仍然是实 Schur 型（上三角），但不再有三对角结构。</strong></p>
+
+<h2 id="p7">第七部分 · 实操：三条路线各管什么</h2>
 
 <p>把本课的东西和 10.20 的东西拼起来，就得到 LAPACK 的完整流程：</p>
 
@@ -602,30 +1167,29 @@ y^{\mathsf T}x=\varepsilon.
 
 输出：特征值 λᵢ（T 的对角元）、特征向量矩阵 X = [x₁ … xₙ]</code></pre>
 
-<p>注意第 ③ 步的输入：<strong>只有 $T$ 和 $\lambda$</strong>。第 ② 步已经把 $\lambda$ 算准了（10.20 §7.6 说过，带 Wilkinson 位移的隐式 QR 是二次收敛的），第 ③ 步只是「把方向找回来」。</p>
-
 <div class="box key">
 <p class="label">为什么「特征值准 ≠ 特征向量准」在流程里体现为「第 ③ 步是单独的一步」</p>
 <p>如果特征向量可以由特征值「免费」得到，那 LAPACK 就不需要 dtrevc 这个独立例程了。它需要，正说明<strong>这一步会引入新的误差来源，而且这个误差可能比第 ② 步大得多</strong>。</p>
-<p>回忆 §2.3 的回代公式：$y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$。<strong>分母是 $t_{ii}-\lambda$，减的是特征值 $\lambda$。</strong>所以特征值算得有多准，直接决定了特征向量的分母有多小、以及整条递推链被放大多少。</p>
+<p>回忆 <a href="#s23">§2.3</a> 的回代公式：$y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$。<strong>分母是 $t_{ii}-\lambda$，减的是特征值 $\lambda$。</strong>所以特征值算得有多准，直接决定了特征向量的分母有多小、以及整条递推链被放大多少。</p>
 </div>
 
-<h3 id="s42">路线二：反幂法 / RQI 求单个特征向量</h3>
+<h3>对称阵的三条路线</h3>
 
-<p>上面那条路线求的是<strong>全部</strong>特征向量。但很多时候你只<strong>要一个</strong>——比如要 $A$ 最小特征值对应的特征向量，或者要某个已知 $\lambda$ 附近的特征向量。这时有更省的办法，而且更稳。</p>
+<table>
+<tr><th>路线</th><th>怎么算</th><th>优点</th><th>什么时候用</th></tr>
+<tr><td><strong>Householder + 隐式对称 QR</strong></td><td>三对角化 → 单位移 QR → 累积 $Q$</td><td>特征向量<strong>白送</strong>、正交可靠、$O(n^3)$</td><td><strong>默认选择</strong>（<code>dsyev</code>）</td></tr>
+<tr><td><strong>Jacobi 方法</strong></td><td>反复做 $2\times2$ 旋转压非对角元</td><td>并行度高、编程简单、精度好</td><td>几乎是对角阵；或超大规模并行机</td></tr>
+<tr><td><strong>D&amp;C 分治</strong></td><td>切两半 → 低阶谱 + 秩一修正 → 胶合</td><td>可并行、$O(n^3)$、实测最快</td><td>大规模对称特征值问题（<code>dsyevd</code>）</td></tr>
+</table>
 
-<p><strong>反幂法</strong>（inverse iteration）：取 $\mu$ 接近目标特征值，迭代</p>
+<h3>只要一个特征向量时</h3>
 
-\[
-x_{k+1}=(A-\mu I)^{-1}x_k.
-\]
+<p>上面那三条路线求的是<strong>全部</strong>特征向量。但很多时候你只<strong>要一个</strong>。这时有更省的办法，而且更稳：</p>
 
-<p>收敛到离 $\mu$ 最近的那个特征值对应的特征向量。细节在 <a href="补课笔记-幂法反幂法与第3章引言.html#s22">补课笔记 §2.2</a>。关键点：每步要解一个线性方程组 $(A-\mu I)z=x_k$，用带部分主元的 LU 即可，$O(n^3)$/步，但通常 2–3 步就够（讲义 PDF 5 第 5 页说的「良态」条件：$\mu$ 离目标特征值足够近时，一次反幂法迭代就相当准）。</p>
-
-<p><strong>Rayleigh 商迭代（RQI）</strong>：把 $\mu$ 换成当前的 Rayleigh 商 $\rho_k=\dfrac{x_k^{\mathsf T}Ax_k}{x_k^{\mathsf T}x_k}$，得到三次收敛。细节在 <a href="补课笔记-幂法反幂法与第3章引言.html#s26">补课笔记 §2.6</a>。</p>
+<p><strong>反幂法</strong>（inverse iteration）：取 $\mu$ 接近目标特征值，迭代 $x_{k+1}=(A-\mu I)^{-1}x_k$，收敛到离 $\mu$ 最近的那个特征值对应的特征向量。细节在 <a href="补课笔记-幂法反幂法与第3章引言.html#s22">补课笔记 §2.2</a>。<strong>Rayleigh 商迭代（RQI）</strong>把 $\mu$ 换成当前的 Rayleigh 商 $\rho_k=\dfrac{x_k^{\mathsf T}Ax_k}{x_k^{\mathsf T}x_k}$，得到三次收敛，见 <a href="补课笔记-幂法反幂法与第3章引言.html#s26">补课笔记 §2.6</a>。</p>
 
 <div class="box warn">
-<p class="label">反幂法 vs 回代法：什么时候用哪个</p>
+<p class="label">回代法 vs 反幂法：什么时候用哪个</p>
 <table>
 <tr><th></th><th>回代法（dtrevc）</th><th>反幂法 / RQI</th></tr>
 <tr><td>要几个</td><td>全部</td><td>一个（或少数几个）</td></tr>
@@ -637,87 +1201,40 @@ x_{k+1}=(A-\mu I)^{-1}x_k.
 <p>注意第 4 行：<strong>回代法把「特征值准不准」的风险转移给了特征向量</strong>；反幂法则是在 $\lambda$ 还不准的时候反而更可靠。这是选择路线时最实用的一条判据。</p>
 </div>
 
-<h3 id="s43">路线三：对称阵的特征向量（Householder 白送）</h3>
+<h2 id="p8">第八部分 · 本课小结</h2>
 
-<p>对称情形的结论漂亮得多。在讲义 PDF 6 §6.2.1 里，Householder 对称三对角化的过程中，我们<strong>一直在累积正交阵 $Q$</strong>：</p>
-
-\[
-Q^{\mathsf T}AQ=T,\qquad T\ \text{是对称三对角阵}.
-\]
-
-<p>然后隐式对称 QR 迭代（§6.2.2）又继续累积 $Q$。迭代结束时：</p>
-
-\[
-Q^{\mathsf T}AQ=\Lambda=\mathrm{diag}(\lambda_1,\dots,\lambda_n),
-\]
-
-<p>也就是 $AQ=Q\Lambda$，<strong>$Q$ 的每一列就是特征向量</strong>。不需要任何回代法，不需要 dtrevc，特征向量是<strong>副产品</strong>。</p>
-
-<p>数值验证（$S=\begin{bmatrix}4&1&2\\1&3&0\\2&0&5\end{bmatrix}$）：</p>
-
-<pre><code>Householder 对称三对角化：
-  T = [[4.0,      -2.236068,  0.0],
-       [-2.236068,  4.6,      -0.8],
-       [0.0,      -0.8,       3.4]]
-  ‖QᵀSQ − T‖ = 0
-
-特征值：6.669079, 3.476024, 1.854897
-特征向量正交性：‖VᵀV − I‖ = 7.12e−16   ← 机器精度</code></pre>
-
-<p>为什么对称阵可以这样，而一般矩阵不行？两条理由：</p>
+<p>按重要性排：</p>
 
 <ol>
-<li><strong>结构上</strong>：对称阵的实 Schur 型就是<strong>对角阵</strong>（没有 $2\times2$ 块），所以「从 Schur 型求特征向量」退化成「取 $Q$ 的列」，没有任何回代。</li>
-<li><strong>数值上</strong>：对称阵是<strong>正规阵</strong>，左右特征向量重合，$|y^{\mathsf T}x|=1$，条件数 = 1。累积 $Q$ 的正交性损失是 $O(n\,\varepsilon)$ 级别的（这正是讲义 PDF 6 p7 说的「正交性损失是机器精度级别」），特征向量因此可靠。</li>
-</ol>
-
-<div class="box key">
-<p class="label">一张表收尾：谁给出特征向量</p>
-<table>
-<tr><th>矩阵类型</th><th>特征向量从哪来</th><th>可靠性</th></tr>
-<tr><td>实对称 / Hermite</td><td><strong>累积的 $Q$ 的列</strong>（Householder + 隐式 QR 副产品）</td><td><strong>正交、可靠</strong>（条件数 = 1）</td></tr>
-<tr><td>一般实方阵（实特征值）</td><td>实 Schur 型 $T$ + 回代法（dtrevc）</td><td>看 $1/|y^{\mathsf T}x|$，<strong>可能极差</strong></td></tr>
-<tr><td>一般实方阵（复共轭对）</td><td>同上，$2\times2$ 块给复特征向量</td><td>同上；复数是常态不是意外</td></tr>
-<tr><td>只要一个向量</td><td><strong>反幂法 / RQI</strong>（不用先算 Schur 型）</td><td>不受 $\lambda$ 精度限制</td></tr>
-</table>
-</div>
-
-<h2 id="p5">第五部分 · 本课小结与遗留问题</h2>
-
-<p>三条结论，按重要性排：</p>
-
-<ol>
-<li><strong>特征向量不用重新求。</strong>$Ax=\lambda x\iff (T-\lambda I)y=0$，$x=Qy$。Schur 型的三角形状让求解变成回代法，$O(n^2)$。</li>
+<li><strong>特征向量不用重新求。</strong>$Ax=\lambda x\iff(T-\lambda I)y=0$，$x=Qy$。Schur 型的三角形状让求解变成回代法，$O(n^2)$。回代的<strong>分母永远是两个特征值之差</strong>，所以特征值的精度直接流进特征向量。</li>
 <li><strong>特征值准 ≠ 特征向量准。</strong>条件数是 $1/|y^{\mathsf T}x|$。$|y^{\mathsf T}x|$ 可以任意小（左右特征向量几乎垂直），此时连 8 位有效数字都保不住。<strong>正规阵（对称阵）没有这个问题</strong>，条件数 = 1。</li>
-<li><strong>回代法的分母是 $t_{ii}-\lambda$</strong>，所以特征值的精度直接流进特征向量。只想要一个向量时，反幂法 / RQI 反而更稳。</li>
+<li><strong>对称阵的工具箱是另一套。</strong>Householder + 隐式对称 QR（默认）、<strong>Jacobi 旋转法</strong>（并行友好、$O(n^3)$、精度好但收敛慢）、<strong>D&amp;C 分治</strong>（切两半 + 秩一修正 + 胶合，$O(n^3)$）。三者的取舍就是板书那张「速度 / 精度」表。</li>
+<li><strong>两个 Jacobi 名字撞车。</strong>Jacobi 迭代法（解 $Ax=b$，$B=D^{-1}(L+U)$）≠ Jacobi 方法（求对称阵特征值，旋转 $Q$）。前者已从 10.13 搬到 <a href="#s44">§3.4</a>。</li>
 </ol>
 
 <div class="box warn">
-<p class="label">本课没能从板书确认的事</p>
-<p>本课目前只有 10.20 那块「两步总纲」的黑板可作参照（见 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾的板书解读</a>）。<strong>10.27 当天新写的板书照片还没收到</strong>，所以本笔记的定位是：</p>
-<ul>
-<li><strong>§2（回代法）</strong>——按板书标注为「板书」，但具体是哪几行拍的，待照片补齐后核对；</li>
-<li><strong>§3（敏感性）</strong>——讲义 PDF 5 整章没有，PDF 6 p1–p2 只给了对称情形的夹角定理。本节的推广与全部数值实验都是<strong>教材补充</strong>；</li>
-<li><strong>§4（三条路线）</strong>——讲义 PDF 6 §6.4（对称阵二分法 + 反幂法求特征向量）覆盖了路线三和路线二的一部分，本节的对比表是整理。</li>
-</ul>
-<p>等 10.27 的照片补上后，附录的逐张对照表会补齐。</p>
+<p class="label">板书照片的归属与保留意见</p>
+<p>本课的 5 页手写笔记是<strong>手写笔记页</strong>（不是黑板照片），内容与讲义 PDF 6 的 §6.1–§6.5 逐条对应。本笔记按这 5 页的<strong>讲课顺序</strong>组织（① QR 总纲 → ② D&amp;C → ③ Jacobi → ④ 对称全景 → ⑤ 三对角算特征向量）。</p>
+<p>其中 <a href="#s41">§3.1–§3.3</a>（Jacobi 旋转的推导与收敛率）、<a href="#s31">§2</a>（D&amp;C）、<a href="#s51">§4</a>（QZ / Wilkinson / 连续映射）是<strong>板书内容</strong>；<a href="#s26">§2.6</a> 的条件数分析、<a href="#p7">第七部分</a> 的路线对照表是<strong>教材补充与整理</strong>。</p>
+<p>板书第 1 页（右半）那张 QR 两行总纲的黑板照片属于 <strong>10.20</strong>，已在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a> 逐行解读，本笔记不重复，只在 <a href="#p1">第一部分</a> 提一句衔接。</p>
 </div>
 
-<h2 id="p6">附录 · 板书逐张对照</h2>
+<h2 id="p9">附录 · 板书逐张对照</h2>
 
 <table class="apx">
 <tr><th>编号</th><th>类型</th><th>内容</th><th>归属</th><th>本笔记对应</th></tr>
-<tr><td>待补</td><td>黑板</td><td>10.27 当天新板（照片未收到）</td><td><strong>本课</strong></td><td>—</td></tr>
-<tr><td>176–183</td><td>黑板</td><td>「1° $Q_0^{\mathsf T}AQ_0=H$ / 2° loop: $p(H)=QR$, $H\leftarrow Q^{\mathsf T}HQ$」两步总纲</td><td>旧板</td><td><a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a>；本课 §4.1 的前置回顾</td></tr>
+<tr><td>①</td><td>手写</td><td>黑板特写「1° $Q_0^{\mathsf T}AQ_0=H$ / 2° loop: $p(H)=QR$, $H\leftarrow Q^{\mathsf T}HQ$」；<strong>「特征向量算得是够准就是正确的」</strong>；速度 / 精度对照表（Jacobi / QR / D&amp;C / MRRR）</td><td>旧板（10.20）</td><td><a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a>；本课 <a href="#p1">第一部分</a>、<a href="#s43">§3.3</a></td></tr>
+<tr><td>②</td><td>手写</td><td><strong>Divide and Conquer 分治算法</strong>：对称矩阵降阶成三对角化；切两半（rank 2 → rank 1）；$Q_0(\Lambda_0+uu^{*})Q_0^{*}$；$\det(\lambda I-\Lambda_0-uu^{*})=0$；$f(\lambda)=1-\sum\frac{|u_i|^2}{x-\lambda_i}$</td><td><strong>本课</strong></td><td><a href="#s31">§2.1–§2.2</a></td></tr>
+<tr><td>③</td><td>手写</td><td><strong>Jacobi 方法</strong>：$\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}=Q\begin{bmatrix}\lambda_1&\\&\lambda_2\end{bmatrix}Q^{\mathsf T}$；$\begin{bmatrix}c&s\\-s&c\end{bmatrix}$ 旋转；$t=c/s$；$\operatorname{off}(A)=\|A\|_F^2-\|\operatorname{diag}(A)\|_F^2$；$\operatorname{off}(A^{(k+1)})\le\frac{n^2-n-2}{n^2-n}\operatorname{off}(A^{(k)})$；global linear convergence；<strong>Jacobi $O(n^3)$／有序化 $O(n^4)$；循环 Jacobi 比 QR 快但慢</strong></td><td><strong>本课</strong></td><td><a href="#s41">§3.1–§3.3</a></td></tr>
+<tr><td>④</td><td>手写</td><td><strong>对称特征值问题</strong>：QZ 算法（$Ar=Br\lambda$、$Q^{*}Ar_1=r_1\bar\lambda$、$Q^{*}Br_1=r_2\bar\lambda$）；$A=A^{*}$；$Q_0^{*}AQ_0=H$（上 Hessenberg，可实对称）；<strong>Hermite 没有虚特征值</strong>；Wilkinson 收敛性（序贯三次）；<strong>古老算法 计算 Hermite 型 1846：Jacobi</strong>，谱分解和 Schur 分解；$\operatorname{off}(x)=\sum_{i\lt j}|x_{ij}|^2$ 连续映射；$Q\mapsto Q^{*}AQ$ 连续映射；$\operatorname{off}$ 在 $Q^{*}Q=I$ 上取到最小值；off 一定下降</td><td><strong>本课</strong></td><td><a href="#s51">§4.1–§4.5</a></td></tr>
+<tr><td>⑤</td><td>手写</td><td><strong>从三对角阵算特征向量</strong>：$\begin{bmatrix}T_{11}-\lambda I&T_{12}\\0&I\end{bmatrix}\begin{bmatrix}u\\1\end{bmatrix}=0$ ⇔ $(T_{11}-\lambda I)u=-T_{12}$；$T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$，$|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$；$AQ=QT$；$A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$；<strong>「如果想要特定顺序的 eigenvalue」$T\to Q^{\mathsf T}TQ$</strong>；$2\times2$ 例；<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>；「只能用最简：只能保证是上三角」</td><td><strong>本课</strong></td><td><a href="#s61">§5.1–§5.3</a></td></tr>
 </table>
 
-<p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a>、<a href="补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记</a> 是三份独立文件，按课次分工：幂法 / 反幂法属 10.13，子空间迭代 / Krylov / QR 方法属 10.20，<strong>特征向量的计算属 10.27</strong>。</p>
+<p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a>、<a href="补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记</a> 是三份独立文件，按课次分工：幂法 / 反幂法属 10.13，子空间迭代 / Krylov / QR 方法属 10.20，<strong>特征向量的计算与对称特征值算法属 10.27</strong>。原属 10.13 的 <strong>§3.7 Jacobi 迭代法</strong>已搬到本笔记 <a href="#s44">§3.4</a>（两个 Jacobi 同名易混），10.13 那边留了跳转说明。</p>
 
-<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.2、§6.4 节。<strong>明确标注为「教材补充」的段落课上没有讲</strong>：<a href="#s31">§3.1</a>（扰动分析的一阶公式）、<a href="#s32">§3.2</a>（条件数 $1/|y^{\mathsf T}x|$ 与 Kato–Temple 对照）、<a href="#s33">§3.3</a>（条件数数值表）、<a href="#s34">§3.4</a>（正规 vs 非正规对照实验与图 1）、<a href="#s41">§4.1</a> 的 dgeev 流程梳理、<a href="#s42">§4.2</a> 与 <a href="#s43">§4.3</a> 的对比表。§2 的回代法内容按板书标注，但 <strong>10.27 当天新写的板书照片尚未收到</strong>，§2 的具体对应行待照片补齐后核对；本文全部数值结果（残差、条件数表、夹角表、正交性）均由自写 Householder / QR 迭代 / 回代法代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂的 5 页手写笔记，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.5 节。<strong>明确标注为「教材补充」的段落</strong>：<a href="#s26">§2.6</a> 全部（扰动分析的一阶公式、条件数 $1/|y^{\mathsf T}x|$、Kato–Temple 对照、两个数值实验）、<a href="#p7">第七部分</a> 的路线对照表与 dgeev 流程梳理。<strong>板书内容</strong>：§2.1–§2.5、§3.1–§3.3、§4 全部、§5 全部。§3.4 是从 10.13 补课笔记 §3.7 搬来的（讲义 PDF 3 §3.1.1，课上没讲）。本文全部数值结果（残差、条件数表、夹角表、Jacobi 收敛率表、$f(\lambda)$ 的根、正交性）均由自写 Householder / QR 迭代 / 回代法 / Jacobi 旋转代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
 
-</div>
-
-<script src="assets/katex/katex.min.js"></script>
+</div><script src="assets/katex/katex.min.js"></script>
 <script src="assets/katex/contrib/auto-render.min.js"></script>
 <script>
 (function(){
@@ -820,8 +1337,5 @@ Q^{\mathsf T}AQ=\Lambda=\mathrm{diag}(\lambda_1,\dots,\lambda_n),
   }
 })();
 </script>
-</body>
-</html>
-
 </body>
 </html>
