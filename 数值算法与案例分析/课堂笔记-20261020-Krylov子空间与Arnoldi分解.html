@@ -2002,6 +2002,38 @@ $H_{22}$ 的特征值已经算完、<strong>永久锁定</strong>，从此只需
 </ol>
 </div>
 
+<div class="box key" id="qr-two-step-board">
+<p class="label">板书原文 · 这块黑板只有两行</p>
+<p>整块板子其实只写了「两步」，把 §7.1 那条三步流水线压缩成了黑板速记。逐字抄下来是这样（就是照片上的两行）：</p>
+
+<pre><code>A ∈ R^{n×n}
+
+1°   Q₀ᵀ A Q₀ = H                 （右边画了一个梯形，表示上 Hessenberg）
+
+2°   loop:
+         p(H) = (H − μ₁I)(H − μ₂I) = QR
+         H ← Qᵀ H Q</code></pre>
+
+<p>把这两行翻译成「哪一步、对应本笔记哪一节」：</p>
+
+<table>
+<tr><th>板书</th><th>它在做什么</th><th>本笔记</th></tr>
+<tr><td><strong>1°</strong> $Q_0^{\mathsf T}AQ_0=H$（梯形）</td><td>用 Householder 把 $A$ <strong>一次性</strong>正交相似成上 Hessenberg 阵。这步<strong>不在 loop 里</strong>，只做一次</td><td><a href="#s533">§7.4</a>（<a href="#s530">§7.1</a> 的第 ① 步，代价 $\frac{10}{3}n^3$）</td></tr>
+<tr><td><strong>2°</strong> loop：$p(H)=QR$，$H\leftarrow Q^{\mathsf T}HQ$</td><td>对 $H$ 反复合成位移的 QR 迭代。板上写的是<strong>双位移</strong>，$p(H)=(H-\mu_1I)(H-\mu_2I)$</td><td><a href="#s534">§7.5</a>（一次 sweep，$O(n^2)$）· <a href="#s535">§7.6</a>（位移为何有效）· <a href="#s536">§7.8</a>（$p(H)$ 就是那里的 $M$）· <a href="#s537">§7.9</a>（可实现的隐式算法 + deflation）</td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">最容易误会的一点：板书这个写法是「逻辑版」，不是「实现版」</p>
+<p>板上写的 $p(H)=(H-\mu_1I)(H-\mu_2I)=QR$，字面上就是「<strong>先算出 $p(H)$ 这个矩阵，再对它做 QR</strong>」。作为<strong>推导</strong>它完全正确（§7.8 的「把两次位移打包成一个 $M$」推的就是它），但作为<strong>算法</strong>它不能直接照抄，理由有两条：</p>
+<ol>
+<li><strong>算不动。</strong>显式构造 $p(H)=H^2-tH+sI$ 是 $O(n^3)$，把 §7.4 辛苦换来的「每步 $O(n^2)$」又吐回去了。</li>
+<li><strong>结构没了。</strong>$H$ 是上 Hessenberg，但 $p(H)$ 一般<strong>不是</strong>（$H^2$ 的元素 $h_{21}h_{12}+h_{22}h_{22}$ 之类会把零结构填掉），于是 QR 分解 $p(H)=QR$ 也就不再能用 $n-1$ 个 Givens 在 $O(n^2)$ 内做完。</li>
+</ol>
+<p>所以 <a href="#s536">§7.8</a> 后半段专门讲这件事的解法：隐式 Q 定理保证「只要第一列对了，得到的 Hessenberg 阵就本质上唯一」，于是 Francis 只算 $Me_1$ 的前三个数 + 用三阶 Householder 追鼓包，从而 $O(n^2)$ 完成一次隐式双位移迭代——最终落成 <a href="#s537">§7.9</a> 那套可以照着写代码的隐式 QR 算法（以及板书 180–182 右下角那句「drop tiny subdiagonals」，就是 §7.9 的判零与 deflation）。</p>
+<p>换句话说：<strong>板书的 2° 行是整个第 5 章的「总纲」，§7.5–§7.9 则是把它拆成可以执行的五步。</strong></p>
+</div>
+</div>
+
 <h3 id="s531">§7.2 显式 QR 迭代格式与收敛性</h3>
 
 <h4>迭代格式</h4>
@@ -3411,6 +3443,8 @@ Q=U_1U_2,\qquad R=R_2R_1,\qquad M=(H-\mu_1I)(H-\mu_2I),
 H_2=Q^{*}HQ,\qquad M=QR.
 \]
 
+<p>这一步就是<a href="#qr-two-step-board">黑板上那两行里的第 2° 行</a>：$p(H)=(H-\mu_1I)(H-\mu_2I)=QR$、$H\leftarrow Q^{\mathsf T}HQ$。板书把它写成 $p(H)$ 而不是 $M$，只是同一个东西的两种叫法。</p>
+
 <div class="box key">
 <p class="label">「打包」的结果：只需要对 $M$ 做一次 QR 分解</p>
 <p>上面两式说的是：<strong>$M=QR$ 就是 $M$ 的 QR 分解，而 $H_2=Q^{*}HQ$。</strong></p>
@@ -4029,6 +4063,19 @@ T_{ii}Y-YT_{jj}=-T_{ij};
 <tr><td>182</td><td>黑板</td><td>同 180（重拍，左侧有老师入镜）</td><td>旧板</td><td>同上</td></tr>
 <tr><td>183</td><td>黑板</td><td>同 176（全景，老师在场，手持帽子）</td><td>旧板</td><td>同上</td></tr>
 </table>
+
+<div class="box key">
+<p class="label">补充照片 · QR 方法的两行总纲</p>
+<p>另有一张单独拍摄的黑板特写，内容只有两行，是整章的「总纲版」板书（编号不在 154–183 这一列里，故单列在此）：</p>
+<pre><code>A ∈ R^{n×n}
+
+1°   Q₀ᵀ A Q₀ = H                 （右边画了一个梯形 = 上 Hessenberg）
+
+2°   loop:
+         p(H) = (H − μ₁I)(H − μ₂I) = QR
+         H ← Qᵀ H Q</code></pre>
+<p>它的读法：<strong>1°</strong> 是<a href="#s533">§7.4</a> 的一次性 Hessenberg 约化（<strong>不在 loop 内</strong>），<strong>2°</strong> 是<a href="#s536">§7.8</a> 的双位移打包 $M=p(H)=QR$、$H\leftarrow Q^{\mathsf T}HQ$。完整逐行解读见 <a href="#qr-two-step-board">§7.1 末尾的「板书原文 · 这块黑板只有两行」</a>。</p>
+</div>
 
 <div class="box warn">
 <p class="label">关于「老师到底讲没讲」的核对方法</p>
