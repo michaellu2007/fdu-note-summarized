@@ -183,7 +183,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 </li>
 <li><a href="#p3">第三部分 · 对称特征值计算：全景与工具箱<span class="tag">板书 ④</span>
   <ol>
-    <li><a href="#s31">§3.1 QZ 算法与广义特征值</a></li>
+    <li><a href="#s31">§3.1 算法地图：对称特征值问题有哪几条路</a></li>
     <li><a href="#s32">§3.2 $A=A^{*}$ 的两条推论：Hermite 无虚特征值、三对角可达</a></li>
     <li><a href="#s33">§3.3 Wilkinson 位移与收敛速度</a></li>
     <li><a href="#s34">§3.4 连续映射视角：$\operatorname{off}$ 在 $Q^{\mathsf *}Q=I$ 上取到最小值</a></li>
@@ -208,8 +208,9 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <li><a href="#p6">第六部分 · 从三对角阵算特征向量<span class="tag">板书 ⑤</span>
   <ol>
     <li><a href="#s61">§6.1 分块回代：$(T_{11}-\lambda I)u=-T_{12}$</a></li>
-    <li><a href="#s62">§6.2 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</a></li>
-    <li><a href="#s63">§6.3 $Q$ 的 $e_1$ 对应的是哪个特征值</a></li>
+    <li><a href="#s62">§6.2 不变子空间：只想要特定的那几个特征值怎么办</a></li>
+    <li><a href="#s63">§6.3 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</a></li>
+    <li><a href="#s64">§6.4 $Q$ 的 $e_1$ 对应的是哪个特征值</a></li>
   </ol>
 </li>
 <li><a href="#p7">第七部分 · 实操：三条路线各管什么</a></li>
@@ -566,24 +567,9 @@ y^{\mathsf T}x=\varepsilon.
 <p>板书第 4 页把对称特征值问题的地图铺开了。这一部分每一条都对应讲义 PDF 6 的某一节。</p>
 <p><strong>接下来两节（第四、第五部分）就是这张地图上的两条主要算法路线</strong>——Jacobi 方法与 D&amp;C 分治。它们都是「解决对称特征值问题」的办法，所以放在全景之后讲；两者的取舍见板书第 1 页那张「速度 / 精度」对照表。</p>
 
-<h3 id="s31">§3.1 QZ 算法与广义特征值</h3>
+<h3 id="s31">§3.1 算法地图：对称特征值问题有哪几条路</h3>
 
-<p>板书左上角画了一个方框（标注「QZ 算法」），内容是<strong>广义特征值问题</strong>：</p>
-
-\[
-A x=\lambda B x,
-\]
-
-<p>板书写的是 $A r=B r\lambda$ 形式，并给出 QZ 的两条核心关系（$Q$、$Z$ 是酉阵）：</p>
-
-\[
-Q^{*}A r_{1}=r_{1}\bar\lambda,\qquad
-Q^{*}B r_{1}=r_{2}\bar\lambda,
-\]
-
-<p>以及伴随的 $B^{\mathsf T}A x=x\lambda$。</p>
-
-<p><strong>为什么要提 QZ？</strong>因为它是<strong>对称情形的「广义版 QR 方法」</strong>：当 $B=I$ 时，QZ 退化成 QR；当 $B\ne I$（比如带边界条件的特征值问题）时，需要 QZ。板书把它放在这里，是在给「对称特征值问题的算法谱系」定坐标：</p>
+<p>先把这张地图铺开（它就是板书第 1 页那张「速度 / 精度」对照表的展开）——接下来的 Jacobi（<a href="#s41">§4</a>）和 D&amp;C（<a href="#s51">§5</a>）都是这张地图上的路线：</p>
 
 <table>
 <tr><th>问题</th><th>算法</th><th>本笔记位置</th></tr>
@@ -591,8 +577,9 @@ Q^{*}B r_{1}=r_{2}\bar\lambda,
 <tr><td>标准对称特征值（另一条路）</td><td><strong>Jacobi 方法</strong></td><td><a href="#s41">§4.1–§4.3</a> / PDF 6 §6.3</td></tr>
 <tr><td>标准对称特征值（第三条路）</td><td><strong>D&amp;C 分治</strong></td><td><a href="#s51">§5.1–§5.3</a> / PDF 6 §6.5</td></tr>
 <tr><td>标准对称特征值（第四条路）</td><td>二分法（+反幂法求向量）</td><td>讲义 PDF 6 §6.4</td></tr>
-<tr><td>广义对称特征值 $Ax=\lambda Bx$</td><td><strong>QZ 算法</strong></td><td>板书本页</td></tr>
 </table>
+
+<p>板书左上角还顺带画了一个「QZ 算法」的方框（讲广义特征值 $Ax=\lambda Bx$）——那是老师讲到几位老爷子的历史时<strong>顺带一提</strong>的，与本章内容没有承接关系，完整的展开放在本笔记<a href="#qz-note">最下面的题外话</a>里，正文不再展开。</p>
 
 <h3 id="s32">§3.2 $A=A^{*}$ 的两条推论：Hermite 无虚特征值、三对角可达</h3>
 
@@ -1018,7 +1005,40 @@ T =  ⎡ α  ⎤    ⎢    ⎥     ⎡ β  * ⎤
 
 <p>板书在方程旁边还写了一句「<strong>秩相关 令需要有右特征向量的零空间</strong>」——这是关键提醒：$(T_{11}-\lambda I)$ <strong>必须是奇异的</strong>，否则这个方程组无解。也就是说，$\lambda$ 必须是 $T_{11}$ 的特征值（而不是 $T_{22}$ 的）。板书专门画了一个 $T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$ 的结构并标注「$|\lambda(T_{11})|\lt1$，$|\lambda\in T_{22}|\ge1$」——在<strong>分治算法</strong>里，$T_{11}$ 是<strong>已经算出来的那一半</strong>，所以 $T_{22}$ 的特征值才是要解的。</p>
 
-<h3 id="s62">§6.2 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</h3>
+<h3 id="s62">§6.2 不变子空间：只想要特定的那几个特征值怎么办</h3>
+
+<p>板书第 5 页的中段有一组式子，之前没有单独拎出来讲，但它其实是这一页的<strong>核心用法</strong>：</p>
+
+\[
+A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}
+\quad\Longrightarrow\quad
+\boxed{\;AQ_1=Q_1T_{11}\;}
+\]
+
+<p>把分块乘法展开，左边第二列的那块等式会带上 $T_{12}$，但<strong>第一列的等式是干净的</strong>：$AQ_1=Q_1T_{11}$。这说明</p>
+
+<div class="box key">
+<p class="label">$\operatorname{span}(Q_1)$ 是 $A$ 的不变子空间</p>
+<p>任何 $x\in\operatorname{span}(Q_1)$ 都满足 $Ax\in\operatorname{span}(Q_1)$——$A$ 作用在这个子空间上<strong>出不去</strong>。而 $T_{11}$ 恰好是 $A$ 限制在这个子空间上的矩阵（在 $Q_1$ 这组基下的表示），所以 <strong>$T_{11}$ 的特征值就是 $A$ 的特征值的一个子集</strong>。</p>
+</div>
+
+<p>这就给了「<strong>只想要特定的那几个特征值（的特征向量）</strong>」一个做法，三步：</p>
+
+<ol>
+<li><strong>选</strong>：用 <a href="#s63">§6.3</a> 的交换 $T\to Q^{\mathsf T}TQ$，把想要的那个（或那几个）特征值调到左上角的对角块里——<strong>排序在这里等于「选择」</strong>；</li>
+<li><strong>切</strong>：交换后取新的 $Q_1$，$\operatorname{span}(Q_1)$ 就是属于这几个特征值的不变子空间（$AQ_1=Q_1T_{11}$）；</li>
+<li><strong>取</strong>：要单个特征向量，就在块内用 <a href="#s61">§6.1</a> 的分块回代解出来；只要子空间，到第二步就已经到手了。</li>
+</ol>
+
+<div class="box ok">
+<p class="label">和 §2.6 接上：为什么「宁可要子空间」</p>
+<p><a href="#s26">§2.6</a> 说过：单个特征向量的条件数是 $1/|y^{\mathsf T}x|$，当特征值挤在一起时可以任意病态。但<strong>由几个病态特征向量张成的不变子空间本身，往往比其中任何一个向量都良态</strong>——向量的误差方向在子空间内部「互相抵消」。</p>
+<p>所以实践里的原则是：<strong>特征值分得开就逐个要向量（回代）；特征值挤成一簇就只要整个不变子空间（排序 + 切块）</strong>。板书那句「如果想要特定顺序的 eigenvalue：$T\to Q^{\mathsf T}TQ$」＋「$AQ_1=Q_1T_{11}$」，合起来正是这件事的完整流程。</p>
+</div>
+
+<p>板书上 $|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$ 的注记也在这个框架里：<strong>$T_{22}$ 那一半是已经收敛、被 deflation 锁定的部分</strong>（10.20 §7.9 的三分块 $H_{33}$），$T_{11}$ 是还在迭代的活动块——分治（<a href="#s51">§5.1</a>）把 $T$ 切成两半时，每一半也都各自是一个不变子空间问题。</p>
+
+<h3 id="s63">§6.3 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</h3>
 
 <p>板书接着写「<strong>如果想要特定顺序的 eigenvalue</strong>：$T\to Q^{\mathsf T}TQ$」，并画了一对三角形表示交换。</p>
 
@@ -1033,7 +1053,7 @@ T =  ⎡ α  ⎤    ⎢    ⎥     ⎡ β  * ⎤
 
 <p>这正好接上 10.20 §7.10（实 Schur 型的后处理）：那里讲了块对角化用的就是 Bartels–Stewart 算法解 Sylvester 方程。</p>
 
-<h3 id="s63">§6.3 $Q$ 的 $e_1$ 对应的是哪个特征值</h3>
+<h3 id="s64">§6.4 $Q$ 的 $e_1$ 对应的是哪个特征值</h3>
 
 <p>板书第 5 页末尾是一个具体例子，很值得写清楚。它给了一个 $2\times2$ 的例子并标注「<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>」：</p>
 
@@ -1132,8 +1152,21 @@ Qᵀ T Q = [[3.0, −2.0],
 <div class="box warn">
 <p class="label">板书照片的归属与保留意见</p>
 <p>本课的 5 页手写笔记是<strong>手写笔记页</strong>（不是黑板照片），内容与讲义 PDF 6 的 §6.1–§6.5 逐条对应。本笔记按这 5 页的<strong>讲课顺序</strong>组织：① 特征向量怎么算 → ④ 对称特征值问题的全景 → ③ Jacobi 方法 → ② D&amp;C 分治 → ⑤ 从三对角阵算特征向量。</p>
-<p>其中 <a href="#s41">§4.1–§4.3</a>（Jacobi 旋转的推导与收敛率）、<a href="#s51">§5.1–§5.3</a>（D&amp;C）、<a href="#s31">§3.1–§3.5</a>（QZ / Wilkinson / 连续映射）是<strong>板书内容</strong>；<a href="#s26">§2.6</a> 的条件数分析、<a href="#p7">第七部分</a> 的路线对照表是<strong>教材补充与整理</strong>。</p>
+<p>其中 <a href="#s41">§4.1–§4.3</a>（Jacobi 旋转的推导与收敛率）、<a href="#s51">§5.1–§5.3</a>（D&amp;C）、<a href="#s31">§3.1–§3.5</a>（算法地图 / Wilkinson / 连续映射）、<a href="#s61">§6.1–§6.4</a>（分块回代 / 不变子空间 / 排序）是<strong>板书内容</strong>；<a href="#s26">§2.6</a> 的条件数分析、<a href="#p7">第七部分</a> 的路线对照表是<strong>教材补充与整理</strong>。</p>
 <p>板书第 1 页（右半）那张 QR 两行总纲的黑板照片属于 <strong>10.20</strong>，已在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a> 逐行解读，本笔记不重复，只在 <a href="#p1">第一部分</a> 提一句衔接。</p>
+</div>
+
+<div class="box warn" id="qz-note">
+<p class="label">题外话 · QZ 算法（老师讲到老爷子们时顺带一提，与本章内容无承接）</p>
+<p>板书第 4 页左上角画了一个「QZ 算法」的方框，讲的是<strong>广义特征值问题</strong> $Ax=\lambda Bx$（板书写作 $Ar=Br\lambda$）。QZ 给出的两条核心关系是（$Q,Z$ 为酉阵）：</p>
+
+\[
+Q^{*}A r_{1}=r_{1}\bar\lambda,\qquad Q^{*}B r_{1}=r_{2}\bar\lambda,
+\qquad B^{\mathsf T}A x=x\lambda.
+\]
+
+<p>可以把它理解为<strong>「广义版的 QR 方法」</strong>：$B=I$ 时 QZ 退化成 QR；$B
+e I$（比如带边界条件、质量矩阵的特征值问题）时才真正需要它。因为这个话题课上只是一句带过、后续也没有用到，正文不展开，在这里备查。</p>
 </div>
 
 <h2 id="p9">附录 · 板书逐张对照</h2>
@@ -1143,13 +1176,13 @@ Qᵀ T Q = [[3.0, −2.0],
 <tr><td>①</td><td>手写</td><td>黑板特写「1° $Q_0^{\mathsf T}AQ_0=H$ / 2° loop: $p(H)=QR$, $H\leftarrow Q^{\mathsf T}HQ$」；<strong>「特征向量算得是够准就是正确的」</strong>；速度 / 精度对照表（Jacobi / QR / D&amp;C / MRRR）</td><td>旧板（10.20）</td><td><a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a>；本课 <a href="#p1">第一部分</a>、<a href="#s43">§4.3</a></td></tr>
 <tr><td>②</td><td>手写</td><td><strong>Divide and Conquer 分治算法</strong>：对称矩阵降阶成三对角化；切两半（rank 2 → rank 1）；$Q_0(\Lambda_0+uu^{*})Q_0^{*}$；$\det(\lambda I-\Lambda_0-uu^{*})=0$；$f(\lambda)=1-\sum\frac{|u_i|^2}{x-\lambda_i}$</td><td><strong>本课</strong></td><td><a href="#s51">§5.1–§5.2</a></td></tr>
 <tr><td>③</td><td>手写</td><td><strong>Jacobi 方法</strong>：$\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}=Q\begin{bmatrix}\lambda_1&\\&\lambda_2\end{bmatrix}Q^{\mathsf T}$；$\begin{bmatrix}c&s\\-s&c\end{bmatrix}$ 旋转；$t=c/s$；$\operatorname{off}(A)=\|A\|_F^2-\|\operatorname{diag}(A)\|_F^2$；$\operatorname{off}(A^{(k+1)})\le\frac{n^2-n-2}{n^2-n}\operatorname{off}(A^{(k)})$；global linear convergence；<strong>Jacobi $O(n^3)$／有序化 $O(n^4)$；循环 Jacobi 比 QR 快但慢</strong></td><td><strong>本课</strong></td><td><a href="#s41">§4.1–§4.3</a></td></tr>
-<tr><td>④</td><td>手写</td><td><strong>对称特征值问题</strong>：QZ 算法（$Ar=Br\lambda$、$Q^{*}Ar_1=r_1\bar\lambda$、$Q^{*}Br_1=r_2\bar\lambda$）；$A=A^{*}$；$Q_0^{*}AQ_0=H$（上 Hessenberg，可实对称）；<strong>Hermite 没有虚特征值</strong>；Wilkinson 收敛性（序贯三次）；<strong>古老算法 计算 Hermite 型 1846：Jacobi</strong>，谱分解和 Schur 分解；$\operatorname{off}(x)=\sum_{i\lt j}|x_{ij}|^2$ 连续映射；$Q\mapsto Q^{*}AQ$ 连续映射；$\operatorname{off}$ 在 $Q^{*}Q=I$ 上取到最小值；off 一定下降</td><td><strong>本课</strong></td><td><a href="#s31">§3.1–§3.5</a></td></tr>
-<tr><td>⑤</td><td>手写</td><td><strong>从三对角阵算特征向量</strong>：$\begin{bmatrix}T_{11}-\lambda I&T_{12}\\0&I\end{bmatrix}\begin{bmatrix}u\\1\end{bmatrix}=0$ ⇔ $(T_{11}-\lambda I)u=-T_{12}$；$T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$，$|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$；$AQ=QT$；$A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$；<strong>「如果想要特定顺序的 eigenvalue」$T\to Q^{\mathsf T}TQ$</strong>；$2\times2$ 例；<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>；「只能用最简：只能保证是上三角」</td><td><strong>本课</strong></td><td><a href="#s61">§6.1–§6.3</a></td></tr>
+<tr><td>④</td><td>手写</td><td><strong>对称特征值问题</strong>：QZ 算法（$Ar=Br\lambda$、$Q^{*}Ar_1=r_1\bar\lambda$、$Q^{*}Br_1=r_2\bar\lambda$）；$A=A^{*}$；$Q_0^{*}AQ_0=H$（上 Hessenberg，可实对称）；<strong>Hermite 没有虚特征值</strong>；Wilkinson 收敛性（序贯三次）；<strong>古老算法 计算 Hermite 型 1846：Jacobi</strong>，谱分解和 Schur 分解；$\operatorname{off}(x)=\sum_{i\lt j}|x_{ij}|^2$ 连续映射；$Q\mapsto Q^{*}AQ$ 连续映射；$\operatorname{off}$ 在 $Q^{*}Q=I$ 上取到最小值；off 一定下降</td><td><strong>本课</strong></td><td><a href="#s31">§3.1–§3.5</a>、<a href="#qz-note">题外话</a></td></tr>
+<tr><td>⑤</td><td>手写</td><td><strong>从三对角阵算特征向量</strong>：$\begin{bmatrix}T_{11}-\lambda I&T_{12}\\0&I\end{bmatrix}\begin{bmatrix}u\\1\end{bmatrix}=0$ ⇔ $(T_{11}-\lambda I)u=-T_{12}$；$T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$，$|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$；$AQ=QT$；$A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$；<strong>「如果想要特定顺序的 eigenvalue」$T\to Q^{\mathsf T}TQ$</strong>；$2\times2$ 例；<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>；「只能用最简：只能保证是上三角」</td><td><strong>本课</strong></td><td><a href="#s61">§6.1–§6.4</a>（不变子空间见 §6.2）</td></tr>
 </table>
 
 <p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a>、<a href="补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记</a> 是三份独立文件，按课次分工：幂法 / 反幂法属 10.13，子空间迭代 / Krylov / QR 方法属 10.20，<strong>特征向量的计算与对称特征值算法属 10.27</strong>。原属 10.13 的 <strong>§3.7 Jacobi 迭代法</strong>已搬到本笔记 <a href="#s44">§4.4</a>（两个 Jacobi 同名易混），10.13 那边留了跳转说明。</p>
 
-<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂的 5 页手写笔记，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.5 节。<strong>明确标注为「教材补充」的段落</strong>：<a href="#s26">§2.6</a> 全部（扰动分析的一阶公式、条件数 $1/|y^{\mathsf T}x|$、Kato–Temple 对照、两个数值实验）、<a href="#p7">第七部分</a> 的路线对照表与 dgeev 流程梳理。<strong>板书内容</strong>：§2.1–§2.5、§4.1–§4.3、§3 全部、§5 全部、§6 全部。<a href="#s44">§4.4</a> 是两个同名不同物的 Jacobi 的辨析（Jacobi 迭代法本身在 10.13 补课笔记 §3.7，讲义 PDF 3 §3.1.1，课上没讲）。本文全部数值结果（残差、条件数表、夹角表、Jacobi 收敛率表、$f(\lambda)$ 的根、正交性）均由自写 Householder / QR 迭代 / 回代法 / Jacobi 旋转代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂的 5 页手写笔记，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.5 节。<strong>明确标注为「教材补充」的段落</strong>：<a href="#s26">§2.6</a> 全部（扰动分析的一阶公式、条件数 $1/|y^{\mathsf T}x|$、Kato–Temple 对照、两个数值实验）、<a href="#p7">第七部分</a> 的路线对照表与 dgeev 流程梳理。<strong>板书内容</strong>：§2.1–§2.5、§4.1–§4.3、§3 全部、§5 全部、§6 全部（不变子空间一条是按板书 $AQ_1=Q_1T_{11}$ 补的解读）；<a href="#s44">§4.4</a> 是两个同名不同物的 Jacobi 的辨析（Jacobi 迭代法本身在 10.13 补课笔记 §3.7，讲义 PDF 3 §3.1.1，课上没讲）。本文全部数值结果（残差、条件数表、夹角表、Jacobi 收敛率表、$f(\lambda)$ 的根、正交性）均由自写 Householder / QR 迭代 / 回代法 / Jacobi 旋转代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
 
 </div><script src="assets/katex/katex.min.js"></script>
 <script src="assets/katex/contrib/auto-render.min.js"></script>
