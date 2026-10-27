@@ -163,7 +163,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <p class="lede">上一堂课（10.20）把 QR 方法从头走了一遍，最后落在实 Schur 型 $Q^{\mathsf T}AQ=T$ 上——特征值就是 $T$ 的对角元。但 <code>eig</code> 返回的从来不只是特征值，还有一列列特征向量。<strong>那些向量是从哪里冒出来的？</strong></p>
 
 <p class="lede">这一堂课就补这一环，并把视野从「一般矩阵」转到「对称阵」——因为对称阵的特征值问题有完全不同的工具箱。板书上讲了四件事：<strong>① 特征向量怎么算、④ 对称特征值问题的全景（QZ / Wilkinson / 连续映射）、③ Jacobi 方法、② D&amp;C 分治算法</strong>。</p>
-<p class="lede" style="font-size:14.5px">本笔记的章节顺序也按这个来：<strong>先把对称特征值问题的地图铺开（第三部分），再分述它的两条主要算法路线——Jacobi 方法（第四部分）与 D&amp;C 分治（第五部分）</strong>，最后回到具体算子（第六部分）。</p>
+<p class="lede" style="font-size:14.5px">本笔记的章节顺序：<strong>第二部分先把「特征向量怎么算」一次讲完</strong>（Schur 型回代 → 分块回代 → 不变子空间 → 排序）；<strong>第三部分铺开对称特征值问题的地图，第四、五部分分述 Jacobi 方法与 D&amp;C 分治</strong>。</p>
 
 <p class="lede" style="font-size:14px">配套：QR 方法本身（Schur 型怎么来的、deflation 怎么判）在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a> 的<a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#p7">第七部分</a>；反幂法 / Rayleigh 商迭代在 <a href="补课笔记-幂法反幂法与第3章引言.html">补课笔记</a> 的<a href="补课笔记-幂法反幂法与第3章引言.html#s22">第二部分</a>；<strong>Jacobi 方法与 Jacobi 迭代法是两个不同的东西</strong>，名字撞车的辨析见 <a href="#s44">§4.4</a>。</p>
 
@@ -179,6 +179,10 @@ h1,h2,h3,h4{scroll-margin-top:22px}
     <li><a href="#s24">§2.4 $3\times3$ 实例与「分母 = 特征值之差」</a></li>
     <li><a href="#s25">§2.5 $2\times2$ 共轭块怎么办</a></li>
     <li><a href="#s26">§2.6 特征向量有多不可靠：条件数 $1/|y^{\mathsf T}x|$</a></li>
+    <li><a href="#s27">§2.7 分块回代：$(T_{11}-\lambda I)u=-T_{12}$</a></li>
+    <li><a href="#s28">§2.8 不变子空间：只想要特定的那几个特征值怎么办</a></li>
+    <li><a href="#s29">§2.9 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</a></li>
+    <li><a href="#s210">§2.10 $Q$ 的 $e_1$ 对应的是哪个特征值</a></li>
   </ol>
 </li>
 <li><a href="#p3">第三部分 · 对称特征值计算：全景与工具箱<span class="tag">板书 ④</span>
@@ -205,16 +209,8 @@ h1,h2,h3,h4{scroll-margin-top:22px}
     <li><a href="#s53">§5.3 胶合：把两个低阶谱分解拼回来</a></li>
   </ol>
 </li>
-<li><a href="#p6">第六部分 · 从三对角阵算特征向量<span class="tag">板书 ⑤</span>
-  <ol>
-    <li><a href="#s61">§6.1 分块回代：$(T_{11}-\lambda I)u=-T_{12}$</a></li>
-    <li><a href="#s62">§6.2 不变子空间：只想要特定的那几个特征值怎么办</a></li>
-    <li><a href="#s63">§6.3 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</a></li>
-    <li><a href="#s64">§6.4 $Q$ 的 $e_1$ 对应的是哪个特征值</a></li>
-  </ol>
-</li>
-<li><a href="#p7">第七部分 · 实操：三条路线各管什么</a></li>
-<li><a href="#p8">第八部分 · 本课小结</a></li>
+<li><a href="#p7">第六部分 · 实操：三条路线各管什么</a></li>
+<li><a href="#p8">第七部分 · 本课小结</a></li>
 <li><a href="#p9">附录 · 板书逐张对照</a></li>
 </ol>
 </div>
@@ -575,6 +571,110 @@ y^{\mathsf T}x=\varepsilon.
 </svg>
 <figcaption style="font-size:12.5px; color:var(--ink3); text-align:center; margin-top:10px">图 1 · 特征向量的条件数由左右特征向量的夹角决定</figcaption>
 </figure>
+
+<h3 id="s27">§2.7 分块回代：$(T_{11}-\lambda I)u=-T_{12}$</h3>
+
+<p>§2.3–§2.6 处理的是「$T$ 是一般的（拟）上三角 Schur 型、给定一个 $\lambda$、怎么把 $y$ 逐个分量回代出来」。这一节把同一件事推到<strong>分块结构</strong>：$T$ 是<strong>非对称的拟上三角阵</strong>（对角块是 $1\times1$ 或 $2\times2$，$T$ 本身并不对称），把「下面那一整块」整体当作未知量 $u$，块回代就变成解一个低阶线性方程组。</p>
+
+<p>板书开头就是一个分块方程：</p>
+
+<pre><code>⎡ T₁₁ − λI   T₁₂ ⎤ ⎡ u ⎤   ⎡ 0 ⎤
+⎢              ⎥ ⎢   ⎥ = ⎢   ⎥
+⎣    0         I  ⎦ ⎣ 1 ⎦   ⎣ 0 ⎦
+
+  ⇔ (T₁₁ − λI) u = − T₁₂</code></pre>
+
+<p>这是<a href="#s23">§2.3</a> 回代法在<strong>三对角 + 分块</strong>情形下的具体形态。看清楚它和一般回代法的对应关系：</p>
+
+<ul>
+<li>一般情形是 $y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$（逐个分量递推）；</li>
+<li>这里把「下面那一块」整体当作一个未知量 $u$，于是变成<strong>解一个低阶线性方程组</strong> $(T_{11}-\lambda I)u=-T_{12}$，$T_{11}$ 本身是三对角阵 ⇒ 用 Thomas 算法 $O(n)$ 就能解。</li>
+</ul>
+
+<div class="box ok">
+<p class="label">数值验证</p>
+<p>取 $T=\begin{bmatrix}2&1\\3&4\end{bmatrix}$（特征值 $1$ 和 $5$），按板书公式令 $x_2=1$，解 $(T_{11}-\lambda)x_1=-T_{12}$：</p>
+<pre><code>λ = 1.00000000   u₁ = −1.00000000   ‖(T − λI)x‖ = 0.00e+00
+λ = 5.00000000   u₁ =  0.33333333   ‖(T − λI)x‖ = 0.00e+00</code></pre>
+</div>
+
+<p>板书在方程旁边还写了一句「<strong>秩相关 令需要有右特征向量的零空间</strong>」——这是关键提醒：$(T_{11}-\lambda I)$ <strong>必须是奇异的</strong>，否则这个方程组无解。也就是说，$\lambda$ 必须是 $T_{11}$ 的特征值（而不是 $T_{22}$ 的）。板书专门画了一个 $T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$ 的结构并标注「$|\lambda(T_{11})|\lt1$，$|\lambda\in T_{22}|\ge1$」——在<strong>分治算法</strong>里，$T_{11}$ 是<strong>已经算出来的那一半</strong>，所以 $T_{22}$ 的特征值才是要解的。</p>
+
+<h3 id="s28">§2.8 不变子空间：只想要特定的那几个特征值怎么办</h3>
+
+<p>板书第 5 页的中段有一组式子，之前没有单独拎出来讲，但它其实是这一页的<strong>核心用法</strong>：</p>
+
+\[
+A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}
+\quad\Longrightarrow\quad
+\boxed{\;AQ_1=Q_1T_{11}\;}
+\]
+
+<p>把分块乘法展开，左边第二列的那块等式会带上 $T_{12}$，但<strong>第一列的等式是干净的</strong>：$AQ_1=Q_1T_{11}$。这说明</p>
+
+<div class="box key">
+<p class="label">$\operatorname{span}(Q_1)$ 是 $A$ 的不变子空间</p>
+<p>任何 $x\in\operatorname{span}(Q_1)$ 都满足 $Ax\in\operatorname{span}(Q_1)$——$A$ 作用在这个子空间上<strong>出不去</strong>。而 $T_{11}$ 恰好是 $A$ 限制在这个子空间上的矩阵（在 $Q_1$ 这组基下的表示），所以 <strong>$T_{11}$ 的特征值就是 $A$ 的特征值的一个子集</strong>。</p>
+</div>
+
+<p>这就给了「<strong>只想要特定的那几个特征值（的特征向量）</strong>」一个做法，三步：</p>
+
+<ol>
+<li><strong>选</strong>：用 <a href="#s29">§2.9</a> 的交换 $T\to Q^{\mathsf T}TQ$，把想要的那个（或那几个）特征值调到左上角的对角块里——<strong>排序在这里等于「选择」</strong>；</li>
+<li><strong>切</strong>：交换后取新的 $Q_1$，$\operatorname{span}(Q_1)$ 就是属于这几个特征值的不变子空间（$AQ_1=Q_1T_{11}$）；</li>
+<li><strong>取</strong>：要单个特征向量，就在块内用 <a href="#s27">§2.7</a> 的分块回代解出来；只要子空间，到第二步就已经到手了。</li>
+</ol>
+
+<div class="box ok">
+<p class="label">和 §2.6 接上：为什么「宁可要子空间」</p>
+<p><a href="#s26">§2.6</a> 说过：单个特征向量的条件数是 $1/|y^{\mathsf T}x|$，当特征值挤在一起时可以任意病态。但<strong>由几个病态特征向量张成的不变子空间本身，往往比其中任何一个向量都良态</strong>——向量的误差方向在子空间内部「互相抵消」。</p>
+<p>所以实践里的原则是：<strong>特征值分得开就逐个要向量（回代）；特征值挤成一簇就只要整个不变子空间（排序 + 切块）</strong>。板书那句「如果想要特定顺序的 eigenvalue：$T\to Q^{\mathsf T}TQ$」＋「$AQ_1=Q_1T_{11}$」，合起来正是这件事的完整流程。</p>
+</div>
+
+<p>板书上 $|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$ 的注记也在这个框架里：<strong>$T_{22}$ 那一半是已经收敛、被 deflation 锁定的部分</strong>（10.20 §7.9 的三分块 $H_{33}$），$T_{11}$ 是还在迭代的活动块——分治（<a href="#s51">§5.1</a>）把 $T$ 切成两半时，每一半也都各自是一个不变子空间问题。</p>
+
+<h3 id="s29">§2.9 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</h3>
+
+<p>板书接着写「<strong>如果想要特定顺序的 eigenvalue</strong>：$T\to Q^{\mathsf T}TQ$」，并画了一对三角形表示交换。</p>
+
+<p>这就是讲义 PDF 5 §5.4.1「对角块排序」的内容：<strong>对角块（或特征值）的次序是可以自由调整的</strong>，只要用一个正交相似变换 $Q^{\mathsf T}TQ$（对可上三角阵就是 $Q^{\mathsf T}TQ$ 仍是上三角）——就像冒泡排序那样一次交换两个相邻块。</p>
+
+<p>板书还提醒了这件事的<strong>数值代价</strong>（在讲义 PDF 5 §5.4.1 里）：</p>
+
+<ul>
+<li>对<strong>上三角阵</strong>的交换：<strong>向后稳定</strong>（可以放心做）；</li>
+<li>推广到<strong>块</strong>（$2\times2$ 块）：需要解 <strong>Sylvester 方程</strong>，为解得准需要用全主元 Gauss 消去法，<strong>其舍入误差分析至今都没有解决</strong>。</li>
+</ul>
+
+<p>这正好接上 10.20 §7.10（实 Schur 型的后处理）：那里讲了块对角化用的就是 Bartels–Stewart 算法解 Sylvester 方程。</p>
+
+<h3 id="s210">§2.10 $Q$ 的 $e_1$ 对应的是哪个特征值</h3>
+
+<p>板书第 5 页末尾是一个具体例子，很值得写清楚。它给了一个 $2\times2$ 的例子并标注「<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>」：</p>
+
+<pre><code>⎡ α   γ ⎤        ⎡ β   * ⎤
+⎣ 0   β ⎦  =  Q* ⎢         ⎥ Q
+                    ⎣ *   α ⎦</code></pre>
+
+<p>也就是说：$T=\begin{bmatrix}\alpha&\gamma\\0&\beta\end{bmatrix}$，通过一个正交相似变换 $Q^{\mathsf T}TQ$，可以<strong>把 $\beta$ 提到左上角</strong>。那么 $Q^{\mathsf T}TQ$ 的第一个坐标方向 $e_1$ 就对应着 $\beta$——<strong>$Q$ 的第一列是 $\beta$ 的特征向量</strong>。</p>
+
+<div class="box ok">
+<p class="label">数值验证</p>
+<p>取 $T=\begin{bmatrix}5&2\\0&3\end{bmatrix}$，特征值 $5$ 和 $3$。构造 $Q$ 使其第一列是 $\lambda=3$ 的特征向量：</p>
+<pre><code>Q = [[−0.70710678,  0.70710678],
+     [ 0.70710678,  0.70710678]]
+
+Qᵀ T Q = [[3.0, −2.0],
+          [0.0,  5.0]]          ← 对角元 [3, 5]，顺序确实被交换了</code></pre>
+</div>
+
+<div class="box key">
+<p class="label">这条为什么重要：它把「特征向量」和「特征值排序」连起来了</p>
+<p>在对称情形下，特征向量 = 累积的 $Q$ 的列（<a href="#s43">§4.3</a> 讲的那种「白送」）。但如果<strong>你还想调整特征值的顺序</strong>，那就得再乘一个交换矩阵 $Q^{\mathsf T}$——而板书告诉我们：<strong>这个 $Q^{\mathsf T}$ 的第一列，对应的是被提到前面的那个特征值的特征向量</strong>。</p>
+<p>换句话说，「排序」和「特征向量」不是两件独立的事：<strong>排序矩阵同时给出了排序后特征值对应的特征向量。</strong></p>
+</div>
+
+<p>板书最后一行写「<strong>只能用最简：记要纯正上标</strong>」（读作「只能保证是上三角」），意思是：$Q^{\mathsf T}TQ$ 只能保证是<strong>上三角</strong>，不能保证还是三对角——交换会把三对角结构破坏掉。这与讲义 PDF 5 §5.4.1 的结论一致：<strong>排序后仍然是实 Schur 型（上三角），但不再有三对角结构。</strong></p>
 
 <h2 id="p3">第三部分 · 对称特征值计算：全景与工具箱<span class="tag">板书 ④</span></h2>
 
@@ -989,113 +1089,7 @@ T =  ⎡ α  ⎤    ⎢    ⎥     ⎡ β  * ⎤
 
 <p>数值验证（$T=\begin{bmatrix}5&2\\0&3\end{bmatrix}$，特征值 $5,3$）：取 $Q$ 的第一列为 $\beta=3$ 对应的特征向量，$Q^{\mathsf T}TQ$ 的对角元确实是 $[3,5]$——<strong>顺序被交换了</strong>。</p>
 
-<h2 id="p6">第六部分 · 从三对角阵算特征向量<span class="tag">板书 ⑤</span></h2>
-
-<p>板书第 5 页是最技术的一页，专门讲<strong>已知实对称三对角阵 $T$，怎么把它的特征向量算出来</strong>。</p>
-
-<h3 id="s61">§6.1 分块回代：$(T_{11}-\lambda I)u=-T_{12}$</h3>
-
-<p>板书开头就是一个分块方程：</p>
-
-<pre><code>⎡ T₁₁ − λI   T₁₂ ⎤ ⎡ u ⎤   ⎡ 0 ⎤
-⎢              ⎥ ⎢   ⎥ = ⎢   ⎥
-⎣    0         I  ⎦ ⎣ 1 ⎦   ⎣ 0 ⎦
-
-  ⇔ (T₁₁ − λI) u = − T₁₂</code></pre>
-
-<p>这是<a href="#s23">§2.3</a> 回代法在<strong>三对角 + 分块</strong>情形下的具体形态。看清楚它和一般回代法的对应关系：</p>
-
-<ul>
-<li>一般情形是 $y_i=-\dfrac{\sum_{k=i+1}^{j}t_{ik}y_k}{t_{ii}-\lambda}$（逐个分量递推）；</li>
-<li>这里把「下面那一块」整体当作一个未知量 $u$，于是变成<strong>解一个低阶线性方程组</strong> $(T_{11}-\lambda I)u=-T_{12}$，$T_{11}$ 本身是三对角阵 ⇒ 用 Thomas 算法 $O(n)$ 就能解。</li>
-</ul>
-
-<div class="box ok">
-<p class="label">数值验证</p>
-<p>取 $T=\begin{bmatrix}2&1\\3&4\end{bmatrix}$（特征值 $1$ 和 $5$），按板书公式令 $x_2=1$，解 $(T_{11}-\lambda)x_1=-T_{12}$：</p>
-<pre><code>λ = 1.00000000   u₁ = −1.00000000   ‖(T − λI)x‖ = 0.00e+00
-λ = 5.00000000   u₁ =  0.33333333   ‖(T − λI)x‖ = 0.00e+00</code></pre>
-</div>
-
-<p>板书在方程旁边还写了一句「<strong>秩相关 令需要有右特征向量的零空间</strong>」——这是关键提醒：$(T_{11}-\lambda I)$ <strong>必须是奇异的</strong>，否则这个方程组无解。也就是说，$\lambda$ 必须是 $T_{11}$ 的特征值（而不是 $T_{22}$ 的）。板书专门画了一个 $T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$ 的结构并标注「$|\lambda(T_{11})|\lt1$，$|\lambda\in T_{22}|\ge1$」——在<strong>分治算法</strong>里，$T_{11}$ 是<strong>已经算出来的那一半</strong>，所以 $T_{22}$ 的特征值才是要解的。</p>
-
-<h3 id="s62">§6.2 不变子空间：只想要特定的那几个特征值怎么办</h3>
-
-<p>板书第 5 页的中段有一组式子，之前没有单独拎出来讲，但它其实是这一页的<strong>核心用法</strong>：</p>
-
-\[
-A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}
-\quad\Longrightarrow\quad
-\boxed{\;AQ_1=Q_1T_{11}\;}
-\]
-
-<p>把分块乘法展开，左边第二列的那块等式会带上 $T_{12}$，但<strong>第一列的等式是干净的</strong>：$AQ_1=Q_1T_{11}$。这说明</p>
-
-<div class="box key">
-<p class="label">$\operatorname{span}(Q_1)$ 是 $A$ 的不变子空间</p>
-<p>任何 $x\in\operatorname{span}(Q_1)$ 都满足 $Ax\in\operatorname{span}(Q_1)$——$A$ 作用在这个子空间上<strong>出不去</strong>。而 $T_{11}$ 恰好是 $A$ 限制在这个子空间上的矩阵（在 $Q_1$ 这组基下的表示），所以 <strong>$T_{11}$ 的特征值就是 $A$ 的特征值的一个子集</strong>。</p>
-</div>
-
-<p>这就给了「<strong>只想要特定的那几个特征值（的特征向量）</strong>」一个做法，三步：</p>
-
-<ol>
-<li><strong>选</strong>：用 <a href="#s63">§6.3</a> 的交换 $T\to Q^{\mathsf T}TQ$，把想要的那个（或那几个）特征值调到左上角的对角块里——<strong>排序在这里等于「选择」</strong>；</li>
-<li><strong>切</strong>：交换后取新的 $Q_1$，$\operatorname{span}(Q_1)$ 就是属于这几个特征值的不变子空间（$AQ_1=Q_1T_{11}$）；</li>
-<li><strong>取</strong>：要单个特征向量，就在块内用 <a href="#s61">§6.1</a> 的分块回代解出来；只要子空间，到第二步就已经到手了。</li>
-</ol>
-
-<div class="box ok">
-<p class="label">和 §2.6 接上：为什么「宁可要子空间」</p>
-<p><a href="#s26">§2.6</a> 说过：单个特征向量的条件数是 $1/|y^{\mathsf T}x|$，当特征值挤在一起时可以任意病态。但<strong>由几个病态特征向量张成的不变子空间本身，往往比其中任何一个向量都良态</strong>——向量的误差方向在子空间内部「互相抵消」。</p>
-<p>所以实践里的原则是：<strong>特征值分得开就逐个要向量（回代）；特征值挤成一簇就只要整个不变子空间（排序 + 切块）</strong>。板书那句「如果想要特定顺序的 eigenvalue：$T\to Q^{\mathsf T}TQ$」＋「$AQ_1=Q_1T_{11}$」，合起来正是这件事的完整流程。</p>
-</div>
-
-<p>板书上 $|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$ 的注记也在这个框架里：<strong>$T_{22}$ 那一半是已经收敛、被 deflation 锁定的部分</strong>（10.20 §7.9 的三分块 $H_{33}$），$T_{11}$ 是还在迭代的活动块——分治（<a href="#s51">§5.1</a>）把 $T$ 切成两半时，每一半也都各自是一个不变子空间问题。</p>
-
-<h3 id="s63">§6.3 特征值的顺序：$T\to Q^{\mathsf T}TQ$ 的交换</h3>
-
-<p>板书接着写「<strong>如果想要特定顺序的 eigenvalue</strong>：$T\to Q^{\mathsf T}TQ$」，并画了一对三角形表示交换。</p>
-
-<p>这就是讲义 PDF 5 §5.4.1「对角块排序」的内容：<strong>对角块（或特征值）的次序是可以自由调整的</strong>，只要用一个正交相似变换 $Q^{\mathsf T}TQ$（对可上三角阵就是 $Q^{\mathsf T}TQ$ 仍是上三角）——就像冒泡排序那样一次交换两个相邻块。</p>
-
-<p>板书还提醒了这件事的<strong>数值代价</strong>（在讲义 PDF 5 §5.4.1 里）：</p>
-
-<ul>
-<li>对<strong>上三角阵</strong>的交换：<strong>向后稳定</strong>（可以放心做）；</li>
-<li>推广到<strong>块</strong>（$2\times2$ 块）：需要解 <strong>Sylvester 方程</strong>，为解得准需要用全主元 Gauss 消去法，<strong>其舍入误差分析至今都没有解决</strong>。</li>
-</ul>
-
-<p>这正好接上 10.20 §7.10（实 Schur 型的后处理）：那里讲了块对角化用的就是 Bartels–Stewart 算法解 Sylvester 方程。</p>
-
-<h3 id="s64">§6.4 $Q$ 的 $e_1$ 对应的是哪个特征值</h3>
-
-<p>板书第 5 页末尾是一个具体例子，很值得写清楚。它给了一个 $2\times2$ 的例子并标注「<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>」：</p>
-
-<pre><code>⎡ α   γ ⎤        ⎡ β   * ⎤
-⎣ 0   β ⎦  =  Q* ⎢         ⎥ Q
-                    ⎣ *   α ⎦</code></pre>
-
-<p>也就是说：$T=\begin{bmatrix}\alpha&\gamma\\0&\beta\end{bmatrix}$，通过一个正交相似变换 $Q^{\mathsf T}TQ$，可以<strong>把 $\beta$ 提到左上角</strong>。那么 $Q^{\mathsf T}TQ$ 的第一个坐标方向 $e_1$ 就对应着 $\beta$——<strong>$Q$ 的第一列是 $\beta$ 的特征向量</strong>。</p>
-
-<div class="box ok">
-<p class="label">数值验证</p>
-<p>取 $T=\begin{bmatrix}5&2\\0&3\end{bmatrix}$，特征值 $5$ 和 $3$。构造 $Q$ 使其第一列是 $\lambda=3$ 的特征向量：</p>
-<pre><code>Q = [[−0.70710678,  0.70710678],
-     [ 0.70710678,  0.70710678]]
-
-Qᵀ T Q = [[3.0, −2.0],
-          [0.0,  5.0]]          ← 对角元 [3, 5]，顺序确实被交换了</code></pre>
-</div>
-
-<div class="box key">
-<p class="label">这条为什么重要：它把「特征向量」和「特征值排序」连起来了</p>
-<p>在对称情形下，特征向量 = 累积的 $Q$ 的列（<a href="#s43">§4.3</a> 讲的那种「白送」）。但如果<strong>你还想调整特征值的顺序</strong>，那就得再乘一个交换矩阵 $Q^{\mathsf T}$——而板书告诉我们：<strong>这个 $Q^{\mathsf T}$ 的第一列，对应的是被提到前面的那个特征值的特征向量</strong>。</p>
-<p>换句话说，「排序」和「特征向量」不是两件独立的事：<strong>排序矩阵同时给出了排序后特征值对应的特征向量。</strong></p>
-</div>
-
-<p>板书最后一行写「<strong>只能用最简：记要纯正上标</strong>」（读作「只能保证是上三角」），意思是：$Q^{\mathsf T}TQ$ 只能保证是<strong>上三角</strong>，不能保证还是三对角——交换会把三对角结构破坏掉。这与讲义 PDF 5 §5.4.1 的结论一致：<strong>排序后仍然是实 Schur 型（上三角），但不再有三对角结构。</strong></p>
-
-<h2 id="p7">第七部分 · 实操：三条路线各管什么</h2>
+<h2 id="p7">第六部分 · 实操：三条路线各管什么</h2>
 
 <p>把本课的东西和 10.20 的东西拼起来，就得到 LAPACK 的完整流程：</p>
 
@@ -1152,7 +1146,7 @@ Qᵀ T Q = [[3.0, −2.0],
 <p>注意第 4 行：<strong>回代法把「特征值准不准」的风险转移给了特征向量</strong>；反幂法则是在 $\lambda$ 还不准的时候反而更可靠。这是选择路线时最实用的一条判据。</p>
 </div>
 
-<h2 id="p8">第八部分 · 本课小结</h2>
+<h2 id="p8">第七部分 · 本课小结</h2>
 
 <p>按重要性排：</p>
 
@@ -1165,8 +1159,8 @@ Qᵀ T Q = [[3.0, −2.0],
 
 <div class="box warn">
 <p class="label">板书照片的归属与保留意见</p>
-<p>本课的 5 页手写笔记是<strong>手写笔记页</strong>（不是黑板照片），内容与讲义 PDF 6 的 §6.1–§6.5 逐条对应。本笔记按这 5 页的<strong>讲课顺序</strong>组织：① 特征向量怎么算 → ④ 对称特征值问题的全景 → ③ Jacobi 方法 → ② D&amp;C 分治 → ⑤ 从三对角阵算特征向量。</p>
-<p>其中 <a href="#s41">§4.1–§4.3</a>（Jacobi 旋转的推导与收敛率）、<a href="#s51">§5.1–§5.3</a>（D&amp;C）、<a href="#s31">§3.1–§3.5</a>（算法地图 / Wilkinson / 连续映射）、<a href="#s61">§6.1–§6.4</a>（分块回代 / 不变子空间 / 排序）是<strong>板书内容</strong>；<a href="#s26">§2.6</a> 的条件数分析、<a href="#p7">第七部分</a> 的路线对照表是<strong>教材补充与整理</strong>。</p>
+<p>本课的 5 页手写笔记是<strong>手写笔记页</strong>（不是黑板照片），内容与讲义 PDF 6 的 §6.1–§6.5 逐条对应。5 页的页序是 ①④③②⑤；本笔记把同属「特征向量怎么算」的 ① 与 ⑤ 合并为第二部分（§2.1–§2.10），其余 ④③② 依次为第三～五部分。</p>
+<p>其中 <a href="#s41">§4.1–§4.3</a>（Jacobi 旋转的推导与收敛率）、<a href="#s51">§5.1–§5.3</a>（D&amp;C）、<a href="#s31">§3.1–§3.5</a>（算法地图 / Wilkinson / 连续映射）、<a href="#s27">§2.7–§2.10</a>（分块回代 / 不变子空间 / 排序）是<strong>板书内容</strong>；<a href="#s26">§2.6</a> 的条件数分析、<a href="#p7">第六部分</a> 的路线对照表是<strong>教材补充与整理</strong>。</p>
 <p>板书第 1 页（右半）那张 QR 两行总纲的黑板照片属于 <strong>10.20</strong>，已在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#qr-two-step-board">10.20 §7.1 末尾</a> 逐行解读，本笔记不重复，只在 <a href="#p1">第一部分</a> 提一句衔接。</p>
 </div>
 
@@ -1191,12 +1185,12 @@ e I$（比如带边界条件、质量矩阵的特征值问题）时才真正需�
 <tr><td>②</td><td>手写</td><td><strong>Divide and Conquer 分治算法</strong>：对称矩阵降阶成三对角化；切两半（rank 2 → rank 1）；$Q_0(\Lambda_0+uu^{*})Q_0^{*}$；$\det(\lambda I-\Lambda_0-uu^{*})=0$；$f(\lambda)=1-\sum\frac{|u_i|^2}{x-\lambda_i}$</td><td><strong>本课</strong></td><td><a href="#s51">§5.1–§5.2</a></td></tr>
 <tr><td>③</td><td>手写</td><td><strong>Jacobi 方法</strong>：$\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}=Q\begin{bmatrix}\lambda_1&\\&\lambda_2\end{bmatrix}Q^{\mathsf T}$；$\begin{bmatrix}c&s\\-s&c\end{bmatrix}$ 旋转；$t=c/s$；$\operatorname{off}(A)=\|A\|_F^2-\|\operatorname{diag}(A)\|_F^2$；$\operatorname{off}(A^{(k+1)})\le\frac{n^2-n-2}{n^2-n}\operatorname{off}(A^{(k)})$；global linear convergence；<strong>Jacobi $O(n^3)$／有序化 $O(n^4)$；循环 Jacobi 比 QR 快但慢</strong></td><td><strong>本课</strong></td><td><a href="#s41">§4.1–§4.3</a></td></tr>
 <tr><td>④</td><td>手写</td><td><strong>对称特征值问题</strong>：QZ 算法（$Ar=Br\lambda$、$Q^{*}Ar_1=r_1\bar\lambda$、$Q^{*}Br_1=r_2\bar\lambda$）；$A=A^{*}$；$Q_0^{*}AQ_0=H$（上 Hessenberg，可实对称）；<strong>Hermite 没有虚特征值</strong>；Wilkinson 收敛性（序贯三次）；<strong>古老算法 计算 Hermite 型 1846：Jacobi</strong>，谱分解和 Schur 分解；$\operatorname{off}(x)=\sum_{i\lt j}|x_{ij}|^2$ 连续映射；$Q\mapsto Q^{*}AQ$ 连续映射；$\operatorname{off}$ 在 $Q^{*}Q=I$ 上取到最小值；off 一定下降</td><td><strong>本课</strong></td><td><a href="#s31">§3.1–§3.5</a>、<a href="#qz-note">题外话</a></td></tr>
-<tr><td>⑤</td><td>手写</td><td><strong>从三对角阵算特征向量</strong>：$\begin{bmatrix}T_{11}-\lambda I&T_{12}\\0&I\end{bmatrix}\begin{bmatrix}u\\1\end{bmatrix}=0$ ⇔ $(T_{11}-\lambda I)u=-T_{12}$；$T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$，$|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$；$AQ=QT$；$A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$；<strong>「如果想要特定顺序的 eigenvalue」$T\to Q^{\mathsf T}TQ$</strong>；$2\times2$ 例；<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>；「只能用最简：只能保证是上三角」</td><td><strong>本课</strong></td><td><a href="#s61">§6.1–§6.4</a>（不变子空间见 §6.2）</td></tr>
+<tr><td>⑤</td><td>手写</td><td><strong>从三对角阵算特征向量</strong>：$\begin{bmatrix}T_{11}-\lambda I&T_{12}\\0&I\end{bmatrix}\begin{bmatrix}u\\1\end{bmatrix}=0$ ⇔ $(T_{11}-\lambda I)u=-T_{12}$；$T=\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$，$|\lambda(T_{11})|\lt1$、$|\lambda\in T_{22}|\ge1$；$AQ=QT$；$A[Q_1,Q_2]=[Q_1,Q_2]\begin{bmatrix}T_{11}&T_{12}\\T_{22}&1\end{bmatrix}$；<strong>「如果想要特定顺序的 eigenvalue」$T\to Q^{\mathsf T}TQ$</strong>；$2\times2$ 例；<strong>$Q$ 的 $e_1$ 对应的是 $\beta$ 的特征向量</strong>；「只能用最简：只能保证是上三角」</td><td><strong>本课</strong></td><td><a href="#s27">§2.7–§2.10</a>（不变子空间见 §2.8）</td></tr>
 </table>
 
 <p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a>、<a href="补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记</a> 是三份独立文件，按课次分工：幂法 / 反幂法属 10.13，子空间迭代 / Krylov / QR 方法属 10.20，<strong>特征向量的计算与对称特征值算法属 10.27</strong>。原属 10.13 的 <strong>§3.7 Jacobi 迭代法</strong>已搬到本笔记 <a href="#s44">§4.4</a>（两个 Jacobi 同名易混），10.13 那边留了跳转说明。</p>
 
-<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂的 5 页手写笔记，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.5 节。<strong>明确标注为「教材补充」的段落</strong>：<a href="#s26">§2.6</a> 全部（扰动分析的一阶公式、条件数 $1/|y^{\mathsf T}x|$、Kato–Temple 对照、两个数值实验）、<a href="#p7">第七部分</a> 的路线对照表与 dgeev 流程梳理。<strong>板书内容</strong>：§2.1–§2.5、§4.1–§4.3、§3 全部、§5 全部、§6 全部（不变子空间一条是按板书 $AQ_1=Q_1T_{11}$ 补的解读）；<a href="#s44">§4.4</a> 是两个同名不同物的 Jacobi 的辨析（Jacobi 迭代法本身在 10.13 补课笔记 §3.7，讲义 PDF 3 §3.1.1，课上没讲）。本文全部数值结果（残差、条件数表、夹角表、Jacobi 收敛率表、$f(\lambda)$ 的根、正交性）均由自写 Householder / QR 迭代 / 回代法 / Jacobi 旋转代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+<p class="footnote" style="margin-top:40px">整理自：2026-10-27 课堂的 5 页手写笔记，以及讲义 PDF 5《非对称特征值问题的解法》第 5.4 节与 PDF 6《对称特征值问题的解法》第 6.1–6.5 节。<strong>明确标注为「教材补充」的段落</strong>：<a href="#s26">§2.6</a> 全部（扰动分析的一阶公式、条件数 $1/|y^{\mathsf T}x|$、Kato–Temple 对照、两个数值实验）、<a href="#p7">第六部分</a> 的路线对照表与 dgeev 流程梳理。<strong>板书内容</strong>：§2.1–§2.5、§4.1–§4.3、§3 全部、§5 全部、§2.7–§2.10 全部（不变子空间一条是按板书 $AQ_1=Q_1T_{11}$ 补的解读）；<a href="#s44">§4.4</a> 是两个同名不同物的 Jacobi 的辨析（Jacobi 迭代法本身在 10.13 补课笔记 §3.7，讲义 PDF 3 §3.1.1，课上没讲）。本文全部数值结果（残差、条件数表、夹角表、Jacobi 收敛率表、$f(\lambda)$ 的根、正交性）均由自写 Householder / QR 迭代 / 回代法 / Jacobi 旋转代码实测得出，精度为 $10^{-14}$ 量级。讲义 PDF 5 整章未涉及特征向量的计算，第 5.4 节「实 Schur 型的后处理」全部是特征值的后处理。图 1 为本笔记自绘。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
 
 </div><script src="assets/katex/katex.min.js"></script>
 <script src="assets/katex/contrib/auto-render.min.js"></script>
