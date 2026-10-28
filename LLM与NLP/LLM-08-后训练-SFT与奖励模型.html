@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 08 · 后训练：SFT、奖励模型与通用 RL — CS40008.01 课程笔记</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+  --purple:#5b3a8e; --purple-bg:#efe8f8;
+  --teal:#0d6b6b;  --teal-bg:#e0f2f2;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+  --purple:#b49ae0; --purple-bg:#2a1f3d;
+  --teal:#5cc9c9;  --teal-bg:#0d3030;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.85}
+.wrap{max-width:920px;margin:0 auto;padding:52px 30px 100px}
+
+h1{font-size:29px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.4;margin:56px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:17.5px;line-height:1.5;margin:34px 0 10px}
+h4{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:11px 0}
+ul,ol{padding-left:24px;margin:11px 0}
+li{margin:5px 0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg3);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;overflow-x:auto;margin:16px 0;line-height:1.65}
+pre code{background:none;border:none;padding:0;font-size:13.5px}
+
+.lede{font-size:16.5px;color:var(--ink2);margin:0 0 8px}
+.sub{color:var(--ink3);font-size:14px;margin:0 0 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px 20px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin:0 0 6px;display:block}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+.box ul:last-child,.box ol:last-child{margin-bottom:0}
+
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:650;background:var(--bg2);white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;
+  background:var(--gold-bg);color:var(--gold);white-space:nowrap;vertical-align:middle;font-weight:600}
+.tag.a{background:var(--purple-bg);color:var(--purple)}
+.tag.n{background:var(--ok-bg);color:var(--ok)}
+.tag.s{background:var(--accent-bg);color:var(--accent)}
+
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:12px}
+figcaption{font-size:13.5px;color:var(--ink3);margin-top:9px;line-height:1.7;text-align:left}
+svg{max-width:100%;height:auto;display:block;margin:0 auto}
+
+.toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
+.toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.toc ol{margin:0;padding-left:20px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc li{font-size:14.5px}
+
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.katex{font-size:1.04em}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{font-size:13.5px;color:var(--ink3);line-height:1.85;margin-top:44px;
+  padding-top:20px;border-top:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+@media (max-width:680px){.cols{grid-template-columns:1fr}}
+.steps{counter-reset:st;list-style:none;padding-left:0}
+.steps li{counter-increment:st;position:relative;padding-left:38px;margin:10px 0}
+.steps li::before{content:counter(st);position:absolute;left:0;top:2px;width:24px;height:24px;
+  border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.qa{border-left:3px solid var(--ok);padding-left:16px;margin:14px 0;color:var(--ink2)}
+
+.diagram{margin:24px 0;border:1px solid var(--line);border-radius:12px;
+  background:var(--bg3);padding:14px 10px}
+.diagram svg{width:100%;height:auto}
+.chart{margin:22px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:10px}
+.chart svg{width:100%;height:auto}
+
+.ex{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;
+  padding:14px 20px;margin:22px 0;background:var(--bg3)}
+.ex .meta{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);
+  font-weight:700;margin:0 0 4px}
+.ex h4{margin:0 0 8px;font-size:16px;color:var(--ink)}
+details{margin:12px 0;border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden}
+details summary{cursor:pointer;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--accent);
+  list-style:none;user-select:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+details[open] summary::before{content:"▾ "}
+details .body{padding:2px 18px 14px;border-top:1px solid var(--line);font-size:14.5px}
+details .body p:first-child{margin-top:12px}
+
+.demo{border:1px solid var(--line);border-radius:12px;background:var(--bg3);padding:12px 16px;margin:14px 0}
+.demo .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.demo .stat{font-size:13.5px;color:var(--ink2);margin:10px 0 0;min-height:1.6em}
+.ibtn{font:inherit;font-size:13px;padding:6px 15px;border-radius:7px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink2)}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+.ibtn-main{background:var(--accent-bg);border-color:transparent;color:var(--accent);font-weight:600}
+
+.quiz{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0;background:var(--bg3)}
+.quiz .q{font-weight:600;margin:0 0 6px}
+.quiz .q::before{content:"Q";display:inline-block;width:20px;height:20px;border-radius:5px;
+  background:var(--accent);color:#fff;font-size:12px;text-align:center;line-height:20px;margin-right:8px;vertical-align:1px}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14.5px;margin:14px 0}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0}
+.small{font-size:13.5px;color:var(--ink3)}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
+</style>
+</head>
+<body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+
+<div class="wrap">
+
+<p class="eyebrow">CS40008.01 · NLP and LLMs · Lecture 08</p>
+<h1>后训练：SFT、奖励模型与通用 RL</h1>
+<p class="sub">Post-training: supervised fine-tuning, reward modeling &amp; RL · 复旦大学数据科学学院 · Baojian Zhou · 2026-10-28</p>
+
+<p class="lede">预训练把一个模型训到「能续写任何文本」，但续写不等于回答。
+后训练要解决的是把<strong>「会说话」变成「会听话」</strong>。
+这节课按三级台阶走：<strong>SFT</strong>（用示范教格式与行为）、<strong>奖励模型</strong>（把人类偏好压成一个可优化的标量）、
+<strong>通用 RL 算法</strong>（把那个标量当成目标去搜索）。每一级都有一次「看起来成立、其实不成立」的跳跃，笔记里都标出来了。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源</span>
+<p>这一讲的幻灯片老师<strong>仍未发布</strong>，但课堂板书拍了 22 张（<code>lec8/</code>）。
+本笔记<strong>按板书的顺序</strong>整理，附录 D 有逐张对照表。标签含义：</p>
+<p><span class="tag s">板书</span> 老师黑板上确实写过的 ·
+<span class="tag n">补充</span> 板书只有结论、笔记补的推导与工程细节 ·
+<span class="tag a">推导</span> 一步一步的代数 ·
+<span class="tag">易错</span> 常见坑与常被忽略的假设。</p>
+<p>板书是<strong>提纲式</strong>的：公式写了、条件没写；结论写了、反例没写。所以「补充」的比例比前几讲高，
+但每一条都尽量对着板书上那一行展开，不额外引入板书没提的框架。</p>
+<p>文中所有数值（$\sigma(1)=0.7311$、$-\log\sigma(1)=0.3133$、80% 的梯度落在 prompt 上……）都独立复算过，
+但<strong>不是任何具体模型的实测</strong>，只用来把公式落到数字上。</p>
+</div>
+
+<div class="box key">
+<span class="label">主线：三句话</span>
+<ol>
+<li><strong>后训练改的是分布，不是能力。</strong>知识在预训练里已经有了，后训练只是把它<em>条件化</em>到一个具体的行为上：谁在说、对谁说、说到哪停、什么不该说。</li>
+<li><strong>SFT 是行为克隆。</strong>把示范者的一条轨迹当成监督信号，逐 token 做极大似然。它决定「像不像人写的」，不决定「是不是人想要的」。</li>
+<li><strong>奖励模型是把偏好变成一个数。</strong>假设 Bradley–Terry，用成对比较训练一个标量打分器 $r_\phi(x,y)$，为下一步的 RL / DPO 提供目标函数。</li>
+</ol>
+<p>三级的共同结构：<strong>先有信号，再有目标函数，最后才谈优化</strong>。
+SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器的输出。
+信号本身的缺陷，优化器是修不了的——这一讲一半的篇幅在讲这件事。</p>
+</div>
+
+<div class="toc">
+<h3 id="toc">目录</h3>
+<ol>
+<li><a href="#p1">第一部分 · 为什么预训练不够</a>
+  <ol>
+    <li><a href="#s11">1.1 预训练给了什么、没给什么</a></li>
+    <li><a href="#s12">1.2 后训练的流水线</a></li>
+    <li><a href="#s13">1.3 三个分布，三种损失</a></li>
+    <li><a href="#s14">1.4 ground truth 在哪：四级监督信号</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · SFT：监督微调</a>
+  <ol>
+    <li><a href="#s21">2.1 SFT 在优化什么</a></li>
+    <li><a href="#s22">2.2 损失函数：从序列似然到 token 级</a></li>
+    <li><a href="#s23">2.3 loss mask：只算回答的 token</a></li>
+    <li><a href="#s24">2.4 梯度长什么样</a></li>
+    <li><a href="#s25">2.5 等价于最小化前向 KL</a></li>
+    <li><a href="#s26">2.6 训练细节清单</a></li>
+    <li><a href="#s27">2.7 数据从哪来</a></li>
+    <li><a href="#s28">2.8 板书点名的三个问题</a></li>
+    <li><a href="#s29">2.9 SFT 的优缺点</a></li>
+    <li><a href="#s210">2.10 四个典型失败模式</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 奖励模型</a>
+  <ol>
+    <li><a href="#s31">3.1 为什么需要一个打分器</a></li>
+    <li><a href="#s32">3.2 Bradley–Terry：从比较到概率</a></li>
+    <li><a href="#s33">3.3 损失函数与梯度</a></li>
+    <li><a href="#s34">3.4 为什么是成对，而不是直接打分</a></li>
+    <li><a href="#s35">3.5 训练细节：结构、初始化、超参</a></li>
+    <li><a href="#s36">3.6 数据：pair 从哪来</a></li>
+    <li><a href="#s37">3.7 评估与失效</a></li>
+    <li><a href="#s38">3.8 奖励模型的优缺点</a></li>
+  </ol>
+</li>
+<li><a href="#p4">第四部分 · 第三种方法：通用 RL 算法</a>
+  <ol>
+    <li><a href="#s41">4.1 先搞清楚：RL 到底在做什么</a></li>
+    <li><a href="#s42">4.2 RL 的基本循环：Agent 与 Environment</a></li>
+    <li><a href="#s43">4.3 离线与在线：θ 的那条链</a></li>
+    <li><a href="#s44">4.4 目标函数：最大化期望奖励</a></li>
+    <li><a href="#s45">4.5 Return、Value、Advantage</a></li>
+    <li><a href="#s46">4.6 REINFORCE：log-derivative trick</a></li>
+    <li><a href="#s47">4.7 三步算法与实践细节</a></li>
+    <li><a href="#s48">4.8 KL 约束与闭式解</a></li>
+    <li><a href="#s49">4.9 PPO 与 GRPO：baseline 从哪来</a></li>
+    <li><a href="#s410">4.10 DPO：把奖励模型隐式化</a></li>
+    <li><a href="#s411">4.11 可验证奖励：ground truth 回来的时候</a></li>
+  </ol>
+</li>
+<li><a href="#ap">附录</a>
+  <ol>
+    <li><a href="#apA">A · 公式速查</a></li>
+    <li><a href="#apB">B · 符号表</a></li>
+    <li><a href="#apC">C · 自测十题</a></li>
+    <li><a href="#apD">D · 板书逐张对照</a></li>
+    <li><a href="#apE">E · 参考文献</a></li>
+  </ol>
+</li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="p1">第一部分 · 为什么预训练不够</h2>
+
+<h3 id="s11">1.1 预训练给了什么、没给什么 <span class="tag s">板书</span></h3>
+
+<p>板书把预训练压缩成四句话：<strong>① 超大规模语料；② 巨大模型，且规模按缩放定律定；③ 擅长 next-word prediction；④ 不擅长 following instructions。</strong>
+前两句解释「为什么能成」，后两句解释「为什么还不够」。后训练的全部动机都长在 ④ 上。</p>
+
+<p>预训练的目标函数是 $-\sum_t \log p_\theta(x_t \mid x_{&lt;t})$，语料是整个互联网。
+它学到的因此是一个<strong>关于「文本接下来会是什么」的分布</strong>。这个分布里同时装着：</p>
+
+<ul>
+<li>语法、拼写、标点；</li>
+<li>事实与世界知识（以及大量记错的事实）；</li>
+<li>各种「说话的人」：维基百科、论坛吵架、小说对话、代码注释、客服话术、法律条文；</li>
+<li>大量推理片段——但这些片段和「回答你的问题」这个<em>行为</em>没有绑定。</li>
+</ul>
+
+<p>Base model 的行为特征很具体。给它 <code>法国的首都是</code>，它会续 <code>巴黎</code>；
+给它 <code>请解释一下梯度下降</code>，它很可能续出一篇<strong>关于梯度下降的文章</strong>，而不是<strong>回答你</strong>。
+因为它没见过「被提问」这个角色，只见过「文本继续」这个任务。</p>
+
+<h4>板书回顾：缩放定律 <span class="tag s">板书</span></h4>
+
+<p>② 里的「巨大模型」不是随便堆的，规模是按幂律定的。Lecture 07 讲过，这里老师只把结论写出来：</p>
+
+$$
+L(N) = \left(\frac{N_c}{N}\right)^{\alpha_N},
+\qquad
+L(D) = \left(\frac{D_c}{D}\right)^{\alpha_D},
+\qquad
+L(C) = \left(\frac{C_c}{C}\right)^{\alpha_C}
+$$
+
+<p>取对数就是三条直线：$\log L = \alpha_N\big(\log N_c - \log N\big)$，双对数坐标下斜率是 $-\alpha_N$。
+板书旁边画的那两条下降的直线就是这个。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个写法和 Chinchilla 的写法差一个常数项</span>
+<p>板书给的是<strong>纯幂律</strong>，$N\to\infty$ 时 $L\to0$。实际拟合里通常带一个不可约项：</p>
+
+$$
+L(N,D) = E + \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}}
+$$
+
+<p>$E$ 是「语言的熵下限」，再大的模型也压不下去。纯幂律在小范围内拟合得很好，外推到大区间会低估损失——
+L07 讲「外推失败」时踩的就是这个坑。</p>
+
+<p>更要紧的是第三式 $L(C)$ <strong>不能单独看</strong>。固定算力 $C\approx 6ND$ 时 $N$ 与 $D$ 此消彼长，
+把 $D = C/(6N)$ 代进去：</p>
+
+$$
+L(N) = E + \frac{A}{N^{\alpha}} + B\left(\frac{6N}{C}\right)^{\beta}
+$$
+
+<p>这是 $N$ 的<strong>U 形函数</strong>：$N$ 太小则参数项大，$N$ 太大则数据项大。最低点就是「给定预算下的最优模型大小」，
+板书右侧那个 V 形草图画的正是这件事。所以「更大的模型一定更好」在固定算力下是错的——这正是 Chinchilla 的结论。</p>
+</div>
+
+<p>这一条对后训练的意义只有一句：<strong>后训练不动 $N$，也不显著增加 $D$</strong>。
+它改的是「在同样的损失下，模型更会按人的要求回答」。所以缩放律不能直接预测后训练的效果，
+后训练也从来不是「再堆一次规模」。</p>
+
+<div class="box key">
+<span class="label">补充 · 「对齐」在这里的准确含义</span>
+<p>alignment 常被翻译成「价值观对齐」，听起来很玄。在这个语境里它有一个非常具体的数学含义：<strong>分布对齐</strong>。</p>
+<p>记人类在给定 prompt $x$ 下真正想要的回答分布为 $p^\star(y\mid x)$，模型的分布为 $\pi_\theta(y\mid x)$。
+预训练让 $\pi_\theta$ 逼近<em>互联网文本</em>的边缘分布，而 $p^\star$ 是它的一个<strong>极小子集</strong>：
+同样一个问题，互联网上有几十种写法（教程、论坛回帖、论文摘要），而人类想要的只有其中一小块。</p>
+<p>所以后训练不是「注入能力」，而是「在已有能力的支撑集上<strong>重新分配概率质量</strong>」。
+这也解释了为什么后训练的数据量可以比预训练小五六个数量级：它不需要重新学分布的形状，只需要挪一下质量。</p>
+</div>
+
+<h3 id="s12">1.2 后训练的流水线 <span class="tag s">板书</span></h3>
+
+<p>经典三段式是 <strong>SFT → RM → RL</strong>（InstructGPT 的配方）。三段各自解决一个不同的问题：</p>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" role="img" aria-label="后训练流水线：预训练基座模型经 SFT、奖励模型、强化学习三步得到对齐模型；另一条虚线表示 DPO 跳过显式奖励模型。">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="16" y="26" font-size="12.5" fill="var(--ink3)">后训练的三级台阶：信号 → 目标函数 → 优化</text>
+
+    <!-- boxes -->
+    <g>
+      <rect x="16" y="60" width="110" height="56" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+      <text x="71" y="84" text-anchor="middle" font-size="12.5" fill="var(--ink)">预训练基座</text>
+      <text x="71" y="102" text-anchor="middle" font-size="11" fill="var(--ink3)">next-token</text>
+
+      <rect x="160" y="60" width="110" height="56" rx="8" fill="var(--accent-bg)" stroke="none"/>
+      <text x="215" y="84" text-anchor="middle" font-size="12.5" fill="var(--accent)">SFT</text>
+      <text x="215" y="102" text-anchor="middle" font-size="11" fill="var(--accent)">示范 (x, y)</text>
+
+      <rect x="304" y="60" width="110" height="56" rx="8" fill="var(--purple-bg)" stroke="none"/>
+      <text x="359" y="84" text-anchor="middle" font-size="12.5" fill="var(--purple)">奖励模型</text>
+      <text x="359" y="102" text-anchor="middle" font-size="11" fill="var(--purple)">比较 (y_w, y_l)</text>
+
+      <rect x="448" y="60" width="110" height="56" rx="8" fill="var(--gold-bg)" stroke="none"/>
+      <text x="503" y="84" text-anchor="middle" font-size="12.5" fill="var(--gold)">RL / PPO</text>
+      <text x="503" y="102" text-anchor="middle" font-size="11" fill="var(--gold)">max r − β·KL</text>
+
+      <rect x="592" y="60" width="110" height="56" rx="8" fill="var(--ok-bg)" stroke="none"/>
+      <text x="647" y="84" text-anchor="middle" font-size="12.5" fill="var(--ok)">对齐模型</text>
+      <text x="647" y="102" text-anchor="middle" font-size="11" fill="var(--ok)">π*</text>
+    </g>
+
+    <!-- arrows -->
+    <g stroke="var(--ink3)" stroke-width="1.6" fill="none">
+      <path d="M128 88 L156 88" marker-end="url(#ar)"/>
+      <path d="M272 88 L300 88" marker-end="url(#ar)"/>
+      <path d="M416 88 L444 88" marker-end="url(#ar)"/>
+      <path d="M560 88 L588 88" marker-end="url(#ar)"/>
+    </g>
+    <g font-size="10.5" fill="var(--ink3)" text-anchor="middle">
+      <text x="142" y="78">冻结?</text>
+      <text x="286" y="78">克隆</text>
+      <text x="430" y="78">打分</text>
+      <text x="574" y="78">策略梯度</text>
+    </g>
+
+    <!-- dpo branch -->
+    <path d="M215 118 L215 176 L647 176 L647 120" fill="none" stroke="var(--ok)" stroke-width="1.4"
+          stroke-dasharray="5 4" marker-end="url(#ar)"/>
+    <rect x="316" y="160" width="230" height="32" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+    <text x="431" y="181" text-anchor="middle" font-size="11.5" fill="var(--ok)">DPO：把奖励模型隐式化，跳过 RM 与 RL（§4.10）</text>
+
+    <text x="16" y="228" font-size="11.5" fill="var(--ink3)">三级台阶：蓝（SFT）→ 紫（RM）→ 橙（RL）。虚线是 DPO 的捷径，本节只讲到能写出损失为止。</text>
+  </g>
+</svg>
+<figcaption>图 1 · 后训练流水线。每一级都在把上一级留下的「不可优化的东西」变成可优化的东西：
+SFT 把「像助手一样说话」变成逐 token 的交叉熵；RM 把「哪个回答更好」变成可微的标量；
+RL 把「让打分器满意」变成带 KL 约束的期望最大化。</figcaption>
+</figure>
+
+<p>注意这条流水线<strong>不是必须走完的</strong>。今天的工程实践里至少有三条常见路线：</p>
+
+<table>
+<thead><tr><th>路线</th><th>步骤</th><th>适用</th></tr></thead>
+<tbody>
+<tr><td>经典 RLHF</td><td>SFT → RM → PPO</td><td>有充足标注预算、追求上限</td></tr>
+<tr><td>DPO 系</td><td>SFT → DPO（不需要 RM）</td><td>算力有限、想要稳定可复现</td></tr>
+<tr><td>拒绝采样 / best-of-n</td><td>SFT → 采样 → RM 挑 → 再 SFT</td><td>不需要 RL 框架，工程最简</td></tr>
+</tbody>
+</table>
+
+<p class="small">三条路线里 <strong>SFT 都是第一步</strong>，而且 DPO 的 $\pi_{\text{ref}}$、PPO 的初值与 $\pi_{\text{ref}}$ 都取自 SFT 模型。
+SFT 做得不好，后面两级都在放大它的缺陷。</p>
+
+<h3 id="s13">1.3 三个分布，三种损失 <span class="tag s">板书</span></h3>
+
+<p>把后面所有公式统一到一套记号上，可以省掉大量重复。四个对象：</p>
+
+<table>
+<thead><tr><th>记号</th><th>含义</th><th>从哪来</th></tr></thead>
+<tbody>
+<tr><td>$\pi_\theta(y\mid x)$</td><td>策略：给定 prompt 生成回答的分布</td><td>要训练的东西</td></tr>
+<tr><td>$\pi_{\text{ref}}(y\mid x)$</td><td>参考策略（通常是 SFT 后的模型）</td><td>冻结，只用来算 KL</td></tr>
+<tr><td>$p_{\text{data}}(y\mid x)$</td><td>示范分布：标注者写下的那些回答</td><td>SFT 数据</td></tr>
+<tr><td>$p^\star$ / 偏好 $\succ$</td><td>人类真正想要的（只能通过比较观测到）</td><td>RM 数据</td></tr>
+</tbody>
+</table>
+
+<p>三种方法对应三种「把不可观测的 $p^\star$ 换成可计算的替代品」的方式：</p>
+
+<table>
+<thead><tr><th>方法</th><th>损失</th><th>它在逼近什么</th></tr></thead>
+<tbody>
+<tr><td>SFT</td><td>$-\mathbb{E}_{p_{\text{data}}}\log \pi_\theta(y\mid x)$</td><td>$p_{\text{data}}$（示范者的分布）</td></tr>
+<tr><td>RM</td><td>$-\mathbb{E}\log\sigma\big(r_\phi(x,y_w)-r_\phi(x,y_l)\big)$</td><td>偏好序 $\succ$（只有排序，没有数值）</td></tr>
+<tr><td>RLHF</td><td>$\max_\pi \mathbb{E}\,r_\phi - \beta\,\mathrm{KL}(\pi\|\pi_{\text{ref}})$</td><td>$p^\star$（用 $r_\phi$ 代理）</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">易错 · 这三行不是同一个「对齐」</span>
+<p>SFT 逼近的是<strong>示范者</strong>，RM 逼近的是<strong>排序</strong>，RL 逼近的是<strong>打分器</strong>。
+三者只有在「示范者 = 最优」且「排序无噪声」且「打分器无漏洞」时才重合。
+现实中这三条都不成立，所以「SFT 做得好 → 模型就好」这个推理链在每一环都会漏。
+后面 §2.9 与 §3.8 的优缺点，本质就是把这三条假设逐条拆开看。</p>
+</div>
+
+<h3 id="s14">1.4 ground truth 在哪：四级监督信号 <span class="tag s">板书</span></h3>
+
+<p>这一节回答一个看起来很基础、但决定了后面所有方法性格的问题：<strong>每一步训练，我们拿什么当「正确答案」？</strong></p>
+
+<table>
+<thead><tr><th>阶段</th><th>每一步的监督信号</th><th>ground truth</th><th>每样本信息量</th></tr></thead>
+<tbody>
+<tr><td>预训练</td><td>语料里的下一个 token</td><td><strong>有</strong>（自监督：文本自己就是答案）</td><td>约 $\log|V|$ nats / token</td></tr>
+<tr><td>SFT</td><td>人类写下的那一个 token</td><td><strong>有</strong>（示范）</td><td>约 $\log|V|$ nats / token</td></tr>
+<tr><td>奖励模型</td><td>人类的一次二选一</td><td><strong>有，但只有 1 bit</strong></td><td>1 bit / 一对比较</td></tr>
+<tr><td>RL</td><td>奖励模型的输出 $r_\phi$</td><td><strong>没有</strong></td><td>0</td></tr>
+</tbody>
+</table>
+
+<p>这张表有两个方向相反的趋势，值得并排看：</p>
+
+<ul>
+<li><strong>监督信息量在单调下降</strong>：从「每个位置几 nats」→「每条 pair 1 bit」→「零」。</li>
+<li><strong>目标却越来越接近我们真正想要的</strong>：从「文本长这样」→「助手该这么说」→「这个更好」→「让模型自己去找更好的」。</li>
+</ul>
+
+<p>换句话说，后训练的每一级都是<strong>用更少的监督，换更对的目标</strong>。
+这就是为什么越往后越难训、越容易跑偏——不是工程问题，是信息问题。</p>
+
+<div class="box key">
+<span class="label">补充 · 奖励模型的 ground truth 到底是什么</span>
+<p>一条训练样本是 $(x, y_w, y_l)$，它的 ground truth 就是那个 <strong>1 bit 的标签</strong>：
+「在这一次比较里，$y_w$ 被选中了」。</p>
+<p>但要注意它<strong>不是</strong>「$y_w$ 客观上更好」这个事实，而是<strong>一次人类判断的采样</strong>。
+同一条 pair 换一个人标、或者同一个人隔一周再标，标签都可能翻。所以：</p>
+<ul>
+<li>标签噪声是<strong>内生</strong>的，不是标注事故；清洗不掉，也不该清洗掉；</li>
+<li>RM 的准确率上限<strong>不是 100%</strong>，而是人类之间的一致率（通常 70%～80%，视任务主观程度而定）。</li>
+</ul>
+<p>这一点在 §3.7 会变成一条很实用的判据：<em>RM 的 acc 明显超过人类一致率，先怀疑数据泄漏，而不是先庆祝。</em></p>
+</div>
+
+<div class="box warn">
+<span class="label">易错 · RL 阶段没有 ground truth，这是一条结构性事实</span>
+<p>预训练、SFT、RM 都能算「准确率」，因为它们各自有一个可对照的答案。RL 不能——它唯一的信号是 $r_\phi(x,y)$，
+而 $r_\phi$ 本身是一个<strong>学出来的代理</strong>。于是 RL 训练中你看到的「reward 在涨」这句话，
+严格来说只说明「模型越来越会讨好 $r_\phi$」，不说明「模型变好了」。</p>
+<p>后果是三条工程约束，后面 §4 会再回来：</p>
+<ul>
+<li><strong>没有可靠的 early stopping 信号</strong>——验证集上的 reward 也是代理，它和 reward 一起涨；</li>
+<li><strong>只能靠 KL 约束限制漂移</strong>，把「走多远」变成一个显式的超参 $\beta$；</li>
+<li><strong>唯一不含代理的评估是人工评估</strong>，所以 RL 实验必须留一套人工评估集，且不能拿它调参。</li>
+</ul>
+</div>
+
+<p>那什么时候 ground truth 会回来？当任务本身<strong>可验证</strong>的时候：数学题有标准答案、代码有单元测试、格式有语法检查。
+这时奖励不再是学出来的 $r_\phi$，而是<strong>算出来的</strong> $0/1$。这条路线（RLVR）是最近几年 RL 阶段最重要的变化，
+§4.11 会讲它为什么把「没有 ground truth」这个问题绕过去了——以及它自己带来了什么新问题。</p>
+
+<hr>
+
+<h2 id="p2">第二部分 · SFT：监督微调</h2>
+
+<p>SFT（supervised fine-tuning，也叫 instruction tuning）是后训练里最没有悬念的一步：
+<strong>拿一批「问题 + 人类写的好回答」，当成普通的语言建模数据继续训练。</strong>
+没有新损失、没有新框架，和预训练用的是同一行代码。</p>
+
+<p>但「没有悬念」不等于「没有内容」。这一节的重点是：为什么它只能做到这一步。</p>
+
+<h3 id="s21">2.1 SFT 在优化什么 <span class="tag s">板书</span></h3>
+
+<p>在强化学习的语言里，SFT 就是<strong>行为克隆</strong>（behavior cloning）：把示范者的一条完整轨迹
+$(x, y^{(1)}, \dots, y^{(T)})$ 当成监督信号，让模型在每一步都提高「示范者当时选的那个 token」的概率。</p>
+
+<p>它是对「对齐人类偏好」最朴素的一种实现：<em>偏好太抽象，那就让人类直接把想要的答案写出来</em>。
+写出来的这条轨迹，就是 $p^\star$ 的一个样本。SFT 假设：<strong>如果每个 token 都像示范者，整段回答就像示范者</strong>。</p>
+
+<p>这个假设正是它全部优点的来源，也是它全部缺点的来源——§2.9 会回来算这笔账。</p>
+
+<div class="box key">
+<span class="label">补充 · 为什么先 SFT 再谈别的</span>
+<p>三个理由，都不是「效果最好」，而是「不可替代」：</p>
+<ul>
+<li><strong>定义支撑集。</strong>RM 和 RL 都只在策略已经会生成的回答上有效。一个不会输出 JSON 的模型，
+奖励模型没法告诉它「JSON 更好」——它压根采样不到。SFT 先把目标格式放进支撑集。</li>
+<li><strong>定义参考分布。</strong>KL 约束需要 $\pi_{\text{ref}}$；DPO 需要 $\pi_{\text{ref}}$；PPO 需要初值。
+这三个都是 SFT 模型。</li>
+<li><strong>便宜。</strong>RL 的采样成本是 SFT 的几十倍，而且调参不稳。能用 SFT 解决的（格式、语气、工具调用语法），不该上 RL。</li>
+</ul>
+</div>
+
+<h3 id="s22">2.2 损失函数：从序列似然到 token 级 <span class="tag s">板书</span></h3>
+
+<p>起点是自回归分解。一条回答的概率是逐 token 条件概率的乘积：</p>
+
+$$
+\pi_\theta(y \mid x) \;=\; \prod_{t=1}^{|y|} \pi_\theta\big(y_t \mid x,\, y_{&lt;t}\big),
+\qquad y_{&lt;t} = (y_1,\dots,y_{t-1})
+$$
+
+<h4>板书：前缀–回答记号与 teacher forcing <span class="tag s">板书</span></h4>
+
+<p>板书把它写成更一般的「前缀 $p$ + 回答 $r$」形式，这个写法在后面讲多轮对话和掩码时更好用：</p>
+
+$$
+LM_\theta\big(\hat y = r \mid p\big)
+= \prod_{i=1}^{|r|} LM_\theta\big(r_i \mid p,\, r_{&lt;i}\big)
+$$
+
+<p>这里 $p$ 是 prompt，$r$ 是要学的那一段。$\pi_\theta(y\mid x)$ 只是它的特例（$p=x$，$r=y$）。
+好处是「多轮对话」「工具调用」「思维链」都不需要新公式——它们只是 $p$ 更长、$r$ 分成几段而已。</p>
+
+<p>板书接着写了三行，标着 <strong>teacher forcing</strong>：训练时把示范的整条回答一次性喂进去，让每个位置预测下一个 token。</p>
+
+<table>
+<thead><tr><th>喂进去的</th><th>要求模型预测</th></tr></thead>
+<tbody>
+<tr><td>$x,\; y_1$</td><td>$y_2$</td></tr>
+<tr><td>$x,\; y_1,\; y_2$</td><td>$y_3$</td></tr>
+<tr><td>$x,\; y_1,\; y_2,\; y_3$</td><td>$y_4$</td></tr>
+</tbody>
+</table>
+
+<p>关键在于「喂进去的前缀是<strong>示范的</strong>，不是模型自己写的」。这让一条序列里所有位置可以<strong>并行</strong>算——
+一次前向就得到 $|y|$ 个损失，这是 SFT 能训得动的全部原因。</p>
+
+<div class="box gold">
+<span class="label">易错 · teacher forcing 的代价要等到推理时才付</span>
+<p>训练时模型永远站在「正确的前缀」上；推理时它站在「自己刚写的前缀」上。这两个分布一旦分叉，
+后面每一步都在错误的输入上做预测，误差会累积（compounding error）。</p>
+<p>这不是实现问题，是<strong>目标函数本身的性质</strong>：它优化的对象里根本没有「写错了怎么救」这一项。
+这就是 exposure bias，§2.9 会把它列进缺点表。</p>
+</div>
+
+<p>数据集 $\mathcal{D} = \{(x^{(i)}, y^{(i)})\}_{i=1}^{N}$ 上做极大似然，等价于最小化负对数似然：</p>
+
+$$
+\mathcal{L}_{\text{SFT}}(\theta)
+\;=\; -\,\mathbb{E}_{(x,y)\sim \mathcal{D}}
+\left[\frac{1}{|y|}\sum_{t=1}^{|y|} \log \pi_\theta\big(y_t \mid x, y_{&lt;t}\big)\right]
+$$
+
+<p>里面的每一项都是一个标准的多分类交叉熵。记第 $t$ 步的 logits 为 $z_t = f_\theta(x, y_{&lt;t}) \in \mathbb{R}^{|V|}$，
+softmax 之后 $p_t(v) = \dfrac{e^{z_{t,v}}}{\sum_{u} e^{z_{t,u}}}$，那么</p>
+
+$$
+\ell_t \;=\; -\log p_t(y_t) \;=\; -\sum_{v\in V} \underbrace{\mathbb{1}[v = y_t]}_{\text{one-hot}}\,\log p_t(v)
+\;=\; \log\!\sum_{v\in V} e^{z_{t,v}} \;-\; z_{t,\,y_t}
+$$
+
+<p>最后那个等式是实际实现用的形式：<strong>log-sum-exp 减目标 logit</strong>。
+它比「先 softmax 再取 log」数值稳定得多——$e^{z}$ 在 $z\approx 90$ 时就会在 fp32 里溢出，
+而 log-sum-exp 可以先减去 $\max_v z_v$ 再做。</p>
+
+<div class="box gold">
+<span class="label">易错 · 三个「平均」不是一回事</span>
+<p>$\mathcal{L}$ 里的 $1/|y|$ 只是三种归一化之一，选哪个会<strong>改变梯度的加权</strong>：</p>
+<ul>
+<li><strong>token 平均</strong>（除以 $\sum_t m_t$）：每个 token 权重相同。长回答被稀释 → 偏向短回答。</li>
+<li><strong>序列求和</strong>（每条样本先加总，再对 batch 平均）：长回答主导 → 偏向长回答。</li>
+<li><strong>序列平均</strong>（每条样本先按 token 平均，再对 batch 平均）：上面写的这种，折中。</li>
+</ul>
+<p>数值上：一个 batch 里两条样本长度 50 与 500，token 平均下前者的每个 token 权重是后者的 <strong>10 倍</strong>。
+如果数据里长度分布很宽（短问答 + 长推理），这一项会悄悄决定模型学谁。</p>
+</div>
+
+<h3 id="s23">2.3 loss mask：只算回答的 token <span class="tag s">板书</span></h3>
+
+<p>真实训练时，$x$ 与 $y$ 是拼成一条序列喂进去的。但我们<strong>不想</strong>让模型学「怎么生成问题」。
+于是引入掩码 $m_t \in \{0,1\}$：</p>
+
+$$
+\mathcal{L}_{\text{SFT}}(\theta)
+\;=\; -\,\frac{\sum_{t=1}^{T} m_t \,\log \pi_\theta\big(x_t \mid x_{&lt;t}\big)}{\sum_{t=1}^{T} m_t},
+\qquad
+m_t = \begin{cases} 0, & t \le |x| \quad(\text{prompt})\\[2pt] 1, & t &gt; |x| \quad(\text{response})\end{cases}
+$$
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 174" role="img" aria-label="一条拼接序列中前 8 个 token 属于 prompt，掩码为 0；后 12 个 token 属于回答，掩码为 1。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="26" y="30" font-size="12" fill="var(--ink3)">一条拼接序列：prompt（灰，m=0） + response（蓝，m=1）</text>
+    <rect x="26" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="41" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">1</text><rect x="61" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="76" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">2</text><rect x="96" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="111" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">3</text><rect x="131" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="146" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">4</text><rect x="166" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="181" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">5</text><rect x="201" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="216" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">6</text><rect x="236" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="251" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">7</text><rect x="271" y="46" width="30" height="34" rx="5" fill="var(--bg2)" stroke="var(--line)"/><text x="286" y="68" text-anchor="middle" font-size="11" fill="var(--ink3)">8</text><rect x="306" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="321" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">9</text><rect x="341" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="356" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">10</text><rect x="376" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="391" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">11</text><rect x="411" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="426" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">12</text><rect x="446" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="461" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">13</text><rect x="481" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="496" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">14</text><rect x="516" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="531" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">15</text><rect x="551" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="566" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">16</text><rect x="586" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="601" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">17</text><rect x="621" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="636" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">18</text><rect x="656" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="671" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">19</text><rect x="691" y="46" width="30" height="34" rx="5" fill="var(--accent-bg)" stroke="none"/><text x="706" y="68" text-anchor="middle" font-size="11" fill="var(--accent)">20</text>
+
+    <path d="M26 90 L301 90" stroke="var(--ink3)" stroke-width="1.2"/>
+    <path d="M26 86 L26 94 M301 86 L301 94" stroke="var(--ink3)" stroke-width="1.2"/>
+    <text x="163" y="110" text-anchor="middle" font-size="11.5" fill="var(--ink3)">prompt：m = 0，梯度为零</text>
+
+    <path d="M306 90 L721 90" stroke="var(--accent)" stroke-width="1.2"/>
+    <path d="M306 86 L306 94 M721 86 L721 94" stroke="var(--accent)" stroke-width="1.2"/>
+    <text x="513" y="110" text-anchor="middle" font-size="11.5" fill="var(--accent)">response：m = 1，只有这 12 个位置产生损失</text>
+
+    <text x="26" y="134" font-size="11.5" fill="var(--ink3)">注意：位置 t 的损失对应预测 token t（因果位移），所以 prompt 的最后一个 token 仍在预测第一个回答 token——</text>
+    <text x="26" y="152" font-size="11.5" fill="var(--ink3)">实现时通常把掩码定义在「预测目标」上：只有回答区间的位置取 1，与位移后的标签对齐。</text>
+  </g>
+</svg>
+<figcaption>图 2 · loss mask。灰色区间的交叉熵被丢掉，蓝色区间才进入损失。这一步看起来只是「省点算力」，实际上决定了模型学的是「回答」还是「对话格式」。</figcaption>
+</figure>
+
+<p>为什么必须 mask，三个理由从轻到重：</p>
+
+<ol>
+<li><strong>算力浪费。</strong>prompt 通常比回答长。一个 200 token 的 prompt 配 50 token 的回答，
+不 mask 的话 <strong>80% 的梯度花在「复述问题」上</strong>——而推理时问题是我们给的，模型根本不需要生成它。</li>
+<li><strong>多轮对话会学歪。</strong>如果把 loss 覆盖到 user turn，模型就在学「怎么扮演用户」。
+推理时它可能自己接自己的话、替用户提问、甚至伪造一轮对话再回答。</li>
+<li><strong>padding 必须 mask。</strong>右 padding 时 pad token 会占据大部分位置，不 mask 会让模型学会「输出 pad」，
+直接表现为生成很短就停。</li>
+</ol>
+
+<p class="small">实现上还有一个细节：位置 $t$ 的 logits 预测的是 token $t+1$（因果位移）。
+所以掩码要定义在<strong>标签</strong>上，而不是输入上。写错一位，模型会把 prompt 的最后一个 token 也当成学习目标——
+效果上像是「学会了在问题结尾多说一个字」，很难 debug。</p>
+
+<h3 id="s24">2.4 梯度长什么样 <span class="tag a">推导</span></h3>
+
+<p>把 $\ell_t$ 对参数求导，得到的是一个非常干净的结构。先对 logit 求导：</p>
+
+$$
+\frac{\partial\, \ell_t}{\partial\, z_{t,v}} \;=\; p_t(v) - \mathbb{1}[v = y_t]
+$$
+
+<p>再链式到参数（$\partial z_{t,v}/\partial\theta$ 由反向传播给）：</p>
+
+$$
+\nabla_\theta\, \ell_t
+\;=\; \sum_{v\in V}\big(p_t(v) - \mathbb{1}[v=y_t]\big)\,\nabla_\theta z_{t,v}
+\;=\; \underbrace{\mathbb{E}_{v\sim \pi_\theta}\big[\nabla_\theta z_{t,v}\big]}_{\text{当前分布的期望}}
+\;-\; \underbrace{\nabla_\theta z_{t,\,y_t}}_{\text{示范 token}}
+$$
+
+<p>合并起来：</p>
+
+$$
+\nabla_\theta \mathcal{L}_{\text{SFT}}
+\;=\; \frac{1}{\sum_t m_t}\sum_{t=1}^{T} m_t
+\left(
+\mathbb{E}_{v\sim\pi_\theta(\cdot\mid x,y_{&lt;t})}\big[\nabla_\theta z_{t,v}\big]
+\;-\;\nabla_\theta z_{t,\,y_t}
+\right)
+$$
+
+<div class="box key">
+<span class="label">补充 · 读这个梯度：它已经在做「对比」了，只是对比对象不对</span>
+<p>括号里是「把示范 token 的 logit 推高，同时把所有 token 的 logit 按当前概率<em>加权压低</em>」。
+形式上这就是一个对比损失：正样本是示范 token，负样本是<strong>模型自己认为可能的 token</strong>。</p>
+<p>问题在于负样本的来源。模型从没见过「人类讨厌的回答」——它只知道「示范者没这么写」。
+而「没这么写」和「这么写不好」是两件完全不同的事：示范者只是选了 A，并不等于 B 是错的。
+这个信息缺口，就是后面必须引入<strong>显式负例</strong>（成对比较）的根本原因。</p>
+</div>
+
+<p>还有一个常被忽略的推论：当 $p_t(y_t)\to 1$ 时，$p_t(v)-\mathbb{1}[v=y_t]\to 0$，梯度消失。
+所以 SFT 在已经学会的样本上几乎不再贡献梯度——<strong>后期的训练实际上只由「还不会的那部分」驱动</strong>。
+这既是好事（自动聚焦难例），也是坏事（噪声样本、标注错误的样本会一直贡献最大的梯度）。</p>
+
+<h3 id="s25">2.5 等价于最小化前向 KL <span class="tag a">推导</span></h3>
+
+<p>SFT 的损失可以改写成 KL 的形式，这个改写后面讲 DPO 时会反复用到：</p>
+
+$$
+\begin{aligned}
+\mathcal{L}_{\text{SFT}}(\theta)
+&amp;= -\,\mathbb{E}_{p_{\text{data}}}\big[\log \pi_\theta(y\mid x)\big] \\[4pt]
+&amp;= \mathbb{E}_{p_{\text{data}}}\left[\log \frac{p_{\text{data}}(y\mid x)}{\pi_\theta(y\mid x)}\right]
+- \mathbb{E}_{p_{\text{data}}}\big[\log p_{\text{data}}(y\mid x)\big] \\[4pt]
+&amp;= \mathrm{KL}\big(p_{\text{data}} \,\|\, \pi_\theta\big) \;-\; \mathbb{H}\big(p_{\text{data}}\big)
+\end{aligned}
+$$
+
+<p>第二项与 $\theta$ 无关，所以<strong>最小化 SFT 损失 = 最小化 $\mathrm{KL}(p_{\text{data}}\|\pi_\theta)$</strong>，
+这是一个<strong>前向 KL</strong>（$p$ 在前）。前向 KL 的性质是 <em>mass-covering</em>：</p>
+
+$$
+\mathrm{KL}(p\|q)\to\infty \quad\text{只要}\quad p(y)&gt;0 \text{ 而 } q(y)\to 0
+$$
+
+<p>也就是说，只要示范分布里出现过某种写法，模型就<strong>必须</strong>给它分配概率，否则惩罚无穷大。
+后果很具体：同一个问题，十个标注者写了十种都对的答案，SFT 不会学其中任何一种，
+而会学出一个<strong>把十种揉在一起的第十一种</strong>——读起来四平八稳、什么都说了、什么都没说。</p>
+
+<div class="box gold">
+<span class="label">易错 · 这就是「SFT 模型啰嗦、爱 hedging」的数学解释</span>
+<p>不是数据里有人写了废话，而是<strong>前向 KL 在多峰数据上的必然结果</strong>（mode averaging）。
+对比一下：RL/DPO 里用的是<strong>反向</strong> KL $\mathrm{KL}(\pi\|p^\star)$，它是 <em>mode-seeking</em> 的——
+只要抓住一个峰就行，其他的可以完全不管。这就是为什么 RL 出来的回答往往更「敢下结论」、更短、更尖锐，
+同时也是为什么它更容易跑偏到某个奇怪的峰上。</p>
+<p>这个对比在 §4.8 还会出现一次，是理解「为什么还需要 RL」的最短路径。</p>
+</div>
+
+<h3 id="s26">2.6 训练细节清单 <span class="tag n">补充</span></h3>
+
+<p>这一节是工程性的，但考试与实操都会问。核心原则只有一条：
+<strong>SFT 是在一个已经收敛的点附近做小步移动，任何「大」都会破坏它。</strong></p>
+
+<table>
+<thead><tr><th>项目</th><th>常见取值</th><th>为什么</th></tr></thead>
+<tbody>
+<tr><td>初始化</td><td>预训练 base 或已有的 instruct 模型</td><td>从 base 开始更彻底，从 instruct 开始更省数据（但会继承它的怪癖）</td></tr>
+<tr><td>学习率</td><td>$1\times10^{-5}\sim2\times10^{-5}$（全参）<br>LoRA 可到 $1\times10^{-4}\sim2\times10^{-4}$</td><td>预训练常用 $3\times10^{-4}$，SFT 要小 1～2 个数量级：数据只有几万条，走大步会直接崩</td></tr>
+<tr><td>epoch</td><td>1～3</td><td>LIMA 用 1 个 epoch、1000 条；超过 3 轮基本就是背数据</td></tr>
+<tr><td>有效 batch</td><td>32～128 条序列</td><td>太小梯度噪声大，太大在几万条数据上等于几十步就「训完」</td></tr>
+<tr><td>调度</td><td>cosine + 1%～3% warmup</td><td>warmup 太短会在一开始就把预训练权重冲坏</td></tr>
+<tr><td>精度</td><td>bf16 前反向，loss 用 fp32 累加</td><td>长序列上 bf16 累加会明显丢精度</td></tr>
+<tr><td>packing</td><td>拼到 4k～8k，<strong>必须</strong>用 varlen attention 或块对角掩码</td><td>否则样本 A 的结尾能「看见」样本 B 的开头，模型会学会跨样本续写</td></tr>
+<tr><td>chat template</td><td>训练与推理<strong>完全一致</strong></td><td>最经典的线上事故：训练用 A 模板、推理用 B 模板，模型直接胡言乱语</td></tr>
+<tr><td>EOS</td><td>必须被监督（$m=1$）</td><td>不监督 EOS，模型学不会停，表现为无限复读</td></tr>
+<tr><td>replay</td><td>混入 1%～10% 预训练数据</td><td>缓解灾难性遗忘（通用能力、多语言、代码）</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">易错 · packing 的隐性 bug</span>
+<p>packing 把多条短样本拼成一条长序列以提高 GPU 利用率，看起来只是数据工程。
+但如果只用普通的因果掩码，第 $k$ 条样本的第一个 token 会 attend 到第 $k-1$ 条样本的结尾。
+模型于是学到了一个根本不存在的任务：「读一段无关文本，然后开始回答另一个问题」。
+症状是：训练 loss 正常下降，线上却会在回答开头冒出奇怪的衔接词。</p>
+<p>正确做法是 varlen（变长）注意力，或构造块对角掩码让每条样本自成一块。position id 也要按样本重置。</p>
+</div>
+
+<p>再补一个「为什么学习率必须小」的定量直觉：预训练结束时，损失已经在一个很窄的谷底。
+SFT 数据的分布和预训练差得很远（对话 vs 网页），大学习率会让参数在几步之内离开谷底，
+而几万条数据不足以把它拉回来——结果就是<strong>通用能力崩了、SFT 任务也没学好</strong>。
+这也解释了为什么 SFT 常常伴随明显的「对齐税」。</p>
+
+<h4>数据长什么样：JSONL 与 chat 模板 <span class="tag s">板书</span></h4>
+
+<p>板书在 SFT 那一栏顺手画了数据的形状：一个 <code>.jsonl</code> 文件，每行一条对话，用 role 区分谁在说话。</p>
+
+<pre><code>{"messages": [{"role": "user",      "content": "把这句话翻成英文：今天很热"},
+              {"role": "assistant", "content": "It is very hot today."}]}</code></pre>
+
+<p>训练前，这份结构会被 <strong>chat 模板</strong>渲染成一维 token 序列，模板里塞进特殊 token 标记角色边界：</p>
+
+<pre><code>&lt;|im_start|&gt;user
+把这句话翻成英文：今天很热&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant
+It is very hot today.&lt;|im_end|&gt;</code></pre>
+
+<p>三个坑全在这一层，而且都不会报错，只会让模型变傻：</p>
+
+<ul>
+<li><strong>模板不一致。</strong>训练用 A 模板、推理用 B 模板，模型看到的前缀分布变了，输出直接崩。
+这是线上事故里最常见的一类。</li>
+<li><strong>特殊 token 被切碎。</strong>如果 <code>&lt;|im_start|&gt;</code> 不在 tokenizer 的词表里，
+它会被拆成十几个普通 token，模型就学不到「角色边界」这个概念，只学到一串奇怪的符号。</li>
+<li><strong>掩码边界算错。</strong>回答从哪个 token 开始，必须按<em>渲染之后</em>的 token 位置算，不能按原始字符串算——
+一个中文字符可能对应 1 个也可能对应 3 个 token。</li>
+</ul>
+
+<h3 id="s27">2.7 数据从哪来 <span class="tag n">补充</span></h3>
+
+<table>
+<thead><tr><th>来源</th><th>做法</th><th>规模 / 代表</th></tr></thead>
+<tbody>
+<tr><td>人工示范</td><td>标注者按规范亲手写回答</td><td>InstructGPT 约 13k prompts；质量最高、最贵</td></tr>
+<tr><td>强模型蒸馏</td><td>用更强的模型生成 (x, y)</td><td>Self-Instruct 自举、Alpaca 52k、Evol-Instruct 扩写</td></tr>
+<tr><td>真实日志</td><td>从产品里捞真实问题，再补答案</td><td>分布最真实，但涉及隐私与筛选</td></tr>
+<tr><td>拒绝采样</td><td>采样多条，用 RM / 规则筛掉差的，留下好的</td><td>STaR 系；把 RM 的能力「蒸馏」回策略</td></tr>
+<tr><td>安全 / 拒答</td><td>专门构造该拒绝的请求与得体的拒绝话术</td><td>少量但必须单列，否则被其他数据淹没</td></tr>
+</tbody>
+</table>
+
+<p>关于「要多少数据」，LIMA 那篇给了一个很有冲击力的观察：<strong>1000 条精选样本，效果接近 52000 条噪声数据</strong>。
+作者的解释是「表面对齐假说」（superficial alignment hypothesis）：模型的知识与能力几乎都在预训练里学完了，
+SFT 学的主要是<strong>交互格式与风格</strong>，而这部分需要的样本量本来就很小。</p>
+
+<p>这个假说解释了为什么 SFT 数据「质量 &gt; 数量」，也解释了它的上限：
+如果 SFT 只学格式，那它<strong>不可能</strong>教会模型新的推理能力。后来的工作（如在 SFT 里混入长思维链）
+部分修正了这个结论——但那是「用示范教一种新的生成模式」，仍然没有跳出行为克隆的框架。</p>
+
+<h3 id="s28">2.8 板书点名的三个问题 <span class="tag s">板书</span></h3>
+
+<p>讲完公式，板书在右下角写了 <em>Problem of SFT</em>，三条。这三条不是并列的抱怨，而是<strong>指向后面两步的路标</strong>。</p>
+
+<ol>
+<li><strong>ground truth $y$ is hard to collect.</strong> 要一条「好回答」，得有人真的写出来。</li>
+<li><strong>training whole model $\theta$ is expensive.</strong> 板书旁边画了 $\theta_1\to\theta_2\to\cdots$，指向参数高效微调。</li>
+<li><strong>only one response.</strong> 一个 prompt 只有一条 $y^\star$，但我们其实想要 $y^1, y^2, \dots$ 来比较。</li>
+</ol>
+
+<h4>(1) 数据难收集</h4>
+
+<p>「写一个正确答案」的成本远高于「判两个哪个更好」。而且它有两个无法用钱解决的困难：</p>
+
+<ul>
+<li><strong>很多任务没有唯一答案。</strong>「解释一下梯度下降」可以写 200 字也可以写 2000 字，都对。标注者写哪个，模型就学哪个。</li>
+<li><strong>写不出比模型更好的答案时就卡住了。</strong>当模型已经接近人类水平，让标注者「写一条更好的」在物理上做不到——
+这是 SFT 的天花板，不是预算问题。</li>
+</ul>
+
+<h4>(2) 训练整个 $\theta$ 很贵</h4>
+
+<p>一个 7B 模型全参微调，除了权重本身（bf16 约 14 GB），还要存梯度和 Adam 的两个动量（fp32 各 28 GB），
+再加激活值，单卡根本放不下；70B 就更不用说。板书那串 $\theta_1\to\theta_2$ 指的就是「不整个动，只动一小块」。</p>
+
+<p>最常见的做法是 <strong>LoRA</strong>：冻结原权重 $W$，只学一个低秩增量</p>
+
+$$
+W' = W + \Delta W, \qquad \Delta W = BA,
+\qquad B\in\mathbb{R}^{d\times r},\; A\in\mathbb{R}^{r\times k},\; r\ll\min(d,k)
+$$
+
+<p>可训练参数从 $dk$ 降到 $r(d+k)$。取 $d=k=4096$、$r=16$：</p>
+
+<table>
+<thead><tr><th></th><th class="num">参数量</th><th class="num">占比</th></tr></thead>
+<tbody>
+<tr><td>全参 $W$</td><td class="num">16,777,216</td><td class="num">100%</td></tr>
+<tr><td>LoRA $BA$</td><td class="num">131,072</td><td class="num">0.78%</td></tr>
+</tbody>
+</table>
+
+<p>所以同样的显存可以开更大的 batch、或者在多份数据上各训一个 adapter。
+代价是表达力受限（$r$ 越小越受限），而且推理时要么把 $BA$ 合并回 $W$（省延迟），要么额外算一条分支（省显存）。</p>
+
+<h4>(3) 一个 prompt 只有一个回答</h4>
+
+<p>这一条最要命，因为它<strong>不是资源问题，是信息问题</strong>：</p>
+
+<ul>
+<li>一条示范只说明「这样可以」，<strong>没说「那样不行」</strong>。想纠正一个具体错误，只能再写一条正确示范，不能只标「这条差」。</li>
+<li>不同标注者写的都对，而 SFT 会把它们<strong>平均</strong>掉（§2.5 的前向 KL），结果是四平八稳、什么都不表态。</li>
+<li>「哪个更好」这个信息，在一条轨迹里<strong>根本不存在</strong>——它需要至少两个候选才能表达。</li>
+</ul>
+
+<div class="box key">
+<span class="label">补充 · 这三条正好对应后两步</span>
+<p>第 (3) 条直接推出奖励模型：<strong>既然一个 prompt 只给一条不够，那就给多条、让人排序</strong>——
+这就是 §3.6 里「采样 $k$ 条再比较」的来源。</p>
+<p>第 (1)(2) 条解释了为什么后来的方法都在想办法「少写、少训」：RM 把「写」换成「判」，
+DPO 把「训一个 RM + 训一个策略」压成「训一个策略」。</p>
+<p>所以板书这三行，其实是整节课的目录。</p>
+</div>
+
+<h3 id="s29">2.9 SFT 的优缺点 <span class="tag s">板书</span></h3>
+
+<h4>优点</h4>
+
+<table>
+<thead><tr><th>优点</th><th>具体表现</th></tr></thead>
+<tbody>
+<tr><td>简单、稳定、可复现</td><td>损失就是交叉熵，复用预训练全套基础设施（并行、混合精度、checkpoint），没有 RL 的方差与调参地狱</td></tr>
+<tr><td>样本效率高（对「格式」而言）</td><td>JSON 输出、工具调用语法、固定模板这类硬约束，几百条就能学会；RL 反而很难学出「必须闭合括号」</td></tr>
+<tr><td>目标可诊断</td><td>train/val loss、token accuracy 都能直接看，出问题能定位到数据或模板，而不是「reward 涨了但模型变差」</td></tr>
+<tr><td>没有 reward hacking 通道</td><td>没有代理指标，就没有「优化指标的漏洞」这件事；行为上界就是示范者，不会更离谱</td></tr>
+<tr><td>是后续方法的必要条件</td><td>RM 的初始化、DPO 的 $\pi_{\text{ref}}$、PPO 的初值，全部来自 SFT</td></tr>
+<tr><td>可解释的失败</td><td>模型答错时，通常能在训练数据里找到相似的错误示范——因果链清楚</td></tr>
+</tbody>
+</table>
+
+<h4>缺点</h4>
+
+<table>
+<thead><tr><th>缺点</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td><strong>天花板 = 示范者</strong></td><td>行为克隆的上界是专家策略。示范者写不出的，SFT 学不会。数学上：最优解是 $\pi_\theta = p_{\text{data}}$，而 $p_{\text{data}}\ne p^\star$</td></tr>
+<tr><td><strong>似然 ≠ 偏好</strong></td><td>损失是<em>逐 token</em>的，人类判断是<em>整段</em>的。一个整体更好但用词不同的回答，NLL 可能更高</td></tr>
+<tr><td><strong>exposure bias</strong></td><td>训练时前缀来自示范，推理时前缀来自模型自己。一旦走偏，误差累积（compounding error），而训练里没有「如何纠错」的样本</td></tr>
+<tr><td><strong>多峰平均</strong></td><td>前向 KL 的 mass-covering 性质（§2.5）→ 输出啰嗦、hedging、不敢下结论</td></tr>
+<tr><td><strong>只有正例</strong></td><td>不能直接说「这样不行」。想修一个具体错误，必须写一条正确示范，而不能只标「这条差」</td></tr>
+<tr><td><strong>会模仿示范里的错误</strong></td><td>示范里的幻觉、过度拒答、markdown 滥用、固定的开场白，全部被当作「正确答案」学进去</td></tr>
+<tr><td><strong>灾难性遗忘</strong></td><td>窄分布上微调 → 通用能力、多语言、安全性回退，即「对齐税」</td></tr>
+<tr><td><strong>熵坍缩</strong></td><td>窄数据上多轮 SFT 会让输出分布变尖：pass@1 涨，pass@k 掉，多样性下降</td></tr>
+<tr><td><strong>标注成本高</strong></td><td>「写一个」比「判两个」贵得多；而且不同标注者写的都对，无法平均</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 一句话总结</span>
+<p><strong>SFT 决定「像不像人写的」，不决定「是不是人想要的」。</strong></p>
+<p>它把「助手」这个角色装进了模型，但「好」这个概念没有被表达出来——因为示范数据里只有<em>一个</em>答案，
+没有「为什么这个比那个好」。要表达「好」，必须让人类<strong>比较</strong>。这就是第三部分的起点。</p>
+</div>
+
+<h4>那为什么大家还在用 SFT</h4>
+
+<p>因为上面九条缺点里，前六条都是「<em>它做不到更多</em>」，而不是「<em>它做错了</em>」。
+SFT 在自己的职责范围内几乎没有替代品：它便宜、稳定、可解释，而且它的输出正是后续方法需要的起点。
+工程上的正确姿势是<strong>把 SFT 用在它擅长的地方</strong>（格式、风格、工具语法、拒答边界），
+把「哪个更好」交给偏好数据。</p>
+
+<h3 id="s210">2.10 四个典型失败模式 <span class="tag n">补充</span></h3>
+
+<table>
+<thead><tr><th>症状</th><th>最可能的原因</th></tr></thead>
+<tbody>
+<tr><td>不停，无限复读</td><td>EOS 没被监督；或 packing 时把 EOS 拼掉了</td></tr>
+<tr><td>输出格式崩、答非所问</td><td>chat template 训练/推理不一致；特殊 token 被 tokenizer 拆开</td></tr>
+<tr><td>每条回答都以「当然！以下是……」开头</td><td>数据里这类开场白占比过高；前向 KL 把风格平均成了固定模板</td></tr>
+<tr><td>该拒答的答了 / 该答的拒了</td><td>安全数据比例失衡；拒答样本的措辞过于单一，模型学成了关键词触发</td></tr>
+</tbody>
+</table>
+
+<p>这四种都能用同一句话概括：<strong>模型忠实地学会了数据里的统计规律，包括我们不想要的那些。</strong>
+SFT 没有「理解意图」的机制，它只有「提高这些 token 的概率」。</p>
+
+<hr>
+
+<h2 id="p3">第三部分 · 奖励模型</h2>
+
+<p>SFT 之后，模型会「像一个助手那样说话」了。但我们仍然没法回答一个最基本的问题：
+<strong>两个都像助手的回答，哪个更好？</strong></p>
+
+<p>这个问题 SFT 答不了，因为它的数据里每条 prompt 只有一个答案，没有「更好」这个概念。
+要表达「更好」，最自然的方式是让人类<strong>比较</strong>——而这正是奖励模型的输入。</p>
+
+<h3 id="s31">3.1 为什么需要一个打分器 <span class="tag s">板书</span></h3>
+
+<p>先把「好」这件事的观测形式说清楚。人类能稳定提供的信号，按可靠性排序大致是：</p>
+
+<ol>
+<li><strong>两个回答里选一个更好的</strong>（pairwise comparison）——最可靠，标注最快，一致性最高；</li>
+<li><strong>给一个回答打绝对分</strong>（1–7 分）——刻度因人而异，漂移严重；</li>
+<li><strong>写一个更好的回答</strong>——信息量最大，但最贵，而且写不出来的时候就卡住了。</li>
+</ol>
+
+<p>第 3 种就是 SFT，已经用过了。奖励模型要做的是把第 1 种变成一个函数：</p>
+
+$$
+r_\phi:\; (x, y) \;\longmapsto\; \mathbb{R},
+\qquad\text{s.t.}\qquad
+r_\phi(x, y_w) &gt; r_\phi(x, y_l)
+\iff
+y_w \text{ 比 } y_l \text{ 更受偏好}
+$$
+
+<p>有了这个 $r_\phi$，后面几乎所有事情都能做：</p>
+
+<table>
+<thead><tr><th>用途</th><th>怎么用</th></tr></thead>
+<tbody>
+<tr><td>RLHF / PPO 的奖励</td><td>把 $r_\phi(x,y)$ 当成 $y$ 的回报，直接做策略梯度</td></tr>
+<tr><td>best-of-$n$ / 拒绝采样</td><td>采样 $n$ 条，取 $r_\phi$ 最高的一条；不需要训练</td></tr>
+<tr><td>构造 DPO 数据</td><td>用 $r_\phi$ 给候选排序，自动生成 $(y_w, y_l)$</td></tr>
+<tr><td>离线评估</td><td>不跑人评也能粗看模型有没有变好（有风险，见 §3.7）</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 一句话定位</span>
+<p>奖励模型是<strong>把「稀疏、序列级、主观、昂贵」的人类判断，压缩成一个「稠密、可复用、便宜」的标量</strong>。
+它做的是一次<em>摊销</em>（amortization）：标注一次，之后无数次调用。
+代价是——这个压缩是有损的，而损失的部分正是 §3.7 里所有问题的根源。</p>
+</div>
+
+<h4>板书：奖励模型怎么用 <span class="tag s">板书</span></h4>
+
+<p>板书在 RM 那一栏的右下角画了最直接的用法：</p>
+
+$$
+x \;\longrightarrow\;
+\underbrace{\text{tuned LLM}}_{\text{采样 } n \text{ 条}}
+\;\longrightarrow\; y_1,\dots,y_n
+\;\longrightarrow\;
+\underbrace{\text{RM}}_{\text{逐个打分}}
+\;\longrightarrow\; r_1,\dots,r_n
+\;\longrightarrow\; \arg\max_i r_i
+$$
+
+<p>这就是 best-of-$n$（也叫拒绝采样）：<strong>不训练、不改参数</strong>，只多花 $n$ 倍推理算力换质量。
+它的收益是<strong>对数式</strong>的——$n$ 从 1 加到 4 提升明显，从 64 加到 256 就很小了，
+因为要再提升就得采到比「当前最好那条」还好的样本。</p>
+
+<p>它同时是 RM 的第一个用法和第一个坑：$n$ 越大，被选中的那条越是「$r_\phi$ 眼中的最好」，而不是「人眼中的最好」。
+$n\to\infty$ 时你选到的就是 $r_\phi$ 的 argmax，也就是 reward hacking 的极端形态（§3.7）。</p>
+
+<h3 id="s32">3.2 Bradley–Terry：从比较到概率 <span class="tag s">板书</span></h3>
+
+<p>先把打分函数写死。课上给的奖励模型是最朴素的形态：取序列<strong>最后一个位置</strong>的隐状态 $h_t\in\mathbb{R}^d$，
+接一个线性层得到一个实数，</p>
+
+$$
+r_\phi(x,y) \;=\; h_t^{\top} w + b,
+\qquad w\in\mathbb{R}^d,\;\; b\in\mathbb{R}
+$$
+
+<p>参数 $\phi=(w,b)$；$h_t = f_\theta(x,y)$ 来自主干（通常就是 SFT 模型的最后一层，与 $w$ 一起微调，也可以冻结）。
+注意 $t$ 是<strong>最后一个 token 的位置</strong>——RM 输出的是<strong>一个数</strong>，不是每个位置一个数。
+这一点和语言模型头（每个位置一个 $|V|$ 维向量）正好相反。</p>
+
+<p>有了分数，还需要一个把「分数」变成「胜率」的假设。Bradley–Terry（1952）说：两个回答的胜率等于它们强度的<strong>指数之比</strong>，</p>
+
+$$
+P\big(y_w \succ y_l \mid x\big)
+\;=\; \frac{e^{\,r(x,\,y_w)}}{e^{\,r(x,\,y_w)} + e^{\,r(x,\,y_l)}}
+$$
+
+<p>分子分母同除以 $e^{\,r_w}$，立刻得到更常见的形式：</p>
+
+$$
+P \;=\; \frac{1}{1 + e^{-(r_w - r_l)}} \;=\; \sigma\big(r_w - r_l\big) \;=\; \sigma(\Delta)
+$$
+
+<p>两种写法是同一个式子。「指数之比」的好处是可以直接推广到 $K$ 个候选（§3.3 的 Plackett–Luce），
+「sigmoid 套差值」的好处是一眼就能看出它是二分类。</p>
+
+<h4>代入打分函数：偏置会消失 <span class="tag a">推导</span></h4>
+
+<p>把 $r = h^{\top}w + b$ 代进差值：</p>
+
+$$
+\Delta
+\;=\; r(x,y_w) - r(x,y_l)
+\;=\; \big(h_w^{\top} w + b\big) - \big(h_l^{\top} w + b\big)
+\;=\; w^{\top}\big(h_w - h_l\big)
+$$
+
+<p>偏置 $b$ <strong>被减掉了</strong>。这不是巧合，正是「平移不变」的具体表现：
+给所有分数加同一个常数不改变任何一对的比较结果，而 $b$ 就是那个常数。</p>
+
+<div class="box key">
+<span class="label">补充 · 所以它就是 binary logistic regression</span>
+<p>定义<strong>差值特征</strong> $\varphi = h_w - h_l \in \mathbb{R}^d$，标签 $z=1$ 表示「$y_w$ 赢」，则</p>
+
+$$
+P(z=1\mid \varphi) \;=\; \sigma\big(w^{\top}\varphi\big)
+$$
+
+<p>这正是<strong>以 $\varphi$ 为输入、以 $w$ 为权重、没有偏置的标准逻辑回归</strong>。
+换句话说，奖励模型在做的事是：<em>把「两条回答的隐状态之差」映射成一个二分类概率</em>。
+训练它，就是在 $(h_w-h_l)$ 这个特征空间里找一个能把「赢的一边」分开的超平面。</p>
+<p>这个视角一次解释三件事：</p>
+<ul>
+<li><strong>$b$ 可以不要。</strong>它在 $\Delta$ 里消失了，对损失没有任何影响（梯度恒为 0）。
+保留它只在你想用<em>绝对</em>分数做阈值（例如「低于某分就拒答」）时才有意义。</li>
+<li><strong>打分层是凸的。</strong>逻辑回归的负对数似然关于 $w$ 是凸的，所以最后一层不会训崩；
+非凸性全部来自主干 $f_\theta$。</li>
+<li><strong>「分数」其实是「在一个方向上的投影」。</strong>$r = w^{\top}h + b$ 只关心 $h$ 在<strong>单一方向</strong>上的分量。
+这与 BT 的「单一潜在维度」假设是同一件事的两种说法：有用性、安全性、语气若真的互相冲突，
+一个 $w$ 就表达不了，需要多个打分头再加权。</li>
+</ul>
+</div>
+
+<p>还有一层等价关系值得记住：$\dfrac{e^{r_w}}{e^{r_w}+e^{r_l}}$ 就是<strong>对两个 logit $(r_w,r_l)$ 做二分类 softmax</strong>。
+于是「BT 二分类」与「$K$ 类 softmax」是同一套东西在 $K=2$ 与 $K&gt;2$ 的两个特例——
+这也是为什么下一小节的 listwise 版本能无缝接上。</p>
+
+<h4>为什么是指数形式 <span class="tag a">推导</span></h4>
+
+<p>指数不是随手挑的。起点是 Luce 的选择公理：若每个选项有正权重 $v_i$，则</p>
+
+$$
+P(i \text{ 胜过 } j) \;=\; \frac{v_i}{v_i + v_j}.
+$$
+
+<p>再假设「强度可加」，即权重取指数形式 $v_i = e^{r_i}$（这样两个选项的相对优势只取决于差值 $r_i-r_j$），代入即得 BT：</p>
+
+$$
+P(y_w \succ y_l) = \frac{e^{r_w}}{e^{r_w}+e^{r_l}} = \sigma(r_w - r_l).
+$$
+
+<p>换掉任何一条假设，形式就变：若假设噪声是正态的，得到的是 probit $\Phi(\Delta)$；若假设强度不可加，就得不到这种简洁形式。
+所以 sigmoid 在这里不是「常用的激活函数」，而是<strong>两条建模假设的推论</strong>。</p>
+
+<div class="box gold">
+<span class="label">易错 · BT 的三条隐含假设</span>
+<ul>
+<li><strong>只依赖差值（平移不变）。</strong>$r\to r+c$ 时 $\Delta$ 不变，损失完全不变。
+所以 RM 的<strong>绝对分数没有意义</strong>，只有差值和排序有意义；训练时通常会把每个 batch 的分数中心化（§3.5）。</li>
+<li><strong>传递性。</strong>BT 隐含 $A\succ B,\;B\succ C \Rightarrow A\succ C$。真实偏好会循环
+（A 更准、B 更简洁、C 更友好，两两比较可以出现剪刀石头布），BT 表达不了。</li>
+<li><strong>单一潜在维度。</strong>所有偏好被压到一根实数轴上，等于假设「有用性 / 安全性 / 语气」可以被同一个数排序。
+这正是上面「$r$ 只是一个方向上的投影」的另一种说法。</li>
+</ul>
+<p>还有一条不那么显然的：BT 隐含地<strong>固定了 $r$ 的单位</strong>（logistic 的斜率是 1）。
+若写成 $\sigma(\alpha\Delta)$ 并让 $\alpha$ 可学，就等价于加了一个温度；BT 取 $\alpha=1$。
+所以不同 RM 的分数<strong>只能比方向，不能比大小</strong>——A 模型给 3.2 分、B 模型给 0.8 分，这两件事没有可比性。</p>
+</div>
+
+<h3 id="s33">3.3 损失函数与梯度 <span class="tag s">板书</span></h3>
+
+<p>有了概率模型，训练就是标准的极大似然：让「人类选的那一个赢」的概率尽量大。取负对数：</p>
+
+$$
+\mathcal{L}_{\text{RM}}(\phi)
+\;=\; -\,\mathbb{E}_{(x,\,y_w,\,y_l)\sim \mathcal{D}}
+\Big[\log \sigma\big(r_\phi(x,y_w) - r_\phi(x,y_l)\big)\Big]
+$$
+
+<p>用 $\Delta_\phi = r_\phi(x,y_w) - r_\phi(x,y_l)$ 简写，注意这个恒等式：</p>
+
+$$
+\mathcal{L} \;=\; -\log\sigma(\Delta) \;=\; \log\big(1 + e^{-\Delta}\big) \;=\; \operatorname{softplus}(-\Delta)
+$$
+
+<div class="box key">
+<span class="label">补充 · 这个恒等式说明了两件事</span>
+<p><strong>第一，它就是带 margin 的 logistic 回归。</strong>BT 损失 = softplus(−margin)，
+和「二分类 + logit = 分数差」是同一个东西。所有关于 logistic 回归的直觉（凸性、梯度形式、校准）都可以直接搬过来。</p>
+<p><strong>第二，它是凸的。</strong>softplus 是凸函数，$\Delta$ 是 $\phi$ 的线性（或仿射）函数时，$\mathcal{L}$ 关于 $\phi$ 凸。
+当然 $r_\phi$ 是深度网络，整体非凸——但「最后一层是凸的」意味着<strong>给定特征，打分头不会训崩</strong>，
+这也是为什么 RM 通常比 RL 稳定得多。</p>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 换成二分类的写法，它更眼熟</span>
+<p>带标签 $z\in\{0,1\}$ 的标准交叉熵是</p>
+
+$$
+\ell(z,\Delta) \;=\; -\Big[z\log\sigma(\Delta) + (1-z)\log\sigma(-\Delta)\Big]
+$$
+
+<p>取 $z=1$ 就回到上面的 RM 损失。反过来，如果训练时把每条 pair <strong>随机交换顺序</strong>、
+同时把标签翻成 $z=0$，就得到完整的 BCE——所以「训练奖励模型」在实现上<strong>就是一个二分类任务</strong>：
+输入两条回答，输出「第一条是不是更好」。它的代码和普通的文本分类几乎没有区别，
+只是把 vocab 维的输出换成了一个标量。</p>
+<p>交换顺序这个操作还有个副作用：它顺手消掉了<strong>位置偏置</strong>——如果模型偏爱「先出现的那个」，
+两种顺序各出现一半，偏置会互相抵消。这也是为什么很多实现坚持做随机交换，尽管从 BT 的形式上看它不必要。</p>
+</div>
+
+<div class="box key">
+<span class="label">补充 · 分数差就是「偏好」的 log odds</span>
+<p>把 BT 反过来解。给定 $p = P(y_w\succ y_l\mid x)$，</p>
+
+$$
+\sigma(\Delta) = p
+\quad\Longrightarrow\quad
+\Delta = \log\frac{p}{1-p}
+$$
+
+<p>板书在 $\Delta$ 旁边注的 <em>log odds of preference</em> 就是这个意思：
+<strong>分数差 = 偏好胜率的对数几率</strong>。</p>
+<p>这条式子把三个词串起来了：$\Delta$ 是「margin」，也是「logit」，也是「log odds」——
+在逻辑回归里这三个词指的就是同一个量。所以 §3.2 那句「它就是二分类逻辑回归」，在这里拿到了第二个证据。</p>
+<p>它还顺便给出一把刻度尺：$\Delta=0$ 对应 50%；$\Delta=\ln 3\approx1.10$ 对应 75%；
+$\Delta=\ln 9\approx2.20$ 对应 90%；$\Delta=\ln 99\approx4.60$ 对应 99%。
+所以 RM 的分数差从 2 涨到 4，并不是「好了一倍」，而是从「七成把握」变成「九成九把握」。</p>
+</div>
+
+<h4>梯度 <span class="tag a">推导</span></h4>
+
+<p>先对 $\Delta$ 求导。用 $\sigma'(z) = \sigma(z)\big(1-\sigma(z)\big)$，或者直接用 $\log\sigma(z)$ 的导数：</p>
+
+$$
+\frac{d}{d\Delta}\Big[-\log\sigma(\Delta)\Big]
+= -\frac{\sigma'(\Delta)}{\sigma(\Delta)}
+= -\big(1 - \sigma(\Delta)\big)
+= -\sigma(-\Delta)
+$$
+
+<p>再链式到参数。注意 $r_w$ 与 $r_l$ 对 $\phi$ 的梯度符号相反：</p>
+
+$$
+\nabla_\phi\, \mathcal{L}_{\text{RM}}
+\;=\; -\,\sigma(-\Delta_\phi)\;\Big(\nabla_\phi\, r_\phi(x,y_w) \;-\; \nabla_\phi\, r_\phi(x,y_l)\Big)
+$$
+
+<div class="box key">
+<span class="label">补充 · 读这个梯度：权重就是「当前判错的概率」</span>
+<p>$\sigma(-\Delta) = 1 - P(y_w \succ y_l)$ 正好是<strong>模型认为「自己错了」的概率</strong>。于是：</p>
+<ul>
+<li>已经分对且差距很大（$\Delta \gg 0$）：$\sigma(-\Delta)\to 0$，这条 pair 几乎不贡献梯度；</li>
+<li>分错了（$\Delta &lt; 0$）：$\sigma(-\Delta) &gt; 0.5$，梯度权重接近 1，全力纠正；</li>
+<li>分不清（$\Delta \approx 0$）：权重 $0.5$，中等力度。</li>
+</ul>
+<p>这是一个<strong>自适应的难例挖掘</strong>：不用显式挑难例，损失函数自己把权重给对了。
+副作用是——训练后期几乎所有 pair 都被分对，梯度趋近于零，模型开始只被少数「分不开」的 pair 驱动，
+而那些 pair 往往正是<strong>标注噪声或标注者意见分歧</strong>的地方。这是 RM 训久了会掉点的原因之一（§3.5）。</p>
+</div>
+
+<figure class="chart">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 300" role="img" aria-label="Bradley-Terry 损失与梯度权重随分数差变化的曲线：损失单调下降，权重单调下降。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <!-- grid -->
+    <g stroke="var(--line)" stroke-width="1">
+      <path d="M64 180 L534 180"/><path d="M64 142.5 L534 142.5"/>
+      <path d="M64 105 L534 105"/><path d="M64 67.5 L534 67.5"/>
+      <path d="M64 30 L534 30"/>
+    </g>
+    <!-- axes -->
+    <path d="M64 30 L64 180" stroke="var(--ink3)" stroke-width="1.2"/>
+    <path d="M534 30 L534 180" stroke="var(--ink3)" stroke-width="1.2"/>
+
+    <!-- left ticks -->
+    <g font-size="10.5" fill="var(--ink3)" text-anchor="end">
+      <text x="56" y="34">4</text><text x="56" y="71.5">3</text>
+      <text x="56" y="109">2</text><text x="56" y="146.5">1</text>
+      <text x="56" y="184">0</text>
+    </g>
+    <g font-size="10.5" fill="var(--ink3)" text-anchor="start">
+      <text x="542" y="34">1.00</text><text x="542" y="71.5">0.75</text>
+      <text x="542" y="109">0.50</text><text x="542" y="146.5">0.25</text>
+      <text x="542" y="184">0</text>
+    </g>
+
+    <!-- x ticks -->
+    <g font-size="10.5" fill="var(--ink3)" text-anchor="middle">
+      <text x="60" y="198">−3</text><text x="118.8" y="198">−2</text><text x="177.5" y="198">−1</text>
+      <text x="236.3" y="198">0</text><text x="295" y="198">1</text><text x="353.8" y="198">2</text>
+      <text x="412.5" y="198">3</text><text x="471.3" y="198">4</text><text x="530" y="198">5</text>
+    </g>
+    <text x="299" y="216" text-anchor="middle" font-size="11.5" fill="var(--ink2)">Δ = r(x, y_w) − r(x, y_l)</text>
+    <text x="64" y="20" font-size="11" fill="var(--ink3)">损失（左轴）</text>
+    <text x="534" y="20" text-anchor="end" font-size="11" fill="var(--ink3)">梯度权重（右轴）</text>
+
+    <!-- loss curve -->
+    <polyline fill="none" stroke="var(--accent)" stroke-width="2.1" points="60.0,65.7 62.9,67.5 65.9,69.2 68.8,71.0 71.8,72.8 74.7,74.6 77.6,76.3 80.6,78.1 83.5,79.8 86.4,81.6 89.4,83.3 92.3,85.0 95.2,86.7 98.2,88.5 101.1,90.2 104.1,91.9 107.0,93.6 109.9,95.2 112.9,96.9 115.8,98.6 118.8,100.2 121.7,101.9 124.6,103.5 127.6,105.1 130.5,106.8 133.4,108.4 136.4,110.0 139.3,111.5 142.2,113.1 145.2,114.7 148.1,116.2 151.1,117.7 154.0,119.2 156.9,120.7 159.9,122.2 162.8,123.7 165.8,125.1 168.7,126.6 171.6,128.0 174.6,129.4 177.5,130.8 180.4,132.1 183.4,133.5 186.3,134.8 189.2,136.1 192.2,137.4 195.1,138.6 198.1,139.9 201.0,141.1 203.9,142.3 206.9,143.5 209.8,144.6 212.8,145.8 215.7,146.9 218.6,148.0 221.6,149.0 224.5,150.1 227.4,151.1 230.4,152.1 233.3,153.1 236.2,154.0 239.2,154.9 242.1,155.8 245.1,156.7 248.0,157.6 250.9,158.4 253.9,159.2 256.8,160.0 259.8,160.8 262.7,161.5 265.6,162.2 268.6,162.9 271.5,163.6 274.4,164.2 277.4,164.9 280.3,165.5 283.2,166.1 286.2,166.7 289.1,167.2 292.1,167.7 295.0,168.3 297.9,168.7 300.9,169.2 303.8,169.7 306.8,170.1 309.7,170.6 312.6,171.0 315.6,171.4 318.5,171.7 321.4,172.1 324.4,172.4 327.3,172.8 330.2,173.1 333.2,173.4 336.1,173.7 339.1,174.0 342.0,174.3 344.9,174.5 347.9,174.8 350.8,175.0 353.8,175.2 356.7,175.5 359.6,175.7 362.6,175.9 365.5,176.1 368.4,176.2 371.4,176.4 374.3,176.6 377.2,176.7 380.2,176.9 383.1,177.0 386.1,177.2 389.0,177.3 391.9,177.4 394.9,177.6 397.8,177.7 400.8,177.8 403.7,177.9 406.6,178.0 409.6,178.1 412.5,178.2 415.4,178.3 418.4,178.3 421.3,178.4 424.2,178.5 427.2,178.6 430.1,178.6 433.1,178.7 436.0,178.8 438.9,178.8 441.9,178.9 444.8,178.9 447.8,179.0 450.7,179.0 453.6,179.1 456.6,179.1 459.5,179.2 462.4,179.2 465.4,179.2 468.3,179.3 471.2,179.3 474.2,179.4 477.1,179.4 480.1,179.4 483.0,179.4 485.9,179.5 488.9,179.5 491.8,179.5 494.8,179.5 497.7,179.6 500.6,179.6 503.6,179.6 506.5,179.6 509.4,179.6 512.4,179.7 515.3,179.7 518.2,179.7 521.2,179.7 524.1,179.7 527.1,179.7 530.0,179.7"/>
+
+    <!-- weight curve -->
+    <polyline fill="none" stroke="var(--purple)" stroke-width="2" stroke-dasharray="6 4" points="60.0,37.1 62.9,37.5 65.9,37.8 68.8,38.2 71.8,38.6 74.7,39.0 77.6,39.4 80.6,39.9 83.5,40.4 86.4,40.9 89.4,41.4 92.3,41.9 95.2,42.5 98.2,43.1 101.1,43.7 104.1,44.3 107.0,45.0 109.9,45.6 112.9,46.4 115.8,47.1 118.8,47.9 121.7,48.7 124.6,49.5 127.6,50.4 130.5,51.3 133.4,52.2 136.4,53.2 139.3,54.2 142.2,55.2 145.2,56.3 148.1,57.4 151.1,58.5 154.0,59.7 156.9,60.9 159.9,62.1 162.8,63.4 165.8,64.7 168.7,66.1 171.6,67.5 174.6,68.9 177.5,70.3 180.4,71.8 183.4,73.4 186.3,74.9 189.2,76.5 192.2,78.1 195.1,79.8 198.1,81.4 201.0,83.2 203.9,84.9 206.9,86.6 209.8,88.4 212.8,90.2 215.7,92.0 218.6,93.8 221.6,95.7 224.5,97.5 227.4,99.4 230.4,101.3 233.3,103.1 236.2,105.0 239.2,106.9 242.1,108.7 245.1,110.6 248.0,112.5 250.9,114.3 253.9,116.2 256.8,118.0 259.8,119.8 262.7,121.6 265.6,123.4 268.6,125.1 271.5,126.8 274.4,128.6 277.4,130.2 280.3,131.9 283.2,133.5 286.2,135.1 289.1,136.6 292.1,138.2 295.0,139.7 297.9,141.1 300.9,142.5 303.8,143.9 306.8,145.3 309.7,146.6 312.6,147.9 315.6,149.1 318.5,150.3 321.4,151.5 324.4,152.6 327.3,153.7 330.2,154.8 333.2,155.8 336.1,156.8 339.1,157.8 342.0,158.7 344.9,159.6 347.9,160.5 350.8,161.3 353.8,162.1 356.7,162.9 359.6,163.6 362.6,164.4 365.5,165.0 368.4,165.7 371.4,166.3 374.3,166.9 377.2,167.5 380.2,168.1 383.1,168.6 386.1,169.1 389.0,169.6 391.9,170.1 394.9,170.6 397.8,171.0 400.8,171.4 403.7,171.8 406.6,172.2 409.6,172.5 412.5,172.9 415.4,173.2 418.4,173.5 421.3,173.8 424.2,174.1 427.2,174.4 430.1,174.7 433.1,174.9 436.0,175.2 438.9,175.4 441.9,175.6 444.8,175.8 447.8,176.0 450.7,176.2 453.6,176.4 456.6,176.6 459.5,176.7 462.4,176.9 465.4,177.0 468.3,177.2 471.2,177.3 474.2,177.4 477.1,177.6 480.1,177.7 483.0,177.8 485.9,177.9 488.9,178.0 491.8,178.1 494.8,178.2 497.7,178.3 500.6,178.4 503.6,178.4 506.5,178.5 509.4,178.6 512.4,178.6 515.3,178.7 518.2,178.8 521.2,178.8 524.1,178.9 527.1,178.9 530.0,179.0"/>
+
+    <!-- example point -->
+    <circle cx="295" cy="168.3" r="3.6" fill="var(--accent)"/>
+    <circle cx="295" cy="139.7" r="3.6" fill="var(--purple)"/>
+    <path d="M295 168.3 L295 139.7" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- legend -->
+    <path d="M64 232 L96 232" stroke="var(--accent)" stroke-width="2.1"/>
+    <text x="102" y="236" font-size="11.5" fill="var(--ink2)">损失 −log σ(Δ) = softplus(−Δ)</text>
+    <path d="M300 232 L332 232" stroke="var(--purple)" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="338" y="236" font-size="11.5" fill="var(--ink2)">梯度权重 σ(−Δ)</text>
+
+    <text x="64" y="262" font-size="11.5" fill="var(--ink3)">Δ = 1 时：损失 0.313，权重 0.269（点线标出）。Δ 越负，模型越「自信地错」，梯度越接近满格。</text>
+  </g>
+</svg>
+<figcaption>图 3 · BT 损失与梯度权重。两条曲线同形反向：损失在 $\Delta\ll0$ 时近似线性增长（$-\Delta$），
+在 $\Delta\gg0$ 时指数衰减（$e^{-\Delta}$）；权重是它的导数，所以「越确定 → 越不学」。
+数值：$\sigma(1)=0.7311$，$-\log\sigma(1)=0.3133$，$\sigma(-1)=0.2689$。</figcaption>
+</figure>
+
+<h4>三个常见变体 <span class="tag n">补充</span></h4>
+
+<p><strong>(a) 带 margin 的版本。</strong>如果希望「至少赢这么多才算对」，把 $\Delta$ 平移：</p>
+
+$$
+\mathcal{L}_{\text{margin}} \;=\; -\log\sigma\big(\Delta - m\big),
+\qquad m &gt; 0
+$$
+
+<p>它要求 $r_w - r_l &gt; m$ 才算「分对」，等价于把决策边界从 $0$ 挪到 $m$。实践中用得不多，
+因为 $m$ 的尺度依赖 $r$ 的单位（而 $r$ 的单位是 BT 假设固定死的），跨数据集不可迁移。</p>
+
+<p><strong>(b) 平局（tie）。</strong>标注里「两个差不多」很常见。三种处理：</p>
+
+<ul>
+<li><strong>丢掉</strong>：最简单，但会丢掉「难以区分」这个信息，模型在难例上得不到约束；</li>
+<li><strong>拆成两条各半权重</strong>：$\mathcal{L}_{\text{tie}} = -\tfrac12\big[\log\sigma(\Delta) + \log\sigma(-\Delta)\big]$。
+在 $\Delta=0$ 时取最小值 $0.693$，$|\Delta|$ 越大惩罚越大——语义上就是「把差距压到 0」；</li>
+<li><strong>三分类</strong>：把输出扩成 $\{w, \text{tie}, l\}$ 三个 logit（Rao–Kupper 模型），显式建模平局概率。最干净，但要改结构。</li>
+</ul>
+
+<p><strong>(c) K 路排序（Plackett–Luce）。</strong>如果一次让标注者排 $K$ 个回答，信息量是成对的 $O(K\log K)$ 倍。
+把 BT 推广成「依次从剩余集合里选最好的」：</p>
+
+$$
+P\big(y_1 \succ y_2 \succ \cdots \succ y_K \mid x\big)
+= \prod_{k=1}^{K} \frac{\exp\big(r(x,y_k)\big)}{\sum_{j=k}^{K}\exp\big(r(x,y_j)\big)}
+$$
+
+$$
+\mathcal{L}_{\text{PL}} \;=\; -\sum_{k=1}^{K}\left[\,r(x,y_k) \;-\; \log\!\sum_{j=k}^{K} e^{\,r(x,y_j)}\right]
+$$
+
+<p>括号里就是一个 softmax 交叉熵（$y_k$ 是「正确类」，剩下的是负类）。$K=2$ 时它退化成 BT：
+$r_1 - \log(e^{r_1}+e^{r_2}) = -\log\sigma(r_2-r_1)$，与 §3.3 只差一个符号约定。</p>
+
+<h3 id="s34">3.4 为什么是成对，而不是直接打分 <span class="tag s">板书</span></h3>
+
+<p>最直接的想法是：让标注者给每个回答打 1–7 分，然后回归 $r_\phi \approx$ 分数。这叫做 pointwise RM，为什么不这么做？</p>
+
+<ol class="steps">
+<li><strong>绝对刻度不可校准。</strong>标注者 A 习惯给 4–6 分，B 只给 1 和 7。回归会去拟合<em>标注者的刻度</em>，
+而不是偏好。两个人的「5 分」可能相差一个档次，而「A 比 B 好」这件事在两人之间是一致的。</li>
+<li><strong>BT 只依赖差值，对平移免疫。</strong>§3.2 已经证明：$r \to r + c$ 不改变损失。
+这意味着标注者的「整体偏松/偏紧」不会污染训练——只要他给的<em>相对顺序</em>对，刻度随便。</li>
+<li><strong>比较任务的一致性更高。</strong>「哪个更好」是一个二选一，认知负荷低、可复现；
+「打几分」需要自己维护一把看不见的尺子，同一个人隔一周打的分都可能不一致。</li>
+<li><strong>噪声结构更简单。</strong>一条比较错就是一次翻转（可以用 label noise 建模）；
+一条分数错可能是刻度、可能是偏移、可能是对某个维度的不同权重，噪声模型复杂得多。</li>
+</ol>
+
+<p>代价也要说清楚：<strong>一次比较只提供 1 bit 信息</strong>。$K$ 个候选要排全序需要 $O(K\log K)$ 次比较，
+而 pointwise 一次就能给出 $K$ 个数（虽然不可比）。所以当候选很多、且需要绝对分数做阈值（比如「低于 3 分就拒答」）时，
+pointwise 仍有它的位置——只是它不适合作为 RLHF 的主信号。</p>
+
+<div class="box key">
+<span class="label">补充 · 一个常被忽略的细节</span>
+<p>BT 对<strong>平移</strong>不变，但对<strong>缩放</strong>不不变：$r\to \alpha r$ 时 $\Delta \to \alpha\Delta$，损失变了。
+所以 $r$ 的单位是由 logistic 斜率固定死的。工程含义：</p>
+<ul>
+<li>不同 RM 的分数<strong>不能跨模型比较绝对值</strong>，只能比排序；</li>
+<li>把两个 RM 集成时，不能简单平均原始分数——要先各自标准化（减均值、除标准差），否则尺度大的那个会主导；</li>
+<li>PPO 里 reward 的尺度直接影响策略更新的步长，所以通常会再乘一个归一化系数（或做 running mean/std 归一）。</li>
+</ul>
+</div>
+
+<h3 id="s35">3.5 训练细节：结构、初始化、超参 <span class="tag n">补充</span></h3>
+
+<p>这一节回答「具体怎么训」。奖励模型的结构改动只有一处，但每一步都有理由。</p>
+
+<h4>结构：把语言模型头换成一个标量</h4>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 150" role="img" aria-label="奖励模型结构：拼接序列经 Transformer 编码，取最后一个位置的隐状态，经标量头得到实数分数。">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <rect x="16" y="40" width="140" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="86" y="62" text-anchor="middle" font-size="12" fill="var(--ink)">[x ; y] 拼接序列</text>
+    <text x="86" y="79" text-anchor="middle" font-size="10.5" fill="var(--ink3)">长度 T，含 prompt</text>
+
+    <rect x="180" y="40" width="170" height="52" rx="8" fill="var(--accent-bg)" stroke="none"/>
+    <text x="265" y="62" text-anchor="middle" font-size="12" fill="var(--accent)">Transformer</text>
+    <text x="265" y="79" text-anchor="middle" font-size="10.5" fill="var(--accent)">与 SFT 模型同结构</text>
+
+    <rect x="374" y="40" width="120" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="434" y="62" text-anchor="middle" font-size="12" fill="var(--ink)">hₜ ∈ ℝᵈ</text>
+    <text x="434" y="79" text-anchor="middle" font-size="10.5" fill="var(--ink3)">最后一个位置</text>
+
+    <rect x="518" y="40" width="110" height="52" rx="8" fill="var(--purple-bg)" stroke="none"/>
+    <text x="573" y="62" text-anchor="middle" font-size="12" fill="var(--purple)">标量头 w</text>
+    <text x="573" y="79" text-anchor="middle" font-size="10.5" fill="var(--purple)">d → 1</text>
+
+    <g stroke="var(--ink3)" stroke-width="1.6" fill="none">
+      <path d="M158 66 L176 66" marker-end="url(#ar2)"/>
+      <path d="M352 66 L370 66" marker-end="url(#ar2)"/>
+      <path d="M496 66 L514 66" marker-end="url(#ar2)"/>
+      <path d="M630 66 L652 66" marker-end="url(#ar2)"/>
+    </g>
+    <text x="656" y="70" font-size="12.5" fill="var(--ink)">r ∈ ℝ</text>
+
+    <path d="M16 104 L156 104" stroke="var(--gold)" stroke-width="1"/>
+    <text x="16" y="120" font-size="10.5" fill="var(--gold)">prompt 必须进前向：否则判不出「是否切题」</text>
+
+    <path d="M374 104 L494 104" stroke="var(--ok)" stroke-width="1"/>
+    <text x="374" y="120" font-size="10.5" fill="var(--ok)">只有这一个位置的标量进入 loss</text>
+
+    <text x="16" y="142" font-size="10.5" fill="var(--ink3)">原模型的 vocab 维输出头（数万维）被丢弃，换成一个 d→1 的线性层；其余权重从 SFT 模型热启动。</text>
+  </g>
+</svg>
+<figcaption>图 4 · 奖励模型的结构。改动只有最后一层，但「取哪个位置的隐状态」这个细节决定了它学不学得到东西。</figcaption>
+</figure>
+
+<p>结构上只有一处改动：把 $d\times|V|$ 的语言模型头换成 $d\to1$ 的线性层，也就是 §3.2 里的
+$r_\phi(x,y) = w^{\top}h_t + b$。剩下的全是细节，但每一条都有代价。</p>
+
+<ul>
+<li><strong>丢掉 vocab 头。</strong>语言模型头是 $d\times|V|$（$|V|\approx 10^5$），RM 只需要 $d\times 1$。
+这一层随机初始化，其余权重从 SFT 模型复制。</li>
+<li><strong>取最后一个非 pad token 的隐状态</strong>，不是平均池化。
+平均会把 prompt 的信息混进来，而 prompt 对「回答质量」没有贡献；更糟的是，平均池化让「长度」通过分母进入分数——
+回答越长，平均越接近某个全局均值，这本身就是一个长度偏置的来源。</li>
+<li><strong>偏置 $b$ 可留可去。</strong>它在 $\Delta$ 里被减掉（§3.2），对损失没有任何影响。
+保留它的唯一理由是你要用<em>绝对</em>分数做阈值；否则直接省掉，少一个无用参数。</li>
+<li><strong>标量头用线性层就够。</strong>也有人用 $d\to d/4\to 1$ 的小 MLP，收益不明显，但多了过拟合的自由度。</li>
+<li><strong>不要复用 <code>lm_head</code> 的某一维。</strong>那一维的语义是「某个 token 的 logit」，和「质量」没有任何关系，
+而且它的尺度被 softmax 的竞争关系绑死，训起来会互相干扰。</li>
+</ul>
+
+<h4>初始化与超参</h4>
+
+<table>
+<thead><tr><th>项目</th><th>常见取值</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>初始化</td><td>SFT 模型权重 + 随机标量头</td><td>从 base 初始化会让 RM 的表示和策略的分布错位；从 SFT 初始化保证「同一套特征」</td></tr>
+<tr><td>学习率</td><td>$1\times10^{-5}\sim3\times10^{-6}$</td><td>比 SFT 再小一个量级。RM 的样本比 SFT 还少，走大步必然过拟合</td></tr>
+<tr><td>标量头 lr</td><td>主体 lr 的 10 倍</td><td>它是随机初始化的，需要更快跟上；也可以单独分组</td></tr>
+<tr><td>epoch</td><td><strong>1</strong></td><td>见下面的解释，这是最反直觉的一条</td></tr>
+<tr><td>batch</td><td>64～512 个 pair</td><td>太小 $\Delta$ 的方差大，太大则一步跨过最优</td></tr>
+<tr><td>正则</td><td>weight decay 0.1，dropout 0.1，早停</td><td>参数量与策略同量级（数十亿），数据只有 $10^5$ 量级</td></tr>
+<tr><td>分数中心化</td><td>每个 batch 减去 $r$ 的均值</td><td>BT 平移不变，中心化不改变损失，但改善数值条件</td></tr>
+<tr><td>集成</td><td>3～5 个不同种子的 RM，取平均或取最小</td><td>降低 reward hacking（§3.7），代价是推理成本翻倍</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">易错 · 为什么奖励模型通常只训 1 个 epoch</span>
+<p>参数量 $\sim10^{9}$，pair 数据 $\sim10^{5}$。参数/样本比高达 $10^{4}$，这是一个<strong>必然过拟合</strong>的配置。
+于是训练曲线有一个很典型的形状：验证集 pairwise accuracy 在前半个 epoch 快速上升到峰值（典型 65%～75%），
+然后开始<strong>缓慢下降</strong>。</p>
+<p>下降的那部分不是随机噪声——它是 RM 开始记忆训练 pair 的<strong>表面特征</strong>：长度、特定的礼貌用语、markdown 结构、
+甚至某个标注者偏好的措辞。这些特征在训练集上与「更好」相关，在分布外不相关。
+这正是后面 reward hacking 的种子：<strong>策略会去优化这些表面特征</strong>，因为那是 $r_\phi$ 真正在度量的东西。</p>
+</div>
+
+<h4>训练循环（伪代码）</h4>
+
+<pre><code>for (x, y_w, y_l) in loader:            # 每条样本是一个三元组
+    r_w = rm(x, y_w)                    # (B,)  标量分数
+    r_l = rm(x, y_l)                    # (B,)
+    delta = (r_w - r_l).float()         # 用 fp32 算，避免 bf16 下饱和
+    loss = -F.logsigmoid(delta).mean()  # = softplus(-delta)，数值稳定
+    loss.backward()
+    opt.step(); opt.zero_grad()</code></pre>
+
+<p>三个实现要点：</p>
+
+<ul>
+<li><strong>用 <code>logsigmoid</code>，不要 <code>log(sigmoid(x))</code>。</strong>
+$\Delta$ 很负时 $\sigma(\Delta)$ 下溢到 0，$\log 0 = -\infty$；而 <code>logsigmoid</code> 内部走的是
+$-\operatorname{softplus}(-\Delta)$，在整条实数轴上都稳定。</li>
+<li><strong>$\Delta$ 用 fp32 算。</strong>bf16 只有 8 位有效数字，两个相近的大分数相减会灾难性抵消，
+而 $\Delta$ 恰恰经常是小量。</li>
+<li><strong>不要对 $r$ 做 softmax 或归一化后再算损失。</strong>BT 只关心差值，任何单调变换都会改变梯度的尺度，
+把「平移不变」这个性质破坏掉。</li>
+</ul>
+
+<h3 id="s36">3.6 数据：pair 从哪来 <span class="tag n">补充</span></h3>
+
+<p>一条训练样本是一个三元组 $(x, y_w, y_l)$。构造方式基本是三步：<strong>同一个 prompt 采样多条 → 让人排序 → 拆成 pair</strong>。</p>
+
+<ol class="steps">
+<li><strong>采样。</strong>用 SFT 模型对同一个 $x$ 采样 $K$ 条（$K=4\sim9$），温度 $0.7\sim1.0$。
+温度太低会得到几乎一样的回答，比较没有信息量。</li>
+<li><strong>标注。</strong>标注者排序，或两两比较。这一步的<strong>指导文档比标注量更重要</strong>：
+如果规范没说清「简洁 vs 详尽」哪个优先，标注者会各按各的偏好，RM 学到的就是噪声的平均。</li>
+<li><strong>拆 pair。</strong>$K$ 条全序可以拆出 $\binom{K}{2}$ 个 pair。注意这些 pair <strong>不独立</strong>（共享同一条回答），
+所以有效样本量远小于表面数字，这也是「一个 epoch 就够」的另一个原因。</li>
+</ol>
+
+<p>板书把标注协议写成两种，并在旁边标了它们各自能产出多少对：</p>
+
+<table>
+<thead><tr><th>协议</th><th>标注者要做的事</th><th>得到多少 pair</th></tr></thead>
+<tbody>
+<tr><td>选最优（select best）</td><td>从 $k$ 条里挑出一条最好的</td><td>$k-1$</td></tr>
+<tr><td>全排序（ranking）</td><td>把 $k$ 条排成一个全序</td><td>$\dfrac{k(k-1)}{2}$</td></tr>
+</tbody>
+</table>
+
+<p>$k=5$ 时前者 4 对、后者 10 对，差 2.5 倍。怎么选：</p>
+<ul>
+<li><strong>选最优便宜</strong>（一次点击），但只用了「第一名」这一个信息，第 2 名和第 5 名的差别被丢掉了；</li>
+<li><strong>全排序信息多</strong>，但标注者要维护一个前后一致的序，成本高且噪声大——人对中间几名的排序非常不稳定。</li>
+</ul>
+<p>折中的做法是「先选最优，再在剩下的里面选最优」，或者只要求排前 3 名。工程上还有一个隐性差别：
+$k-1$ 个 pair 全部包含同一条「冠军」，它们<strong>高度相关</strong>，有效样本量远小于 $k-1$；全排序拆出的 pair 相关性低一些，但也不是独立的。</p>
+
+<table>
+<thead><tr><th>数据来源</th><th>做法</th><th>规模 / 代表</th></tr></thead>
+<tbody>
+<tr><td>人工比较</td><td>标注者两两比较或排序</td><td>InstructGPT 约 33k comparisons；Anthropic HH 约 170k</td></tr>
+<tr><td>多回答 + 排序</td><td>一个 prompt 采 4 条，整体排序后拆 6 个 pair</td><td>UltraFeedback：64k prompts × 4</td></tr>
+<tr><td>AI 反馈（RLAIF）</td><td>用强模型当裁判，或按「宪法」原则自我批判再修订</td><td>Constitutional AI；成本低一个量级</td></tr>
+<tr><td>on-policy 采样</td><td>用<strong>当前</strong>策略采样，再用 RM 选优/配对</td><td>迭代式 RLHF；保证 RM 的输入分布跟得上策略</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">易错 · 数据分布必须「跟得上」策略</span>
+<p>RM 只在<strong>训练数据覆盖的分布</strong>上可信。如果 pair 全部来自 SFT 模型的输出，
+而 PPO 把策略推到了另一个区域（更长、更爱用列表、更爱加免责声明），RM 在那个区域的打分就是<strong>外推</strong>——
+它没见过这种文本，输出的分数没有意义。</p>
+<p>这是 RLHF 里最隐蔽的失效：训练曲线一切正常（reward 在涨），模型却在变差。
+解法有三条：用 on-policy 数据迭代更新 RM；用 KL 约束把策略拴住（§4.8 的 $\beta$）；用集成 RM 取最小值来惩罚外推。</p>
+</div>
+
+<p>用 AI 反馈时还有几个已知的系统性偏置，构造数据时必须对冲：</p>
+
+<ul>
+<li><strong>位置偏置</strong>：裁判模型偏好第一个（或最后一个）出现的回答 → 训练时随机交换 $y_w$、$y_l$ 的顺序；</li>
+<li><strong>长度偏置</strong>：更长的回答更容易被判为更好 → 显式加入「长度受控」的对比样本；</li>
+<li><strong>自我偏好</strong>：同一家族的模型互相打分偏高 → 用多个不同家族的裁判，或人工抽检。</li>
+</ul>
+
+<h3 id="s37">3.7 评估与失效 <span class="tag n">补充</span></h3>
+
+<h4>怎么判断一个 RM 好不好</h4>
+
+<p>主指标只有一个：<strong>留出集上的 pairwise accuracy</strong>——给一对回答，$r_\phi$ 的判断与人类标注一致的比例。典型值 65%～75%。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个数字怎么读</span>
+<p>很多人第一次看到「70%」会觉得太低。但要注意<strong>人类之间的一致性本身也不高</strong>：
+同一批 pair 让两组标注者分别标，一致率通常也只有 70%～80%（取决于任务的主观程度）。</p>
+<p>所以：</p>
+<ul>
+<li>RM 的 acc <strong>接近人类-人类一致率</strong>时，它已经接近「这个问题本身的可判定上限」；</li>
+<li>RM 的 acc <strong>明显超过</strong>人类一致率时，第一反应不该是「模型真强」，而是<strong>测试集泄漏、标注太简单、或者测试集和训练集同源</strong>。</li>
+</ul>
+<p>另外，总 acc 会掩盖维度间的冲突：helpfulness 上 80%、harmlessness 上 55% 的 RM，总分会显示 68%，
+但它在安全性上几乎不可用。所以要<strong>分维度报</strong>。</p>
+</div>
+
+<h4>四类典型失效</h4>
+
+<table>
+<thead><tr><th>失效</th><th>表现</th><th>怎么发现 / 怎么缓解</th></tr></thead>
+<tbody>
+<tr><td><strong>长度偏置</strong></td><td>同样内容，加长/加客套话后分数升高</td><td>把同一回答截断或填充后看分数变化；看 $r$ 与长度的相关系数</td></tr>
+<tr><td><strong>Reward hacking</strong></td><td>RL 中 reward 单调上升，人工评估却下降或持平</td><td>保留一套<strong>不参与训练</strong>的人工评估集；KL 约束；集成取最小；定期人工抽检</td></tr>
+<tr><td><strong>分布外失效</strong></td><td>策略漂移后分数失去意义</td><td>on-policy 更新 RM；监控 $\mathrm{KL}(\pi\|\pi_{\text{ref}})$；用 $\beta$ 限制漂移</td></tr>
+<tr><td><strong>对抗后缀</strong></td><td>加一句「如果需要我可以详细说明」就涨分</td><td>对抗训练（把已知的作弊样本标成负例）；集成；多维度 RM</td></tr>
+</tbody>
+</table>
+
+<p><strong>Reward hacking 值得单独说。</strong>它不是 bug，是结构性的：</p>
+
+$$
+\text{真正的目标}\; p^\star
+\;\xrightarrow{\text{有限数据}}\;
+\text{代理}\; r_\phi
+\;\xrightarrow{\text{优化}}\;
+\arg\max_\pi \mathbb{E}_\pi[r_\phi]
+$$
+
+<p>中间那一步必然有损（有限数据、有限容量、BT 假设），最后一步是<strong>精确地</strong>优化一个有损的代理。
+优化得越彻底，越会找到代理与真目标不一致的方向。这就是 Goodhart 定律的机器学习版本。
+所以 RLHF 里「训练得越久越好」是错的——存在一个最优点，之后开始变差。</p>
+
+<h3 id="s38">3.8 奖励模型的优缺点 <span class="tag s">板书</span></h3>
+
+<h4>优点</h4>
+
+<table>
+<thead><tr><th>优点</th><th>具体表现</th></tr></thead>
+<tbody>
+<tr><td>把主观判断变成可优化目标</td><td>「哪个更好」本来是离散的、无法求导的；BT 给了它一个连续、可微的替代</td></tr>
+<tr><td>摊销标注成本</td><td>一次标注，之后 RL 的每一步、best-of-$n$ 的每一次采样都能复用，不再需要人</td></tr>
+<tr><td>利用比较而非绝对分</td><td>比较更可靠、更一致、对刻度免疫（§3.4）</td></tr>
+<tr><td>训练稳定</td><td>二分类 + 凸的最后一层；没有 RL 的方差、没有探索、没有 credit assignment 问题</td></tr>
+<tr><td>可离线、可并行</td><td>RM 训练与策略训练解耦，可以随时换策略而不重标数据</td></tr>
+<tr><td>用途广</td><td>PPO 的 reward、best-of-$n$ 的 reranker、DPO 数据的过滤器、离线评估器</td></tr>
+<tr><td>表达力比 SFT 强</td><td>SFT 只能说「这样做」，RM 能说「这个比那个好」——后者信息更细，且能表达「避免某种做法」</td></tr>
+</tbody>
+</table>
+
+<h4>缺点</h4>
+
+<table>
+<thead><tr><th>缺点</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td><strong>Reward hacking（最根本）</strong></td><td>优化有损代理必然找到漏洞；训练越久越严重（§3.7）</td></tr>
+<tr><td><strong>分布依赖</strong></td><td>只在训练分布附近可信；RL 会主动把策略推出这个分布</td></tr>
+<tr><td><strong>继承标注偏置</strong></td><td>长度、格式、自信语气、迎合（sycophancy）都会被打进分数里</td></tr>
+<tr><td><strong>BT 假设过强</strong></td><td>传递性、IIA、单一维度；真实偏好是多维且可能循环的</td></tr>
+<tr><td><strong>标量化丢信息</strong></td><td>一个数无法表达「更有用但更不安全」；多目标只能靠加权或约束</td></tr>
+<tr><td><strong>成本高</strong></td><td>与策略同规模，训练与推理都要钱；集成再翻几倍</td></tr>
+<tr><td><strong>评估困难</strong></td><td>「RM 的 acc 高」和「用它训出来的模型好」是两件事，后者只能靠人评</td></tr>
+<tr><td><strong>不可解释</strong></td><td>$r=3.2$ 与 $r=2.8$ 差在哪，说不出来；调试只能靠对比样本</td></tr>
+</tbody>
+</table>
+
+<h4>SFT 与 RM 的对照</h4>
+
+<table>
+<thead><tr><th>维度</th><th>SFT</th><th>奖励模型</th></tr></thead>
+<tbody>
+<tr><td>监督信号</td><td>示范轨迹（只有正例）</td><td>成对比较（相对偏好）</td></tr>
+<tr><td>损失</td><td>逐 token 交叉熵</td><td>序列级 $-\log\sigma(\Delta)$</td></tr>
+<tr><td>优化对象</td><td>策略本身 $\pi_\theta$</td><td>一个打分函数 $r_\phi$</td></tr>
+<tr><td>学到的是</td><td>「像不像」</td><td>「好不好」</td></tr>
+<tr><td>输出用途</td><td>直接部署</td><td>给 RL / DPO / best-of-$n$ 用</td></tr>
+<tr><td>数据成本</td><td>高（要写）</td><td>中（只要判）</td></tr>
+<tr><td>主要风险</td><td>天花板、遗忘、平均化</td><td>reward hacking、分布外</td></tr>
+<tr><td>能否超过示范者</td><td>不能</td><td>能（排序可以指向示范之外的方向）</td></tr>
+</tbody>
+</table>
+
+<p>最后一行是奖励模型存在的<strong>唯一根本理由</strong>：SFT 的上界是示范者，而 RM 只要求人类能<em>判断</em>好坏，
+不要求人类能<em>写出</em>更好的。判断比生成容易——这就是为什么 RLHF 能超过人类示范的平均水平。</p>
+
+<hr>
+
+<h2 id="p4">第四部分 · 第三种方法：通用 RL 算法</h2>
+
+<p>板书上这一部分叫 <em>General RL Algo</em>。前两级都是「拟合一个数据集」，这一级换成「优化一个期望」——
+而且数据<strong>由模型自己在训练过程中生成</strong>。这个区别比损失函数长什么样重要得多。</p>
+
+<h3 id="s41">4.1 先搞清楚：RL 到底在做什么 <span class="tag n">补充</span></h3>
+
+<p>很多人卡在这里，是因为一个错觉：<strong>SFT 是「算 loss → 反向传播 → 更新参数」，RL 也是「算 loss → 反向传播 → 更新参数」，看起来一样。</strong></p>
+
+<p>确实一样。但那只是「怎么走」，不决定「往哪走」。两者的差别只有三件事：<strong>样本从哪来、权重从哪来、数据分布动不动。</strong>
+把这三件事想清楚，后面所有公式都只是把它们写成符号。</p>
+
+<h4>一、同一道题，四种「监督信号」</h4>
+
+<p>把同一道题在四个阶段各训一次，模型拿到的「答案」形态完全不同：</p>
+
+<table>
+<thead><tr><th>阶段</th><th>模型看到什么</th><th>拿到的信号</th><th>信号密度</th></tr></thead>
+<tbody>
+<tr><td>预训练</td><td>一段文本</td><td>每个位置的下一个 token</td><td>每 token 一个标签</td></tr>
+<tr><td>SFT</td><td>问题 + 示范回答</td><td>每个位置的示范 token</td><td>每 token 一个标签（回答段）</td></tr>
+<tr><td>RM</td><td>问题 + 两条回答</td><td>「哪条更好」</td><td>每对 1 bit</td></tr>
+<tr><td>RL</td><td>问题</td><td>一条回答的总分</td><td>每条 1 个实数</td></tr>
+</tbody>
+</table>
+
+<p>关键转折在第三行到第四行：<strong>信号从「每个位置该是什么」，退化成「整条值多少分」。</strong></p>
+
+<p>一旦退化，交叉熵就算不了了——因为一个分数<strong>没法反推</strong>成「第 37 个 token 应该是什么」。
+于是只能换一种问法：<em>哪些 token 的出现，和这个分数相关？</em>把分数当成这些 token 的对数概率的权重，
+这就是策略梯度干的事。</p>
+
+<h4>二、一个具体例子走一遍</h4>
+
+<p>假设一个 prompt，采三条回答，RM 分别给 $0.2$、$0.5$、$0.9$。归一化（减均值、除标准差）：</p>
+
+$$
+\mu = \frac{0.2+0.5+0.9}{3} = 0.533,
+\qquad
+\sigma \approx 0.287
+\quad\Longrightarrow\quad
+\hat A = \big(-1.16,\; -0.12,\; +1.28\big)
+$$
+
+<p>更新就是把这组权重乘到各自的梯度上：</p>
+
+$$
+\theta \;\leftarrow\; \theta + \eta \sum_{i=1}^{3} \hat A_i \, \nabla_\theta \log \pi_\theta(y_i \mid x)
+$$
+
+<p>展开看每一项在做什么：</p>
+
+<ul>
+<li>$\hat A_3 = +1.28$：把 $y_3$ 里<strong>每一个 token</strong> 的概率都推高；</li>
+<li>$\hat A_1 = -1.16$：把 $y_1$ 里<strong>每一个 token</strong> 的概率都压低；</li>
+<li>$\hat A_2 = -0.12$：几乎不动（它和平均水平差不多）。</li>
+</ul>
+
+<div class="box warn">
+<span class="label">易错 · 这就是 RL 最反直觉的地方</span>
+<p>模型<strong>并不知道</strong> $y_1$ 里是哪一句写错了。它只知道「这条整体分低」，于是把整条的概率一起压低。
+如果 $y_1$ 里有 90% 的句子其实是对的，那些对的句子也会被误伤。</p>
+<p>这就是 credit assignment（信用分配）问题的实际后果，也是 RL 需要比 SFT 多得多的样本才能学对的原因：
+<strong>SFT 的每个 token 都有独立标签，RL 只有一条轨迹一个分。</strong></p>
+</div>
+
+<h4>三、四条本质差别</h4>
+
+<table>
+<thead><tr><th></th><th>SFT</th><th>RL</th></tr></thead>
+<tbody>
+<tr><td>样本从哪来</td><td>人写的，训练前就固定</td><td>模型自己采，每一步都是新的</td></tr>
+<tr><td>权重从哪来</td><td>恒为 $-1$，每条样本一样重</td><td>由分数决定，可正可负</td></tr>
+<tr><td>信号密度</td><td>每 token 一个</td><td>每条轨迹一个</td></tr>
+<tr><td>数据分布</td><td>不动</td><td>随 $\theta$ 漂移</td></tr>
+<tr><td>梯度形式</td><td>$-\nabla_\theta\log\pi_\theta(y^\star\mid x)$</td><td>$+\hat A\,\nabla_\theta\log\pi_\theta(y\mid x)$</td></tr>
+</tbody>
+</table>
+
+<p>最后一行最值得盯：两者的梯度<strong>长得几乎一样</strong>（都是 $\nabla\log\pi$ 乘一个系数），
+差别只在<strong>符号</strong>（一个最小化一个最大化）、<strong>样本来源</strong>（固定的 vs 自己采的）、
+<strong>权重</strong>（常数 vs 分数）。第三点是全部差别的来源。</p>
+
+<h4>四、那为什么还要 RL</h4>
+
+<p>因为 SFT 有一个天花板：它只能复制示范。<strong>示范里没有的回答，SFT 永远不会产生。</strong></p>
+
+<p>RL 不一样。采样是随机的，偶尔会采到示范里没有、但打分器给高分的回答。只要出现一次，这条就被强化；
+下一次采样，它出现的概率就高一点。反复迭代，模型会<strong>滑向</strong>打分器喜欢的那片区域——
+那片区域可以超出人类示范的范围（§4.8 的闭式解会把这个「滑向」写成一个指数重加权）。</p>
+
+<div class="box key">
+<span class="label">补充 · 一句话</span>
+<p><strong>SFT 是抄答案，RL 是考试。</strong></p>
+<p>抄答案最多抄到示范者的水平，但稳；考试可以考出示范者没想到的解法，但也会因为猜错题意而掉下来。
+后面所有的工程细节（baseline、KL、clip、rollout $k$）都是在<strong>让考试别考崩</strong>。</p>
+</div>
+
+<h4>五、代价：三个不稳定来源</h4>
+
+<p>RL 为什么比 SFT 难训，答案全在上面那张表里：</p>
+
+<ol>
+<li><strong>信用分配。</strong>一条轨迹一个分，不知道哪一步错了（本节二）。</li>
+<li><strong>方差。</strong>用几条样本估一个期望，噪声可以大到盖过信号 → baseline、组内归一化都是为压它（§4.7）。</li>
+<li><strong>目标会动。</strong>数据分布随 $\theta$ 漂移，而打分器只在旧分布上可信 → 必须用 KL 把它拴住（§4.8）。</li>
+</ol>
+
+<p>所以「RL 训得好」在工程上通常不是「算法选得对」，而是<strong>这三件事各自被处理干净了</strong>。
+反过来说，如果 RL 训崩了，先按这三条排查，比换算法有用。</p>
+
+<h3 id="s42">4.2 RL 的基本循环：Agent 与 Environment <span class="tag s">板书</span></h3>
+
+<p>板书先画了标准的那张图：一个 agent 和一个 environment 互相喂东西。</p>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-label="强化学习循环：agent 根据状态 s_t 与奖励 r_t 采取动作 a_t，环境转移到新状态 s_{t+1} 并给出新奖励 r_{t+1}。">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <rect x="240" y="40" width="280" height="64" rx="10" fill="var(--accent-bg)" stroke="none"/>
+    <text x="380" y="66" text-anchor="middle" font-size="13.5" fill="var(--accent)">Agent</text>
+    <text x="380" y="86" text-anchor="middle" font-size="11.5" fill="var(--accent)">GPT policy  π_θ(a_t | s_t)</text>
+
+    <rect x="240" y="196" width="280" height="64" rx="10" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="380" y="222" text-anchor="middle" font-size="13.5" fill="var(--ink)">Environment</text>
+    <text x="380" y="242" text-anchor="middle" font-size="11.5" fill="var(--ink3)">context (x, y&lt;t) · reward r_θ</text>
+
+    <path d="M520 72 L680 72 L680 228 L524 228" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ar3)"/>
+    <text x="600" y="132" text-anchor="middle" font-size="11.5" fill="var(--accent)">action  a_t</text>
+    <text x="600" y="150" text-anchor="middle" font-size="10.5" fill="var(--ink3)">= 采样出的 token</text>
+
+    <path d="M240 228 L80 228 L80 72 L236 72" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ar3)"/>
+    <text x="160" y="132" text-anchor="middle" font-size="11.5" fill="var(--accent)">state  s_t</text>
+    <text x="160" y="150" text-anchor="middle" font-size="10.5" fill="var(--ink3)">+ reward r_t</text>
+
+    <text x="240" y="284" font-size="11" fill="var(--ink3)">在时刻 t，agent 拿到当前状态 s_t 与奖励 r_t，做出动作 a_t，环境转到 s_{t+1} 并给出 r_{t+1}。</text>
+  </g>
+</svg>
+<figcaption>图 5 · RL 的基本循环。语言模型把这张图里每一项都填上了具体的东西，而且填得很「退化」——环境没有隐藏状态，也不随机。</figcaption>
+</figure>
+
+<p>板书接着做了一张对照表，把每个 RL 术语落到 LLM 上：</p>
+
+<table>
+<thead><tr><th>RL 术语</th><th>在 LLM 里是什么</th><th>板书原文</th></tr></thead>
+<tbody>
+<tr><td>Agent</td><td>那个会写字的模型</td><td>GPT actor</td></tr>
+<tr><td>Policy（一个分布）</td><td>每个位置的 logits 过 softmax</td><td>$P_\theta(y_t\mid x, y_{&lt;t})$</td></tr>
+<tr><td>State $s_t$</td><td>prompt + 已经写出来的部分</td><td>$s_t = (x, y_{&lt;t})$</td></tr>
+<tr><td>Action $a_t$</td><td>下一个 token</td><td>next token $a_t = y_t$</td></tr>
+<tr><td>Reward</td><td>冻结的奖励模型给的分数</td><td>$r_\theta(x, y)$</td></tr>
+<tr><td>Value function</td><td>「从现在起还能拿多少分」的估计</td><td>$V_\psi(s_t)$</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 这个环境是「假」的，而这件事决定了后面所有细节</span>
+<p>真正的 RL（下棋、机器人）里，环境是<strong>外部的、随机的、部分可观测的</strong>。语言模型不是：</p>
+<ul>
+<li><strong>状态完全可观测</strong>：$s_t$ 就是那串 token，没有隐藏变量；</li>
+<li><strong>转移是确定性的</strong>：$s_{t+1} = (x, y_{\le t})$，加上刚采的那个 token 就完事；</li>
+<li><strong>唯一的随机性来自策略自己的采样</strong>（以及温度）。</li>
+</ul>
+<p>三个后果：好消息是没有「探索策略」的设计问题——温度就是探索；坏消息是<strong>没有任何外部反馈告诉模型「这一步走错了」</strong>，
+奖励只在最后给一个数。所以 credit assignment 成了这个设定里最难的事（§4.5）。</p>
+</div>
+
+<h3 id="s43">4.3 离线与在线：θ 的那条链 <span class="tag s">板书</span></h3>
+
+<p>板书用一串 $\theta$ 把三种训练范式的区别画出来了。同一行里写了两个链条：</p>
+
+$$
+\theta_0 \;\xrightarrow{\;\text{SFT}\;}\; \theta_1
+\;\xrightarrow{\;\text{RM}\;}\; \theta_2
+\qquad\text{vs.}\qquad
+\theta_1 \to \theta_1' \to \theta_2' \to \cdots \to \theta_T' = \theta_2
+$$
+
+<p>左边是<strong>两次独立的监督训练</strong>：一次用示范数据把 $\theta_0$ 推到 $\theta_1$，一次用偏好数据把 $\theta_1$ 推到 $\theta_2$。
+每一段都是「数据固定、跑完就结束」。右边是<strong>同一件事的迭代版本</strong>：$\theta_1$ 先变一点、再拿新模型去采样、
+再打分、再变一点，走 $T$ 小步才到 $\theta_2$。</p>
+
+<p>而真正属于 RL 的那条链，板书单独写在下面（标了 <em>online learning</em>）：</p>
+
+$$
+\theta_1 \xrightarrow{(x_1,y_1)} \theta_2 \xrightarrow{(x_2,y_2)} \cdots \xrightarrow{(x_T,y_T)} \theta_T
+$$
+
+<p>区别不在步数，在<strong>数据是谁产的</strong>：</p>
+
+<table>
+<thead><tr><th></th><th>监督学习（SFT / RM）</th><th>在线 RL</th></tr></thead>
+<tbody>
+<tr><td>数据</td><td>训练前就定好，全程不变</td><td>每一步由<strong>当前</strong>策略采样</td></tr>
+<tr><td>目标</td><td>拟合这批数据的标签</td><td>最大化这批数据上的期望奖励</td></tr>
+<tr><td>训练几轮</td><td>1～3 个 epoch，之后只会过拟合</td><td>可以很多轮，每轮数据都新</td></tr>
+<tr><td>数据分布</td><td>固定</td><td>随 $\theta$ 漂移（这就是不稳定的根源）</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">易错 · 「RL 与监督的区别是损失函数」是错的</span>
+<p>两者的损失形式可以长得几乎一样（都是 $-\log p$ 或它的加权）。真正的区别是：<strong>RL 的训练分布依赖参数</strong>。</p>
+<p>这带来两个直接后果：① 奖励模型只在旧分布上可信，策略一漂移它就失效（§3.7）；
+② 不能像监督那样「多训几轮总没坏处」——RL 训久了会沿着代理指标的漏洞一路滑下去。</p>
+</div>
+
+<h3 id="s44">4.4 目标函数：最大化期望奖励 <span class="tag s">板书</span></h3>
+
+<p>板书写的目标非常朴素：<em>maximize expected reward of $y$ given $x$</em>。</p>
+
+$$
+J(\theta) \;=\; \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim P_\theta(\cdot\mid x)}\big[r(x,y)\big]
+\;=\; \sum_{y} P_\theta(y\mid x)\, r(x,y)
+$$
+
+<p>右边那个求和是关键：$y$ 的空间是 $|V|^{|y|}$，<strong>根本枚举不了</strong>。
+所以这个目标写得出、算不出。整个策略梯度方法就是为了绕开这个求和——把它变成一个可以用采样估计的期望。</p>
+
+<h3 id="s45">4.5 Return、Value、Advantage <span class="tag s">板书</span></h3>
+
+<p>板书在目标函数下面接着定义了三个量，这三个量是后面所有算法（REINFORCE / PPO / GRPO）共用的零件。</p>
+
+<h4>Return：从这一步起的全部奖励</h4>
+
+$$
+G_t \;=\; \sum_{k=t}^{T} r_k
+$$
+
+<p>板书注：<em>total future reward from the current step</em>。注意它从 $t$ 加到 $T$，包含当前这一步拿到的奖励。</p>
+
+<h4>Value function：Return 的期望</h4>
+
+$$
+V_\psi(s_t) \;=\; \mathbb{E}\big[\,G_t \mid s_t\,\big]
+$$
+
+<p>板书注：<em>expected remaining return from the current step</em>。它由另一个网络 $\psi$ 估计——
+在 PPO 里这就是那个和策略同规模的 value head。它回答的问题是：<strong>站在这个前缀上，平均还能拿多少分？</strong></p>
+
+<h4>Advantage：比平均好多少</h4>
+
+$$
+\hat A_t \;=\; G_t - V_\psi(s_t)
+$$
+
+<p>板书在旁边补了它最有用的一句解读：</p>
+
+<div class="box key">
+<span class="label">补充 · A &gt; 0 表示「比平常好」，A &lt; 0 表示「比平常差」</span>
+<p>这就是 advantage 这个名字的来源。用不用它，策略梯度的<strong>期望</strong>不变（因为 $\mathbb{E}[V_\psi(s_t)\nabla\log\pi]=0$），
+但<strong>方差</strong>会差一个量级。</p>
+<p>更实际的区别在符号上：</p>
+<ul>
+<li><strong>不减 baseline</strong>：奖励是 $0/1$ 时，所有采样到的回答权重都 $\ge 0$ —— 每一条都被「推高」，只是好的推得多；</li>
+<li><strong>减掉 baseline</strong>：好的被推高（$A&gt;0$），差的被<strong>压低</strong>（$A&lt;0$）。后者才是我们真正想要的行为。</li>
+</ul>
+<p>这个差别在 §4.7 会用一组具体数字算一遍。</p>
+</div>
+
+<h4>在 LLM 里 $G_t$ 长什么样</h4>
+
+<p>这里有一个容易被忽略的细节。如果奖励<strong>只在序列末尾</strong>给一次（奖励模型就是这种形态）：</p>
+
+$$
+r_1 = r_2 = \cdots = r_{T-1} = 0,\qquad r_T = r_\theta(x,y)
+\quad\Longrightarrow\quad
+G_t = r_\theta(x,y)\ \ \text{对所有 } t
+$$
+
+<p>那么同一个回答里每个 token 的 $G_t$ 都<strong>一样</strong>。这意味着：一个 800 token 的回答，中间写错的那个 token 和最后收尾的那个 token，
+拿到的信号完全相同——这就是 credit assignment 问题最赤裸的形态。</p>
+
+<p>唯一的例外是 KL 惩罚：它逐 token 都有值（§4.8），所以 $G_t$ 里唯一带位置信息的部分，其实是那个惩罚项。</p>
+
+<h3 id="s46">4.6 REINFORCE：log-derivative trick <span class="tag s">板书</span></h3>
+
+<p>板书写的第一个算法是 <strong>REINFORCE</strong>（Williams, 1992），推导只有三行，但中间那一步是整门课最值得记住的技巧。</p>
+
+<p>从 $J(\theta) = \sum_y P_\theta(y\mid x)\,r(x,y)$ 出发，直接对 $\theta$ 求导：</p>
+
+$$
+\frac{dJ}{d\theta}
+= \sum_y r(x,y)\,\frac{dP_\theta(y\mid x)}{d\theta}
+$$
+
+<p>到这一步卡住了：$\frac{dP}{d\theta}$ 不是期望，没法用采样估。于是<strong>乘一个 $P$ 再除一个 $P$</strong>：</p>
+
+$$
+\frac{dJ}{d\theta}
+= \sum_y r(x,y)\,P_\theta(y\mid x)\cdot
+\boxed{\frac{1}{P_\theta(y\mid x)}\frac{dP_\theta(y\mid x)}{d\theta}}
+$$
+
+<p>方框里那一项，正好是对数求导法则的结果：</p>
+
+$$
+\frac{d\log P_\theta(y\mid x)}{d\theta}
+= \frac{1}{P_\theta(y\mid x)}\frac{dP_\theta(y\mid x)}{d\theta}
+$$
+
+<p>代回去，求和号里就出现了 $P_\theta$——它把「加权求和」变成了「期望」：</p>
+
+$$
+\boxed{\;
+\frac{dJ}{d\theta}
+= \sum_y P_\theta(y\mid x)\, r(x,y)\, \frac{d\log P_\theta(y\mid x)}{d\theta}
+= \mathbb{E}_{y\sim P_\theta(\cdot\mid x)}
+\left[\,r(x,y)\,\nabla_\theta \log P_\theta(y\mid x)\,\right]
+\;}
+$$
+
+<div class="box key">
+<span class="label">补充 · 这一步到底买到了什么</span>
+<p><strong>买到了「可采样」。</strong>左边要对 $|V|^{|y|}$ 个 $y$ 求和，右边只要从模型里采一条 $y$ 出来算梯度。
+采一条就是一次前向 + 一次反向，代价和 SFT 完全一样。</p>
+<p><strong>代价是方差。</strong>用一条样本估期望，方差可以大到让梯度几乎全是噪声。后面所有的工程技巧
+（baseline、advantage、组内归一化、PPO 的裁剪）都是在<strong>不改变期望的前提下压方差</strong>。</p>
+<p>还有一个容易忘的前提：这个梯度是<strong>关于当前策略的</strong>。一旦 $\theta$ 更新，旧样本就不再服从 $P_\theta$，
+估计就有偏了。所以朴素 REINFORCE 必须 on-policy——每更新一次就要重新采样。PPO 用重要性采样把这一点放宽了一些，但没取消。</p>
+</div>
+
+<h4>和 SFT 的梯度对照</h4>
+
+<p>把两条梯度并排放，差别一目了然：</p>
+
+<table>
+<thead><tr><th></th><th>梯度</th><th>样本从哪来</th><th>权重</th></tr></thead>
+<tbody>
+<tr><td>SFT</td><td>$-\nabla_\theta \log \pi_\theta(y^\star\mid x)$</td><td>人类写的 $y^\star$</td><td>恒为 $-1$（每条都一样重）</td></tr>
+<tr><td>REINFORCE</td><td>$+\,r(x,y)\,\nabla_\theta\log \pi_\theta(y\mid x)$</td><td>模型自己采的 $y$</td><td>由奖励决定，可正可负</td></tr>
+</tbody>
+</table>
+
+<p>形式几乎一样（都是 $\nabla\log\pi$ 乘一个系数），但三处不同：<strong>符号</strong>（一个最小化一个最大化）、
+<strong>样本来源</strong>（固定的 vs 自己采的）、<strong>权重</strong>（常数 vs 分数）。
+第三点是全部差别的来源——SFT 里每条样本都「同样正确」，RL 里每条样本的好坏要自己判。</p>
+
+<h3 id="s47">4.7 三步算法与实践细节 <span class="tag s">板书</span></h3>
+
+<p>板书把 REINFORCE 写成一个三步循环，非常干净：</p>
+
+<ol class="steps">
+<li><strong>采样。</strong>给定 prompt $x$，从<strong>当前</strong>策略采一条回答 $y \sim P_\theta(\cdot\mid x)$。</li>
+<li><strong>打分。</strong>用<strong>冻结</strong>的奖励模型算 $r(x,y)$。注意「冻结」两个字：RM 在这一步不更新。</li>
+<li><strong>更新。</strong>把 $\theta$ 沿 $\nabla_\theta\log P_\theta(y\mid x)$ 的方向推，推力大小按奖励缩放。</li>
+</ol>
+
+$$
+\theta \;\leftarrow\; \theta + \eta\; r(x,y)\;\nabla_\theta \log P_\theta(y\mid x)
+$$
+
+<h4>实践中的三条修正</h4>
+
+<p>板书在 "In practice" 下面写了三条，每一条都对应一个真实的工程问题。</p>
+
+<p><strong>(1) 一个 prompt 采 $k$ 条。</strong>板书给的取值是 $k\in\{1,8,16,32,64\}$。
+$k=1$ 时一条样本估期望，方差大到基本训不动；$k$ 越大估计越准，但采样成本线性上升。
+$k$ 同时决定了 baseline 的质量——这正是 GRPO 的出发点。</p>
+
+<p><strong>(2) 不要直接用原始奖励。</strong>板书写的处理是</p>
+
+$$
+\tilde r(x,y_i) \;=\; \frac{r(x,y_i) - \mu_r}{\sigma_r}
+$$
+
+<p>其中 $\mu_r,\sigma_r$ 是<strong>同一组样本内</strong>的均值和标准差。这一步把「奖励的绝对尺度」消掉，只留「这条比同组平均好多少」。
+它与 §3.2 里 BT 的平移不变是同一个思想：<strong>只需要相对好坏，不需要绝对分数</strong>。</p>
+
+<p><strong>(3) 逐 token 扣 KL。</strong>板书最后一行是</p>
+
+$$
+\text{Total}\;=\; A(x,y) \;-\; \beta\cdot \mathrm{KL}_t
+$$
+
+<p>也就是把「比平均好多少」减去「这一步偏离参考策略多少」，作为该 token 的回报。
+$\beta$ 大则模型不敢动，$\beta$ 小则很快跑飞（§4.8 会给出它的闭式含义）。</p>
+
+<h4>用一组数字看 baseline 的作用 <span class="tag n">补充</span></h4>
+
+<p>假设奖励只有 $0/1$（对 / 错），一个 prompt 采 $k=4$ 条，只有一条对。两种做法的梯度权重完全不同：</p>
+
+<table>
+<thead><tr><th>样本</th><th class="num">$r$</th><th class="num">直接用 $r$ 当权重</th><th class="num">用 $A=r-\mu$（$\mu=0.25$）</th></tr></thead>
+<tbody>
+<tr><td>第 1 条（对）</td><td class="num">1.00</td><td class="num">+1.00</td><td class="num">+0.75</td></tr>
+<tr><td>第 2 条（错）</td><td class="num">0</td><td class="num">0</td><td class="num">−0.25</td></tr>
+<tr><td>第 3 条（错）</td><td class="num">0</td><td class="num">0</td><td class="num">−0.25</td></tr>
+<tr><td>第 4 条（错）</td><td class="num">0</td><td class="num">0</td><td class="num">−0.25</td></tr>
+</tbody>
+</table>
+
+<p>左边那一列：错的样本权重是 0，<strong>既不被推高也不被压低</strong>——它们只是「没被学到」。
+右边那一列：错的样本权重是负的，<strong>被主动压低</strong>。</p>
+
+<p>这就是「只会说对的」和「知道什么是不对的」的差别。而且注意右边四条的权重之和是 $0$：
+整组的平均梯度为零，只有<em>相对</em>好坏在起作用——这也解释了为什么归一化之后 $\mu$ 取多少不重要。</p>
+
+<h3 id="s48">4.8 KL 约束与闭式解 <span class="tag a">推导</span></h3>
+
+<p>上面那个「Total = A − β·KL」不是随手加的。它来自一个有明确解的目标：</p>
+
+$$
+\max_{\pi_\theta}\;\;
+\mathbb{E}_{x\sim\mathcal{D}}\Big[
+\underbrace{\mathbb{E}_{y\sim\pi_\theta(\cdot\mid x)}\big[r_\phi(x,y)\big]}_{\text{让打分器满意}}
+\;-\;\beta\,
+\underbrace{\mathrm{KL}\big(\pi_\theta(\cdot\mid x)\,\|\,\pi_{\text{ref}}(\cdot\mid x)\big)}_{\text{别走太远}}
+\Big]
+$$
+
+<p>其中</p>
+
+$$
+\mathrm{KL}\big(\pi_\theta\|\pi_{\text{ref}}\big)
+= \mathbb{E}_{y\sim\pi_\theta}\!\left[\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\right]
+= \mathbb{E}_{y\sim\pi_\theta}\!\left[\sum_{t}\log\frac{\pi_\theta(y_t\mid x,y_{&lt;t})}{\pi_{\text{ref}}(y_t\mid x,y_{&lt;t})}\right]
+$$
+
+<p>最后一个等式说明了为什么 KL 可以<strong>拆到 token 上</strong>：序列级的 log 比值就是逐 token log 比值之和。
+板书那行 $\beta\cdot\mathrm{KL}_t$ 里的下标 $t$ 就是这个意思。</p>
+
+<p>$\beta$ 是这一节唯一真正重要的超参：$\beta\to0$ 退化成无约束的奖励最大化（模型会崩）；
+$\beta\to\infty$ 时策略完全不动，等于 $\pi_{\text{ref}}$。它同时在做三件事——
+<strong>限制 reward hacking 的空间、保住语言能力、把「走多远」变成一个可调的旋钮</strong>。</p>
+
+<h4>闭式解：最优策略是参考策略的指数重加权 <span class="tag a">推导</span></h4>
+
+<p>先固定 $x$，把问题写成对分布 $\pi(\cdot\mid x)$ 的变分问题（记 $r(y) = r_\phi(x,y)$，$\pi_{\text{ref}}(y)=\pi_{\text{ref}}(y\mid x)$）：</p>
+
+$$
+\min_{\pi}\;\; \sum_{y}\pi(y)\left[\log\frac{\pi(y)}{\pi_{\text{ref}}(y)} - \frac{r(y)}{\beta}\right]
+\quad\text{s.t.}\quad \sum_y \pi(y) = 1
+$$
+
+<p>拉格朗日函数 $\mathcal{J} = \sum_y \pi(y)\big[\log\frac{\pi(y)}{\pi_{\text{ref}}(y)} - \frac{r(y)}{\beta}\big] + \lambda\big(\sum_y\pi(y)-1\big)$，
+对 $\pi(y)$ 求偏导并令其为零：</p>
+
+$$
+\frac{\partial \mathcal{J}}{\partial \pi(y)}
+= \log\frac{\pi(y)}{\pi_{\text{ref}}(y)} + 1 - \frac{r(y)}{\beta} + \lambda = 0
+$$
+
+<p>解出</p>
+
+$$
+\boxed{\;\pi^\star(y\mid x) \;=\; \frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\left(\frac{r(x,y)}{\beta}\right)\;}
+\qquad
+Z(x) = \sum_{y}\pi_{\text{ref}}(y\mid x)\exp\!\left(\frac{r(x,y)}{\beta}\right)
+$$
+
+<div class="box key">
+<span class="label">补充 · 这个式子的三个含义</span>
+<ol>
+<li><strong>RL 不发明新行为，只重新分配质量。</strong>$\pi^\star$ 是 $\pi_{\text{ref}}$ 乘上一个权重后的重归一化。
+$\pi_{\text{ref}}$ 支撑集之外的回答，权重永远是 0——<strong>采样不到的回答，RL 永远学不会</strong>。
+这是「SFT 决定上限」这句话最严格的版本。</li>
+<li><strong>$\beta$ 是「温度」。</strong>$\beta$ 越小，$e^{r/\beta}$ 越尖，策略越集中在高分回答上；$\beta$ 越大越平。
+所以 KL 系数和「探索强度」是同一个旋钮的两个名字。</li>
+<li><strong>$Z(x)$ 只和 $x$ 有关。</strong>这一点在 §4.10 推 DPO 时是关键——同一个 prompt 下比较两个回答，$Z(x)$ 会被约掉。</li>
+</ol>
+</div>
+
+<p>把上式两边取对数，可以<strong>反解出奖励</strong>：</p>
+
+$$
+\log\pi^\star(y\mid x) = \log\pi_{\text{ref}}(y\mid x) + \frac{r(x,y)}{\beta} - \log Z(x)
+$$
+
+$$
+\Longrightarrow\qquad
+r(x,y) \;=\; \beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \;+\; \beta\log Z(x)
+$$
+
+<p>这句话的信息量很大：<strong>「奖励」和「最优策略」是一一对应的</strong>。
+给定 $\pi^\star$ 就能写出 $r$，给定 $r$ 就能写出 $\pi^\star$。所以「学一个奖励模型」和「直接学策略」在信息上是等价的——
+这就是 DPO 的出发点。</p>
+
+<h3 id="s49">4.9 PPO 与 GRPO：baseline 从哪来 <span class="tag n">补充</span></h3>
+
+<p>回到 §4.6 的梯度。它有一个致命的实践问题：方差太大。所有后续算法都在回答同一个问题——
+<strong>用什么当 $b$，使得 $\mathbb{E}[(r-b)\nabla\log\pi]=\mathbb{E}[r\nabla\log\pi]$ 但方差更小。</strong></p>
+
+<p>PPO 与 GRPO 的全部区别，就是这个 $b$ 怎么算、以及要不要信任域裁剪。</p>
+
+<table>
+<thead><tr><th></th><th>PPO</th><th>GRPO</th></tr></thead>
+<tbody>
+<tr><td>baseline</td><td>单独训一个 value 网络 $V_\psi(s_t)$，逐 token 估计</td><td><strong>同一个 prompt 采一组</strong>（$G$ 条），用组内均值当 baseline</td></tr>
+<tr><td>额外参数</td><td>value head，与策略同规模</td><td>无</td></tr>
+<tr><td>优势估计</td><td>GAE：$\hat A_t = \sum_l (\gamma\lambda)^l \delta_{t+l}$</td><td>$\hat A_i = \dfrac{r_i - \operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})}$</td></tr>
+<tr><td>裁剪</td><td>$\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)$，$\rho=\pi_\theta/\pi_{\text{old}}$</td><td>同样的 clip，但通常只需一层（token 级比率）</td></tr>
+<tr><td>显存</td><td>策略 + 参考 + 价值，三份模型</td><td>策略 + 参考，两份</td></tr>
+<tr><td>适用</td><td>奖励稠密、需要精细 credit assignment</td><td>奖励稀疏、按整条回答打分（正是 RM 的形态）</td></tr>
+</tbody>
+</table>
+
+<p>注意 GRPO 那一行的优势公式，就是板书 §4.7 里那条 $(r-\mu)/\sigma$ 的逐样本版本。
+换句话说：<strong>GRPO = 把「组内归一化」直接当成 advantage，省掉 value 网络</strong>。
+这也是为什么它对奖励模型的形态特别友好——RM 给的本来就是整条序列一个分，逐 token 的 $V_\psi$ 在这里性价比不高。</p>
+
+<div class="box gold">
+<span class="label">易错 · 「通用 RL 算法」不等于「随便换个算法都行」</span>
+<p>REINFORCE、PPO、GRPO、RLOO 都能写进同一个目标函数，但它们的差别在<strong>方差</strong>。
+语言模型的动作空间是 $10^5$ 维、episode 长几千步，朴素策略梯度的方差大到几乎不可用。
+所谓「算法」，在这里基本就是「怎么在不算错期望的前提下把方差压下来」。</p>
+</div>
+
+<h3 id="s410">4.10 DPO：把奖励模型隐式化 <span class="tag a">推导</span></h3>
+
+<p>§4.8 已经得到 $r(x,y) = \beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta\log Z(x)$。
+把它代回 BT 的 $\Delta$：</p>
+
+$$
+\Delta = r(x,y_w) - r(x,y_l)
+= \beta\left[\log\frac{\pi^\star(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)} - \log\frac{\pi^\star(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}\right]
+\;+\; \underbrace{\beta\log Z(x) - \beta\log Z(x)}_{=\,0}
+$$
+
+<p><strong>$Z(x)$ 被约掉了</strong>——因为两条回答共享同一个 prompt。这一步是整个推导的关键：
+它让一个<strong>无法计算的配分函数</strong>消失了。于是把 $\pi^\star$ 换成待学的 $\pi_\theta$，直接得到 DPO 损失：</p>
+
+$$
+\mathcal{L}_{\text{DPO}}(\theta)
+= -\,\mathbb{E}_{(x,y_w,y_l)}\left[\log\sigma\!\left(
+\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+-\beta\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}
+\right)\right]
+$$
+
+<p>形式上它和 §3.3 的 RM 损失<strong>一模一样</strong>，只是把 $r_\phi$ 换成了「策略相对参考策略的 log 比值」。
+所以 DPO 可以读成：<strong>让策略自己当奖励模型</strong>。</p>
+
+<table>
+<thead><tr><th></th><th>RLHF（PPO）</th><th>DPO</th></tr></thead>
+<tbody>
+<tr><td>要不要 RM</td><td>要，单独训一个</td><td>不要，隐式在 $\pi_\theta/\pi_{\text{ref}}$ 里</td></tr>
+<tr><td>要不要在线采样</td><td>要，每步都采</td><td>不要，纯离线，一个损失一次前反向</td></tr>
+<tr><td>稳定性</td><td>差，超参多（$\beta$、clip、value lr…）</td><td>好，就是个二分类</td></tr>
+<tr><td>上限</td><td>能持续探索新回答</td><td>受限于固定的偏好数据集，容易过拟合到 $y_w$ 的措辞</td></tr>
+</tbody>
+</table>
+
+<h3 id="s411">4.11 ground truth 回来的时候：可验证奖励 <span class="tag n">补充</span></h3>
+
+<p>§1.4 说过 RL 阶段没有 ground truth。但如果任务本身可验证，这句话就不成立了：
+数学题有标准答案、代码有单元测试、格式有语法检查。这时奖励不需要学，<strong>算出来就行</strong>：</p>
+
+$$
+r(x,y) \;=\; \mathbb{1}\big[\operatorname{verify}(y) = \text{正确}\big] \;\in\;\{0,1\}
+$$
+
+<p>这条路线（RLVR，reinforcement learning with verifiable rewards）把「奖励模型」整个换成了一个程序。
+好处很直接：</p>
+
+<ul>
+<li><strong>没有奖励模型，就没有奖励模型的 reward hacking。</strong>信号是干净的、不可贿赂的（除非贿赂验证器本身）；</li>
+<li><strong>可以无限采样、无限训练</strong>，不受标注量限制；</li>
+<li><strong>ground truth 回来了</strong>，于是又能算准确率、又能做 early stopping。</li>
+</ul>
+
+<p>但它换来了另一组问题，而且这些问题是新的：</p>
+
+<table>
+<thead><tr><th>新问题</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td>奖励极其稀疏</td><td>一条 5000 token 的推理链只给一个 0/1，中间过程没有任何信号</td></tr>
+<tr><td>长度膨胀</td><td>更长的推理链「碰对」的概率更高，于是长度本身被奖励了</td></tr>
+<tr><td>格式崩塌</td><td>为了拿分，模型可能放弃可读性，输出只有验证器能懂的片段</td></tr>
+<tr><td>验证器可被 hack</td><td>代码题里读测试文件、数学题里猜答案格式——<strong>hacking 的对象从 RM 变成了验证器</strong></td></tr>
+<tr><td>只覆盖可验证领域</td><td>写作、共情、风格、安全性都不可验证，这些能力它一点也教不了</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">补充 · 一句话把整讲收起来</span>
+<p>三级台阶的 ground truth 分别是：<strong>示范（SFT）→ 比较（RM）→ 没有（RL）</strong>，
+而 RLVR 又把「没有」换回了「有」，但换回来的是<strong>任务的答案</strong>，不是<strong>人类的偏好</strong>。</p>
+<p>所以「模型推理变强了」和「模型更对齐了」是两件事。前者靠可验证奖励就能做，后者仍然需要人来判断——
+这也正是奖励模型到现在还没有被淘汰的原因。</p>
+</div>
+
+<hr>
+
+<h2 id="ap">附录</h2>
+
+<h3 id="apA">A · 公式速查</h3>
+
+<table>
+<thead><tr><th>名称</th><th>式子</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>自回归分解</td><td>$\pi_\theta(y\mid x)=\prod_{t}\pi_\theta(y_t\mid x,y_{&lt;t})$</td><td>所有方法的前提</td></tr>
+<tr><td>前缀–回答</td><td>$LM_\theta(\hat y=r\mid p)=\prod_i LM_\theta(r_i\mid p,r_{&lt;i})$</td><td>多轮 / 工具调用都只是 $p$ 更长</td></tr>
+<tr><td>缩放律（板书）</td><td>$L(N)=(N_c/N)^{\alpha_N}$，同式对 $D$、$C$</td><td>纯幂律，无常数项</td></tr>
+<tr><td>SFT 损失</td><td>$-\dfrac{\sum_t m_t\log\pi_\theta(x_t\mid x_{&lt;t})}{\sum_t m_t}$</td><td>$m_t=1$ 只在回答区间</td></tr>
+<tr><td>token 交叉熵</td><td>$\log\sum_v e^{z_v}-z_{y_t}$</td><td>log-sum-exp 形式，数值稳定</td></tr>
+<tr><td>SFT 梯度</td><td>$\mathbb{E}_{v\sim\pi}[\nabla z_v]-\nabla z_{y_t}$</td><td>推高 gold，按概率压低其余</td></tr>
+<tr><td>SFT = 前向 KL</td><td>$\mathcal{L}=\mathrm{KL}(p_{\text{data}}\|\pi_\theta)-H(p_{\text{data}})$</td><td>mass-covering → 多峰平均</td></tr>
+<tr><td>打分函数</td><td>$r_\phi(x,y)=h_t^{\top}w+b$</td><td>取最后一个位置的隐状态</td></tr>
+<tr><td>Bradley–Terry</td><td>$P(y_w\succ y_l)=\dfrac{e^{r_w}}{e^{r_w}+e^{r_l}}=\sigma(r_w-r_l)$</td><td>两种写法等价</td></tr>
+<tr><td>差值</td><td>$\Delta=w^{\top}(h_w-h_l)$</td><td>偏置 $b$ 被约掉</td></tr>
+<tr><td>RM 损失</td><td>$-\log\sigma(\Delta)=\operatorname{softplus}(-\Delta)$</td><td>二分类逻辑回归</td></tr>
+<tr><td>RM 梯度</td><td>$-\sigma(-\Delta)\big(\nabla r_w-\nabla r_l\big)$</td><td>权重 = 判错的概率</td></tr>
+<tr><td>Plackett–Luce</td><td>$-\sum_k\big[r(y_k)-\log\sum_{j\ge k}e^{r(y_j)}\big]$</td><td>$K=2$ 退化为 BT</td></tr>
+<tr><td>RLHF 目标</td><td>$\max_\pi\mathbb{E}[r_\phi]-\beta\,\mathrm{KL}(\pi\|\pi_{\text{ref}})$</td><td>$\beta$ 控制漂移</td></tr>
+<tr><td>最优策略</td><td>$\pi^\star\propto\pi_{\text{ref}}\exp(r/\beta)$</td><td>指数重加权</td></tr>
+<tr><td>反解奖励</td><td>$r=\beta\log\dfrac{\pi^\star}{\pi_{\text{ref}}}+\beta\log Z(x)$</td><td>DPO 的起点</td></tr>
+<tr><td>DPO 损失</td><td>$-\log\sigma\!\big(\beta\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}-\beta\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}\big)$</td><td>$Z(x)$ 约掉</td></tr>
+<tr><td>GRPO 优势</td><td>$\hat A_i=\dfrac{r_i-\operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})}$</td><td>组内归一化，无 value 网络</td></tr>
+<tr><td>分数差的含义</td><td>$\Delta=\log\dfrac{p}{1-p}$</td><td>log odds of preference</td></tr>
+<tr><td>Return</td><td>$G_t=\sum_{k=t}^{T}r_k$</td><td>从这一步起的全部奖励</td></tr>
+<tr><td>Value</td><td>$V_\psi(s_t)=\mathbb{E}[G_t\mid s_t]$</td><td>「还能拿多少分」的估计</td></tr>
+<tr><td>Advantage</td><td>$\hat A_t=G_t-V_\psi(s_t)$</td><td>$A&gt;0$ 比平常好</td></tr>
+<tr><td>REINFORCE</td><td>$\nabla_\theta J=\mathbb{E}[\,r(x,y)\nabla_\theta\log P_\theta(y\mid x)]$</td><td>log-derivative trick 的结果</td></tr>
+<tr><td>策略更新</td><td>$\theta\leftarrow\theta+\eta\,r\,\nabla_\theta\log P_\theta$</td><td>三步算法的第 3 步</td></tr>
+</tbody>
+</table>
+
+<h3 id="apB">B · 符号表</h3>
+
+<dl class="kv">
+<dt>$x$</dt><dd>prompt（输入）</dd>
+<dt>$y$</dt><dd>回答（输出序列），$|y|$ 是长度</dd>
+<dt>$y_w,\;y_l$</dt><dd>一对比较里更受偏好 / 更不受偏好的回答（w = winner, l = loser）</dd>
+<dt>$\pi_\theta$</dt><dd>待训练的策略，即语言模型</dd>
+<dt>$\pi_{\text{ref}}$</dt><dd>参考策略，通常是 SFT 后的模型，冻结</dd>
+<dt>$p_{\text{data}}$</dt><dd>示范数据的分布（SFT 数据）</dd>
+<dt>$m_t$</dt><dd>loss 掩码，1 表示该位置参与损失</dd>
+<dt>$z_t$</dt><dd>第 $t$ 步的 logits，$z_t\in\mathbb{R}^{|V|}$</dd>
+<dt>$h_t$</dt><dd>第 $t$ 个位置的隐状态，$h_t\in\mathbb{R}^{d}$</dd>
+<dt>$w,\;b$</dt><dd>奖励模型的标量头参数（$w\in\mathbb{R}^d$，$b\in\mathbb{R}$）</dd>
+<dt>$r_\phi$</dt><dd>奖励模型，$\phi=(w,b)$；$r_w$ 是 $r_\phi(x,y_w)$ 的简写</dd>
+<dt>$\Delta$</dt><dd>分数差 $r_w-r_l$</dd>
+<dt>$\sigma$</dt><dd>sigmoid，$\sigma(z)=1/(1+e^{-z})$</dd>
+<dt>$\beta$</dt><dd>KL 约束系数（也是「温度」）</dd>
+<dt>$Z(x)$</dt><dd>配分函数 $\sum_y\pi_{\text{ref}}(y\mid x)e^{r/\beta}$，无法精确计算</dd>
+<dt>$p,\;r$</dt><dd>前缀（prefix）与回答（response），SFT 的通用记号</dd>
+<dt>$G_t$</dt><dd>return：从第 $t$ 步起累加的全部奖励</dd>
+<dt>$V_\psi(s_t)$</dt><dd>value function，由网络 $\psi$ 估计</dd>
+<dt>$\hat A_t$</dt><dd>advantage $=G_t-V_\psi(s_t)$</dd>
+<dt>$b(x)$</dt><dd>baseline；$A=r-b$，只降方差、不改期望</dd>
+<dt>$\mu_r,\sigma_r$</dt><dd>同一组 rollout 的奖励均值与标准差</dd>
+<dt>$k,\;G$</dt><dd>每个 prompt 采样的条数（板书 $k\in\{1,8,16,32,64\}$）</dd>
+</dl>
+
+<h3 id="apC">C · 自测十题</h3>
+
+<div class="quiz">
+<p class="q">SFT 为什么只对 response token 算 loss？举一个不 mask 会出的具体故障。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>三个层次：算力上，prompt 通常比回答长，不 mask 会让大部分梯度花在「复述问题」上；
+语义上，推理时 prompt 是给定的，模型不需要生成它；
+多轮对话里，若把 user turn 纳入损失，模型会学「扮演用户」，推理时可能自问自答或伪造对话。</p>
+<p>具体故障：右 padding 且不 mask 时，pad token 占据大部分位置，模型学会「输出 pad」，表现为生成很短就停。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">写出 SFT 的梯度，并说明它为什么「已经在做对比，但负样本不对」。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>$\nabla_\theta\mathcal{L}=\frac{1}{\sum m_t}\sum_t m_t\big(\mathbb{E}_{v\sim\pi_\theta}[\nabla z_{t,v}]-\nabla z_{t,y_t}\big)$。</p>
+<p>它推高示范 token 的 logit、按当前概率压低其余 token，形式上就是对比学习。
+但负样本是<strong>模型自己认为可能的 token</strong>，不是人类讨厌的回答。
+「示范者没这么写」和「这么写不好」是两件事，这个信息缺口只能靠成对比较补上。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">前向 KL 与反向 KL 的差别，如何解释 SFT 模型爱 hedging？</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>前向 $\mathrm{KL}(p\|q)$ 是 mass-covering：$p&gt;0$ 而 $q\to0$ 时惩罚无穷大，所以 $q$ 必须覆盖 $p$ 的所有峰。
+SFT 最小化的是 $\mathrm{KL}(p_{\text{data}}\|\pi_\theta)$，因此当同一个问题有多种都对的写法时，
+模型会学出一个「把它们揉在一起」的平均答案——四平八稳、什么都说了、什么都没说。</p>
+<p>反向 $\mathrm{KL}(\pi\|p^\star)$ 是 mode-seeking：抓住一个峰就行。所以 RL/DPO 出来的回答更短、更敢下结论，
+但也更容易跑偏到某个奇怪的峰。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">证明 BT 损失对 $r$ 的平移不变，并说明 $b$ 为什么可以删。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>令 $r'=r+c$，则 $\Delta'=(r_w+c)-(r_l+c)=r_w-r_l=\Delta$，损失 $-\log\sigma(\Delta)$ 不变。
+代入 $r=h^\top w+b$：$\Delta=(h_w^\top w+b)-(h_l^\top w+b)=w^\top(h_w-h_l)$，$b$ 直接消掉，
+它对损失的梯度恒为 0，所以是一个不可辨识的参数。只有用绝对分数做阈值时才需要它。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">说明 BT 就是逻辑回归：特征和标签分别是什么？</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>特征 $\varphi=h_w-h_l\in\mathbb{R}^d$（两条回答隐状态之差），标签 $z=1$（表示 $y_w$ 赢），
+模型 $P(z=1\mid\varphi)=\sigma(w^\top\varphi)$——标准逻辑回归，无偏置。
+若把 pair 随机交换顺序并把标签翻成 0，就得到完整的二元交叉熵。</p>
+<p>推论：打分层关于 $w$ 是凸的，不会训崩；非凸性全部来自主干。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">奖励模型为什么通常只训 1 个 epoch？验证 acc 先升后降说明什么？</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>参数量与策略同量级（$10^9$），pair 数据只有 $10^5$ 量级，参数/样本比约 $10^4$，必然过拟合。
+而且同一 prompt 拆出的 $\binom{K}{2}$ 个 pair 不独立，有效样本量比表面数字更小。</p>
+<p>先升后降说明模型开始记忆训练 pair 的<strong>表面特征</strong>（长度、礼貌用语、markdown 结构），
+这些特征在分布外不相关。降的那一段正是 reward hacking 的种子——策略后来会去优化这些特征。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">写出带 KL 约束的 RLHF 目标与闭式解，并解释「采样不到的回答学不会」。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>$\max_\pi\mathbb{E}_{x}\mathbb{E}_{y\sim\pi}[r_\phi(x,y)]-\beta\mathrm{KL}(\pi\|\pi_{\text{ref}})$，
+解为 $\pi^\star(y\mid x)=\frac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)e^{r(x,y)/\beta}$。</p>
+<p>因为 $\pi^\star$ 是 $\pi_{\text{ref}}$ 乘一个权重后重归一化，凡 $\pi_{\text{ref}}(y\mid x)=0$ 的回答，
+权重永远是 0。所以 RL 只能在参考策略的<strong>支撑集</strong>内重新分配概率质量，不能凭空造出新回答。
+这就是「SFT 决定上限」的严格版本。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">DPO 推导里 $Z(x)$ 为什么能约掉？如果两条回答来自不同 prompt 会怎样？</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>反解式是 $r(x,y)=\beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)}+\beta\log Z(x)$。
+$\Delta=r(x,y_w)-r(x,y_l)$ 里，两项的 $Z$ 都是<strong>同一个</strong> $Z(x)$（共享 prompt），相减为 0。</p>
+<p>如果 $x_w\ne x_l$，$Z(x_w)$ 与 $Z(x_l)$ 不同、无法约掉，而 $Z$ 需要对全词表求和、不可计算，
+DPO 的推导就不成立了。所以 DPO 数据必须是<strong>同一个 prompt 下的两个回答</strong>。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">为什么策略梯度要减一个 baseline？用 0/1 奖励、$k=4$ 采到 1 条对的例子说明差别。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>不减 baseline 时权重是 $r\in\{0,1\}$，错的样本权重为 0——它们<strong>既不被推高也不被压低</strong>，
+只是「没被学到」。减掉组均值 $\mu=0.25$ 后，对的权重 $+0.75$、错的权重 $-0.25$——
+错的被<strong>主动压低</strong>。四者权重之和为 0，只有相对好坏起作用。</p>
+<p>数学上 $\mathbb{E}[b(x)\nabla_\theta\log\pi]=0$，所以减 baseline 不改期望，只降方差。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q">写出 REINFORCE 的三行推导，并说明中间那一步为什么是整件事的关键。</p>
+<details><summary>参考答案</summary>
+<div class="body">
+<p>$\frac{dJ}{d\theta}=\sum_y r\frac{dP_\theta}{d\theta}
+=\sum_y r\,P_\theta\cdot\frac{1}{P_\theta}\frac{dP_\theta}{d\theta}
+=\sum_y P_\theta\,r\,\frac{d\log P_\theta}{d\theta}
+=\mathbb{E}_{y\sim P_\theta}[r\nabla_\theta\log P_\theta]$。</p>
+<p>关键是「乘一个 $P$ 再除一个 $P$」：除出来的 $\frac{1}{P}\frac{dP}{d\theta}$ 正好是 $\nabla\log P$，
+而乘上的 $P$ 让求和变成了<strong>期望</strong>。期望可以用采样估计，求和不行——
+$y$ 的空间是 $|V|^{|y|}$，枚举不了。所以这一步买到的是「可采样」，代价是方差。</p>
+</div>
+</details>
+</div>
+
+<h3 id="apD">D · 板书逐张对照</h3>
+
+<p>课堂板书共 22 张（<code>lec8/</code>，两张是同角度的重复）。下表按拍照顺序列出每张写了什么、对应本文哪一节，
+用来核对「有没有漏」。</p>
+
+<table>
+<thead><tr><th>#</th><th>板书内容</th><th>对应小节</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Pretraining 四条：① 超大规模语料 ② 巨大模型 + 缩放律 $L(N),L(D),L(C)$ ③ 擅长 next-word ④ 不擅长 following instructions</td><td>§1.1</td></tr>
+<tr><td>2</td><td>SFT 定义：收集 input/output 对，minimize NLL on output tokens；$D_{\text{SFT}}=\{(x_i,y_i)\}$；JSONL 的 user/assistant 结构</td><td>§2.1、§2.6</td></tr>
+<tr><td>3</td><td>$L=\frac1N\sum-\log P_\theta(y_i\mid x_i)$；$y_i=y_{i1}\cdots y_{iT}$；teacher forcing 三行；$LM_\theta(\hat y=r\mid p)=\prod LM_\theta(r_i\mid p,r_{&lt;i})$；<em>Problem of SFT</em> 三条</td><td>§2.2、§2.8</td></tr>
+<tr><td>4</td><td>$\theta_0\to\theta_1$（SFT）$\to\theta_2$（RM）；一个 prompt 采 $k$ 条；human 的两种协议：select best（$k-1$ 对）/ ranking（$k(k-1)/2$ 对）</td><td>§3.6、§4.3</td></tr>
+<tr><td>5</td><td>RM 的 key idea：$P(y_w)$ 强偏好 / $P(y_l)$ 强拒绝；input = prompt + response，output = 标量；BT pairwise 公式</td><td>§3.1、§3.2</td></tr>
+<tr><td>6</td><td>maximize $P(y_w\succ y_l\mid x)$ $\Leftrightarrow$ $\min-\log P$ $=\min-\log\sigma(r_\theta^w-r_\theta^l)$</td><td>§3.3</td></tr>
+<tr><td>7</td><td>$L(\theta,D)=\mathbb{E}[-\log\sigma(\Delta)]$；$\Delta$ = gap / margin；$\Delta=\log\frac{p}{1-p}$ = log odds of preference</td><td>§3.3</td></tr>
+<tr><td>8</td><td>同上，加 <em>How to use the reward model</em>：prompt → tuned LLM 采样 $n$ 条 → RM 打分 → 取最高</td><td>§3.1</td></tr>
+<tr><td>9</td><td>(3) General RL Algo：$\theta_1\to\theta_2$ 的离线链 vs <em>online learning</em> 的 $\theta_1\to\cdots\to\theta_T$；$\sigma_1\cdots\sigma_k$ 是真值排名</td><td>§4.3</td></tr>
+<tr><td>10</td><td>RL 基本循环图：$s_t, r_t \to$ agent $\to a_t \to$ environment $\to s_{t+1}, r_{t+1}$</td><td>§4.2</td></tr>
+<tr><td>11</td><td>Agent = GPT policy $\pi_\theta(a_t\mid s_t)$；Environment = context $(x)$ + 当前输出 + 奖励计算；Action = 采样出的 token</td><td>§4.2</td></tr>
+<tr><td>12–13</td><td>对照表：Agent → GPT actor；Policy → $P_\theta(y_t\mid x,y_{&lt;t})$；State → $s_t=(x,y_{&lt;t})$；Action → $a_t=y_t$；Reward → $r_\theta(x,y)$；Value function</td><td>§4.2</td></tr>
+<tr><td>14</td><td>Value $V_\psi(s_t)$ = expected remaining return；Return $G_t=\sum_{k=t}^T r_k$；Advantage $\hat A_t=G_t-V_\psi(s_t)$</td><td>§4.5</td></tr>
+<tr><td>15</td><td>RL algorithm：maximize expected reward，$\max\mathbb{E}[r(x,y)]=\sum_y P_\theta(y\mid x)r(x,y)$</td><td>§4.4</td></tr>
+<tr><td>16–17</td><td>$\theta^{t+1}\leftarrow\theta^t-\eta\nabla_\theta J(\theta^t)$；First RL algorithm: policy gradient，REINFORCE (Williams, 1992)；$\frac{dJ}{d\theta}=\sum_y r\frac{dP_\theta}{d\theta}$；$\frac{d\log y}{d\theta}=\frac1y\frac{dy}{d\theta}$</td><td>§4.6</td></tr>
+<tr><td>18</td><td>log-derivative trick 三行，框出 $\frac{1}{P}\frac{dP}{d\theta}$，得 $\frac{dJ}{d\theta}=\mathbb{E}_{y\sim P_\theta}[r\nabla\log P_\theta]$</td><td>§4.6</td></tr>
+<tr><td>19</td><td>REINFORCE 三步：sample $y$ → 用冻结 RM 算 $r(x,y)$ → 沿 $\nabla\log P_\theta$ 按 reward 缩放调整 $\theta$</td><td>§4.7</td></tr>
+<tr><td>20</td><td><em>In practice</em>：每个 prompt rollout $k$ 条，$k\in\{1,8,16,32,64\}$；不用原始 reward，用 $(r-\mu)/\sigma$</td><td>§4.7</td></tr>
+<tr><td>21</td><td>$A(x,y)=r(x,y)-b(x)$；$A&gt;0$ better than usual；$A&lt;0$ worse than usual</td><td>§4.5、§4.7</td></tr>
+<tr><td>22</td><td>$\text{Total}=A(x,y)-\beta\cdot\mathrm{KL}_t$</td><td>§4.7、§4.8</td></tr>
+</tbody>
+</table>
+
+<p class="small">板书没写、本文补的部分（都标了 <span class="tag n">补充</span>）：缩放律的常数项与 U 形解释、loss mask 的三个理由、
+前向 KL 与 mode averaging、RM 的 bias 为何消失、为何只训 1 个 epoch、reward hacking 的机制、
+KL 约束的闭式解、DPO 的推导、PPO/GRPO 的对照、RLVR 的新问题。</p>
+
+<h3 id="apE">E · 参考文献</h3>
+
+<ol class="small">
+<li>Bradley, R. A., &amp; Terry, M. E. (1952). Rank analysis of incomplete block designs: I. The method of paired comparisons. <em>Biometrika</em>.</li>
+<li>Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement learning (REINFORCE). <em>Machine Learning</em>.</li>
+<li>Kaplan, J., et al. (2020). Scaling laws for neural language models. <em>arXiv</em>.</li>
+<li>Hoffmann, J., et al. (2022). Training compute-optimal large language models (Chinchilla). <em>NeurIPS</em>.</li>
+<li>Christiano, P., et al. (2017). Deep reinforcement learning from human preferences. <em>NeurIPS</em>.</li>
+<li>Stiennon, N., et al. (2020). Learning to summarize from human feedback. <em>NeurIPS</em>.</li>
+<li>Ouyang, L., et al. (2022). Training language models to follow instructions with human feedback (InstructGPT). <em>NeurIPS</em>.</li>
+<li>Bai, Y., et al. (2022). Training a helpful and harmless assistant with reinforcement learning from human feedback. <em>arXiv</em>.</li>
+<li>Bai, Y., et al. (2022). Constitutional AI: Harmlessness from AI feedback. <em>arXiv</em>.</li>
+<li>Zhou, C., et al. (2023). LIMA: Less is more for alignment. <em>NeurIPS</em>.</li>
+<li>Rafailov, R., et al. (2023). Direct preference optimization: Your language model is secretly a reward model. <em>NeurIPS</em>.</li>
+<li>Gao, L., Schulman, J., &amp; Hilton, J. (2023). Scaling laws for reward model overoptimization. <em>ICML</em>.</li>
+<li>Shao, Z., et al. (2024). DeepSeekMath: Pushing the limits of mathematical reasoning in open language models (GRPO). <em>arXiv</em>.</li>
+<li>DeepSeek-AI (2025). DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning. <em>arXiv</em>.</li>
+<li>Zheng, L., et al. (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. <em>NeurIPS</em>.</li>
+</ol>
+
+<p class="footnote">本笔记整理自 2026-10-28 课堂（CS40008.01 Lecture 08）。该讲幻灯片尚未发布，
+正文按课堂板书的顺序组织（22 张照片，逐张对照见附录 D）；板书之外的推导、数值与工程细节为笔记补全，
+未经课件核对；若与后续公布的课件冲突，以课件为准。课程内容版权归复旦大学及授课教师所有。</p>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if(typeof renderMathInElement!=='function') return;
+    renderMathInElement(document.body,{delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'\\(',right:'\\)',display:false},
+      {left:'$',right:'$',display:false}
+    ],throwOnError:false,errorColor:'#c0392b'});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
+})();
+</script>
+</body>
+</html>

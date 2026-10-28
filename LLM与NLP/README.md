@@ -4,7 +4,7 @@
 
 - 授课教师：**Baojian Zhou**
 - 课件来源：<https://baojian.github.io/llm-26-fall/>
-- 本目录整理的是 **Lecture 04**、**Lecture 05**、**Lecture 06** 与 **Lecture 07** 四讲
+- 本目录整理的是 **Lecture 04**～**Lecture 08** 五讲（Lecture 08 的幻灯片尚未发布，按课堂板书整理）
 
 ## 笔记
 
@@ -14,12 +14,14 @@
 | Lecture 05 | **注意力与 Transformer**：自注意力八步、Q/K/V 投影、正弦位置编码、RoPE（旋转、复数、相对偏移）、缩放点积注意力与因果掩码、多头注意力、残差 / LayerNorm / pre-LN / FFN、可运行的小模型与参数计数、原始论文的实验证据 | [LLM-05-注意力与Transformer.html](./LLM-05-注意力与Transformer.html) |
 | Lecture 06 | **预训练与解码实践**：位移目标与平均 token 损失（log-sum-exp 数值稳定性）、一次优化器更新的八个阶段、AdamW 的矩与解耦衰减、梯度累积、warmup + 余弦调度、全局梯度裁剪、玩具拟合的解析下界 ln2/10、按 token 加权的验证损失与困惑度、checkpoint 的六类状态与恢复顺序（含实测重启差异）、贪心 / 温度 / top-k / nucleus 解码与可交互沙盒 | [LLM-06-预训练与解码实践.html](./LLM-06-预训练与解码实践.html) |
 | Lecture 07 | **算力预算与扩展律**：一次训练的四元组 (N, D, C, L)、6ND 的三次矩阵乘法推导、16 字节每参数的持久状态、等算力剖面与 U 形最优、损失曲面 E+A/N^α+B/D^β 与最优分配的求导、幂律的双对数拟合（K=1.6, γ=0.25）、Chinchilla 前后指数对比与协议修正、warmup 混杂、冻结预测再揭晓的验证流程（含一次故意失败的外推）、可交互的预算移动演示 | [LLM-07-算力预算与扩展律.html](./LLM-07-算力预算与扩展律.html) |
+| Lecture 08 | **后训练：SFT 与奖励模型**：预训练四条与缩放律回顾（含固定算力下的 U 形）、teacher forcing 与「前缀–回答」记号、loss mask 的三个理由、SFT 梯度与「前向 KL ⇒ 多峰平均」、板书点名的三个问题（GT 难收集 / 训练整个 θ 太贵 → LoRA / 一个 prompt 只有一个回答）、Bradley–Terry 的两种写法与「$r=h_t^\top w+b$ 的 bias 会被约掉」、分数差 = 偏好的 log odds、奖励模型的结构与训练细节（1 个 epoch、$\Delta$ 用 fp32）、select-best 与全排序两种标注协议、Agent–Environment 循环、REINFORCE 的 log-derivative trick、Return / Value / Advantage、KL 约束的闭式解、PPO / GRPO、DPO、可验证奖励 | [LLM-08-后训练-SFT与奖励模型.html](./LLM-08-后训练-SFT与奖励模型.html) |
 
 **渲染版（推荐）**：
 [Lecture 04](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-04-神经语言模型与循环注意力.html) ·
 [Lecture 05](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-05-注意力与Transformer.html) ·
 [Lecture 06](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-06-预训练与解码实践.html) ·
-[Lecture 07](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-07-算力预算与扩展律.html)
+[Lecture 07](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-07-算力预算与扩展律.html) ·
+[Lecture 08](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-08-后训练-SFT与奖励模型.html)
 
 > 表格里的相对路径链接在 **github.com 的文件页**点开只会看到**源码** —— GitHub 只渲染 Markdown，不渲染 HTML。
 > 要看渲染后的页面请用上面的 Pages 链接，或克隆到本地直接双击 `.html`。
@@ -34,6 +36,7 @@
 | 课件 | 幻灯片正文里的内容（公式、表格、示例数值） |
 | 讲者备注 | 幻灯片 `Note:` 里的讲者备注，相当于老师课堂上的口头讲解与提醒 |
 | 补充 | 课件**只有图或只有结论、没有展开**的地方，由本笔记补的推导、验算与几何直觉 |
+| 板书 | 仅用于 Lecture 08：该讲幻灯片尚未发布，标记的是老师黑板上确实写过的内容（附「板书逐张对照」表） |
 
 > **为什么要补这么多「补充」？** 这四讲的幻灯片里有大量**交互式示意图**
 > （网页上靠 JavaScript / Excalidraw 现场绘制，静态打开时是空白的）。本笔记把它们**重画成静态 SVG**，
@@ -48,6 +51,11 @@
 > Lecture 06 还多给了一个**可交互的解码沙盒**（温度 / top-p 两个滑块 + 抽一个 token），
 > 用来亲手验证「阈值越过哪一个 token 就保留到哪一个」这条边界；
 > Lecture 07 有一个**预算移动演示**（1× / 4× / 16×），看等算力剖面的最低点怎么往右移。
+>
+> **Lecture 08 的情况不同**：这一讲的幻灯片老师至今没有发布，笔记是按课堂上拍的 **22 张板书**
+> 逐张整理的，附录 D 有一张「板书逐张对照」表（照片序号 → 板书内容 → 对应小节），
+> 可以直接用来核对有没有漏讲。板书是提纲式的——公式写了、条件没写；结论写了、反例没写，
+> 所以这一讲的「补充」比例明显高于前四讲，每一条都尽量对着板书上那一行展开。
 
 ## 勘误
 
@@ -67,6 +75,10 @@
 | L07 §1.9 | 「四倍算力，超出损失乘 4^-0.25」 | 容易被读成「总损失也降到 70.7%」；笔记明确区分 **超出损失** $L-E$ 与总损失（$E=1.5$ 不动） |
 | L07 §1.11 | 用 $6ND$ 对比 Gopher 与 Chinchilla | 两个数 5.04e23 / 5.88e23 **并不严格相等**，只能说「可比的训练预算」；讲者备注已自我限定，笔记里把差 17% 算出来 |
 | L07 §2.10 | E03 的容差 0.05 nats/token | 这是**本练习预先声明**的容差，不是通用阈值，也不是置信区间；笔记里写明「改容差会让练习失效」 |
+| L08 §1.1 | 缩放律写成纯幂律 $L=(N_c/N)^{\alpha_N}$ | 这样 $N\to\infty$ 时 $L\to0$；实际拟合含不可约项 $E$，纯幂律外推会低估损失。笔记补了 $E+A/N^\alpha+B/D^\beta$ 并说明两者关系 |
+| L08 §2.2 | 板书只写 $\pi_\theta(y\mid x)$ 的分解 | 补了更一般的「前缀 $p$ + 回答 $r$」写法，多轮 / 工具调用都只是 $p$ 更长，不需要新公式 |
+| L08 §3.2 | 打分函数写作 $h_t^\top w+b$ | 偏置 $b$ 在 $\Delta$ 里被减掉、对损失梯度恒为 0，是不可辨识参数；笔记里说明「只在用绝对分做阈值时才需要」 |
+| L08 §3.5 | 未说训练轮数 | 奖励模型的参数/样本比约 $10^4$，只训 1 个 epoch；验证 acc 先升后降的那一段正是 reward hacking 的种子 |
 | L07 全篇 | 所有损失曲线 | 均为**作者编的合成数据**（$L=1.5+0.8/\sqrt{N/10^8}+0.8/\sqrt{D/2\times10^9}$），不是任何模型家族的测量；笔记在每个图注里重复这一点 |
 
 ## 关于图
@@ -81,6 +93,8 @@
   checkpoint 六类状态、恢复时间线、生成循环、两步贪心树、nucleus 边界），
   4 张曲线/柱状图依据课件 `assets/*.json` 的实测数据重绘（学习率调度、玩具拟合、
   训练/开发损失、温度对比）；另外有一个纯前端交互的解码沙盒
+- Lecture 08 的 5 张图全部为重绘的静态 SVG（后训练流水线、loss mask、BT 损失与梯度权重曲线、
+  奖励模型结构、Agent–Environment 循环）；曲线图的采样点由脚本算出后写成 polyline，不依赖前端脚本
 - Lecture 07 的 8 张图全部为重绘：3 张静态 SVG（三次矩阵乘法、warmup 占比、冻结再揭晓），
   2 张由课件给出的生成公式实时计算（等算力剖面，含可交互的预算切换），
   3 张依据课件 `assets/*.json` 重绘（实验网格、前沿拟合、外推失败）
