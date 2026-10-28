@@ -1,0 +1,2586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>计算理论 · 第 4 章 图灵机 复习笔记（LaTeX 渲染）</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>/* ===== 计算理论学习笔记 · 亮色主题 ===== */
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-code: #f1f5f9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --text: #1e293b;
+  --text-soft: #475569;
+  --muted: #64748b;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --green: #059669;
+  --green-soft: #ecfdf5;
+  --purple: #7c3aed;
+  --purple-soft: #f5f3ff;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
+  --teal: #0d9488;
+  --teal-soft: #f0fdfa;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .05);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
+               "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.78;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 12px 26px;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.brand .dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  flex: none;
+  box-shadow: 0 0 0 4px var(--blue-soft);
+}
+
+.brand-title { font-weight: 700; font-size: 16px; letter-spacing: .2px; }
+.brand-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+.search input {
+  width: 260px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+  background: #fff;
+}
+
+/* ---------- Tabs ---------- */
+.tabs {
+  position: sticky;
+  top: 65px;
+  z-index: 39;
+  display: flex;
+  gap: 6px;
+  padding: 10px 26px 0;
+  background: linear-gradient(var(--bg-soft) 70%, rgba(248, 250, 252, 0));
+  flex-wrap: wrap;
+}
+
+.tab {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-bottom-color: transparent;
+  border-radius: 9px 9px 0 0;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.tab:hover { color: var(--blue); border-color: #bfdbfe; }
+.tab.active {
+  color: var(--blue);
+  background: #fff;
+  border-color: var(--line);
+  box-shadow: inset 0 2px 0 var(--blue);
+}
+
+/* ---------- 布局 ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 26px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 26px 80px;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 122px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 8px 18px;
+  box-shadow: var(--shadow);
+}
+.sidebar::-webkit-scrollbar { width: 8px; }
+.sidebar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 8px; }
+
+.toc-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 12px 8px;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 6px;
+}
+
+.toc-list { list-style: none; margin: 0; padding: 0; }
+.toc-list li { margin: 0; }
+.toc-list a {
+  display: block;
+  padding: 3px 12px;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.toc-list a:hover { background: var(--blue-soft); color: var(--blue); }
+.toc-list a.cur {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-left-color: var(--blue);
+  font-weight: 600;
+}
+.toc-list .toc-h3 a { font-weight: 600; color: var(--text); margin-top: 6px; }
+.toc-list .toc-h4 a { padding-left: 24px; color: var(--muted); font-size: 12.5px; }
+.toc-list .toc-h4 a:hover { color: var(--blue); }
+
+/* ---------- 小节导航 ---------- */
+.secnav {
+  padding: 4px 8px 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+.secnav-item { margin-bottom: 9px; }
+.secnav-item:last-child { margin-bottom: 2px; }
+
+.secnav-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+.secnav-head a {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  line-height: 1.35;
+  min-width: 0;
+}
+.secnav-head a:hover { color: var(--blue); }
+.secnav-range {
+  flex: none;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.secnav-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px 4px 0;
+}
+.secnav-pages a {
+  display: inline-block;
+  min-width: 24px;
+  padding: 1px 4px;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  transition: all .12s;
+}
+.secnav-pages a:hover {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.secnav-pages a.cur {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+  font-weight: 700;
+}
+
+/* ---------- 完整页码索引（折叠） ---------- */
+.toc-full { margin-top: 4px; }
+.toc-full > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 6px;
+  user-select: none;
+  transition: background .12s, color .12s;
+}
+.toc-full > summary::-webkit-details-marker { display: none; }
+.toc-full > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform .15s;
+}
+.toc-full[open] > summary::before { transform: rotate(90deg); }
+.toc-full > summary:hover { background: var(--bg-soft); color: var(--blue); }
+.toc-full > .toc-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  margin-left: 10px;
+  padding-left: 2px;
+}
+.toc-full > .toc-list::-webkit-scrollbar { width: 6px; }
+.toc-full > .toc-list::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; }
+
+/* ---------- 内容面板 ---------- */
+.content { min-width: 0; }
+
+.panel { display: none; }
+.panel.active { display: block; animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+.chapter-head {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 4px 0 22px;
+  box-shadow: var(--shadow);
+}
+.chapter-head .ch-kicker {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--blue);
+  text-transform: uppercase;
+}
+.chapter-head h1 { margin: 6px 0 6px; font-size: 27px; letter-spacing: -.3px; }
+.chapter-head p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.overview {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 30px 30px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- 标题 ---------- */
+h1, h2, h3, h4, h5 { line-height: 1.35; scroll-margin-top: 130px; }
+
+.overview h2,
+.panel > h2 {
+  font-size: 21px;
+  margin: 34px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--line);
+}
+
+.panel h3 {
+  font-size: 18.5px;
+  color: var(--blue);
+  margin: 30px 0 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 4px solid var(--blue);
+}
+
+.panel h4 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 26px 0 10px;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: .3px;
+}
+.panel h4::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+.panel h4[id]::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+  opacity: .55;
+  flex: none;
+}
+
+/* ---------- 段落与列表 ---------- */
+p { margin: 10px 0; }
+ul, ol { margin: 10px 0; padding-left: 26px; }
+li { margin: 4px 0; }
+li > ul, li > ol { margin: 4px 0; }
+a { color: var(--blue); }
+
+strong { color: #0f172a; }
+
+code {
+  font-family: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 12.8px;
+  background: var(--bg-code);
+  color: #0f172a;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px 16px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+pre code { background: none; padding: 0; font-size: 12.6px; }
+
+blockquote {
+  margin: 14px 0;
+  padding: 10px 16px;
+  background: var(--amber-soft);
+  border-left: 4px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  color: #78350f;
+}
+blockquote p { margin: 4px 0; }
+
+hr { border: none; border-top: 1px solid var(--line); margin: 22px 0; }
+
+/* ---------- 表格 ---------- */
+.tbl-wrap {
+  overflow-x: auto;
+  margin: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  min-width: 380px;
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--bg-code);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+tbody tr:nth-child(even) { background: #fcfdff; }
+tbody tr:hover { background: var(--blue-soft); }
+
+table.kv th { background: var(--blue-soft); color: var(--blue); }
+
+/* ---------- 定义 / 定理 提示框 ---------- */
+.cb {
+  border-left: 4px solid var(--line-strong);
+  background: var(--bg-soft);
+  border-radius: 0 8px 8px 0;
+  padding: 9px 16px;
+  margin: 14px 0;
+}
+.cb > strong { display: inline; }
+
+.cb-definition { border-left-color: var(--blue);   background: var(--blue-soft); }
+.cb-definition > strong { color: var(--blue); }
+
+.cb-theorem, .cb-lemma, .cb-corollary, .cb-claim {
+  border-left-color: var(--purple); background: var(--purple-soft);
+}
+.cb-theorem > strong, .cb-lemma > strong,
+.cb-corollary > strong, .cb-claim > strong { color: var(--purple); }
+
+.cb-proof { border-left-color: #94a3b8; background: #f8fafc; }
+.cb-proof > strong { color: #475569; }
+
+.cb-example, .cb-solution { border-left-color: var(--green); background: var(--green-soft); }
+.cb-example > strong, .cb-solution > strong { color: var(--green); }
+
+.cb-remark, .cb-note { border-left-color: var(--amber); background: var(--amber-soft); }
+.cb-remark > strong, .cb-note > strong { color: var(--amber); }
+
+.cb-question, .cb-goal, .cb-objective { border-left-color: var(--teal); background: var(--teal-soft); }
+.cb-question > strong, .cb-goal > strong, .cb-objective > strong { color: var(--teal); }
+
+.cb-algorithm { border-left-color: #4f46e5; background: #eef2ff; }
+.cb-algorithm > strong { color: #4f46e5; }
+
+.cb-intuition { border-left-color: var(--amber); background: var(--amber-soft); }
+.cb-intuition > strong { color: var(--amber); }
+
+/* ---------- 概览专用 ---------- */
+.overview h3 {
+  font-size: 17px;
+  color: var(--text);
+  margin: 26px 0 10px;
+  padding: 0;
+  border: none;
+}
+.overview h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin-right: 9px;
+  vertical-align: middle;
+}
+
+.note-box {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  border-left: 4px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 14.5px;
+}
+
+.fig {
+  margin: 18px 0;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.fig svg { display: block; width: 100%; height: auto; min-width: 620px; }
+
+.tips { padding-left: 24px; }
+.tips li { margin: 8px 0; }
+
+.muted { color: var(--muted); font-size: 12.5px; }
+
+.tex { white-space: nowrap; }
+
+/* ---------- 回到顶部 ---------- */
+#toTop {
+  position: fixed;
+  right: 24px;
+  bottom: 28px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--blue);
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+#toTop.show { opacity: 1; pointer-events: auto; }
+#toTop:hover { transform: translateY(-2px); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar {
+    position: static;
+    max-height: 340px;
+    margin-bottom: 4px;
+  }
+  .search input { width: 170px; }
+}
+
+@media (max-width: 720px) {
+  body { font-size: 15px; }
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
+  .tabs { padding: 10px 16px 0; top: 84px; }
+  .layout { padding: 0 14px 60px; }
+  .overview { padding: 6px 16px 22px; }
+  .brand-sub { display: none; }
+}
+
+/* ---------- 打印 ---------- */
+@media print {
+  .topbar, .tabs, .sidebar, #toTop { display: none !important; }
+  body { background: #fff; font-size: 11.5pt; }
+  .layout { display: block; padding: 0; max-width: none; }
+  .panel { display: block !important; }
+  .panel { page-break-before: always; }
+  #panel-ov { page-break-before: avoid; }
+  .overview, .chapter-head, .fig, .tbl-wrap { box-shadow: none; }
+  .cb, .note-box, blockquote { break-inside: avoid; }
+  h3, h4 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <div class="brand-title">计算理论 · 学习笔记</div>
+      <div class="brand-sub">第 4 章 Turing Machine · 109 页 · 图灵机与可计算性 · 复旦大学《计算理论》课件精读</div>
+    </div>
+  </div>
+  <div class="search">
+    <input id="tocFilter" type="search" placeholder="过滤目录 / 页码…" autocomplete="off">
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-target="panel-ov">总览与分析</button>
+<button class="tab" data-target="panel-t04">第 4 章 Turing Machine</button>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="toc-group" data-panel="panel-ov">
+<div class="toc-title">总览与分析</div>
+<ul class="toc-list">
+<li class="toc-h3"><a href="#ov-intro">0. 这份材料是什么</a></li>
+        <li class="toc-h3"><a href="#ov-map">1. 本章主线：把纸带的三条限制全部拆掉</a></li>
+        <li class="toc-h3"><a href="#ov-models">2. 核心定义速查（考试直接默写级）</a></li>
+        <li class="toc-h3"><a href="#ov-thm">3. 定理与构造清单（附页码）</a></li>
+        <li class="toc-h3"><a href="#ov-proof">4. 三大核心证明的骨架</a></li>
+        <li class="toc-h4"><a href="#ov-proof-a">证明 A：$k$ 带 TM → 标准 TM（P43–P50）</a></li>
+        <li class="toc-h4"><a href="#ov-proof-b">证明 B：NTM → 标准 TM（P61–P71）</a></li>
+        <li class="toc-h4"><a href="#ov-proof-c">证明 C：无限制文法 ⇔ r.e.（P76–P82）</a></li>
+        <li class="toc-h3"><a href="#ov-decide">5. 判定 vs 半判定：一张表分清 recursive / r.e.</a></li>
+        <li class="toc-h3"><a href="#ov-pit">6. 易错点</a></li>
+        <li class="toc-h3"><a href="#ov-howto">7. 复习路线建议</a></li>
+</ul>
+</div>
+<div class="toc-group" data-panel="panel-t04">
+<div class="toc-title">Chapter 4 · Turing Machine</div>
+<div class="secnav">
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p5">4.1 The Definition of Turing Machines</a><span class="secnav-range">P5–P20</span></div>
+<div class="secnav-pages">
+<a href="#t04-p5" title="第 5 页">5</a>
+<a href="#t04-p6" title="第 6 页">6</a>
+<a href="#t04-p7" title="第 7 页">7</a>
+<a href="#t04-p8" title="第 8 页">8</a>
+<a href="#t04-p9" title="第 9 页">9</a>
+<a href="#t04-p10" title="第 10 页">10</a>
+<a href="#t04-p11" title="第 11 页">11</a>
+<a href="#t04-p12" title="第 12 页">12</a>
+<a href="#t04-p13" title="第 13 页">13</a>
+<a href="#t04-p14" title="第 14 页">14</a>
+<a href="#t04-p15" title="第 15 页">15</a>
+<a href="#t04-p16" title="第 16 页">16</a>
+<a href="#t04-p17" title="第 17 页">17</a>
+<a href="#t04-p18" title="第 18 页">18</a>
+<a href="#t04-p19" title="第 19 页">19</a>
+<a href="#t04-p20" title="第 20 页">20</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p21">4.2 Computing with Turing Machines</a><span class="secnav-range">P21–P36</span></div>
+<div class="secnav-pages">
+<a href="#t04-p21" title="第 21 页">21</a>
+<a href="#t04-p22" title="第 22 页">22</a>
+<a href="#t04-p23" title="第 23 页">23</a>
+<a href="#t04-p24" title="第 24 页">24</a>
+<a href="#t04-p25" title="第 25 页">25</a>
+<a href="#t04-p26" title="第 26 页">26</a>
+<a href="#t04-p27" title="第 27 页">27</a>
+<a href="#t04-p28" title="第 28 页">28</a>
+<a href="#t04-p29" title="第 29 页">29</a>
+<a href="#t04-p30" title="第 30 页">30</a>
+<a href="#t04-p31" title="第 31 页">31</a>
+<a href="#t04-p32" title="第 32 页">32</a>
+<a href="#t04-p33" title="第 33 页">33</a>
+<a href="#t04-p34" title="第 34 页">34</a>
+<a href="#t04-p35" title="第 35 页">35</a>
+<a href="#t04-p36" title="第 36 页">36</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p37">4.3 Extension of Turing Machines</a><span class="secnav-range">P37–P54</span></div>
+<div class="secnav-pages">
+<a href="#t04-p37" title="第 37 页">37</a>
+<a href="#t04-p38" title="第 38 页">38</a>
+<a href="#t04-p39" title="第 39 页">39</a>
+<a href="#t04-p40" title="第 40 页">40</a>
+<a href="#t04-p41" title="第 41 页">41</a>
+<a href="#t04-p42" title="第 42 页">42</a>
+<a href="#t04-p43" title="第 43 页">43</a>
+<a href="#t04-p44" title="第 44 页">44</a>
+<a href="#t04-p45" title="第 45 页">45</a>
+<a href="#t04-p46" title="第 46 页">46</a>
+<a href="#t04-p47" title="第 47 页">47</a>
+<a href="#t04-p48" title="第 48 页">48</a>
+<a href="#t04-p49" title="第 49 页">49</a>
+<a href="#t04-p50" title="第 50 页">50</a>
+<a href="#t04-p51" title="第 51 页">51</a>
+<a href="#t04-p52" title="第 52 页">52</a>
+<a href="#t04-p53" title="第 53 页">53</a>
+<a href="#t04-p54" title="第 54 页">54</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p55">4.4 Nondeterministic Turing Machines</a><span class="secnav-range">P55–P71</span></div>
+<div class="secnav-pages">
+<a href="#t04-p55" title="第 55 页">55</a>
+<a href="#t04-p56" title="第 56 页">56</a>
+<a href="#t04-p57" title="第 57 页">57</a>
+<a href="#t04-p58" title="第 58 页">58</a>
+<a href="#t04-p59" title="第 59 页">59</a>
+<a href="#t04-p60" title="第 60 页">60</a>
+<a href="#t04-p61" title="第 61 页">61</a>
+<a href="#t04-p62" title="第 62 页">62</a>
+<a href="#t04-p63" title="第 63 页">63</a>
+<a href="#t04-p64" title="第 64 页">64</a>
+<a href="#t04-p65" title="第 65 页">65</a>
+<a href="#t04-p66" title="第 66 页">66</a>
+<a href="#t04-p67" title="第 67 页">67</a>
+<a href="#t04-p68" title="第 68 页">68</a>
+<a href="#t04-p69" title="第 69 页">69</a>
+<a href="#t04-p70" title="第 70 页">70</a>
+<a href="#t04-p71" title="第 71 页">71</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p72">4.5 Grammars</a><span class="secnav-range">P72–P83</span></div>
+<div class="secnav-pages">
+<a href="#t04-p72" title="第 72 页">72</a>
+<a href="#t04-p73" title="第 73 页">73</a>
+<a href="#t04-p74" title="第 74 页">74</a>
+<a href="#t04-p75" title="第 75 页">75</a>
+<a href="#t04-p76" title="第 76 页">76</a>
+<a href="#t04-p77" title="第 77 页">77</a>
+<a href="#t04-p78" title="第 78 页">78</a>
+<a href="#t04-p79" title="第 79 页">79</a>
+<a href="#t04-p80" title="第 80 页">80</a>
+<a href="#t04-p81" title="第 81 页">81</a>
+<a href="#t04-p82" title="第 82 页">82</a>
+<a href="#t04-p83" title="第 83 页">83</a>
+</div></div>
+<div class="secnav-item">
+<div class="secnav-head"><a href="#t04-p84">4.6 Numerical Functions</a><span class="secnav-range">P84–P109</span></div>
+<div class="secnav-pages">
+<a href="#t04-p84" title="第 84 页">84</a>
+<a href="#t04-p85" title="第 85 页">85</a>
+<a href="#t04-p86" title="第 86 页">86</a>
+<a href="#t04-p87" title="第 87 页">87</a>
+<a href="#t04-p88" title="第 88 页">88</a>
+<a href="#t04-p89" title="第 89 页">89</a>
+<a href="#t04-p90" title="第 90 页">90</a>
+<a href="#t04-p91" title="第 91 页">91</a>
+<a href="#t04-p92" title="第 92 页">92</a>
+<a href="#t04-p93" title="第 93 页">93</a>
+<a href="#t04-p94" title="第 94 页">94</a>
+<a href="#t04-p95" title="第 95 页">95</a>
+<a href="#t04-p96" title="第 96 页">96</a>
+<a href="#t04-p97" title="第 97 页">97</a>
+<a href="#t04-p98" title="第 98 页">98</a>
+<a href="#t04-p99" title="第 99 页">99</a>
+<a href="#t04-p100" title="第 100 页">100</a>
+<a href="#t04-p101" title="第 101 页">101</a>
+<a href="#t04-p102" title="第 102 页">102</a>
+<a href="#t04-p103" title="第 103 页">103</a>
+<a href="#t04-p104" title="第 104 页">104</a>
+<a href="#t04-p105" title="第 105 页">105</a>
+<a href="#t04-p106" title="第 106 页">106</a>
+<a href="#t04-p107" title="第 107 页">107</a>
+<a href="#t04-p108" title="第 108 页">108</a>
+<a href="#t04-p109" title="第 109 页">109</a>
+</div></div>
+</div>
+<details class="toc-full"><summary>完整页码索引（109 页）</summary><ul class="toc-list"><li class="toc-h4"><a href="#t04-p1">第 1 页</a></li><li class="toc-h4"><a href="#t04-p2">第 2 页</a></li><li class="toc-h4"><a href="#t04-p3">第 3 页</a></li><li class="toc-h4"><a href="#t04-p4">第 4 页</a></li><li class="toc-h4"><a href="#t04-p5">第 5 页</a></li><li class="toc-h4"><a href="#t04-p6">第 6 页</a></li><li class="toc-h4"><a href="#t04-p7">第 7 页</a></li><li class="toc-h4"><a href="#t04-p8">第 8 页</a></li><li class="toc-h4"><a href="#t04-p9">第 9 页</a></li><li class="toc-h4"><a href="#t04-p10">第 10 页</a></li><li class="toc-h4"><a href="#t04-p11">第 11 页</a></li><li class="toc-h4"><a href="#t04-p12">第 12 页</a></li><li class="toc-h4"><a href="#t04-p13">第 13 页</a></li><li class="toc-h4"><a href="#t04-p14">第 14 页</a></li><li class="toc-h4"><a href="#t04-p15">第 15 页</a></li><li class="toc-h4"><a href="#t04-p16">第 16 页</a></li><li class="toc-h4"><a href="#t04-p17">第 17 页</a></li><li class="toc-h4"><a href="#t04-p18">第 18 页</a></li><li class="toc-h4"><a href="#t04-p19">第 19 页</a></li><li class="toc-h4"><a href="#t04-p20">第 20 页</a></li><li class="toc-h4"><a href="#t04-p21">第 21 页</a></li><li class="toc-h4"><a href="#t04-p22">第 22 页</a></li><li class="toc-h4"><a href="#t04-p23">第 23 页</a></li><li class="toc-h4"><a href="#t04-p24">第 24 页</a></li><li class="toc-h4"><a href="#t04-p25">第 25 页</a></li><li class="toc-h4"><a href="#t04-p26">第 26 页</a></li><li class="toc-h4"><a href="#t04-p27">第 27 页</a></li><li class="toc-h4"><a href="#t04-p28">第 28 页</a></li><li class="toc-h4"><a href="#t04-p29">第 29 页</a></li><li class="toc-h4"><a href="#t04-p30">第 30 页</a></li><li class="toc-h4"><a href="#t04-p31">第 31 页</a></li><li class="toc-h4"><a href="#t04-p32">第 32 页</a></li><li class="toc-h4"><a href="#t04-p33">第 33 页</a></li><li class="toc-h4"><a href="#t04-p34">第 34 页</a></li><li class="toc-h4"><a href="#t04-p35">第 35 页</a></li><li class="toc-h4"><a href="#t04-p36">第 36 页</a></li><li class="toc-h4"><a href="#t04-p37">第 37 页</a></li><li class="toc-h4"><a href="#t04-p38">第 38 页</a></li><li class="toc-h4"><a href="#t04-p39">第 39 页</a></li><li class="toc-h4"><a href="#t04-p40">第 40 页</a></li><li class="toc-h4"><a href="#t04-p41">第 41 页</a></li><li class="toc-h4"><a href="#t04-p42">第 42 页</a></li><li class="toc-h4"><a href="#t04-p43">第 43 页</a></li><li class="toc-h4"><a href="#t04-p44">第 44 页</a></li><li class="toc-h4"><a href="#t04-p45">第 45 页</a></li><li class="toc-h4"><a href="#t04-p46">第 46 页</a></li><li class="toc-h4"><a href="#t04-p47">第 47 页</a></li><li class="toc-h4"><a href="#t04-p48">第 48 页</a></li><li class="toc-h4"><a href="#t04-p49">第 49 页</a></li><li class="toc-h4"><a href="#t04-p50">第 50 页</a></li><li class="toc-h4"><a href="#t04-p51">第 51 页</a></li><li class="toc-h4"><a href="#t04-p52">第 52 页</a></li><li class="toc-h4"><a href="#t04-p53">第 53 页</a></li><li class="toc-h4"><a href="#t04-p54">第 54 页</a></li><li class="toc-h4"><a href="#t04-p55">第 55 页</a></li><li class="toc-h4"><a href="#t04-p56">第 56 页</a></li><li class="toc-h4"><a href="#t04-p57">第 57 页</a></li><li class="toc-h4"><a href="#t04-p58">第 58 页</a></li><li class="toc-h4"><a href="#t04-p59">第 59 页</a></li><li class="toc-h4"><a href="#t04-p60">第 60 页</a></li><li class="toc-h4"><a href="#t04-p61">第 61 页</a></li><li class="toc-h4"><a href="#t04-p62">第 62 页</a></li><li class="toc-h4"><a href="#t04-p63">第 63 页</a></li><li class="toc-h4"><a href="#t04-p64">第 64 页</a></li><li class="toc-h4"><a href="#t04-p65">第 65 页</a></li><li class="toc-h4"><a href="#t04-p66">第 66 页</a></li><li class="toc-h4"><a href="#t04-p67">第 67 页</a></li><li class="toc-h4"><a href="#t04-p68">第 68 页</a></li><li class="toc-h4"><a href="#t04-p69">第 69 页</a></li><li class="toc-h4"><a href="#t04-p70">第 70 页</a></li><li class="toc-h4"><a href="#t04-p71">第 71 页</a></li><li class="toc-h4"><a href="#t04-p72">第 72 页</a></li><li class="toc-h4"><a href="#t04-p73">第 73 页</a></li><li class="toc-h4"><a href="#t04-p74">第 74 页</a></li><li class="toc-h4"><a href="#t04-p75">第 75 页</a></li><li class="toc-h4"><a href="#t04-p76">第 76 页</a></li><li class="toc-h4"><a href="#t04-p77">第 77 页</a></li><li class="toc-h4"><a href="#t04-p78">第 78 页</a></li><li class="toc-h4"><a href="#t04-p79">第 79 页</a></li><li class="toc-h4"><a href="#t04-p80">第 80 页</a></li><li class="toc-h4"><a href="#t04-p81">第 81 页</a></li><li class="toc-h4"><a href="#t04-p82">第 82 页</a></li><li class="toc-h4"><a href="#t04-p83">第 83 页</a></li><li class="toc-h4"><a href="#t04-p84">第 84 页</a></li><li class="toc-h4"><a href="#t04-p85">第 85 页</a></li><li class="toc-h4"><a href="#t04-p86">第 86 页</a></li><li class="toc-h4"><a href="#t04-p87">第 87 页</a></li><li class="toc-h4"><a href="#t04-p88">第 88 页</a></li><li class="toc-h4"><a href="#t04-p89">第 89 页</a></li><li class="toc-h4"><a href="#t04-p90">第 90 页</a></li><li class="toc-h4"><a href="#t04-p91">第 91 页</a></li><li class="toc-h4"><a href="#t04-p92">第 92 页</a></li><li class="toc-h4"><a href="#t04-p93">第 93 页</a></li><li class="toc-h4"><a href="#t04-p94">第 94 页</a></li><li class="toc-h4"><a href="#t04-p95">第 95 页</a></li><li class="toc-h4"><a href="#t04-p96">第 96 页</a></li><li class="toc-h4"><a href="#t04-p97">第 97 页</a></li><li class="toc-h4"><a href="#t04-p98">第 98 页</a></li><li class="toc-h4"><a href="#t04-p99">第 99 页</a></li><li class="toc-h4"><a href="#t04-p100">第 100 页</a></li><li class="toc-h4"><a href="#t04-p101">第 101 页</a></li><li class="toc-h4"><a href="#t04-p102">第 102 页</a></li><li class="toc-h4"><a href="#t04-p103">第 103 页</a></li><li class="toc-h4"><a href="#t04-p104">第 104 页</a></li><li class="toc-h4"><a href="#t04-p105">第 105 页</a></li><li class="toc-h4"><a href="#t04-p106">第 106 页</a></li><li class="toc-h4"><a href="#t04-p107">第 107 页</a></li><li class="toc-h4"><a href="#t04-p108">第 108 页</a></li><li class="toc-h4"><a href="#t04-p109">第 109 页</a></li></ul></details>
+</div>
+  </aside>
+
+  <main class="content">
+    <section id="panel-ov" class="panel active">
+<section class="overview">
+  <h2 id="ov-intro">0. 这份材料是什么</h2>
+
+  <p>这是 <b>TC04.pdf</b>（<i>Elements of the Theory of Computation</i>，
+  Lewis &amp; Papadimitriou, 2nd ed.，Chapter 4 <b>Turing Machine</b>，共 <b>109 页</b>）的
+  逐页转写稿。与第 2、3 章一样，页眉页脚已忽略，公式全部按原式重排为 LaTeX。</p>
+
+  <div class="note-box">
+    <b>本章的位置：</b>第 2 章用「有限状态」刻画正则语言，第 3 章「加一个栈」得到上下文无关语言。
+    本章把纸带的<b>三条限制全部拆掉</b> —— 可写、可双向移动、长度无界 —— 得到的模型就是
+    <b>图灵机（TM）</b>。它不再只是「更强的自动机」，而是<b>「可计算」这件事本身的定义</b>：
+    此后所有「可计算 / 不可计算」的讨论都以 TM 为基准。
+  </div>
+
+  <p>本章 6 个小节与页码区间（左侧目录的「小节导航」按此分组）：</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>小节</th><th>页码</th><th>核心内容</th><th>性质</th></tr></thead>
+    <tbody>
+      <tr><td>4.1 The Definition of Turing Machines</td><td>P5–P20</td>
+          <td>五元组、两条纸带约束、格局、一步推导、组合机器记号</td><td>地基</td></tr>
+      <tr><td>4.2 Computing with Turing Machines</td><td>P21–P36</td>
+          <td>decide / semidecide / compute、recursive 与 r.e.</td><td>重点</td></tr>
+      <tr><td>4.3 Extension of Turing Machines</td><td>P37–P54</td>
+          <td>多带、双向无限带、多头、多维带 —— <b>都不增强能力</b></td><td>重点证明</td></tr>
+      <tr><td>4.4 Nondeterministic Turing Machines</td><td>P55–P71</td>
+          <td>NTM 定义、接受/判定、NTM 与标准 TM 等价</td><td>重点证明</td></tr>
+      <tr><td>4.5 Grammars</td><td>P72–P83</td>
+          <td>无限制文法、与 TM 等价、文法计算函数</td><td>重点证明</td></tr>
+      <tr><td>4.6 Numerical Functions</td><td>P84–P109</td>
+          <td>基本函数、原始递归、μ-递归、与 TM 可计算等价</td><td>收尾</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="ov-map">1. 本章主线：把纸带的三条限制全部拆掉</h2>
+
+  <div class="fig">
+    <svg viewBox="0 0 900 222" role="img" aria-label="计算能力阶梯">
+      <defs><style>
+        .f4{font-family:"Segoe UI",system-ui,-apple-system,"Microsoft YaHei",sans-serif;}
+        .t4{font-size:14.5px;font-weight:600;}
+        .s4{font-size:12px;}
+      </style></defs>
+      <rect x="0" y="0" width="900" height="222" fill="#ffffff"/>
+      <text x="20" y="26" class="f4 t4" fill="#1e293b">能力阶梯：每拆掉一条限制，能识别的语言就严格变大</text>
+
+      <rect x="20" y="46" width="220" height="74" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="130" y="72" class="f4 t4" fill="#1e40af" text-anchor="middle">DFA / NFA</text>
+      <text x="130" y="92" class="f4 s4" fill="#3b82f6" text-anchor="middle">只读 · 单向 · 定长</text>
+      <text x="130" y="110" class="f4 s4" fill="#3b82f6" text-anchor="middle">第 2 章 · 正则语言</text>
+
+      <rect x="340" y="46" width="220" height="74" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+      <text x="450" y="72" class="f4 t4" fill="#065f46" text-anchor="middle">PDA</text>
+      <text x="450" y="92" class="f4 s4" fill="#059669" text-anchor="middle">只读 · 单向 · 定长 + 一个栈</text>
+      <text x="450" y="110" class="f4 s4" fill="#059669" text-anchor="middle">第 3 章 · 上下文无关语言</text>
+
+      <rect x="660" y="46" width="220" height="74" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="770" y="72" class="f4 t4" fill="#92400e" text-anchor="middle">Turing Machine</text>
+      <text x="770" y="92" class="f4 s4" fill="#b45309" text-anchor="middle">可写 · 双向 · 无界</text>
+      <text x="770" y="110" class="f4 s4" fill="#b45309" text-anchor="middle">第 4 章 · 递归可枚举语言</text>
+
+      <path d="M244 83 H336" stroke="#94a3b8" stroke-width="1.8"/>
+      <path d="M326 77 L338 83 L326 89" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+      <text x="290" y="70" class="f4 s4" fill="#64748b" text-anchor="middle">加一个栈</text>
+
+      <path d="M564 83 H656" stroke="#94a3b8" stroke-width="1.8"/>
+      <path d="M646 77 L658 83 L646 89" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+      <text x="610" y="70" class="f4 s4" fill="#64748b" text-anchor="middle">拆掉全部限制</text>
+
+      <rect x="20" y="140" width="860" height="66" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+      <text x="40" y="162" class="f4 s4" fill="#334155">L(FA) ⊊ L(PDA) ⊊ L(TM) = 递归可枚举语言</text>
+      <text x="40" y="182" class="f4 s4" fill="#64748b">关键变化：TM 的纸带<tspan font-weight="600">既能读也能写</tspan>、读写头<tspan font-weight="600">可左右移动</tspan>、纸带<tspan font-weight="600">长度无界</tspan> ——</text>
+      <text x="40" y="198" class="f4 s4" fill="#64748b">于是它能把「中间结果」写在带上，这是 DFA / PDA 做不到的。</text>
+    </svg>
+  </div>
+
+  <p>三个「拆限制」的动作，正好对应本章 4.3 的五个扩展：多带、双向无限带、多头、多维带、非确定性。
+  4.3 与 4.4 的全部工作就是在证明一句话 —— <b>这些扩展一个都不增强能力</b>，
+  它们只是让「设计机器」变容易。这是本章最容易被误解的地方：<b>扩展 ≠ 更强</b>。</p>
+
+  <h2 id="ov-models">2. 核心定义速查（考试直接默写级）</h2>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>对象</th><th>形式定义</th><th>要点</th><th>页</th></tr></thead>
+    <tbody>
+      <tr><td><b>TM</b></td>
+          <td class="tex">$M=(K,\Sigma,\delta,s,H)$</td>
+          <td><b>五元组</b>；$\Sigma$ 含 $\sqcup$（空白）与 $\triangleright$（左端），且不含 $\leftarrow,\rightarrow$。</td><td>P6</td></tr>
+      <tr><td><b>转移函数</b></td>
+          <td class="tex">$\delta:(K-H)\times\Sigma\to K\times(\Sigma\cup\{\leftarrow,\rightarrow\})$</td>
+          <td>定义域是 $K-H$：<b>停机状态没有转移</b>。</td><td>P6</td></tr>
+      <tr><td><b>两条纸带约束</b></td>
+          <td class="tex">$\delta(q,\triangleright)=(p,\rightarrow)$；$b\neq\triangleright$</td>
+          <td>左端只能右移；<b>不能把 $\triangleright$ 写到带上</b>。</td><td>P6</td></tr>
+      <tr><td><b>格局</b></td>
+          <td class="tex">$K\times\triangleright\Sigma^*\times(\Sigma^*(\Sigma-\{\sqcup\})\cup\{e\})$</td>
+          <td>三元组（状态，左端到读写头，读写头右侧到最后一个非空白）。</td><td>P9–P10</td></tr>
+      <tr><td><b>一步推导</b></td>
+          <td class="tex">$(q_1,w_1a_1u_1)\vdash_M(q_2,w_2a_2u_2)$</td>
+          <td>按 $\delta(q_1,a_1)=(q_2,b)$ 分三种情形：写符号 / 左移 / 右移。</td><td>P11–P12</td></tr>
+      <tr><td><b>计算</b></td>
+          <td class="tex">$C_0\vdash_M C_1\vdash_M\cdots\vdash_M C_n$</td>
+          <td>长度 $n$ 的计算记作 $C_0\vdash_M^n C_n$；$\vdash_M^*$ 是自反传递闭包。</td><td>P13</td></tr>
+      <tr><td><b>decide</b></td>
+          <td class="tex">$w\in L\iff M$ 接受 $w$；$w\notin L\iff M$ 拒绝 $w$</td>
+          <td><b>必须在所有输入上停机</b>，且答对。<b>recursive = 可判定</b>。</td><td>P23</td></tr>
+      <tr><td><b>semidecide</b></td>
+          <td class="tex">$w\in L\iff M$ 在 $w$ 上停机</td>
+          <td>只保证「在 $L$ 里就停」，不在 $L$ 里可以<b>永远跑下去</b>。<b>r.e. = 递归可枚举</b>。</td><td>P32</td></tr>
+      <tr><td><b>computes</b></td>
+          <td class="tex">$M(w)=v$ 当且仅当 $(s,\triangleright\sqcup w)\vdash_M^* (h,\triangleright\sqcup v)$</td>
+          <td>把输入串变成输出串；不停机记作 $M(w)=\uparrow$。</td><td>P27–P28</td></tr>
+      <tr><td><b>NTM</b></td>
+          <td class="tex">$M=(K,\Sigma,\Delta,s,H)$，$\Delta\subseteq((K-H)\times\Sigma)\times(K\times(\Sigma\cup\{\leftarrow,\rightarrow\}))$</td>
+          <td><b>四元组</b>（没有 $\delta$，改用<b>关系</b> $\Delta$）；<b>只要有一条停机计算路径就算接受</b>。</td><td>P55–P57</td></tr>
+      <tr><td><b>grammar</b></td>
+          <td class="tex">$G=(V,\Sigma,R,S)$，$R\subseteq(V^*(V-\Sigma)V^*)\times V^*$</td>
+          <td>规则左部<b>可以含上下文</b>（区别于 CFG 的单个非终结符）→ 无限制文法。</td><td>P73</td></tr>
+      <tr><td><b>原始递归</b></td>
+          <td class="tex">基本函数 + 复合 + 递归</td>
+          <td>基本函数：$zero_k$、$id_{k,j}$、$succ$；<b>不含最小化</b>。</td><td>P85–P87</td></tr>
+      <tr><td><b>μ-递归</b></td>
+          <td class="tex">基本函数 + 复合 + 递归 + 最小化</td>
+          <td>最小化 = 「找最小的 $m$ 使 $g(\dots,m)=1$」；<b>可能不终止</b>。</td><td>P101–P103</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="ov-thm">3. 定理与构造清单（附页码）</h2>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>#</th><th>结论</th><th>关键点</th><th>页</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>递归语言的补集仍是递归语言</td>
+          <td>交换 $y/n$ 两个停机状态即可，<b>前提是原机器处处停机</b>。</td><td>P35</td></tr>
+      <tr><td>2</td><td>递归语言一定是 r.e.</td>
+          <td>把 $n$ 状态改成不停机（死循环）即得半判定机器。</td><td>P36</td></tr>
+      <tr><td>3</td><td>两个递归语言的并 / 交仍是递归</td>
+          <td>并行模拟或串行模拟，需保证都停机。</td><td>P36</td></tr>
+      <tr><td>4</td><td><b>$k$ 带 TM ⇔ 标准 TM</b></td>
+          <td>用 <b>$2k$ 条 track</b> 模拟：$k$ 条存符号、$k$ 条标记读写头位置；代价 $\mathcal{O}(t(|x|+t))$。</td><td>P43–P50</td></tr>
+      <tr><td>5</td><td>双向无限带 ⇔ 标准 TM</td>
+          <td>把纸带折成两半，用标记区分左右。</td><td>P51–P53</td></tr>
+      <tr><td>6</td><td>二维 / 多维带不增强能力</td>
+          <td>把二维网格按对角线（或行优先）编码到一维带上。</td><td>P54</td></tr>
+      <tr><td>7</td><td><b>NTM ⇔ 标准 TM</b></td>
+          <td>用<b>广度优先</b>搜索计算树：在带上维护「待探索格局的队列」，逐个模拟。</td><td>P61–P71</td></tr>
+      <tr><td>8</td><td><b>无限制文法 ⇒ r.e.</b></td>
+          <td>非确定地猜一条推导，逐步验证（用两条带：一条存当前串，一条存候选规则）。</td><td>P76–P82</td></tr>
+      <tr><td>9</td><td><b>r.e. ⇒ 无限制文法</b></td>
+          <td>反过来：用文法规则模拟 TM 的每一步格局变化。</td><td>P76–P82</td></tr>
+      <tr><td>10</td><td>$\mu$-递归 ⇔ TM 可计算</td>
+          <td>两个方向都要构造：把 TM 编码成递归函数，把递归函数用 TM 实现。</td><td>P103–P109</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="ov-proof">4. 三大核心证明的骨架</h2>
+
+  <h3 id="ov-proof-a">证明 A：$k$ 带 TM → 标准 TM（P43–P50）</h3>
+
+  <div class="note-box">
+    <b>一句话主轴：</b>把 $k$ 条带「压」进一条带的 $2k$ 条 track 里 —— 上面 $k$ 条存符号，
+    下面 $k$ 条存「读写头在不在这格」的标记。
+  </div>
+
+  <ol class="tips">
+    <li><b>编码</b>：原来第 $i$ 条带的第 $j$ 格符号，放到单带的第 $j$ 格的 track $i$；
+        track $k+i$ 写 $1$ 表示第 $i$ 条带的头正在这一格，否则写 $0$。</li>
+    <li><b>模拟一步</b>：扫一遍整条带，读出 $k$ 个头下的符号 → 查 $\delta$ 得到新状态与 $k$ 个动作
+        → 再扫一遍，改符号、把头标记左右挪一格。</li>
+    <li><b>代价</b>：一次扫描 $\mathcal{O}(|x|+t)$（带子最多长到 $|x|+t$），共 $t$ 步
+        ⇒ 总计 $\mathcal{O}(t(|x|+t))$。这也是定理里那句复杂度的来源。</li>
+  </ol>
+
+  <h3 id="ov-proof-b">证明 B：NTM → 标准 TM（P61–P71）</h3>
+
+  <div class="note-box">
+    <b>一句话主轴：</b>NTM 的计算是一棵<b>树</b>，标准 TM 用<b>广度优先</b>逐个遍历这棵树上的格局。
+  </div>
+
+  <ol class="tips">
+    <li><b>为什么必须广度优先</b>：如果深度优先，一旦钻进一条永不停止的分支，
+        就永远回不来，可能错过旁边那条本来能停机的路径 —— 而 NTM 的语义是
+        「<b>存在</b>一条停机路径即接受」。</li>
+    <li><b>怎么实现</b>：在带上维护一个「待探索格局的队列」，每次取出队首格局，
+        枚举它所有一步后继，把它们追加到队尾。</li>
+    <li><b>结论</b>：若 NTM 在 $t$ 步内接受，标准 TM 只需有限（但指数级）步就能找到那条路径。
+        <b>能力相同，代价不同</b> —— 这是后面讲复杂度时「P vs NP」的源头。</li>
+  </ol>
+
+  <h3 id="ov-proof-c">证明 C：无限制文法 ⇔ r.e.（P76–P82）</h3>
+
+  <div class="note-box">
+    <b>一句话主轴：</b>文法「生成」与机器「识别」是同一件事的两种写法 ——
+    正方向用机器<b>猜一条推导并验证</b>，反方向用文法<b>模拟机器的格局演化</b>。
+  </div>
+
+  <ol class="tips">
+    <li><b>Grammar ⇒ r.e.</b>：给定 $w$，非确定地猜一个推导序列，每猜一步就检查这条规则是否合法、
+        当前串是否还能走到 $w$。猜对了就停机接受。</li>
+    <li><b>r.e. ⇒ Grammar</b>：构造文法，使得「$S\Rightarrow^* uv$」恰好对应「TM 的格局从
+        $uqv$ 走到终态」。用非终结符编码状态与相邻符号，规则就是 $\delta$ 的逐条翻译。</li>
+    <li><b>为什么重要</b>：这条等价把「乔姆斯基层级」的第 0 层（无限制文法）与
+        「图灵机」钉死在一起 —— 于是「语言」和「计算」两条线在本章合流。</li>
+  </ol>
+
+  <h2 id="ov-decide">5. 判定 vs 半判定：一张表分清 recursive / r.e.</h2>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th></th><th>decide（可判定）</th><th>semidecide（半判定）</th></tr></thead>
+    <tbody>
+      <tr><td><b>$w\in L$ 时</b></td><td>停机并接受</td><td>停机并接受</td></tr>
+      <tr><td><b>$w\notin L$ 时</b></td><td><b>停机并拒绝</b></td><td><b>可以永不停机</b></td></tr>
+      <tr><td><b>语言类名</b></td><td>recursive（递归语言）</td><td>recursively enumerable（r.e.）</td></tr>
+      <tr><td><b>补集封闭性</b></td><td><b>封闭</b>（交换 $y/n$，P35）</td><td><b>不封闭</b> —— 这正是停机问题不可判定的根源</td></tr>
+      <tr><td><b>包含关系</b></td><td colspan="2">recursive ⊊ r.e.（P36 给了 $\subseteq$；严格性由停机问题给出）</td></tr>
+      <tr><td><b>直观类比</b></td><td>「有答案，且一定给得出」</td><td>「有答案，但不保证等得到」</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="ov-pit">6. 易错点</h2>
+
+  <ol class="tips">
+    <li><b>$\delta$ 的定义域是 $K-H$，不是 $K$。</b>停机状态没有转移 ——
+        写成 $\delta:K\times\Sigma\to\cdots$ 是错的。</li>
+    <li><b>格局的第二项从 $\triangleright$ 开始。</b>是 $\triangleright\Sigma^*$，
+        不是 $\Sigma^*$；左端标记永远算在「已读部分」里。</li>
+    <li><b>格局第三项不能以 $\sqcup$ 结尾。</b>定义里是 $\Sigma^*(\Sigma-\{\sqcup\})\cup\{e\}$，
+        即「去掉尾部所有空白」，所以同一纸带状态的表示是唯一的。</li>
+    <li><b>$\sqcup$ 与 $e$ 不是一回事。</b>$\sqcup$ 是<b>纸带上的空白符号</b>（占一格），
+        $e$ 是<b>空串</b>（不占格）。格局第三项写成 $e$ 表示「头右边全是空白」。</li>
+    <li><b>decide 与 semidecide 别混。</b>decide 要求<b>处处停机且答对</b>；
+        semidecide 只要求「$w\in L$ 时停机」。把 semidecide 当成 decide 是本章最常见的错误。</li>
+    <li><b>「扩展不增强能力」是结论，不是假设。</b>4.3、4.4 每一节都在给<b>构造性证明</b>
+        （track 编码、广度优先搜索），不能只写一句「显然等价」。</li>
+    <li><b>NTM 的接受是「存在」语义。</b>只要有一条计算路径停机接受就算接受，
+        所以模拟时必须广度优先，深度优先会漏。</li>
+    <li><b>原始递归 ≠ 可计算。</b>原始递归函数是<b>真子集</b>（P100 的 $g(n)=f_n(n)+1$ 对角线论证），
+        加上最小化才得到 $\mu$-递归 = TM 可计算。</li>
+  </ol>
+
+  <h2 id="ov-howto">7. 复习路线建议</h2>
+
+  <ul class="tips">
+    <li><b>第一遍（重建骨架，40 分钟）</b>：P5–P13 五元组 / 两条约束 / 格局 / $\vdash_M$，
+        然后 P21–P36 的 decide / semidecide。这一遍只求能把定义默写出来。</li>
+    <li><b>第二遍（攻三个证明，1.5 小时）</b>：P43–P50（track 编码）、P61–P71（广度优先）、
+        P76–P82（文法 ⇔ r.e.）。每个证明只记「主轴一句话 + 关键构造 + 代价」。</li>
+    <li><b>第三遍（扫收尾，40 分钟）</b>：P84–P109 基本函数 → 原始递归 → 最小化 → $\mu$-递归，
+        抓住「原始递归缺什么、最小化补什么」这一条线。</li>
+    <li><b>第四遍（查漏，20 分钟）</b>：把上面第 6 节的 8 条易错点过一遍，
+        尤其是 $\sqcup$ / $e$ 的区别与 decide / semidecide 的区别。</li>
+  </ul>
+
+  <p class="muted">提示：左侧目录输入框支持按<b>页码</b>（如 <code>61</code>）或<b>关键词</b>
+  （如 <code>track</code>、<code>广度</code>、<code>格局</code>、<code>递归</code>）过滤，
+  复习时按主题来回跳会快很多。</p>
+</section>
+</section>
+    <section id="panel-t04" class="panel">
+      <div class="chapter-head">
+        <div class="ch-kicker">TC04.pdf · 109 页</div>
+        <h1>Chapter 4 · Turing Machine</h1>
+        <p>图灵机定义与格局、判定与半判定、多带 / 非确定性的等价、无限制文法、原始递归与 μ-递归。</p>
+      </div>
+      <h4 id="t04-p1">第 1 页</h4>
+<p><strong>Chapter 4  Turing Machine</strong></p>
+<p>（章标题页）</p>
+<h4 id="t04-p2">第 2 页</h4>
+<p><strong>Handicapped machines</strong></p>
+<ul>
+<li><strong>DFA limitations</strong></li>
+<li>Tape head moves only one direction</li>
+<li>Tape is read-only</li>
+<li>
+<p>Tape length is a constant</p>
+</li>
+<li>
+<p><strong>PDA limitations</strong></p>
+</li>
+<li>Tape head moves only one direction</li>
+<li>Tape is read-only, but stack is writable</li>
+<li>Stack has only LIFO(last-in, first-out) access</li>
+<li>Tape length is constant, but stack is not bounded.</li>
+</ul>
+<h4 id="t04-p3">第 3 页</h4>
+<ul>
+<li><strong>What about</strong></li>
+<li>Writable, 2-way tape?</li>
+<li>Random-access 'stack?</li>
+</ul>
+<h4 id="t04-p4">第 4 页</h4>
+<p><strong>Computability</strong></p>
+<ul>
+<li><strong>Compitible</strong>[?]（原文如此，拼写有误，应为 Computable）</li>
+<li>Equivalence of DFAs</li>
+<li>
+<p>String membership in a regular language</p>
+</li>
+<li>
+<p><strong>Uncompitible</strong>[?]（原文如此，拼写有误，应为 Uncomputable）</p>
+</li>
+<li>Equivalence of CFGs</li>
+<li>Emptiness of the complement of a CFL (emptiness of CFL is compitible)（原文如此）</li>
+</ul>
+<h4 id="t04-p5">第 5 页</h4>
+<p><strong>4.1 The Definition of Turing Machines</strong></p>
+<p>（图：一条纸带，从左到右的格子依次为 $\triangleright \mid \sqcup \mid a \mid b \mid a \mid \sqcup$；纸带下方一个方框标 "F.C."，箭头指向从左数第 3 格（即第一个 $a$）——表示读写头位置。右侧为 Alan Turing 的照片。）</p>
+<ul>
+<li>Head can both read and write, and move in both directions</li>
+<li>Tape has unbounded length.</li>
+<li>$\sqcup$ is blank symbol. In practice, all but a finite number of tape squares are blank.</li>
+</ul>
+<h4 id="t04-p6">第 6 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> A Turing Machine is a quintuple $(K, \Sigma, \delta, s, H)$, where</p>
+<ul>
+<li>$K$ is a finite set of states</li>
+<li>$\Sigma$ is an alphabet</li>
+<li>containing $\sqcup$ (blank symbol) and $\triangleright$ (left end)</li>
+<li>not containing the symbols $\leftarrow$ and $\rightarrow$</li>
+<li>$s \in K$ is the initial state</li>
+<li>$H \subseteq K$ is the set of halting states</li>
+<li>$\delta: (K - H) \times \Sigma \to K \times (\Sigma \cup \{\leftarrow, \rightarrow\})$ be the transition function</li>
+<li>a) $\forall q \in K - H$ if $\delta(q, \triangleright) = (p, b)$, then $b \,=\, \rightarrow$.</li>
+<li>b) $\forall q \in K - H$ and $a \in \Sigma$, if $\delta(q, a) = (p, b)$, then $b \neq \triangleright$.</li>
+</ul>
+<p>（说明：a) 规定在左端标记处只能右移；b) 规定不能把 $\triangleright$ 写到纸带上。）</p>
+<h4 id="t04-p7">第 7 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Consider the Turing Machine $M = (K, \Sigma, \delta, s, \{h\})$, where</p>
+<p>$$K = \{q_0, q_1, h\}$$
+$$\Sigma = \{a, \sqcup, \triangleright\}$$
+$$s = q_0$$</p>
+<p>and $\delta$ is given by the right table.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$q$</th>
+<th>$\sigma$</th>
+<th>$\delta(q, \sigma)$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$a$</td>
+<td>$(q_1, \sqcup)$</td>
+</tr>
+<tr>
+<td>$q_0$</td>
+<td>$\sqcup$</td>
+<td>$(h, \sqcup)$</td>
+</tr>
+<tr>
+<td>$q_0$</td>
+<td>$\triangleright$</td>
+<td>$(q_0, \rightarrow)$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$a$</td>
+<td>$(q_0, a)$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\sqcup$</td>
+<td>$(q_0, \rightarrow)$</td>
+</tr>
+<tr>
+<td>$q_1$</td>
+<td>$\triangleright$</td>
+<td>$(q_1, \rightarrow)$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p8">第 8 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Consider the Turing Machine $M = (K, \Sigma, \delta, s, H)$, where</p>
+<p>$$K = \{q_0, h\}$$
+$$\Sigma = \{a, \sqcup, \triangleright\}$$
+$$s = q_0$$
+$$H = \{h\}$$</p>
+<p>and $\delta$ is given by the right table.</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>$q$</th>
+<th>$\sigma$</th>
+<th>$\delta(q, \sigma)$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$q_0$</td>
+<td>$a$</td>
+<td>$(q_0, \leftarrow)$</td>
+</tr>
+<tr>
+<td>$q_0$</td>
+<td>$\sqcup$</td>
+<td>$(h, \sqcup)$</td>
+</tr>
+<tr>
+<td>$q_0$</td>
+<td>$\triangleright$</td>
+<td>$(q_0, \rightarrow)$</td>
+</tr>
+</tbody>
+</table></div>
+<p>（图：纸带 $\cdots \mid \triangleright \mid a \mid a \mid \sqcup \mid \cdots$，读写头停在第一个 $\sqcup$ 上；下方气泡标注 "Never stop!"）</p>
+<p>(The machine goes into a loop if no $\sqcup$ can be found.)</p>
+<h4 id="t04-p9">第 9 页</h4>
+<p><strong>Turing Machines Configuration</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> A configuration of a TM $M = (K, \Sigma, \delta, s, H)$ is a member of $K \times \triangleright\Sigma^* \times (\Sigma^*(\Sigma - \{\sqcup\}) \cup \{e\})$.</p>
+<p>Configuration $(q, \triangleright x, y)$:</p>
+<p>（图：纸带格子自左起为 $\triangleright$ 加若干格，$x$ 覆盖 $\triangleright$ 之后的一段，$y$ 覆盖其后的非空段，再往右全是 $\sqcup$ 直至 "all blank"；箭头标出 Head Position（状态 $q$ 所在的格子）与 "Rightmost nonblank"（$y$ 的最后一格）。）</p>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>A configuration whose state component is in $H$ will be called halted configuration.</li>
+</ul>
+<h4 id="t04-p10">第 10 页</h4>
+<ul>
+<li>A simplified notation of configuration:</li>
+</ul>
+<p>$$(q, wa, u) \Rightarrow (q, w\underline{a}u)$$</p>
+<p>（即把状态写在被扫描符号的正下方；$a$ 为读写头所指的符号。）</p>
+<p class="cb cb-example"><strong>Example of configuration:</strong></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>纸带</th>
+<th>简写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\triangleright \mid a \mid a \mid b \mid a \mid \sqcup \mid \sqcup$，头在第一个 $a$</td>
+<td>$(q, \triangleright a, aba)$ or $(q, \triangleright \underline{a}aba)$</td>
+</tr>
+<tr>
+<td>$\triangleright \mid \sqcup \mid \sqcup \mid \sqcup \mid \sqcup \mid a \mid \sqcup \mid \sqcup$，头在 $a$</td>
+<td>$(h, \triangleright\sqcup\sqcup\sqcup\sqcup, \sqcup a)$ or $(h, \triangleright\sqcup\sqcup\sqcup\sqcup\underline{\sqcup}a)$</td>
+</tr>
+<tr>
+<td>$\triangleright \mid \sqcup \mid a \mid \sqcup \mid \sqcup \mid \sqcup \mid \sqcup$，头在 $a$</td>
+<td>$(q, \triangleright\sqcup a\sqcup\sqcup, e)$ or $(q, \triangleright\sqcup\underline{a}\sqcup\sqcup e)$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p11">第 11 页</h4>
+<p><strong>Turing Machines Computation</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K, \Sigma, \delta, s, H)$ be a TM and consider two configurations of $M$ $(q_1, w_1\underline{a_1}u_1)$ and $(q_2, w_2\underline{a_2}u_2)$ where $a_1, a_2 \in \Sigma$. Then</p>
+<p>$$(q_1, w_1a_1u_1) \vdash_M (q_2, w_2a_2u_2)$$</p>
+<p>iff, for some $b \in \Sigma \cup \{\leftarrow, \rightarrow\}$, $\delta(q_1, a_1) = (q_2, b)$, either</p>
+<p>1) $b \in \Sigma$, $w_1 = w_2$, and $u_1 = u_2$, and $a_2 = b$ or</p>
+<p>2) $b \,=\, \leftarrow$, $w_1 = w_2a_2$ and either
+   (a) $u_2 = a_1u_1$, if $a_1 \neq \sqcup$ or $u_1 \neq e$, or
+   (b) $u_2 = e$, if $a_1 = \sqcup$ and $u_1 = e$;</p>
+<p>3) $b \,=\, \rightarrow$, $w_2 = w_1a_1$ and either
+   (a) $u_1 = a_2u_2$, if $a_2 \neq \sqcup$ or $u_2 \neq e$, or
+   (b) $u_1 = e$, if $a_2 = \sqcup$ and $u_2 = e$.</p>
+<h4 id="t04-p12">第 12 页</h4>
+<p>（图：上排为转移前的格局，下排为转移后的格局，左右两组分别对应情形 2) 与 3)；每组纸带末尾都有一个 $\sqcup$。）</p>
+<p>左组（标 $2)\ b = \leftarrow$）：</p>
+<ul>
+<li>上：$\triangleright \mid w_1 \mid a_1 \mid u_1 \mid \sqcup$，头在 $a_1$，状态 $q_1$</li>
+<li>下：$\triangleright \mid w_2 \mid a_2 \mid u_2 \mid \sqcup$，头在 $a_2$，状态 $q_2$</li>
+</ul>
+<p>右组（标 $3)\ b = \rightarrow$）：</p>
+<ul>
+<li>上：$\triangleright \mid w_1 \mid a_1 \mid u_1 \mid \sqcup$，头在 $a_1$，状态 $q_1$</li>
+<li>下：$\triangleright \mid w_2 \mid a_2 \mid u_2 \mid \sqcup$，头在 $a_2$，状态 $q_2$</li>
+</ul>
+<h4 id="t04-p13">第 13 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>
+<p>For any Turing Machine $M$, let $\vdash_M^*$ be the Reflexive, transitive closure of $\vdash_M$. Configuration $C_1$ yields configuration $C_2$ if $C_1 \vdash_M^* C_2$.</p>
+</li>
+<li>
+<p>A <strong>computation</strong> by $M$ is a sequence of configuration $C_0, C_1, \cdots, C_n$, for some $n \geq 0$ such that</p>
+</li>
+</ul>
+<p>$$C_0 \vdash_M C_1 \vdash_M \cdots \vdash_M C_n$$</p>
+<p>we say that the computation is of length $n$ or that it has $n$ steps, denoted by $C_0 \vdash_M^n C_n$.</p>
+<h4 id="t04-p14">第 14 页</h4>
+<p><strong>A Notation for Turing Machines</strong></p>
+<ul>
+<li><strong>Basic Machines</strong></li>
+</ul>
+<p><em>Symbol-writing and hand-moving Machines:</em></p>
+<p>$\Sigma$ — a fixed alphabet, $a \in \Sigma \cup \{\leftarrow, \rightarrow\} - \{\triangleright\}$, define a Turing Machine</p>
+<p>$$M_a = (\{s, h\}, \Sigma, \delta, s, \{h\})$$</p>
+<p>where for each $b \in \Sigma - \{\triangleright\}$, $\delta(s, b) = (h, a)$.</p>
+<p>Naturally, $\delta(s, \triangleright) = (s, \rightarrow)$.</p>
+<p><strong>Abbreviate:</strong></p>
+<p>$a$ instead of $M_a$, $L$ instead of $M_{\leftarrow}$, and $R$ instead of $M_{\rightarrow}$.</p>
+<h4 id="t04-p15">第 15 页</h4>
+<ul>
+<li><strong>The rules for combining Machines</strong></li>
+</ul>
+<p>$M_1, M_2$ and $M_3$ are Turing Machines, the Machine displayed in figure operates as follows:</p>
+<p>（图：三个方框 $M_1, M_2, M_3$；$M_1$ 向右以 $a$ 为条件指向 $M_2$，$M_1$ 向下以 $b$ 为条件指向 $M_3$。）</p>
+<blockquote>
+<p>Start in the initial state of $M_1$, operate as $M_1$ would operate until $M_1$ halt; then if the currently scanned symbol is an $a$, initiate $M_2$ and then operate as $M_2$ would operate; otherwise if the currently scanned symbol is a $b$, initiate $M_3$ and then operate as $M_3$ would operate.</p>
+</blockquote>
+<h4 id="t04-p16">第 16 页</h4>
+<p>Formally, $M_i = (K_i, \Sigma, \delta_i, s_i, H_i)$, $(i = 1, 2, 3)$ be TMs. The combined machine would be $M = (K, \Sigma, \delta, s, H)$, where</p>
+<p>$$K = K_1 \cup K_2 \cup K_3$$
+$$s = s_1$$
+$$H = H_2 \cup H_3$$</p>
+<p>For each $\sigma \in \Sigma$ and $q \in K - H$, $\delta(q, \sigma)$ is defined as follows:</p>
+<p>(a) If $q \in K_1 - H_1$, then $\delta(q, \sigma) = \delta_1(q, \sigma)$.</p>
+<p>(b) If $q \in K_2 - H_2$, then $\delta(q, \sigma) = \delta_2(q, \sigma)$.</p>
+<p>(c) If $q \in K_3 - H_3$, then $\delta(q, \sigma) = \delta_3(q, \sigma)$.</p>
+<p>(d) If $q \in H_1$, then $\delta(q, \sigma) = s_2$ if $\sigma = a$; $\delta(q, \sigma) = s_3$ if $\sigma = b$; otherwise $\delta(q, \sigma) \in H$.</p>
+<h4 id="t04-p17">第 17 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>（图：(a) 单状态 $R$ 的状态图：$R$ 上有标号 $a$ 的自环（上方）、标号 $b$ 的自环、标号 $\triangleright$ 的自环、标号 $\sqcup$ 的自环（下方）。(b) 同一机器简写为 $R \xrightarrow{a,\, b,\, \triangleright,\, \sqcup} R$。）</p>
+<ul>
+<li>
+<p><em>The machine represented by the diagram (a) moves its head right one square; then if that square contains $a$, or $b$, or $\triangleright$, or $\sqcup$, it moves its head one square further to the right.</em></p>
+</li>
+<li>
+<p><em>The machine can be simply represented by (b).</em></p>
+</li>
+<li>
+<p><em>If $\Sigma = \{a, b, \triangleright, \sqcup\}$, the machine become simply $R^2$.</em></p>
+</li>
+</ul>
+<h4 id="t04-p18">第 18 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>（图：四个单状态状态图，均带起始箭头：
+(a) 状态 $R$，自环标号 $\sqcup$；
+(b) 状态 $R$，自环标号 $\sqcup$（符号上似带横线，表示"非 $\sqcup$"）[?]；
+(c) 状态 $L$，自环标号 $\sqcup$；
+(d) 状态 $L$，自环标号 $\sqcup$（符号上似带横线，表示"非 $\sqcup$"）[?]。）</p>
+<p>(a) $R_{\sqcup}$, finds the first blank square to the right of the currently scanned square.</p>
+<p>(b) $R_{\bar{\sqcup}}$, finds the first nonblank square to the right of the currently scanned square.</p>
+<p>(c) $L_{\sqcup}$, finds the first blank square to the left of the currently scanned square.</p>
+<p>(d) $L_{\bar{\sqcup}}$, finds the first nonblank square to the left of the currently scanned square.</p>
+<h4 id="t04-p19">第 19 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (The Copying Machine)</p>
+<p>Transforms $\sqcup w \sqcup$ into $\sqcup w \sqcup w \sqcup$ ($w$ contains no blanks).</p>
+<p>（图：状态图。初态 $R$；$R$ 以 $a \neq \sqcup$ 指向机器串 $\sqcup R_{\bar{\sqcup}}^2 a L_{\bar{\sqcup}}^2 a$，该串执行完后又指回 $R$（形成循环）；$R$ 以 $\sqcup$ 向下指向 $R_{\sqcup}$（停机）。）</p>
+<h4 id="t04-p20">第 20 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (The left-shifting machine $S_{\leftarrow}$)</p>
+<p>Transforms $\sqcup w \sqcup$ into $w \sqcup$ ($w$ contains no blanks).</p>
+<p>（图：状态图。$L_{\sqcup} \to R$；$R$ 以 $a \neq \sqcup$ 指向机器串 $\sqcup L_{\sqcup} a R_{\sqcup}$，该串执行完后又指回 $R$；$R$ 以 $\sqcup$ 向下指向 $L_{\sqcup}$。）</p>
+<p class="cb cb-example"><strong>Example:</strong> Erases the $a$'s in tape.</p>
+<p>（图：状态图。$R$ 以 $a$ 指向 $\sqcup$，$\sqcup$ 又有一条回边指回 $R$（循环），即把每个 $a$ 改写为 $\sqcup$ 后继续向右。）</p>
+<h4 id="t04-p21">第 21 页</h4>
+<p><strong>4.2 Computing with Turing Machines</strong></p>
+<p><strong>How TMs are Used (Deciding Languages)</strong></p>
+<blockquote>
+<p class="cb cb-question"><strong>Question:</strong>
+As language recognizers or decision procedures
+i.e., to answer questions of the form: is $w \in L$?</p>
+</blockquote>
+<p><strong>Convention:</strong></p>
+<p>If $M = (K, \Sigma, \delta, s, H)$ is a TM and $w \in (\Sigma - \{\sqcup, \triangleright\})^*$, then the <strong>initial configuration</strong> of $M$ on input $w$ is $(s, \triangleright\sqcup w)$.</p>
+<p>（图：纸带 $\triangleright \mid \sqcup \mid$（$w$ 占据其后各格）$\mid \sqcup \mid \sqcup \cdots$；箭头标 Tape head 指向 $\sqcup$ 之后 $w$ 的第一格。右侧注：($w$ must not contain blanks)）</p>
+<h4 id="t04-p22">第 22 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K, \Sigma, \delta, s, H)$ is a TM.（原文如此）</p>
+<ul>
+<li>
+<p>$H = \{y, n\}$ consists of two distinguished halting states($y$ — "yes" and $n$ — "no").</p>
+</li>
+<li>
+<p>Any halting configuration whose state component is $y$ — <em>accepting configuration</em>;</p>
+</li>
+<li>
+<p>Any halting configuration whose state component is $n$ — <em>rejecting configuration</em>.</p>
+</li>
+</ul>
+<h4 id="t04-p23">第 23 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> (continued)</p>
+<ul>
+<li>
+<p>$M$ <strong>accepts</strong> $w \in (\Sigma - \{\sqcup, \triangleright\})^*$ if $(s, \triangleright\sqcup w)$ yields an accepting configuration; $M$ <strong>rejects</strong> $w$ if $(s, \triangleright\sqcup w)$ yields an rejecting configuration.</p>
+</li>
+<li>
+<p>Let $\Sigma_0 \subseteq (\Sigma - \{\sqcup, \triangleright\})$ be a alphabet — input alphabet of $M$.</p>
+</li>
+</ul>
+<p>$M$ <strong>decides</strong> $L \subseteq \Sigma_0^*$ if $\forall w \in \Sigma_0^*$ the following is true:</p>
+<ul>
+<li>$w \in L$ iff $M$ accepts $w$;</li>
+<li>
+<p>$w \notin L$ iff $M$ rejects $w$.</p>
+</li>
+<li>
+<p>A language $L$ is <strong>recursive</strong> if $\exists$ a TM that decides $L$.</p>
+</li>
+</ul>
+<h4 id="t04-p24">第 24 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Consider the language $L = \{a^nb^nc^n : n \geq 0\}$. The Turing Machine shown below decides $L$.</p>
+<p>（图：状态图，初态 $R$；主链 $R \xrightarrow{a} dR \xrightarrow{b} dR \xrightarrow{c} dL_{\sqcup}$，$dL_{\sqcup}$ 有一条长回边回到 $R$；$R$ 有标号 $d$ 的自环，第一个 $dR$ 有标号 $a,d$ 的自环，第二个 $dR$ 有标号 $b,d$ 的自环；$R \xrightarrow{\sqcup} y$，$R \xrightarrow{b,c} n$，第一个 $dR \xrightarrow{c,\sqcup} n$，第二个 $dR \xrightarrow{a,\sqcup} n$。）</p>
+<p>转移表：</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>读入</th>
+<th>去向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$R$</td>
+<td>$d$</td>
+<td>$R$（自环）</td>
+</tr>
+<tr>
+<td>$R$</td>
+<td>$a$</td>
+<td>$dR$</td>
+</tr>
+<tr>
+<td>$R$</td>
+<td>$\sqcup$</td>
+<td>$y$</td>
+</tr>
+<tr>
+<td>$R$</td>
+<td>$b, c$</td>
+<td>$n$</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$a, d$</td>
+<td>$dR$（自环）</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$b$</td>
+<td>$dR$</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$c, \sqcup$</td>
+<td>$n$</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$b, d$</td>
+<td>$dR$（自环）</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$c$</td>
+<td>$dL_{\sqcup}$</td>
+</tr>
+<tr>
+<td>$dR$</td>
+<td>$a, \sqcup$</td>
+<td>$n$</td>
+</tr>
+<tr>
+<td>$dL_{\sqcup}$</td>
+<td>—</td>
+<td>$R$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p25">第 25 页</h4>
+<p>On input $a^nb^nc^n$, $M$ will operates in $n$ stages. In each stage $M$ start from the left end and move to the right in search an $a$. When it finds an $a$, it replaces it by $d$ and then looks further to the right for a $b$. When a $b$ is found, it is replaced by a $e$, and then $M$ looks for a $c$. When a $c$ is found and it us replaced by a $f$（原文如此）, then the stage is over.</p>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>
+<p>With FA and PDA, one of two things could happen: either the machine accepts the input, or rejects it.</p>
+</li>
+<li>
+<p>Turing Machine, even if it has only two halt states $y$ and $n$, always has the option of evading an answer by failing to halt.</p>
+</li>
+</ul>
+<h4 id="t04-p26">第 26 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>The word "recursive" is used because these are the same sets as can be defined via certain systems of recursive (self-referential) functions.</li>
+</ul>
+<p>[Later $\cdots$]</p>
+<ul>
+<li>How many recursive languages are there?</li>
+</ul>
+<h4 id="t04-p27">第 27 页</h4>
+<p><strong>How TMs are Used (Computing Functions)</strong></p>
+<p>TMs are often used to compute functions.</p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K, \Sigma, \delta, s, H)$ is a TM. Let $\Sigma_0 \subseteq \Sigma - \{\triangleright, \sqcup\}$ be an alphabet and $w \in \Sigma_0^*$.</p>
+<ul>
+<li>Suppose that $M$ halts on input $w$ and that $(s, \triangleright\sqcup w) \vdash_M^* (h, \triangleright\sqcup y)$ for some $y \in \Sigma_0^*$. Then $y$ is called the output of $M$ on input $w$, denoted by $M(w)$.</li>
+</ul>
+<h4 id="t04-p28">第 28 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong>(continued)</p>
+<ul>
+<li>Let $f$ be a function $f: \Sigma_0^* \to \Sigma_0^*$. $M$ <strong>computes</strong> function $f$ if,</li>
+</ul>
+<p>$$\forall w \in \Sigma_0^*,\ M(w) = f(w).$$</p>
+<ul>
+<li>A function $f$ is <strong>recursive</strong> if $\exists$ a TM $M$ computes $f$.</li>
+</ul>
+<p class="cb cb-example"><strong>Example:</strong> The function $\kappa: \Sigma^* \to \Sigma^*$ defined as $\kappa(w) = ww$ can be computed by $CS_{\leftarrow}$.</p>
+<h4 id="t04-p29">第 29 页</h4>
+<p><strong>The Class of Recursive Functions</strong></p>
+<p>（红框）
+A function from numbers to numbers is <strong>recursive</strong> if the string function on their binary notations is recursive.</p>
+<p><strong>Binary Notations:</strong></p>
+<ul>
+<li>
+<p>Strings in $\{0,1\}^*$ can be used to represent the nonnegative integers. $\forall w = a_1a_2\cdots a_n \in \{0,1\}^*$ represents the number:
+$$num(w) = a_1\cdot 2^{n-1} + a_2\cdot 2^{n-2} + \cdots + a_n.$$</p>
+</li>
+<li>
+<p>Any natural number can be represented in a unique way by a string $0 \cup 1(0 \cup 1)^*$.</p>
+</li>
+</ul>
+<h4 id="t04-p30">第 30 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K,\Sigma,\delta,s,\{h\})$ is a TM.（原文如此）</p>
+<ul>
+<li>
+<p>$0,1,; \in \Sigma$ and let $f: \mathbb{N}^k \to \mathbb{N}$ be any function for some $k \ge 1$. $M$ <strong>computes</strong> $f$ if, $\forall w_1,\cdots,w_k \in 0\cup 1\{0,1\}^*$,
+$$num(M(w_1;\cdots;w_k)) = f(num(w_1),\cdots,num(w_k)).$$</p>
+</li>
+<li>
+<p>$f: \mathbb{N}^k \to \mathbb{N}$ is <strong>recursive</strong> if $\exists$ a TM $M$ computes $f$.</p>
+</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>$M$ started with the binary representations of integers $n_1,n_2,\cdots,n_k$ as input.</li>
+<li>$M$ eventually halts.</li>
+<li>When it does halt, its tape contains a string that represents number $f(n_1,n_2,\cdots,n_k)$.</li>
+</ul>
+<h4 id="t04-p31">第 31 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Design a machine to compute the successor function:
+$$succ(n) = n + 1.$$</p>
+<p>（图：状态图。中央状态标为 $R\square L$；一条向上的弧（标号 $1$）指向状态 $0$，一条向下的弧（标号 $0$）回到 $R\square L$；标号 $\square$ 的箭头水平指向状态 $1$；标号 $0$ 的斜箭头指向状态 $1S_R$。）</p>
+<p>$S_R$ : right shift machine</p>
+<h4 id="t04-p32">第 32 页</h4>
+<p><strong>TM and Recursive Enumerable Languages</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K,\Sigma,\delta,s,H)$ is a TM.（原文如此）Let $\Sigma_0 \subseteq \Sigma - \{\triangleright,\square\}$ be an alphabet and $L \subseteq \Sigma_0^*$.</p>
+<ul>
+<li>
+<p>M <strong>semidecides</strong> $L$ if for $\forall w \in \Sigma_0^*$ the following is true:
+$$w \in L \Leftrightarrow M \text{ halts on input } w.$$</p>
+</li>
+<li>
+<p>A language $L$ is <strong>recursively enumerable(r.e.)</strong> iff $\exists$ a TM $M$ that semidecides $L$.</p>
+</li>
+</ul>
+<h4 id="t04-p33">第 33 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>
+<p>$L$ be a recursively enumerable:
+$$w \in L \Leftrightarrow M \text{ halts.}$$
+$$w \notin L \Leftrightarrow M \text{ never enter the halting state.}$$</p>
+</li>
+<li>
+<p>Recursion is related to recursion in programs</p>
+</li>
+<li>
+<p>Enumerable means there is some TM that can enumerate the strings in the language.([Later $\cdots$])</p>
+</li>
+<li>
+<p>Extending the functional notation:
+$$M(w) = \uparrow \text{ if } M \text{ fails to halt in input } w.$$</p>
+</li>
+</ul>
+<p>Turing Machine semidecides $L$:
+$$M(w) = \uparrow \Leftrightarrow w \notin L.$$</p>
+<h4 id="t04-p34">第 34 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Let $L = \{w \in \{a,b\}^* : w \text{ contains at least one } a\}$.
+Then $L$ is semidecides by the TM shown below.（原文如此）
+Thus $L$ is recursively enumerable.</p>
+<p>（图：只有一个状态 $R$ 的状态图；$R$ 上有一条自环，标号 $\bar{a}$；左端起始箭头 $\triangleright$ 指向 $R$。）</p>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>Design a Turing Machine that fail to halt by</p>
+<ul>
+<li>going on forever into the blanks</li>
+<li>looping forever</li>
+</ul>
+<h4 id="t04-p35">第 35 页</h4>
+<p><strong>Some Properties</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> The complement of a recursive language is recursive.</p>
+<ul>
+<li>Given $M$ that halts on all inputs, construct $M'$ that simulates $M$.</li>
+<li>If $M$ halts and accepts, $M'$ halts and does not accept</li>
+<li>If $M$ halts and does not accept, $M$ halts and accepts</li>
+<li>Let $M = (K,\Sigma,\delta,s,\{y,n\})$ and $L$ is decided by $M$.
+$\Rightarrow M' = (K,\Sigma,\delta',s,\{y,n\})$ decides $\Sigma^* - L$.
+$$\delta'(q,a) = \begin{cases} n &amp; \text{if } \delta(q,a) = y \\ y &amp; \text{if } \delta(q,a) = n \\ \delta(q,a) &amp; \text{otherwise.} \end{cases}$$</li>
+</ul>
+<h4 id="t04-p36">第 36 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong> If $L$ is a recursive language, then it is recursively enumerable.</p>
+<p>Let $M = (K,\Sigma,\delta,s,\{y,n\})$ and $L$ is decided by $M$.
+$\Rightarrow$ Construct $M' = (K,\Sigma,\delta',s,\{y\})$ semidecides $L$.
+$$\delta'(q,a) = \begin{cases} (n,a) &amp; \text{if } q = n \\ \delta(q,a) &amp; \text{otherwise.} \end{cases}$$</p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> The union/intersection of two recursive languages is recursive.</p>
+<h4 id="t04-p37">第 37 页</h4>
+<p><strong>4.3 Extension of Turing Machines</strong></p>
+<p><strong>Extension of Turing Machines:</strong></p>
+<ul>
+<li>Multiple tapes</li>
+<li>Two-way infinite tape</li>
+<li>Multiple heads</li>
+<li>Multi-dimensional tape</li>
+<li>
+<p>Non-determinism</p>
+</li>
+<li>
+<p>These "enhancements" do not increase the power of TMs.</p>
+</li>
+<li>Using the additional features, we can easily design Turing Machines to solve particular problems.</li>
+</ul>
+<h4 id="t04-p38">第 38 页</h4>
+<p><strong>Multiple tapes</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $k \ge 1$ be an integer. A $k$-tape TM is a quintuple $(K,\Sigma,\delta,s,H)$, where $K,\Sigma,s$ and $H$ are as in the definition of the ordinary TM, and $\delta$, the transition function:
+$$\delta : (K - H) \times \Sigma^k \to K \times (\Sigma \cup \{\leftarrow,\rightarrow\})^k.$$</p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K,\Sigma,\delta,s,H)$ be a $k$-tape TM. A <strong>configuration</strong> of $M$ is a member of:
+$$K \times (\triangleright\Sigma^* \times (\Sigma^*(\Sigma - \{\square\}) \cup \{e\}))^k.$$</p>
+<h4 id="t04-p39">第 39 页</h4>
+<p>（红框）</p>
+<p><strong>Convention:</strong></p>
+<ul>
+<li>The input string is placed on the first tape;</li>
+<li>The other tapes are iniatially（原文如此） blank, with the head on the leftmost blank square of each;</li>
+<li>At the end of the computation, the output on the first tape; the other tapes are ignored.</li>
+</ul>
+<h4 id="t04-p40">第 40 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (The Copying Machine)</p>
+<p>Transforms $\square w\square$ into $\square w\square\ w\square$ ($w$ contains no blanks).</p>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<p>2-tape Turing machine can accomplish this as follows.</p>
+<p>1) Move the heads on the both tapes to the right, copy each symbol on the first tape onto the second tape, until a blank is found on the first tape.</p>
+<p>2) Move the heads on the second tape to the left until a blank is found.</p>
+<h4 id="t04-p41">第 41 页</h4>
+<p>3) Again move the heads on the both tapes to the right, copy symbols from the second tape onto the first tape. Halt when a blank is found on the second tape.</p>
+<p>（图：四个状态的状态图，分左右两组。
+左侧：$R^{1,2} \xrightarrow{a^1 \ne \square} a^2$，另有一条从 $a^2$ 上方回到 $R^{1,2}$ 的弧；$R^{1,2}$ 向下接 $L_2^2R^{1,2}$。
+右侧：$L_2^2R^{1,2} \xrightarrow{a^2 \ne \square} a^1$，另有一条从 $a^1$ 上方回到 $L_2^2R^{1,2}$ 的弧。
+图下方标出三个阶段 (1)、(2)、(3)。）</p>
+<p>（下方是各阶段两条带的格局）</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>At beginning</th>
+<th>After (1)</th>
+<th>After (2)</th>
+<th>After (3)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>First tape</strong></td>
+<td>$\triangleright\square w$</td>
+<td>$\triangleright\square w\square$</td>
+<td>$\triangleright\square w\square$</td>
+<td>$\triangleright\square w\square w\square$</td>
+</tr>
+<tr>
+<td><strong>Second tape</strong></td>
+<td>$\triangleright\square$</td>
+<td>$\triangleright\square w\square$</td>
+<td>$\triangleright\square w$</td>
+<td>$\triangleright\square w\square$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p42">第 42 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> (Add arbitrary any binary numbers)</p>
+<p>（图：多带图灵机的状态图，节点与边如下（部分箭头方向难以完全辨认）[?]：</p>
+<ul>
+<li>左半部：$R^{1,2} \xrightarrow{a^1 \ne ;} 0^1a^2$，$0^1a^2 \xrightarrow{\ ;^1\ } R^{1,2}$（下方长回边）。</li>
+<li>$0^1a^2$ 右侧有箭头指向右半部的中心节点 $0^1R^1_\square L^{1,2}$。</li>
+<li>$0^1R^1_\square L^{1,2}$ 与 $0^1$ 之间有一条竖直的双弧，标号 $00$。</li>
+<li>$0^1R^1_\square L^{1,2}$ 与 $1^1$ 之间有两条弧，标号 $01,10$。</li>
+<li>$0^1R^1_\square L^{1,2} \xrightarrow{11} 0^1$（向左下）。</li>
+<li>$1^1 \xrightarrow{11} 0^1R^1_\square L^{1,2}$。</li>
+<li>$0^1 \xrightarrow{00} L^{1,2}$。</li>
+<li>$1^1 \xrightarrow{00} L^{1,2}$。</li>
+<li>$L^{1,2}$ 与 $0^1$ 之间有两条弧，标号 $01,10$。</li>
+<li>$L^{1,2}$ 下方有一条自环，标号 $11$。）</li>
+</ul>
+<h4 id="t04-p43">第 43 页</h4>
+<p><strong>$k$-tape TM/Standard TM Equivalence</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> Let $M = (K,\Sigma,\delta,s,H)$ be a $k$-tape TM($k \ge 1$). Then there is a standard TM $M = (K',\Sigma',\delta',s',H)$（原文如此）, where $\Sigma \subseteq \Sigma'$ and such that the following holds:</p>
+<p>1) For any input string $x \in \Sigma^*$, $M$ on input $x$ halt with output $y$ on the first tape iff $M'$ on input $x$ halts as the same halting state, and with the same output $y$ on its tape.</p>
+<p>2) If $M$ halts on input $x$ after $t$ steps, then $M'$ halts on input $x$ after a number of steps which is $\mathcal{O}(t\cdot(|x| + t))$.</p>
+<h4 id="t04-p44">第 44 页</h4>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>（红框）</p>
+<p><strong>Main idea:</strong></p>
+<p>Simulate a $k$-tape TM by a one-tape TM whose tape is split (conceptually) into $2k$ tracks:</p>
+<ul>
+<li>$k$ tracks for tape symbols</li>
+<li>$k$ tracks for head positions (one in each track)</li>
+</ul>
+<h4 id="t04-p45">第 45 页</h4>
+<p>（图：上半部分是一个 2-tape Turing Machine 的格局，有限控制器 $q$ 分别用箭头指向两条带上的读写头：</p>
+<ul>
+<li>第一条带：$\triangleright\ \square\ \square\ b\ c\ \square$，读写头停在第 4 格（$b$）下方；</li>
+<li>第二条带：$\triangleright\ \square\ a\ a\ b\ a$，读写头停在第 5 格（$b$）下方。</li>
+</ul>
+<p>下半部分是模拟它的单带 TM：一条带被划成 4 条 track，左边有 $\triangleright$，右边延伸出 $\square$。）</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>track 1（tape 1 的符号）</td>
+<td>$\square$</td>
+<td>$\square$</td>
+<td>$b$</td>
+<td>$c$</td>
+<td>$\square$</td>
+</tr>
+<tr>
+<td>track 2（tape 1 的头位置）</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>track 3（tape 2 的符号）</td>
+<td>$\square$</td>
+<td>$a$</td>
+<td>$a$</td>
+<td>$b$</td>
+<td>$a$</td>
+</tr>
+<tr>
+<td>track 4（tape 2 的头位置）</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p>If the head on the $i$th tape of $M$ is positioned over the $n$th tape square, then the $2i$th track of tape $M'$ contains a 1 in the $(n+1)$st tape square and a 0 in all tape squares except $(n+1)$st.</p>
+<h4 id="t04-p46">第 46 页</h4>
+<p>Let $M = (K,\Sigma,\delta,s,H)$ be a $k$-tape TM
+$\Rightarrow$ Construct a standard TM $M' = (K',\Sigma',\delta',s',H)$</p>
+<ul>
+<li>
+<p>$\Sigma' = \Sigma \cup (\Sigma \times \{0,1\})^k$</p>
+</li>
+<li>
+<p>the alphabet of $M'$ consists of alphabet of $M$, and $2k$-tuples $(a_1,b_1,\dots,a_k,b_k)$, with $a_1,\dots,a_k \in \Sigma$, $b_1,\dots,b_k \in \{0,1\}$.</p>
+</li>
+</ul>
+<h4 id="t04-p47">第 47 页</h4>
+<ul>
+<li>When given a input $w \in \Sigma^*$, $M'$ operates as follows:</li>
+</ul>
+<p><strong>I. Representation of the initial configuration of $M$:</strong></p>
+<ul>
+<li>
+<p>Shift the input one step square to the right.</p>
+</li>
+<li>
+<p>Return to the square immediately to the right of the $\triangleright$, and write the symbol $(\square,1,\dots,\square,1)$ — this signifies that the first squares of all $k$ tapes contain a $\square$ and are all scanned by the heads.</p>
+</li>
+<li>
+<p>Proceed to the right, at each square, if $a \ne \square$ is encountered, write $(a,0,\square,0,\dots,\square,0)$ in its position. If $a = \square$ is encountered, the first phase is over.</p>
+</li>
+</ul>
+<h4 id="t04-p48">第 48 页</h4>
+<p><strong>II. Simulate the computation of $M$:</strong></p>
+<p>(until $M$ would halt, if it would halt)</p>
+<p>To simulate one step of $M$, $M'$ will perform:</p>
+<p>（红框）
+It starts each step simulation with its head scanning the first square of its tape that has not yet been subdivided into tracks</p>
+<p>($a$) <strong>Scan left down the tape</strong>, gather information about the symbols have scanned by the $k$ tapes heads of $M$. After all scanned symbols have been identified, <strong>return to the rightmost true blank</strong> and then <strong>change state</strong> of the finite control to reflect the $k$-tuple of symbols form $\Sigma$ in $k$ tracks at the marked head positions.</p>
+<p>($b$) Scan left then rightdown（原文如此） the tape to update the tracks in accordance with the move of $M$.</p>
+<h4 id="t04-p49">第 49 页</h4>
+<p><strong>III. Representation of halted configuration</strong></p>
+<p>When $M$ would halt:</p>
+<ul>
+<li>$M'$ first converts its tape from tracks into single symbol format, ignoring all tracks except for the first.</li>
+<li>$M'$ positions its head where $M$ would have placed its first head.</li>
+<li>$M'$ halts in the same state as $M$ would have halted.</li>
+</ul>
+<h4 id="t04-p50">第 50 页</h4>
+<ul>
+<li><strong>Time Complexity:</strong> $\mathcal{O}(t(|x| + t))$</li>
+</ul>
+<p>Simulating $t$ steps of $M$ on input $x$, $M'$:
+Phase 1: $\mathcal{O}(|x|)$
+Phase 2: For each step of $M$, $M'$ $\mathcal{O}(|x| + 2 + t)$.</p>
+<p class="cb cb-corollary"><strong>Corollary:</strong> Any function that is computed or language that is decided or semidecided by a $k$-tape TM is also computed, decided, or semidecided, respectively, by a standard TM.</p>
+<h4 id="t04-p51">第 51 页</h4>
+<p><strong>Two-way infinite tape</strong></p>
+<p>（图：一条向左右两端都无限延伸的带，画出的部分为 $\cdots\ \square\ a\ b\ a\ a\ \cdots$）</p>
+<ul>
+<li>Unbounded tape to left as well as right</li>
+<li>
+<p>Same convention for input/output</p>
+</li>
+<li>
+<p>TMs with 2-way infinite tape are no more powerful than standard TM.</p>
+</li>
+</ul>
+<h4 id="t04-p52">第 52 页</h4>
+<ul>
+<li>A 2-way infinite tape can be easily simulated by a two-tape machine.</li>
+</ul>
+<p>（图：上方是一条双向无限带，以某处为原点向左编号 $-4,-3,-2,-1$、向右编号 $0,1,2,3,4$，格中内容依次为 $\cdots\ c\ a\ \square\ b\ \mid\ a\ \square\ b\ a\ a\ \cdots$（$-1$ 格为 $b$，$0$ 格为 $a$）。）</p>
+<p>（图：下方是模拟用的两条带。上带存负半轴，列标号从左到右为 $-1,-2,-3,-4$，内容为 $b\ \square\ a\ c\ \cdots$；下带存非负半轴，列标号 $0,1,2,3,4$，内容为 $a\ \square\ b\ a\ a$。）</p>
+<h4 id="t04-p53">第 53 页</h4>
+<p><strong>Multiple Heads</strong></p>
+<ul>
+<li>A multiple TM: one tape and several heads.</li>
+<li>In one step, the heads all sense the scanned symbols and move or write independently.</li>
+<li>A multiple heads TM can be easily simulated by a $k$-tape machine.</li>
+</ul>
+<p>（红框）</p>
+<p><strong>Basic idea:</strong></p>
+<ul>
+<li>divide the tape into tracks, all but one of which are used solely to record the head positions.</li>
+<li>To simulate one step by multiple heads TM, the tape must be scanned twice: once to find the symbols at the head positions, and again to change those symbols or move the heads as appropriate.</li>
+</ul>
+<h4 id="t04-p54">第 54 页</h4>
+<p><strong>Two Dimensional Tape</strong></p>
+<ul>
+<li>
+<p>Allow its tape to be an infinite two-dimensional grid.</p>
+</li>
+<li>
+<p>much more useful than standard TM to solve problems such as "zigsaw puzzles".</p>
+</li>
+</ul>
+<p class="cb cb-theorem"><strong>Theorem:</strong> Any language decided or semidecided and any function computed by TM with several tapes, heads, two-way infinite tapes or multi-dimensional tapes, can be decided, semidecided, or computed respectively, by a standard TM.</p>
+<h4 id="t04-p55">第 55 页</h4>
+<p><strong>4.4 Nondeterministic Turing Machines</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> A nondeterministic Turing Machine(NTM) is a quintuple $M = (K,\Sigma,\Delta,s,H)$, where $K,\Sigma$ and $H$ are as for standard TMs, and $\Delta$ is a subset of
+$$((K - H) \times \Sigma) \times (K \times (\Sigma \cup \{\leftarrow,\rightarrow\})).$$</p>
+<ul>
+<li>
+<p>Like TMs, but is now a <strong>relation</strong> rather than a <strong>function</strong>.</p>
+</li>
+<li>
+<p>Configurations and the relations $\vdash_M$ and $\vdash_M^*$ are defined in the similar way in standard TM.</p>
+</li>
+<li>$\vdash_M$ need not be single-valued.</li>
+</ul>
+<h4 id="t04-p56">第 56 页</h4>
+<p><strong>NTM Decides Languages/Computes Functions</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K, \Sigma, \Delta, s, H)$ is a NTM.（原文如此）</p>
+<ul>
+<li>$M$ <strong>accepts</strong> an input $w \in (\Sigma - \{\triangleright, \sqcup\})^*$ if $(s, \triangleright\sqcup w) \vdash_M^* (h, uav)$ for some $h \in H$ and $a \in \Sigma$, $u, v \in \Sigma^*$.</li>
+<li>$M$ <strong>semidecides a language</strong> $L \subseteq (\Sigma - \{\triangleright, \sqcup\})^*$ if the following holds for all $w \in (\Sigma - \{\triangleright, \sqcup\})^*$:
+  $$w \in L \text{ if and only if } M \text{ accepts } w.$$</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>NTM $M$ accepts an input $w$:</p>
+<ul>
+<li>as long as at least one halting computation exists.</li>
+</ul>
+<h4 id="t04-p57">第 57 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $M = (K, \Sigma, \Delta, s, \{y, n\})$ be a NTM.</p>
+<ul>
+<li>$M$ <strong>decides a language</strong> $L \subseteq (\Sigma - \{\triangleright, \sqcup\})^*$ if the following two conditions hold for all $w \in (\Sigma - \{\triangleright, \sqcup\})^*$:</li>
+</ul>
+<p>$(a)$ $\exists N(M, w) \in \mathbb{N}$ such that there is no configuration $C$ satisfying $(s, \triangleright\sqcup w) \vdash_M^N C$.</p>
+<p>$(b)$ $w \in L$ iff $(s, \triangleright\sqcup w) \vdash_M^* (y, uav)$ for $a \in \Sigma$, and $u, v \in \Sigma^*$.</p>
+<ul>
+<li>$M$ <strong>computes a function</strong> $f : (\Sigma - \{\triangleright, \sqcup\})^* \to (\Sigma - \{\triangleright, \sqcup\})^*$ if the following two conditions hold for all $w \in (\Sigma - \{\triangleright, \sqcup\})^*$:</li>
+</ul>
+<p>$(a)$ $\exists N(M, w) \in \mathbb{N}$ such that there is no configuration $C$ satisfying $(s, \triangleright\sqcup w) \vdash_M^N C$.</p>
+<p>$(b)$ $(s, \triangleright\sqcup w) \vdash_M^* (h, uav)$ iff $ua = \triangleright\sqcup$ and $v = f(w)$.</p>
+<h4 id="t04-p58">第 58 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>
+<p>For NTM to decide a language and compute a function, all of its computations halt (condition$(a)$).</p>
+</li>
+<li>
+<p>For NTM decide a language, we only require that at least one of its possible computations end up accepting the input.</p>
+</li>
+<li>
+<p>For NTM to compute a function, we require that all possible computations agree on the outcome.</p>
+</li>
+</ul>
+<h4 id="t04-p59">第 59 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Design a NTM to semidecide $C = \{num(p \cdot q) : p, q \ge 2\}$.</p>
+<ul>
+<li>set of composite numbers</li>
+</ul>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<ul>
+<li>
+<p>Design a NTM to semidecide $C$ by guessing the factors, if there are any.</p>
+</li>
+<li>
+<p>The machine operates as follows:</p>
+</li>
+</ul>
+<p>(1) Nondeterministically choose two binary numbers $p, q$ (except $0, 1$), and write their binary representation next to the input.</p>
+<h4 id="t04-p60">第 60 页</h4>
+<p>(2) Use the multiplication machine to replace the binary representation of $p$ and $q$ by $p \cdot q$.</p>
+<p>(3) Check to see the two integers, $n$ and $p \cdot q$, are same. Halt if the two integers are equal; otherwise continue forever.</p>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>This machine can be modified to NTM that <strong>decides</strong> the language $C$.</p>
+<h4 id="t04-p61">第 61 页</h4>
+<p><strong>NTM/Standard TM equivalent</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> If a NTM $M$ semidecides or decides a language, or computes a function, then there is a standard TM $M'$ semidecides or decides the same language, or computes the same function.（原文如此）</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<ul>
+<li>
+<p>We shall describe the construction for the case in which $M$ semidecides a language $L$.</p>
+</li>
+<li>
+<p>Given a NTM $M$, we must construct a standard TM $M'$ that determines, on input $w$, whether $M$ has a halting computation on input $w$.</p>
+</li>
+</ul>
+<h4 id="t04-p62">第 62 页</h4>
+<p>$M$ may have an infinty of different computations starting from the same input; how can $M$ explore them all?（原文如此：infinty）</p>
+<ul>
+<li>$M'$ systemtically tries（原文如此：systemtically）</li>
+<li>all one-step computations</li>
+<li>all two-step computations</li>
+<li>
+<p>all three-step computations
+    $\vdots$
+  —— <em>dovetailing procedure</em></p>
+</li>
+<li>
+<p>Ultimately $M'$ either:</p>
+</li>
+<li>discovers a halting computation of $M$, and halts itself, or</li>
+<li>searches forever, and does not halt.</li>
+</ul>
+<h4 id="t04-p63">第 63 页</h4>
+<ul>
+<li>There is a bounded number of $k$-step computations, for each $k$.</li>
+</ul>
+<p><em>(for each configuration there are only a constant number of "next" configurations in one step)</em></p>
+<ul>
+<li>The number of quadruples $(q, a, p, b) \in \Delta$ that can be applicable at any point is finite
+  — it cannot exceed $|K| \cdot (|\Sigma| + 2)$</li>
+</ul>
+<p>（图：一步转移的分支示意图，$C \vdash_M C'$ 之上分出多条分支，$C'$ 的后继记作 $C''$、$C'''$……）</p>
+<h4 id="t04-p64">第 64 页</h4>
+<p><strong>$M'$ in detail</strong></p>
+<ul>
+<li>
+<p>Suppose that the maximum number of different transitions for a given state-symbol combination $(q, a)$ is $r$.</p>
+</li>
+<li>
+<p>Number those transitions $1, \cdots, r$ (or less)</p>
+</li>
+</ul>
+<p>$$\begin{aligned}
+((q, a), (p_1, b_1)) &amp;\qquad (1)\\
+((q, a), (p_2, b_2)) &amp;\qquad (2)\\
+&amp;\ \ \vdots \qquad\quad \vdots\\
+((q, a), (p_r, b_r)) &amp;\qquad (r)
+\end{aligned}$$</p>
+<h4 id="t04-p65">第 65 页</h4>
+<ul>
+<li>Any computation of $k$ steps is determined by a sequence of $k$ numbers $\le r$.</li>
+</ul>
+<p><strong>Configuration Space</strong></p>
+<p>（图：配置空间的有向图，节点为配置，边标以 $1, 2, \cdots$（该步选用的转移编号）；图中一条红色路径依次经过三条边，边标号序列为 $(1)(2)(1)$，即 $\longrightarrow = (1)(2)(1)$；图下方给出图例：一条带 $\vdash_M$ 标记的箭头表示"一步转移"）</p>
+<h4 id="t04-p66">第 66 页</h4>
+<ul>
+<li>Define the deterministic version of $M$: $M_d$</li>
+<li>$M_d$ has the same state of $M$</li>
+<li>
+<p>$M_d$ has two tapes:</p>
+<ul>
+<li><em>The first tape is the tape of $M$, initially containing the input $w$.</em></li>
+<li><em>The second tape initially contains a string of $n$ integers in range $1, \cdots, r$, say $i_1 i_2 \cdots i_n$.</em></li>
+</ul>
+</li>
+<li>
+<p>$M_d$ operates as follows for $n$ steps:</p>
+<ul>
+<li><em>In the first step, $M_d$ chooses the $i_1$th — $(p_{i_1}, b_{i_1})$ among the $r$ next state-action combinations and then applies to the initial configuration. Moves its second tape head to the right, so that it next scans $i_2$</em></li>
+<li><em>In the next step, $M_d$ takes the $i_2$th combination, then $i_3$th and so on.</em></li>
+<li><em>When $M_d$ sees a blank on its second tape, it halts.</em></li>
+</ul>
+</li>
+</ul>
+<h4 id="t04-p67">第 67 页</h4>
+<ul>
+<li>How $M'$ works: 3 tapes</li>
+</ul>
+<p><em>($M'$ can be converted into an equivalent standard Turing Machine)</em></p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>磁带</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#1</td>
+<td>$\sqcup$ Original input to $M$ $\sqcup$</td>
+</tr>
+<tr>
+<td>#2</td>
+<td>`$` Simulated tape of $M$</td>
+</tr>
+<tr>
+<td>#3</td>
+<td>$\sqcup$ (1)(2)(1) $\sqcup \ldots$ Directions for $M'$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p68">第 68 页</h4>
+<ul>
+<li>The three tapes of $M'$ are used as follows:</li>
+<li>
+<p>The first always contains the original input $w$.
+    — never changed.</p>
+</li>
+<li>
+<p>The second and the third tapes are used to simulate the computations of $M_d$ with all strings in $\{1, \cdots, r\}^*$.</p>
+<ul>
+<li><em>The input is copied from the first tape onto the second before $M'$ begins to simulate a new computation.</em></li>
+<li><em>Initially, the third tape contain $e$.</em></li>
+</ul>
+</li>
+<li>Between two simulations of $M_d$, $M'$ uses a TM $N$ to generate the lexicographically next string in $\{1, \cdots, r\}^*$.<ul>
+<li>$N$ <em>will generate from $e$ the strings</em> $1, \cdots, r,\ 11, 12, \cdots rr,\ 111, \cdots$</li>
+</ul>
+</li>
+</ul>
+<h4 id="t04-p69">第 69 页</h4>
+<ul>
+<li>$M'$ is the Turing Machine given in the following Figure:</li>
+</ul>
+<p>（图：三个模块构成的流程图，$C^{1\to 2} \longrightarrow B^3 M_d^{2,3}$，其中 $B^3 M_d^{2,3}$ 的输出用箭头回接到 $C^{1\to 2}$，形成循环）</p>
+<ul>
+<li>$C^{1\to 2}$: <em>a simple Turing Machine that erases the second tape and copies the first tape on the second.</em></li>
+<li>$B^3$: <em>is the machine that generates the lexicographically next string in the third tape.</em></li>
+<li>$M_d^{2,3}$: <em>is the deterministic version of $M$, operating on tape 2 and 3.</em></li>
+</ul>
+<h4 id="t04-p70">第 70 页</h4>
+<ul>
+<li>
+<p>$M'$ halt on input $w$ iff (some computation of) $M$ halts.</p>
+</li>
+<li>
+<p><em>Suppose that $M'$ indeed halts on input $w$</em>
+    $\Rightarrow$ <em>$M_d$ halts and the third tape not scanning a blank</em>
+    $\Rightarrow$ <em>For some string $i_1 \cdots i_n \in \{1, \cdots, r\}^*$, $M_d$ when started with $w$ on its first tape and $i_1 \cdots i_n$ on its second, halts before reaching the blank</em>
+    $\Rightarrow$ <em>There is a computation of $M$ on input $w$ that halts.</em></p>
+</li>
+<li>
+<p><em>There is a halting computation of $M$ on input $w$ with $n$ steps</em>
+    $\Rightarrow$ <em>$M'$ after at most $r + r^2 + \cdots + r^n$ failed attempts, the string in $\{1, \cdots, r\}^*$ corresponding to the choices of $M$'s halting computation will be generated by $B^3$, and $M_d$ will halt scanning the last symbol of this string.</em></p>
+</li>
+</ul>
+<h4 id="t04-p71">第 71 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>
+<p>The simulation of a NTM by a deterministic one is not a step by step simulation, as well all other simulation we have seen.</p>
+</li>
+<li>
+<p>It requires <strong>exponentially many steps</strong> in $n$ to simulation of $n$ step by the NTM — whereas all other simulation described in this chapter are in <strong>polynomial</strong>.</p>
+</li>
+</ul>
+<h4 id="t04-p72">第 72 页</h4>
+<p><strong>4.5 Grammars</strong></p>
+<ul>
+<li>
+<p>Consider <strong>language generator</strong>:
+  regular expression, context-free grammar, $\cdots$</p>
+</li>
+<li>
+<p>Like context-free grammars, except that if $u \to v$ is a rule, then $u$ may be any string containing a nonterminal.</p>
+</li>
+<li>
+<p>So the rule $AXY \to AYX$ where $A, X, Y \in V - \Sigma$, "means" that the two-symbol substring $XY$ can be replaced by $YX$ whenever it appears with an $A$ to its left.</p>
+</li>
+</ul>
+<h4 id="t04-p73">第 73 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> A <strong>grammar</strong> (or <strong>unrestricted grammar</strong>) is a quadruple $G = (V, \Sigma, R, S)$, where</p>
+<ul>
+<li>$V$ is an alphabet;</li>
+<li>$\Sigma \subseteq V$ is the set of <strong>terminal</strong> symbols, and $V - \Sigma$ is called the set of <strong>nonterminal</strong> symbols;</li>
+<li>$S \in V - \Sigma$ is the <strong>start</strong> symbol; and</li>
+<li>
+<p>$R$ is the set of <strong>rules</strong>, a finite subset of $(V^*(V - \Sigma)V^*) \times V^*$.</p>
+</li>
+<li>
+<p>$u \to_G v \iff (u, v) \in R$.</p>
+</li>
+<li>
+<p>$u \Rightarrow_G v \iff \exists w_1, w_2 \in V^*$, and some rule $u' \to_G v'$ such that $u = w_1 u' w_2$, $v = w_1 v' w_2$.</p>
+</li>
+</ul>
+<h4 id="t04-p74">第 74 页</h4>
+<ul>
+<li>
+<p>$\Rightarrow_G^*$ is the reflexive, transitive closure of $\Rightarrow_G$.</p>
+</li>
+<li>
+<p>The <strong>language generated by</strong> $G$,
+  $$L(G) = \{w \in \Sigma^* : S \Rightarrow_G^* w\}.$$</p>
+</li>
+<li>
+<p>$w_0 \Rightarrow_G w_1 \Rightarrow_G \cdots \Rightarrow_G w_n$
+  — a <strong>derivation</strong> in $G$ of $w_n$ from $w_0$. $n$ be the length of the derivation.</p>
+</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>Any context-free grammar is a grammar.</p>
+<h4 id="t04-p75">第 75 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>The grammar $G$ generates the language $\{a^n b^n c^n : n \ge 1\}$.</p>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<ul>
+<li>$\Sigma = \{a, b, c\}$</li>
+<li>$V = \{a, b, c, S, A, B, C, T_a, T_b, T_c\}$</li>
+<li>$R = \{S \to ABCS,\ S \to T_c$</li>
+</ul>
+<p>(Thus $S \Rightarrow (ABC)^n T_c$, for any $n \ge 0$).</p>
+<p>$BA \to AB,\ CA \to AC,\ CB \to BC$</p>
+<p>(Any inversions of the proper order can be repaired)</p>
+<p>$CT_c \to T_c c,\ CT_c \to T_b c$</p>
+<p>(The c-transformer can crawl to the left, and turn into a b-transformer)</p>
+<p>$BT_b \to T_b b,\ BT_b \to T_a b,\ AT_a \to T_a a,\ T_a \to e\}$</p>
+<ul>
+<li>The only way to get a string of terminals yields one of the form $a^n b^n c^n$.</li>
+</ul>
+<h4 id="t04-p76">第 76 页</h4>
+<p><strong>Grammar/Turing Machine equivalent</strong></p>
+<p class="cb cb-theorem"><strong>Theorem:</strong> A language is generated by a grammar if and only if it is recursively enumerable.</p>
+<p class="cb cb-proof"><strong>Proof:</strong></p>
+<p>$(\Rightarrow)$ $L$ is generated by a grammar $\Rightarrow$ $L$ is r.e..</p>
+<p>Let $L = L(G)$, $G$ a grammar. To construct an NDTM $M$ such that $L(M) = L(G)$.</p>
+<h4 id="t04-p77">第 77 页</h4>
+<ul>
+<li>Let $M$ have three tapes.</li>
+<li>The first tape permanently holds input $w$</li>
+<li>
+<p>In the second tape $M$ tries to reconstruct a derivation of $w$ from $S$ in grammar $G$; $M$ therefore starts by writing $S$ on the second tape.</p>
+</li>
+<li>
+<p>$|R| + 1$ possible states:</p>
+</li>
+<li>Each of the first $|R|$ states is the beginning of a sequence of transitions that applies the corresponding rule to the current contents of the second tape.</li>
+<li>
+<p>The $|R| + 1$st choice of $M$: Check whether the current string equals $w$. If so, $M$ halts and accpets; if the strings are found unequal, $M$ again loops forever.（原文如此：accpets）</p>
+</li>
+<li>
+<p>$M$ nondeterministically carries out a derivation $S = w_0 \Rightarrow_G w_1 \Rightarrow_G w_2 \Rightarrow_G \cdots$, checking each step to see if $w_i = w$.</p>
+</li>
+</ul>
+<h4 id="t04-p78">第 78 页</h4>
+<p>$(\Leftarrow)$ $L$ is r.e. $\Rightarrow$ $L$ is generated by a grammar $G$.</p>
+<p>Let $M = (K, \Sigma, \delta, s, \{h\})$ is a Turing machine.（原文如此）
+To construct Grammar $G$ such that $G$ generates the language $L \subseteq (\Sigma - \{\sqcup, \triangleright\})^*$ semidecided by $M$.</p>
+<blockquote>
+<p><strong>Convention:</strong>
+- $K$ and $\Sigma$ are disjoint, and neither contains the new endmarker symbol $\triangleleft$.
+- If $M$ halts, it always halts in the configuration $(h, \triangleright\sqcup)$.</p>
+</blockquote>
+<h4 id="t04-p79">第 79 页</h4>
+<p><strong>Main idea:</strong></p>
+<p>$G$ will simulate a <strong>backwards computation</strong> by $M$. The intermediate strings will be coded forms of configurations:</p>
+<div class="tbl-wrap"><table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>String</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$(q, \triangleright u \underline{a} w)$</td>
+<td>$\triangleright u a q w \triangleleft$</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="t04-p80">第 80 页</h4>
+<p><strong>Building a Grammar from a TM</strong></p>
+<p>$G = (V, \Sigma - \{\sqcup, \triangleright\}, R, S)$, where</p>
+<ul>
+<li>
+<p>$V = \Sigma \cup K \cup \{S, \triangleleft\}$.</p>
+</li>
+<li>
+<p>$R$ contains the following rules:</p>
+</li>
+<li>
+<p>If $\delta(q, a) = (p, b)$, where $b \in \Sigma$, then $G$ has a rule: $bp \to aq$.</p>
+</li>
+<li>If $\delta(q, a) = (p, \to)$, then $G$ has
+    $abp \to aqb$, for each $b \in \Sigma$
+    $a\sqcup p\triangleleft \to aq\triangleleft$ (moving right onto blank tape)</li>
+</ul>
+<h4 id="t04-p81">第 81 页</h4>
+<ul>
+<li>
+<p>If $\delta(q, a) = (p, \leftarrow)$, then $G$ has
+  $pa \to aq$, if $a \neq \sqcup$
+  $p\sqcup b \to \sqcup qb$ for all $b \in \Sigma$ and $p\triangleleft \to \sqcup q\triangleleft$, if $a = \sqcup$</p>
+</li>
+<li>
+<p>Since $(h, \sqcup)$ is the final configuration,
+  $S \to \triangleright\sqcup h\triangleleft$</p>
+</li>
+<li>
+<p>Finally, if $s$ is the start state of the TM,
+  $\triangleright\sqcup s \to e$
+  $\triangleleft \to e$</p>
+</li>
+</ul>
+<h4 id="t04-p82">第 82 页</h4>
+<p class="cb cb-claim"><strong>Claim:</strong></p>
+<p>For any two configurations $(q_1, u_1 \underline{a_1} w_1)$ and $(q_2, u_2 \underline{a_2} w_2)$ of $M$, we have that $(q_1, u_1 a_1 w_1) \vdash_M (q_2, u_2 a_2 w_2)$ iff $u_2 a_2 q_2 w_2 \triangleleft \Rightarrow_G u_1 a_1 q_1 w_1 \triangleleft$</p>
+<p>We now complete the proof of the theorem, by showing that, for all $w \in (\Sigma - \{\triangleright, \sqcup\})^*$, $M$ halts on $w$ iff $w \in L(G)$.</p>
+<p>$$\begin{aligned}
+w \in L(G) &amp;\text{ iff } S \Rightarrow_G \triangleright\sqcup h\triangleleft \Rightarrow_G^* \triangleright\sqcup sw\triangleleft \Rightarrow_G w\triangleleft \Rightarrow_G w\\
+&amp;\text{ iff } (s, \triangleright\sqcup w) \vdash_M^* (h, \triangleright\sqcup)\\
+&amp;\text{ iff } w \in L(M)
+\end{aligned}$$</p>
+<h4 id="t04-p83">第 83 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $G = (V, \Sigma, R, S)$ be a grammar, and let $f : \Sigma^* \to \Sigma^*$ be a function.</p>
+<ul>
+<li>$G$ <strong>computes</strong> $f$, if for all $w, v \in \Sigma^*$, the following is true:</li>
+</ul>
+<p>$$S w S \Rightarrow_G^* v \ \text{ iff } \ v = f(w).$$</p>
+<ul>
+<li>A function $f : \Sigma^* \to \Sigma^*$ is called <strong>grammatically computable</strong> iff there is a grammar $G$ that computes it.</li>
+</ul>
+<p class="cb cb-theorem"><strong>Theorem:</strong> A function $f : \Sigma^* \to \Sigma^*$ is <strong>recursive</strong> iff and only if it is grammatically computable.</p>
+<p>（按：上一页末定理，把"递归函数"与"文法可计算函数"两个概念等同起来。）</p>
+<h4 id="t04-p84">第 84 页</h4>
+<p><strong>4.6 Numerical Functions</strong></p>
+<ul>
+<li>The primitive recursive functions were first formally defined by Gödel in 1929.</li>
+<li>Like FA, they are a simplified model of computation.</li>
+<li>There are some 'primitive' functions that we definitely want to consider computable:</li>
+</ul>
+<p>（红框内）</p>
+<pre><code>the projection functions
+the zero function
+the successor function
+</code></pre>
+<p>—— <strong>initial functions or basic functions.</strong></p>
+<p>—— Two operations: composition and recursive.</p>
+<h4 id="t04-p85">第 85 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong></p>
+<ul>
+<li>The <strong>basic functions</strong> are the following :</li>
+</ul>
+<p>$(a)$ For any $k \ge 0$, the $k$<strong>-ary zero function</strong> is defined as</p>
+<p>$$zero_k(n_1, \dots, n_k) = 0$$</p>
+<p>for all $n_1, \dots, n_k \in \mathbb{N}$.</p>
+<p>$(b)$ For $k \ge j &gt; 0$, the $j$<strong>th $k$-ary identity function</strong> is simply the function</p>
+<p>$$id_{k,j}(n_1, \dots, n_k) = n_j$$</p>
+<p>for all $n_1, \dots, n_k \in \mathbb{N}$.</p>
+<p>$(c)$ The <strong>successor function</strong> is defined as</p>
+<p>$$succ(n) = n + 1$$</p>
+<p>for all $n \in \mathbb{N}$.</p>
+<h4 id="t04-p86">第 86 页</h4>
+<p class="cb cb-definition"><strong>Definition</strong></p>
+<ul>
+<li>Two simple ways of combining functions to get slightly more complex functions.</li>
+</ul>
+<p>$(1)$ For $k, l \ge 0$, let $g : \mathbb{N}^k \to \mathbb{N}$ be a $k$-ary function, let $h_1, \dots, h_k$ be $l$-ary functions. Then the <strong>composition of $g$ with</strong> $h_1, \dots, h_k$ is the $l$-ary function defined as</p>
+<p>$$f(n_1, \dots, n_l) = g(h_1(n_1, \dots, n_l), \dots, h_k(n_1, \dots, n_l)).$$</p>
+<p>$(2)$ For $k \ge 0$, let $g$ be a $k$-ary function, and let $h$ be a $(k+2)$-ary function. Then the <strong>function defined by $g$ and $h$</strong> is the $k+1$-ary function $f$ defined as</p>
+<p>$$f(n_1, \dots, n_k, 0) = g(n_1, \dots, n_k)$$</p>
+<p>$$f(n_1, \dots, n_k, m + 1) = h(n_1, \dots, n_k, m, f(n_1, \dots, n_k, m))$$</p>
+<p>for all $n_1, \dots, n_k, m \in \mathbb{N}$.</p>
+<h4 id="t04-p87">第 87 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> (Continued)</p>
+<ul>
+<li>The <strong>primitive recursive functions</strong> are all basic functions, and all functions that can be obtained by them by any number of successive applications of composition and recursive definition.</li>
+</ul>
+<p class="cb cb-example"><strong>Example:</strong> The functions $plus2(n) = n + 2$ is primitive recursive.</p>
+<p>$$plus2(n) = succ(succ(id_{1,1}(n))).$$</p>
+<p>（原文如此："The functions $plus2(n)$" 中 functions 为复数。）</p>
+<h4 id="t04-p88">第 88 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> The following functions are primitive recursive.</p>
+<p>$(1)$ $plus(m, n) = m + n$</p>
+<p>$(2)$ $mult(m, n) = m \cdot n$</p>
+<p>$(3)$ $exp(m, n) = m^n$</p>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<p>$(1)$</p>
+<p>$$plus(m, 0) = m$$
+$$plus(m, n + 1) = succ(plus(m, n))$$</p>
+<p>$(2)$</p>
+<p>$$mult(m, 0) = zero(m)$$
+$$mult(m, n + 1) = plus(m, mult(m, n))$$</p>
+<p>$(3)$</p>
+<p>$$exp(m, 0) = succ(zero(m))$$
+$$exp(m, n + 1) = mult(m, exp(m, n)).$$</p>
+<h4 id="t04-p89">第 89 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> All constant functions and the sign function are primitive recursive.</p>
+<p class="cb cb-solution"><strong>Solution:</strong></p>
+<ul>
+<li>$f(n_1, \dots, n_k) = m$ can be obtained by</li>
+</ul>
+<p>$$f(n_1, \dots, n_k) = succ(\dots succ(zero(n_1, \dots, n_k)) \dots)$$</p>
+<ul>
+<li>$sgn(0) = 0$, and $sgn(n + 1) = 1$.</li>
+</ul>
+<h4 id="t04-p90">第 90 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Function</p>
+<p>$$m \sim n = \max\{m - n, 0\}$$</p>
+<p>is primitive recursive.</p>
+<p class="cb cb-solution"><strong>Solution:</strong> First define the <u>predecessor</u> function:</p>
+<p>$$pred(0) = 0$$
+$$pred(n + 1) = n$$</p>
+<p>Then we have</p>
+<p>$$m \sim 0 = m$$
+$$m \sim (n + 1) = pred(m \sim n)$$</p>
+<h4 id="t04-p91">第 91 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> A <strong>primitive recursive predicate</strong> be a primitive recursive function that only takes values 0 and 1.</p>
+<p>（原文如此："A primitive recursive predicate be ..." 缺系动词 is。）</p>
+<p class="cb cb-example"><strong>Example:</strong> The following predicates are primitive recursive.</p>
+<ul>
+<li>$iszero(n)$: which is 1 if $n = 0$, and 0 if $n &gt; 0$.</li>
+</ul>
+<p>$$(iszero(0) = 1,\ iszero(m + 1) = 0)$$</p>
+<ul>
+<li>$positive(n) = sgn(n)$</li>
+<li>$greater\text{-}than\text{-}or\text{-}equal(m, n)\ (m \ge n) = iszero(n \sim m)$</li>
+<li>$less\text{-}than(m, n) = 1 \sim greater\text{-}than\text{-}or\text{-}equal(m, n).$</li>
+</ul>
+<h4 id="t04-p92">第 92 页</h4>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<ul>
+<li>The <u>negation</u> of any primitive recursive predicate is also a primitive recursive predicate.</li>
+</ul>
+<p>（蓝框内）</p>
+<p>$$p(m) \text{ is a primitive recursive predicate}$$
+$$\neg p(m) = 1 \sim p(m)$$</p>
+<ul>
+<li>The <strong>disjunction</strong> and <strong>conjunction</strong> of two primitive recursive predicates are also primitive recursive.</li>
+</ul>
+<p>（蓝框内）</p>
+<p>$$p(m, n),\ q(m, n) \text{ are primitive recursive predicates}$$
+$$p(m, n) \vee q(m, n) = 1 \sim iszero(p(m, n) + q(m, n))$$
+$$p(m, n) \wedge q(m, n) = 1 \sim iszero(p(m, n) \cdot q(m, n))$$</p>
+<h4 id="t04-p93">第 93 页</h4>
+<ul>
+<li>If $f$ and $g$ are primitive recursive functions and $p$ is a primitive recursive predicate, then the function <strong>defined by cases</strong></li>
+</ul>
+<p>$$f(n_1, \dots, n_k) = \begin{cases} g(n_1, \dots, n_k), &amp; \text{if } p(n_1, \dots, n_k); \\ h(n_1, \dots, n_k), &amp; \text{otherwise} \end{cases}$$</p>
+<p>is also primitive recursive.</p>
+<p>（蓝框内）</p>
+<p>$f(n_1, \dots, n_k)$ can be rewritten as:</p>
+<p>$$f(n_1, \dots, n_k) = p(n_1, \dots, n_k) \cdot g(n_1, \dots, n_k) + (1 \sim p(n_1, \dots, n_k)) \cdot h(n_1, \dots, n_k)$$</p>
+<h4 id="t04-p94">第 94 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> We can define $div$ and $rem$</p>
+<p>$$rem(0, n) = 0$$</p>
+<p>$$rem(m+1, n) = \begin{cases} 0, &amp; \text{if } equal(rem(m, n), pred(n)); \\ rem(m, n) + 1, &amp; \text{otherwise} \end{cases}$$</p>
+<p>and</p>
+<p>$$div(0, n) = 0$$</p>
+<p>$$div(m+1, n) = \begin{cases} div(m, n) + 1, &amp; \text{if } equal(rem(m, n), pred(n)); \\ div(m, n), &amp; \text{otherwise} \end{cases}$$</p>
+<h4 id="t04-p95">第 95 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Function $digit(m, n, p)$,</p>
+<p>— the $m$-th least significant digit of the base-$p$ representation of $n$ is primitive recursive.</p>
+<p>（红框内）</p>
+<p>$$n = a_l p^l + \cdots + a_{m-1} p^{m-1} + \cdots + a_1 p + a_0$$</p>
+<p>Since</p>
+<p>$$digit(m, n, p) = div(rem(n, p \uparrow m), p \uparrow (m \sim 1))$$</p>
+<p>Specially,</p>
+<p>$$odd(n) = digit(1, n, 2)$$</p>
+<h4 id="t04-p96">第 96 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> If $f(n, m)$ is primitive recursive function, then the $sum$</p>
+<p>$$sum_f(n, m) = \sum_{k=0}^{m} f(n, k)$$</p>
+<p>is also primitive recursive.</p>
+<ul>
+<li>Since it can be defined as</li>
+</ul>
+<p>$$sum_f(n, 0) = 0$$
+$$sum_f(n, m + 1) = sum_f(n, m) + f(n, m + 1).$$</p>
+<ul>
+<li>Similarly,</li>
+</ul>
+<p>$$mult_f(n, m) = \prod_{k=0}^{m} f(n, k)$$</p>
+<h4 id="t04-p97">第 97 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> If $p(n_1, \dots, n_k, m)$ is primitive recursive predicate, then</p>
+<p>$$\exists t_{(\le m)} p(n_1, \dots, n_k, t) \quad \text{and} \quad \forall t_{(\le m)} p(n_1, \dots, n_k, t)$$</p>
+<p>are primitive recursive predicates.</p>
+<p>（蓝框内）</p>
+<p>$$\exists t_{(\le m)} p(n_1, \dots, n_k, t) \Leftrightarrow \sum_{t=0}^{m} p(n_1, \dots, n_k, t) \ne 0$$</p>
+<p>（蓝框内）</p>
+<p>$$\forall t_{(\le m)} p(n_1, \dots, n_k, t) \Leftrightarrow \prod_{t=0}^{m} p(n_1, \dots, n_k, t) \ne 0$$</p>
+<p>—— <strong>bounded Conjunctions (Disjunctions) of Predicates</strong></p>
+<h4 id="t04-p98">第 98 页</h4>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Predicate $y \mid x$ ( $x$ is divided exactly by $y$) is primitive recursive predicates.</p>
+<p>（原文如此：predicates 为复数。）</p>
+<ul>
+<li>$y \mid x \Leftrightarrow \exists t_{(\le x)}(y \cdot t = x)$</li>
+</ul>
+<p class="cb cb-example"><strong>Example:</strong></p>
+<p>Predicate $prime(x)$ ( $x$ is prime) is primitive recursive predicates.</p>
+<ul>
+<li>$prime(x) \Leftrightarrow (x &gt; 1) \wedge \forall t_{(&lt; x)}[t = 1 \vee \neg(t \mid x)]$</li>
+</ul>
+<h4 id="t04-p99">第 99 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> The set of primitive recursive functions is enumerable.</p>
+<ul>
+<li>Each primitive recursive function can in principle be defined in terms of the basic functions, and therefore can be represented as a string in finite alphabet; the alphabet should contain symbols for the identity, successor, and zero functions, for primitive recursion and composition, plus parentheses and the symbols 0 and 1 used to index in binary basic functions.</li>
+<li>We could enumerate all strings in the alphabet and keep the ones that are legal definitions of primitive recursive functions.</li>
+</ul>
+<h4 id="t04-p100">第 100 页</h4>
+<ul>
+<li>Suppose that we list all unary primitive recursive functions, as strings, in lexicographic order</li>
+</ul>
+<p>$$f_0, f_1, f_2, f_3, \cdots$$</p>
+<p>Define a function $g(n) = f_n(n) + 1$.</p>
+<p>— For any number $n \ge 0$, find the $n$-th primitive recursive function in the list, $f_n$, and use its definition to compute the number $f_n(n) + 1$.</p>
+<p>（蓝框）<code>g(n) is computable</code>　　（蓝框）<code>g(n) is not primitive recursive</code></p>
+<p>Because if it were, say $g = f_m$ for some $m \ge 0$ then we would have $f_m(m) = f_m(m) + 1$, which is absurd.</p>
+<p class="cb cb-remark"><strong>Remark:</strong> The set of primitive recursive function is proper subset of the set of recursive function.</p>
+<p>（原文如此：function 用单数。）</p>
+<h4 id="t04-p101">第 101 页</h4>
+<p>$\square$ <strong>Minimization</strong></p>
+<p class="cb cb-definition"><strong>Definition:</strong> Let $g$ be a $(k + 1)$-ary function, for some $k \ge 0$.</p>
+<ul>
+<li>The <strong>minimization</strong> of $g$ is the $k$-ary function $f$ defined as follows:</li>
+</ul>
+<p>$$f(n_1, \dots, n_k) = \begin{cases} \text{the least m such that } g(n_1, \dots, n_k, m) = 1 \\ \quad \text{if such m exists;} \\ 0 \quad \text{otherwise} \end{cases}$$</p>
+<p>We shall denote the minimization of $g$ by</p>
+<p>$$\mu\ m[g(n_1, \dots, n_k, m) = 1].$$</p>
+<h4 id="t04-p102">第 102 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> (Continued)</p>
+<ul>
+<li>Although the minimization of a function $g$ is always well-defined, there is no obvious method for computing it — even if we konw how to compute $g$. The obvious method</li>
+</ul>
+<p>$$m := 0;$$
+$$while\ g(n_1, \dots, n_k, m) \ne 1\ do\ m := m + 1;$$
+$$output\ m$$</p>
+<p>is <strong>not</strong> an algorithm, because it may fail to terminate.</p>
+<p>（原文如此："konw" 为 know 的笔误。）</p>
+<ul>
+<li>A function $g$ is <strong>minimalizable</strong> if the above method always terminates. That is, a $(k + 1)$-ary function $g$ is minimalizable if it has the following properties:</li>
+</ul>
+<p>For every $n_1, \dots, n_k \in \mathbb{N}$, $\exists m \in \mathbb{N}$ such that $g(n_1, \dots, n_k, m) = 1$.</p>
+<h4 id="t04-p103">第 103 页</h4>
+<p class="cb cb-definition"><strong>Definition:</strong> (Continued)</p>
+<ul>
+<li>A function is $\mu$<strong>-recursive</strong> if it can be obtained from the basic functions by the operations of composition, recursive definition, and minimization of minimalizable functions.</li>
+</ul>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>We cannot apply the diagonalization principle to show that there is a computable function that is not $\mu$-recursive.</p>
+<p>— It is not clear at all whether all applications of minimization in the definition indeed acted upon minimalizable functions!</p>
+<h4 id="t04-p104">第 104 页</h4>
+<p class="cb cb-example"><strong>Example:</strong> Using minimization, we can define the $logarithm$ function:</p>
+<p>$$\log(m, n) = \mu\ p[greater\text{-}than\text{-}or\text{-}equal((m + 2) \uparrow p, n + 1)].$$</p>
+<ul>
+<li>$\log(m, n) = \lceil \log_{(m+2)}(n + 1) \rceil$</li>
+</ul>
+<p>— to avoid the mathematical pitfalls in the definition of $\log_m n$, when $m \le 1$ or $n = 0$.</p>
+<ul>
+<li>This is a proper definition of a $\mu$-recursive function, since the function $g(m, n, p) = greater\text{-}than\text{-}or\text{-}equal((m + 2) \uparrow p, n + 1)$ is minimalizable.</li>
+</ul>
+<h4 id="t04-p105">第 105 页</h4>
+<p class="cb cb-theorem"><strong>Theorem:</strong> A function $f : \mathbb{N}^k \to \mathbb{N}$ is $\mu$-recursive iff it is recursive (that is, computable by a TM).</p>
+<p class="cb cb-proof"><strong>Proof:</strong> $(\Rightarrow)$</p>
+<p>If $f : \mathbb{N}^k \to \mathbb{N}$ is $\mu$-recursive.</p>
+<p>$\Rightarrow$ $f$ is Turing Machine computable.</p>
+<ul>
+<li>$f$ is $\mu$-recursive, then it is defined from the basic functions by applications of composition, recursive definition, and minimization on minimalizable functions.</li>
+</ul>
+<h4 id="t04-p106">第 106 页</h4>
+<ul>
+<li>The basic functions are recursive.</li>
+<li>The composition and the recursive definition of recursive functions and the minimization of minimalizable recursive functions are recursive.</li>
+</ul>
+<p>$\Rightarrow$ all $\mu$-recursive functions are recursive.</p>
+<p class="cb cb-remark"><strong>Remark:</strong></p>
+<p>To prove the above results, we use the random access Turing machine(equivalence with standard TM).</p>
+<h4 id="t04-p107">第 107 页</h4>
+<p>$(\Leftarrow)$ Suppose that a TM $M = (K, \Sigma, \delta, s, \{h\})$ computes $f : \mathbb{N} \to \mathbb{N}$.</p>
+<p>$\Rightarrow$ $f$ is $\mu$-recursive.</p>
+<ul>
+<li>Without loss of generality that $K \cap \Sigma = \emptyset$. Let $b = |\Sigma| + |K|$, and map $\mathbb{E} : \Sigma \cup K \to \{0, 1, \dots, b - 1\}$, such that $\mathbb{E}(0) = 0$ and $\mathbb{E}(1) = 1$.</li>
+</ul>
+<p>（原文如此："Without loss of generality that ..." 缺 assume。）</p>
+<ul>
+<li>The configuration $(q, a_1 a_2 \dots \underline{a_k} \dots a_n)$ will be represented as the base-$b$ integer $a_1 a_2 \dots a_k q \dots a_n$, as the integer</li>
+</ul>
+<p>$$\mathbb{E}(a_1)b^n + \cdots + \mathbb{E}(a_k)b^{n-k+1} + \mathbb{E}(q)b^{n-k} + \mathbb{E}(a_{k+1})b^{n-k-1} + \cdots + \mathbb{E}(a_n)$$</p>
+<h4 id="t04-p108">第 108 页</h4>
+<ul>
+<li>We will definite $f$ as a $\mu$-recursive function. Ultimately, $f$ will be defined as</li>
+</ul>
+<p>$$f(n) = num(output(last(comp(n)))).$$</p>
+<p>（原文如此："We will definite" 应为 define。）</p>
+<p>— $num$ is a function that takes an integer whose base-$b$ representation is a string of 0's and 1's</p>
+<p>— $output$ takes the integer representing in base $b$ a halted configuration of the form $\triangleright \sqcup hw$ and omits the first three symbols $\triangleright \sqcup h$.</p>
+<p>— $comp(n)$ is the number whose representation in base $b$ is the juxt a position of the unique sequence of the configurations that starts with $\triangleright \sqcup sw$, where $w$ is the binary encoding of $n$, and ends with $\triangleright \sqcup hw'$, where $w'$ is the bianry encoding of $f(n)$; such sequence exists, since we assuming that $M$ computes a function $f$.</p>
+<p>（原文如此："juxt a position"、"bianry"、"we assuming"。）</p>
+<p>— $last$ takes an integer representing the juxtposition of configurations, and extracts the last configuration in the sequence.</p>
+<h4 id="t04-p109">第 109 页</h4>
+<ul>
+<li>We have to define all these functions:</li>
+</ul>
+<p>$$lastpos(n) = \mu\ m[equal(digit(m, n, b), \mathbb{E}(\triangleright)) \text{ or } equal(m, n)]$$</p>
+<p>$$output(n) = rem(n, b \uparrow \log(b \sim 2, n \sim 1) \sim 2)$$</p>
+<p>$$num(n) = digit(1, n, b) \cdot 2 + digit(2, n, b) \cdot 2 \uparrow 2 + \cdots$$
+$$\qquad + digit(\log(b \sim 2, n \sim 1), n, b) \cdot 2 \uparrow \log(b \sim 2, n \sim 1)$$</p>
+<p>$$comp(n) = \mu\ m[iscomp(m, n) \text{ and } halted(last(m))]$$</p>
+<p>It follows that $f$ is indeed a $\mu$-recursive function.</p>
+    </section>
+  </main>
+</div>
+
+<button id="toTop" title="回到顶部">↑</button>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  // 公式渲染
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false,
+      errorColor: "#dc2626",
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "option"]
+    });
+  }
+
+  // Tab 切换
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var groups = Array.prototype.slice.call(document.querySelectorAll(".toc-group"));
+
+  function activate(id) {
+    tabs.forEach(function (t) { t.classList.toggle("active", t.dataset.target === id); });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === id); });
+    groups.forEach(function (g) { g.style.display = (g.dataset.panel === id) ? "" : "none"; });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    filterToc();
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activate(t.dataset.target); });
+  });
+  activate("panel-ov");
+
+  // 目录过滤（支持页码 / 关键词）
+  var filter = document.getElementById("tocFilter");
+  function filterToc() {
+    var q = (filter.value || "").trim().toLowerCase();
+    var activePanel = document.querySelector(".panel.active").id;
+    var group = document.querySelector('.toc-group[data-panel="' + activePanel + '"]');
+    if (!group) return;
+
+    // 1) 平铺目录项
+    group.querySelectorAll(".toc-list li").forEach(function (li) {
+      if (!q) { li.style.display = ""; return; }
+      var txt = li.textContent.toLowerCase();
+      var hit = txt.indexOf(q) >= 0;
+      if (!hit && /^\d+$/.test(q)) hit = txt.indexOf("第 " + q + " 页") >= 0;
+      li.style.display = hit ? "" : "none";
+    });
+
+    // 2) 小节导航：命中页码或小节名则保留该页码块
+    group.querySelectorAll(".secnav-item").forEach(function (item) {
+      if (!q) { item.style.display = ""; return; }
+      var head = item.querySelector(".secnav-head").textContent.toLowerCase();
+      var headHit = head.indexOf(q) >= 0;
+      var anyHit = false;
+      item.querySelectorAll(".secnav-pages a").forEach(function (a) {
+        var t = a.textContent.trim();
+        var hit = headHit || (q && t.indexOf(q) === 0 && /^\d+$/.test(q));
+        a.style.display = hit ? "" : "none";
+        if (hit) anyHit = true;
+      });
+      item.style.display = anyHit ? "" : "none";
+    });
+  }
+  filter.addEventListener("input", filterToc);
+
+  // 回到顶部
+  var btn = document.getElementById("toTop");
+  window.addEventListener("scroll", function () {
+    btn.classList.toggle("show", window.scrollY > 600);
+  });
+  btn.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  // 当前小节高亮
+  var heads = Array.prototype.slice.call(document.querySelectorAll(".panel h3[id], .panel h4[id]"));
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY + 120, cur = null;
+    for (var i = 0; i < heads.length; i++) {
+      if (heads[i].offsetTop <= y) cur = heads[i].id; else break;
+    }
+    if (cur) {
+      document.querySelectorAll(".toc-list a").forEach(function (a) {
+        a.classList.toggle("cur", a.getAttribute("href") === "#" + cur);
+      });
+      document.querySelectorAll(".secnav-pages a").forEach(function (a) {
+        a.classList.toggle("cur", a.getAttribute("href") === "#" + cur);
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
