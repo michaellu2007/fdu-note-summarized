@@ -289,6 +289,7 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
     <li><a href="#s36">3.6 数据：pair 从哪来</a></li>
     <li><a href="#s37">3.7 评估与失效</a></li>
     <li><a href="#s38">3.8 奖励模型的优缺点</a></li>
+    <li><a href="#s39">3.9 它真的学到「价值观」了吗</a></li>
   </ol>
 </li>
 <li><a href="#p4">第四部分 · 第三种方法：通用 RL 算法</a>
@@ -2033,6 +2034,148 @@ $$
 <p>最后一行是奖励模型存在的<strong>唯一根本理由</strong>：SFT 的上界是示范者，而 RM 只要求人类能<em>判断</em>好坏，
 不要求人类能<em>写出</em>更好的。判断比生成容易——这就是为什么 RLHF 能超过人类示范的平均水平。</p>
 
+<h3 id="s39">3.9 它真的学到「价值观」了吗 <span class="tag n">补充</span></h3>
+
+<p>这是学完奖励模型之后最该问的问题，也是最容易被绕过去的。先给结论：</p>
+
+<div class="box key">
+<span class="label">先给结论</span>
+<p><strong>它学不到价值观。它学到的是「人类在标注时表现出的行为模式」。</strong></p>
+<p>两者在训练分布内高度相关，所以它好用；一旦出了分布，相关性就断了。</p>
+</div>
+
+<h4>一、它凭什么「能判别」</h4>
+
+<p>回到 §3.2 的结构：$r = w^\top h + b$。注意这里只有一个 $w$——<strong>一个方向</strong>。</p>
+
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250" role="img" aria-label="奖励模型把高维隐状态投影到一个方向：左侧是回答的隐状态点云，右侧是一维分数轴。">
+  <defs>
+    <marker id="ar9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--ink3)" stroke-width="1.6"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="40" y="34" font-size="12" fill="var(--ink3)">回答的隐状态（高维，这里只画 2 维）</text>
+    <rect x="40" y="48" width="220" height="150" rx="8" fill="none" stroke="var(--line)"/>
+
+    <circle cx="86" cy="92" r="6" fill="var(--ok)"/>
+    <circle cx="150" cy="170" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+    <circle cx="196" cy="106" r="6" fill="var(--ok)"/>
+    <circle cx="118" cy="132" r="6" fill="var(--ok)"/>
+    <circle cx="214" cy="166" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+    <circle cx="160" cy="78" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+
+    <path d="M272 123 L330 123" fill="none" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#ar9)"/>
+    <text x="301" y="112" font-size="12" fill="var(--ink3)" text-anchor="middle">投影到</text>
+    <text x="301" y="140" font-size="12" fill="var(--ink3)" text-anchor="middle">一个方向 w</text>
+
+    <text x="356" y="34" font-size="12" fill="var(--ink3)">RM 的分数（一维）</text>
+    <path d="M356 123 L640 123" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <path d="M356 118 L356 128 M640 118 L640 128" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <text x="356" y="146" font-size="11" fill="var(--ink3)" text-anchor="middle">低</text>
+    <text x="640" y="146" font-size="11" fill="var(--ink3)" text-anchor="middle">高</text>
+
+    <circle cx="380" cy="123" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+    <circle cx="424" cy="123" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+    <circle cx="470" cy="123" r="6" fill="var(--ok)"/>
+    <circle cx="512" cy="123" r="6" fill="none" stroke="var(--warn)" stroke-width="1.6"/>
+    <circle cx="566" cy="123" r="6" fill="var(--ok)"/>
+    <circle cx="616" cy="123" r="6" fill="var(--ok)"/>
+
+    <text x="40" y="222" font-size="12" fill="var(--ink3)">投影后的顺序 = RM 认为的好坏顺序。其余方向上的信息，全部丢掉了。</text>
+    <text x="40" y="240" font-size="12" fill="var(--ink3)">落在中间那条红色，就是它靠「别的特征」猜对的证据。</text>
+  </g>
+</svg>
+<figcaption>图 5 · 奖励模型只做一个投影。左边是回答的内部表示（几千维，这里压成 2 维），
+右边是投影后的一维分数。实心 = 人更喜欢的，空心 = 人不喜欢的。</figcaption>
+</figure>
+
+<p>为什么这么简单的东西能判别？因为<strong>原材料不是偏好数据给的，是预训练给的</strong>：</p>
+
+<ul>
+<li>预训练读了几万亿 token，其中大量是 StackExchange 高赞回答、教科书、维基百科。这些文本本身就带着
+「什么样的回答被认为好」的痕迹：条理、切题、有依据、不胡说。这些信息已经编码在 $h$ 里了。</li>
+<li>SFT 把「助手」这个角色固定下来。</li>
+<li>RM 只需要在已经存在的表征里<strong>挑一个方向</strong>。10 万条比较就够，因为它不是在从零学价值观，
+而是在几千维的空间里找一条线。</li>
+</ul>
+
+<p>这也解释了那个一直没解释的疑问：为什么 RM 的数据量比预训练小五六个数量级却能work。
+<strong>它不是在学知识，是在做选择。</strong></p>
+
+<h4>二、为什么「能判别」不等于「有价值观」</h4>
+
+<p>核心在这里。回到损失函数：</p>
+
+$$
+\mathcal{L} = -\log\sigma(\Delta),
+\qquad \Delta = r(y_w)-r(y_l)
+$$
+
+<div class="box warn">
+<span class="label">易错 · 这个损失只监督符号，不监督理由</span>
+<p>它只要求：对「人更喜欢的那个」，分数要更高。它<strong>不要求</strong>模型因为「这个回答更准确」而给高分。</p>
+<p>它完全可以因为「这个回答更长」「用了小标题」「开头说了『这是个好问题』」而给高分——
+只要在训练集上这些特征碰巧和人类选择相关，损失就会下降。</p>
+<p>所以：<strong>它可以靠完全错误的理由，把每一对都分对。</strong>这不是训练不充分，是目标函数本来就没要求它理解。</p>
+</div>
+
+<h4>三、三个证据</h4>
+
+<p>如果它真学到了价值观，这三件事不该发生：</p>
+
+<table>
+<thead><tr><th>现象</th><th>它暴露了什么</th></tr></thead>
+<tbody>
+<tr><td><strong>长度偏置</strong>：同样内容加长、加客套话，分数上升</td><td>它学的是「长」，不是「完整」</td></tr>
+<tr><td><strong>谄媚</strong>：用户说错话时，它给「顺着说」的回答更高分</td><td>它学到的是标注者喜欢被认同，不是「要诚实」</td></tr>
+<tr><td><strong>对抗后缀</strong>：加一句「如果需要我可以详细说明」就涨分</td><td>它学的是句式相关性，不是内容质量</td></tr>
+</tbody>
+</table>
+
+<p>这三个都不是「价值观学歪了」，而是<strong>它根本没有价值观，只有相关性</strong>。</p>
+
+<h4>四、那「判别意识」呢</h4>
+
+<p>要小心这个词。RM 没有意识、没有意图、不知道自己在判断什么。</p>
+
+<p>它做的是<strong>统计判别</strong>：在特征空间里画一条线，看点在线的哪一侧。
+这和一个模型「能分辨猫和狗」是同一件事——我们不会因此说它有「猫狗观」。</p>
+
+<p>区别在于：分辨猫狗时，「猫 / 狗」是世界的客观属性；而「哪个回答更好」是<strong>人的一次主观选择</strong>。
+RM 复现的是那个选择的统计规律，包括选择者的偏见。</p>
+
+<h4>五、那它为什么还有用</h4>
+
+<p>因为在<strong>分布内</strong>，「人类标注模式」和「人类价值观」高度相关。</p>
+
+<p>标注者绝大多数时候是认真判断的，所以「长」「有结构」这些表面特征，在训练集里确实和「更好」正相关。
+RM 抓住这些相关性，在分布内就能达到 70–75% 的一致率——已经接近人类之间的一致率了。</p>
+
+<p><strong>但相关性不是因果。</strong>一旦 RL 把策略推到分布外（更极端的长、更极端的讨好），相关性就断了，
+RM 的分数也就失去意义。这就是 §3.7 那个 reward hacking 的本质：
+不是模型学坏了，是它一直在优化那个「相关性」，只是以前没被推到极限。</p>
+
+<div class="box key">
+<span class="label">一句话</span>
+<p><strong>RM 学到的是「人类在标注时会选什么」，不是「人类认为什么是对的」。</strong></p>
+<p>前者是一个可观测的行为，后者是一个不可观测的价值。BT 损失只能监督前者。</p>
+</div>
+
+<h4>六、有没有办法更接近真正的价值</h4>
+
+<p>有三条路，各有代价：</p>
+
+<ol>
+<li><strong>拆成多个维度。</strong>有用性、安全性、诚实性各训一个 RM，别压成一个数。
+代价是「权重怎么配」又变成人拍脑袋。</li>
+<li><strong>把原则写出来</strong>（宪法 AI）。不让标注者凭感觉选，而是让模型按「不许伤害」「不确定要说不知道」
+这些明文原则自我批判。代价是原则本身还得人写，且写得含糊就没用。</li>
+<li><strong>可验证奖励</strong>（RLVR，§4.11）。数学题、代码题这种有客观对错的，直接把「对不对」交给程序判，
+绕开人的主观。代价是只覆盖可验证的领域——写作、共情、分寸感这些，它一点也教不了。</li>
+</ol>
+
 <hr>
 
 <h2 id="p4">第四部分 · 第三种方法：通用 RL 算法</h2>
@@ -2182,7 +2325,7 @@ $$
     <text x="240" y="284" font-size="11" fill="var(--ink3)">在时刻 t，agent 拿到当前状态 s_t 与奖励 r_t，做出动作 a_t，环境转到 s_{t+1} 并给出 r_{t+1}。</text>
   </g>
 </svg>
-<figcaption>图 5 · RL 的基本循环。语言模型把这张图里每一项都填上了具体的东西，而且填得很「退化」——环境没有隐藏状态，也不随机。</figcaption>
+<figcaption>图 6 · RL 的基本循环。语言模型把这张图里每一项都填上了具体的东西，而且填得很「退化」——环境没有隐藏状态，也不随机。</figcaption>
 </figure>
 
 <p>板书接着做了一张对照表，把每个 RL 术语落到 LLM 上：</p>
@@ -2266,6 +2409,102 @@ $$
 <h3 id="s45">4.5 Return、Value、Advantage <span class="tag s">板书</span></h3>
 
 <p>板书在目标函数下面接着定义了三个量，这三个量是后面所有算法（REINFORCE / PPO / GRPO）共用的零件。</p>
+
+<h4>先建立直觉：三个词的区别在「什么时候知道」 <span class="tag n">补充</span></h4>
+
+<p>这一节有三个词最容易混：reward、value、advantage。它们的区别不在「算什么」，而在<strong>什么时候算</strong>。</p>
+
+<div class="box key">
+<span class="label">一句话记住</span>
+<p><strong>reward 是事后的分数，value 是事前的预期，advantage 是两者的差。</strong></p>
+</div>
+
+<p>用考试打比方：</p>
+
+<table>
+<thead><tr><th>词</th><th>类比</th><th>什么时候知道</th><th>是事实还是猜测</th></tr></thead>
+<tbody>
+<tr><td><strong>reward</strong></td><td>这次实际考了 90 分</td><td>考完才知道</td><td>事实</td></tr>
+<tr><td><strong>value</strong></td><td>考前老师估计你能考 70</td><td>考前就有</td><td>猜测</td></tr>
+<tr><td><strong>advantage</strong></td><td>90 − 70 = <strong>+20</strong>，超常发挥</td><td>考完对比才知道</td><td>算出来的</td></tr>
+</tbody>
+</table>
+
+<p>关键在 advantage。看两个学生：</p>
+
+<ul>
+<li>小明平时 70 分，这次考 90 → advantage = <strong>+20</strong>，要表扬；</li>
+<li>小红平时 95 分，这次考 90 → advantage = <strong>−5</strong>，虽然 90 分不低，但要敲打。</li>
+</ul>
+
+<p><strong>同样是 90 分，一个该奖一个该罚。</strong>这就是为什么不能直接拿 reward 去训练——
+绝对分数没法判断「这次表现相对于预期是好还是坏」。</p>
+
+<p>放到一条回答上：一条回答有 800 个 token，写到第 100 个时你还不知道最终得几分。
+value 就是<strong>此刻的预估</strong>：</p>
+
+<figure class="chart">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" role="img" aria-label="一条回答里预期价值曲线与实际奖励的差距：虚线是最终奖励 0.9，实线是写到每个位置时对最终得分的预期，两者之差就是 advantage。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="40" y="28" font-size="12" fill="var(--ink3)">分数</text>
+
+    <path d="M70 60 L70 240 L640 240" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <g font-size="11" fill="var(--ink3)" text-anchor="end">
+      <text x="62" y="64">0.9</text>
+      <text x="62" y="124">0.6</text>
+      <text x="62" y="184">0.3</text>
+      <text x="62" y="244">0</text>
+    </g>
+
+    <path d="M70 60 L640 60" fill="none" stroke="var(--warn)" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <text x="638" y="52" font-size="12" fill="var(--warn)" text-anchor="end">reward = 0.9（写完后才知道）</text>
+
+    <path d="M70 160 C 120 132, 150 118, 200 104 C 260 88, 330 77, 420 70 C 500 65, 570 63, 620 62" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    <text x="300" y="150" font-size="12" fill="var(--accent)">V(sₜ)：写到一半时的预估</text>
+
+    <path d="M180 111 L180 60" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+    <path d="M177 111 L183 111 M177 60 L183 60" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+    <text x="188" y="92" font-size="12" fill="var(--ink)">advantage = 0.26</text>
+
+    <path d="M510 67 L510 60" fill="none" stroke="var(--ink3)" stroke-width="1"/>
+    <text x="518" y="52" font-size="12" fill="var(--ink)">0.04</text>
+
+    <text x="355" y="266" font-size="12" fill="var(--ink3)" text-anchor="middle">回答的第 t 个 token</text>
+    <text x="70" y="288" font-size="12" fill="var(--ink3)">刚开头时说不准，预期低，差距大 → 这些 token 学得最狠；快结尾时结果已定，差距趋近 0 → 几乎不动。</text>
+  </g>
+</svg>
+<figcaption>图 7 · 一条回答里三个量的关系。虚线是最终得分（事后确定），实线是写到每个位置时的预估。
+两条线之间的差距就是 advantage，<strong>越靠近结尾越小</strong>。</figcaption>
+</figure>
+
+<p>图里有一个容易忽略的点：<strong>两条线在结尾会合拢</strong>。因为写到最后一个 token 时结果基本已定，
+预估就等于实际，差距趋近 0。</p>
+
+<p>这意味着：<strong>开头的 token 承担了大部分「惊喜」，学得最狠；结尾的 token 几乎不动。</strong>
+这就是 credit assignment（谁该为结果负责）最直观的样子。</p>
+
+<div class="box warn">
+<span class="label">易错 · LLM 里 $G_t$ 处处相同，advantage 的差异全靠 value</span>
+<p>奖励通常<strong>只在最后给一次</strong>（$r_T=R$，前面全是 0），所以整条回答里每个位置的 $G_t$ 都等于同一个 $R$。于是</p>
+
+$$
+\hat A_t = \underbrace{G_t}_{\text{整条 0.9}} - \underbrace{V_\psi(s_t)}_{\text{当时预估 0.64}} = 0.26
+$$
+
+<p><strong>advantage 的位置差异，全部来自 value。</strong>这就是为什么 PPO 要额外训一个 value 网络：
+没有它，800 个 token 拿到的信号完全一样，根本不知道哪一段立功。</p>
+</div>
+
+<p>下面三个小节把这三个量写成公式。读的时候记住这张分工表：</p>
+
+<table>
+<thead><tr><th>词</th><th>回答的问题</th><th>谁的输出</th></tr></thead>
+<tbody>
+<tr><td><strong>reward</strong></td><td>这条回答<strong>最终</strong>得了多少分？</td><td>奖励模型 $r_\phi$</td></tr>
+<tr><td><strong>value</strong></td><td>写到<strong>这儿</strong>时，估计最后能得多少分？</td><td>价值网络 $V_\psi$</td></tr>
+<tr><td><strong>advantage</strong></td><td>这条回答比<strong>预期</strong>好多少？</td><td>两者相减</td></tr>
+</tbody>
+</table>
 
 <h4>Return：从这一步起的全部奖励</h4>
 
@@ -2721,7 +2960,7 @@ $\sum_l \delta_{t+l} = G_t - V(s_t)$。所以 GAE 不是新东西，它是「$G_
     <text x="355" y="292" font-size="12" fill="var(--ink3)" text-anchor="middle">ρ = π_θ / π_old（新策略与旧策略的概率比）；ε 通常取 0.2</text>
   </g>
 </svg>
-<figcaption>图 6 · 裁剪后的目标函数。左右两条曲线在 $[1-\epsilon,\,1+\epsilon]$ 之外<strong>变平</strong>，
+<figcaption>图 8 · 裁剪后的目标函数。左右两条曲线在 $[1-\epsilon,\,1+\epsilon]$ 之外<strong>变平</strong>，
 梯度变成 0——这就是「改够了就别再改」。</figcaption>
 </figure>
 
