@@ -2597,7 +2597,7 @@ $$
 <tr><td>baseline</td><td>单独训一个 value 网络 $V_\psi(s_t)$，逐 token 估计</td><td><strong>同一个 prompt 采一组</strong>（$G$ 条），用组内均值当 baseline</td></tr>
 <tr><td>额外参数</td><td>value head，与策略同规模</td><td>无</td></tr>
 <tr><td>优势估计</td><td>GAE：$\hat A_t = \sum_l (\gamma\lambda)^l \delta_{t+l}$</td><td>$\hat A_i = \dfrac{r_i - \operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})}$</td></tr>
-<tr><td>裁剪</td><td>$\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)$，$\rho=\pi_\theta/\pi_{\text{old}}$</td><td>同样的 clip，但通常只需一层（token 级比率）</td></tr>
+<tr><td>裁剪</td><td>$\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)$，$\rho=\pi_\theta/\pi_{\text{old}}$</td><td><strong>和 PPO 一样</strong>。真正的区别在上面那行：advantage 是整条一个数，不需要逐 token 的 GAE</td></tr>
 <tr><td>显存</td><td>策略 + 参考 + 价值，三份模型</td><td>策略 + 参考，两份</td></tr>
 <tr><td>适用</td><td>奖励稠密、需要精细 credit assignment</td><td>奖励稀疏、按整条回答打分（正是 RM 的形态）</td></tr>
 </tbody>
@@ -2606,6 +2606,97 @@ $$
 <p>注意 GRPO 那一行的优势公式，就是板书 §4.7 里那条 $(r-\mu)/\sigma$ 的逐样本版本。
 换句话说：<strong>GRPO = 把「组内归一化」直接当成 advantage，省掉 value 网络</strong>。
 这也是为什么它对奖励模型的形态特别友好——RM 给的本来就是整条序列一个分，逐 token 的 $V_\psi$ 在这里性价比不高。</p>
+
+<div class="box read">
+<span class="label">GAE 和 clip 怎么读</span>
+
+<p><strong>先说 GAE。它的零件只有一个：TD 误差。</strong></p>
+
+$$
+\delta_t \;=\; r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+<p>读法：<strong>实际拿到的奖励 + 下一步的预期 − 当前的预期</strong>，也就是「走这一步之后，预期变好了多少」。
+代一组数字：$V(s_1)=0.5$、$V(s_2)=0.6$、$r_1=0$，则 $\delta_1 = 0+0.6-0.5=+0.1$——
+意思是「走了一步，预期涨了 0.1」。</p>
+
+<p>GAE 把这些「意外」按距离加权求和，越远越轻：</p>
+
+$$
+\hat A_t \;=\; \sum_{l=0}^{\infty} (\gamma\lambda)^l \,\delta_{t+l}
+$$
+
+<p>$\lambda$ 是一个<strong>偏差-方差</strong>的旋钮：</p>
+
+<table>
+<thead><tr><th class="num">$\lambda$</th><th>用了多少</th><th>后果</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td>只看一步的意外 $\delta_t$</td><td>方差小，但完全依赖 $V$ 准不准 → <strong>偏差大</strong></td></tr>
+<tr><td class="num">1</td><td>所有未来的意外</td><td>不依赖 $V$ 的偏差，但抖动大 → <strong>方差大</strong></td></tr>
+<tr><td class="num">0.95</td><td>大部分，远的打折</td><td>折中，最常用</td></tr>
+</tbody>
+</table>
+
+<p><strong>$\lambda=1$ 时有一个漂亮的恒等式：</strong>那些 $\delta$ 会一项项抵消，最后
+$\sum_l \delta_{t+l} = G_t - V(s_t)$。所以 GAE 不是新东西，它是「$G_t-V(s_t)$」和「一步 TD 误差」之间的<strong>连续插值</strong>。</p>
+
+<p class="small">LLM 里通常取 $\gamma=1$（不做折扣），因为一条回答最多几千 token，不需要给「晚出现的奖励」打折。</p>
+
+<p><strong>再说 clip。先问：为什么要 $\rho$？</strong></p>
+
+<p>PPO 想拿旧策略采的一批数据<strong>反复</strong>更新几次（省采样）。但更新几次后 $\pi_\theta$ 已经不是当初采数据的 $\pi_{\text{old}}$ 了，
+所以要乘一个纠正权重 $\rho=\pi_\theta/\pi_{\text{old}}$。$\rho=1.5$ 表示「新策略给这个 token 的概率是旧策略的 1.5 倍」。
+问题是 $\rho$ 可以涨到很大，估计就崩了。</p>
+
+<p>clip 的办法很朴素：<strong>改到一定程度，就不再给奖励。</strong></p>
+
+<figure class="chart">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 305" role="img" aria-label="PPO 裁剪目标函数的形状：优势为正时概率比超过 1+ε 后变平，优势为负时低于 1−ε 后变平。">
+  <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
+    <text x="180" y="30" font-size="13" fill="var(--ink)" text-anchor="middle">Â &gt; 0（好回答）</text>
+    <text x="500" y="30" font-size="13" fill="var(--ink)" text-anchor="middle">Â &lt; 0（差回答）</text>
+
+    <path d="M50 250 L310 250" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <path d="M370 250 L630 250" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <path d="M370 50 L630 50" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 4"/>
+
+    <path d="M137 50 L137 250" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="M223 50 L223 250" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="M457 50 L457 250" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="M543 50 L543 250" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <path d="M50 200 L223 100 L310 100" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+    <path d="M370 150 L457 150 L630 250" fill="none" stroke="var(--warn)" stroke-width="2.2"/>
+
+    <text x="268" y="88" font-size="12" fill="var(--accent)" text-anchor="middle">变平：梯度 = 0</text>
+    <text x="412" y="138" font-size="12" fill="var(--warn)" text-anchor="middle">变平：梯度 = 0</text>
+
+    <g font-size="11" fill="var(--ink3)" text-anchor="middle">
+      <text x="137" y="268">1−ε</text><text x="223" y="268">1+ε</text>
+      <text x="457" y="268">1−ε</text><text x="543" y="268">1+ε</text>
+    </g>
+
+    <text x="355" y="292" font-size="12" fill="var(--ink3)" text-anchor="middle">ρ = π_θ / π_old（新策略与旧策略的概率比）；ε 通常取 0.2</text>
+  </g>
+</svg>
+<figcaption>图 6 · 裁剪后的目标函数。左右两条曲线在 $[1-\epsilon,\,1+\epsilon]$ 之外<strong>变平</strong>，
+梯度变成 0——这就是「改够了就别再改」。</figcaption>
+</figure>
+
+<p>看懂这张图只要两句话：</p>
+
+<ul>
+<li><strong>左边</strong>（好回答）：我们想让 $\rho$ 变大。但涨到 $1+\epsilon$ 后曲线变平、梯度变 0——<strong>再推高也不给奖励了</strong>；</li>
+<li><strong>右边</strong>（差回答）：我们想让 $\rho$ 变小。降到 $1-\epsilon$ 后同样变平——<strong>再压低也不给奖励了</strong>。</li>
+</ul>
+
+<p>所以 clip 不是「禁止更新」，而是<strong>一个单向刹车</strong>：只在「已经改够了」的方向上刹，反方向照常走。</p>
+
+<p><strong>为什么外面还要套一个 $\min$：</strong>取「裁剪后」和「未裁剪」里<strong>更差</strong>的那个，得到的是一个<strong>悲观下界</strong>。
+这样优化器永远不能靠一个被禁止的移动去骗到更高的目标值。</p>
+
+<p>$\epsilon$ 通常取 0.2，意思是「概率比最多变 ±20%」。</p>
+</div>
 
 <div class="box gold">
 <span class="label">易错 · 「通用 RL 算法」不等于「随便换个算法都行」</span>
