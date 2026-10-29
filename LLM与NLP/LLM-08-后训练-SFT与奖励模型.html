@@ -2488,6 +2488,49 @@ $$
 <p>回到 §4.6 的梯度。它有一个致命的实践问题：方差太大。所有后续算法都在回答同一个问题——
 <strong>用什么当 $b$，使得 $\mathbb{E}[(r-b)\nabla\log\pi]=\mathbb{E}[r\nabla\log\pi]$ 但方差更小。</strong></p>
 
+<div class="box read">
+<span class="label">这个 $b$ 到底是什么</span>
+<p><strong>它就是 baseline（基线），也叫参照系。</strong>减掉它的目的只有一个：<strong>把「绝对水平」换成「相对好坏」</strong>。
+一条回答得了 0.9 分，是好是坏？要看这道题本来该得几分——$b$ 就是那个「本来」。</p>
+<p><strong>为什么减它不改变梯度：</strong></p>
+
+$$
+\mathbb{E}_{a\sim\pi}\big[b(s)\nabla_\theta\log\pi(a\mid s)\big]
+= b(s)\sum_a \nabla_\theta\pi(a\mid s)
+= b(s)\nabla_\theta 1 = 0
+$$
+
+<p>注意 $b(s)$ 被提到了求和号外面——<strong>所以 $b$ 只能依赖状态 $s$，不能依赖动作 $a$</strong>。
+依赖动作的话这一步不成立，梯度会有偏。</p>
+<p><strong>为什么 value 是最优的 $b$：</strong>在所有「只依赖 $s$」的函数里，让方差最小的是 $\mathbb{E}[G\mid s]$，
+也就是 value 的定义。猜得越准，剩下的「意外」越少，梯度越不抖。所以 $b=V_\psi(s_t)$ 不是随手选的，是理论最优解。</p>
+<p><strong>但 $b$ 不必是 value。</strong>它只是一个参照系，便宜货也能用：</p>
+
+<table>
+<thead><tr><th>算法</th><th>$b$ 是什么</th><th>要额外训网络吗</th></tr></thead>
+<tbody>
+<tr><td>朴素 REINFORCE</td><td>$0$（不减）</td><td>否</td></tr>
+<tr><td>常数 baseline</td><td>整个 batch 的平均分</td><td>否</td></tr>
+<tr><td><strong>PPO</strong></td><td>$V_\psi(s_t)$，逐 token 估</td><td>要（与策略同规模）</td></tr>
+<tr><td><strong>GRPO</strong></td><td>同一 prompt 一组样本的<strong>均值</strong></td><td><strong>不要</strong></td></tr>
+<tr><td>RLOO</td><td>组内「留一」均值</td><td>不要</td></tr>
+</tbody>
+</table>
+
+<p>所以 GRPO 的 $b$ <strong>不是</strong> value：它不逐 token、也没有网络，只是「这道题其他几条回答的平均分」。
+它照样能用，因为只要 $b$ 不依赖动作，期望就不变——只是方差压得没 value 那么狠。</p>
+</div>
+
+<p>于是 advantage 有两种写法，<strong>语义完全一样</strong>，只是参照系不同：</p>
+
+$$
+\hat A_t = G_t - V_\psi(s_t)
+\quad\text{（比「这道题的预期」好多少）}
+\qquad
+\hat A_i = r_i - \operatorname{mean}(r_{1:G})
+\quad\text{（比「同题其他回答」好多少）}
+$$
+
 <p>PPO 与 GRPO 的全部区别，就是这个 $b$ 怎么算、以及要不要信任域裁剪。</p>
 
 <table>
