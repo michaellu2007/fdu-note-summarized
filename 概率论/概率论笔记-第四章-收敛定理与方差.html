@@ -246,7 +246,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <p class="label">来源说明（逐小节）</p>
 <table style="margin:8px 0 0">
 <tr><th style="width:180px">小节</th><th style="width:170px">来源</th><th>说明</th></tr>
-<tr><td><a href="#s11">§1.1</a> 五条性质</td><td><span class="tag b">板书 1·17·18</span><span class="tag c">教材 p.73</span></td><td>板书第 1 页开头就是这张表。教材 p73 的措辞更精确，两边对照着写。</td></tr>
+<tr><td><a href="#s11">§1.1</a> 五条性质</td><td><span class="tag b">板书 1·17·18</span><span class="tag c">教材 p.73</span></td><td>板书第 1 页开头就是这张表。教材 p73 的措辞更精确，两边对照着写。<strong>(1)(2)(3) 课上只列不证</strong>，其证明按三层定义补写（<span class="tag">我补的</span>）。</td></tr>
 <tr><td><a href="#s12">§1.2</a> 性质 (4)</td><td><span class="tag b">板书 1·16·17·18</span><span class="tag c">教材 p.73</span></td><td>本次课的重点之一。板书写了完整的 $\xi_n,\eta_n$ 逼近构造。</td></tr>
 <tr><td><a href="#s13">§1.3</a> Cauchy–Schwarz</td><td><span class="tag b">板书 1·16</span><span class="tag c">教材 p.79</span></td><td>板书写的是<strong>判别式法</strong>，和讲义 p49 的配方法不同。两种都写清楚。</td></tr>
 <tr><td><a href="#s14">§1.4</a> 不相关</td><td><span class="tag b">板书 5</span><span class="tag c">教材 p.73 例4.1.2</span></td><td>板书 5 上那个「十字形」支撑集，就是教材 p73 的例 4.1.2。</td></tr>
@@ -269,6 +269,138 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <p>教材 p73 的写法更细，值得抄在旁边：</p>
 
 <p class="q">(4) 设 $\xi,\eta$ 独立，如果两者非负，或两者可积<strong>且乘积 $\xi\eta$ 也可积</strong>，则 $\mathbb E\xi\eta=\mathbb E\xi\cdot\mathbb E\eta$。</p>
+
+<h4>(1)(2)(3) 的证明：同一套三层模板用三次</h4>
+
+<p>板书只列了这五条，没有展开证。但 (1)(2)(3) 是后面一切的地基：(4)(5) 的证明里反复调用「可加性 + 单调性」，而单调性本身就是 (1)+(3) 的推论。所以这里补齐。</p>
+
+<p>三条的证明<strong>结构完全一样</strong>：期望是分三层定义的（简单 → 非负 → 一般），每条都在三层上各做一次，越往下越依赖上一层已经证好的结论。模板先摆出来：</p>
+
+<table>
+<thead><tr><th style="width:170px">层（对应的定义）</th><th>(1) 非负性</th><th>(2) 齐次性</th><th>(3) 可加性</th></tr></thead>
+<tbody>
+<tr><td>1　简单 $\mathcal S$<br><span style="font-size:12.5px">$\mathbb E\xi=\sum_i x_i\mathbb P(A_i)$</span></td><td>有限和，每项 $\ge0$</td><td>把 $a$ 提出来</td><td>按联合取值展开</td></tr>
+<tr><td>2　非负 $\mathcal F_+$<br><span style="font-size:12.5px">$\mathbb E\xi=\sup\{\mathbb E\eta\}$</span></td><td>上确界 $\ge$ 集合里的每个元 $\ge0$</td><td>$\sup(aT)=a\sup T$</td><td>MCT</td></tr>
+<tr><td>3　一般<br><span style="font-size:12.5px">$\mathbb E\xi=\mathbb E\xi^+-\mathbb E\xi^-$</span></td><td>$\xi\ge0\Rightarrow\xi^-=0$</td><td>正负部缩放（$a\lt0$ 时<em>对调</em>）</td><td>重排成非负之和，再移项</td></tr>
+</tbody>
+</table>
+
+<p>记住这个形状：<strong>第 2 层永远是「取上确界」那一层</strong>，也是所有不等号真正生效的地方；<strong>第 3 层永远是拆正负部的代数收尾</strong>。五条性质里凡是含不等号的，都在第 2 层挣到。</p>
+
+<h4>(1) 非负性：$\xi\ge0\Rightarrow\mathbb E\xi\ge0$</h4>
+
+<p><strong>层 1。</strong> 设 $\xi=\sum_{i=1}^{n}x_i1_{A_i}\in\mathcal S$，$x_i\ge0$。由定义 $\mathbb E\xi=\sum_i x_i\mathbb P(A_i)$ 是有限个非负数之和，故 $\ge0$。</p>
+
+<p><strong>层 2。</strong> 设 $\xi\in\mathcal F_+$。定义里的集合</p>
+\[
+T_\xi:=\big\{\mathbb E\eta:\ 0\le\eta\le\xi,\ \eta\in\mathcal S\big\}
+\]
+<p>非空（取 $\eta\equiv0$，$\mathbb E\eta=0$），且由层 1 其中每个数都 $\ge0$。于是 $\mathbb E\xi=\sup T_\xi\ge0$；若 $T_\xi$ 无上界则 $\mathbb E\xi=+\infty$，同样 $\ge0$。</p>
+
+<p>这一步值得停一下：<strong>它没有用到任何收敛性、任何极限</strong>，只用了一句「上确界不小于集合里的任何一个元素」。整条链上这是唯一一次「白拿」的不等式，也是为什么非负性被当作公理级的起点。</p>
+
+<p><strong>层 3。</strong> 设 $\xi\ge0$ 是一般随机变量。则 $\xi^-=\max(-\xi,0)\equiv0$，于是</p>
+\[
+\mathbb E\xi=\mathbb E\xi^+-\mathbb E\xi^-=\mathbb E\xi^+\ge0
+\]
+<p>（最后一步是层 2）。注意这里<strong>不需要 $\xi$ 可积</strong>：$\mathbb E\xi=+\infty$ 时结论照样成立。</p>
+
+<div class="box ok">
+<p class="label">(1) 真正的用处：单调性是它免费送的</p>
+<p>有了 (1) 和 (3)，单调性只要一行：若 $\xi\ge\eta$ 且两者可积，则 $\xi-\eta\ge0$，由 (1) 得 $\mathbb E(\xi-\eta)\ge0$，再由 (3) 拆开即 $\mathbb E\xi\ge\mathbb E\eta$。</p>
+<p><strong>这就是为什么《期望》<a href="./概率论笔记-第四章期望.html#s32">§3.2</a> 的「单调性」从来不单独证</strong>——它不是新定理，是 (1)+(3) 的推论。反过来说，(1) 一旦不成立，MCT 证明里那一串 $\le$ 全部塌掉。</p>
+</div>
+
+<h4>(2) 齐次性：$\mathbb E(a\xi)=a\,\mathbb E\xi$，$a\in\mathbb R$</h4>
+
+<p>先做 $a\ge0$，再处理 $a\lt0$。<strong>全部难点在 $a\lt0$：符号一变，正负部互换位置。</strong></p>
+
+<p><strong>第一步：$a\ge0$。</strong></p>
+
+<p>层 1：$\xi=\sum_i x_i1_{A_i}$ 时 $a\xi=\sum_i(ax_i)1_{A_i}$ 仍是简单随机变量，故</p>
+\[
+\mathbb E(a\xi)=\sum_i (ax_i)\mathbb P(A_i)=a\sum_i x_i\mathbb P(A_i)=a\,\mathbb E\xi .
+\]
+
+<p>层 2：设 $\xi\in\mathcal F_+$、$a\gt0$。仍记 $T_\xi$ 如 (1)。因为 $a\gt0$，映射 $\eta\mapsto a\eta$ 是</p>
+\[
+\big\{0\le\eta\le\xi,\ \eta\in\mathcal S\big\}\ \longleftrightarrow\ \big\{0\le\eta'\le a\xi,\ \eta'\in\mathcal S\big\}
+\]
+<p>的一一对应（$\eta'=a\eta$，反向 $\eta=\eta'/a$，两个方向都保持「简单、非负、被控制」）。所以 $T_{a\xi}=a\,T_\xi$，而</p>
+\[
+\sup\,(aT_\xi)=a\,\sup T_\xi\qquad(a\ge0),
+\]
+<p>即 $\mathbb E(a\xi)=a\,\mathbb E\xi$。<strong>$a\gt0$ 这个条件是硬的</strong>：$a\lt0$ 时同一个映射会把 $0\le\eta\le\xi$ 翻成 $0\ge\eta'\ge a\xi$，这个集合就废了。</p>
+
+<p>$a=0$ 时 $a\xi\equiv0$，$\mathbb E(0)=0$；这里需约定 $0\cdot(+\infty)=0$，否则 $\mathbb E\xi=+\infty$ 时右边没有意义。</p>
+
+<p>层 3：设 $\xi$ 一般、$a\ge0$。因为 $t\mapsto at$ 单调不减且过原点，正负部只被缩放、不被交换：</p>
+\[
+(a\xi)^+=a\,\xi^+,\qquad (a\xi)^-=a\,\xi^- ,
+\]
+<p>于是 $\mathbb E(a\xi)=a\,\mathbb E\xi^+-a\,\mathbb E\xi^-=a\big(\mathbb E\xi^+-\mathbb E\xi^-\big)=a\,\mathbb E\xi$。</p>
+
+<p><strong>第二步：$a\lt0$。</strong> 记 $b=-a\gt0$，则 $a\xi=-b\xi$，而</p>
+\[
+(-b\xi)^+=b\,\xi^-,\qquad (-b\xi)^-=b\,\xi^+ .
+\]
+<p><em>（验证第一个：$-b\xi\gt0\iff\xi\lt0\iff\xi^-\gt0$，此时 $(-b\xi)^+=-b\xi=b(-\xi)=b\xi^-$。）</em> 把第一步的结论用在非负的 $b$ 上：</p>
+\[
+\mathbb E(a\xi)=b\,\mathbb E\xi^--b\,\mathbb E\xi^+=-b\big(\mathbb E\xi^+-\mathbb E\xi^-\big)=a\,\mathbb E\xi .
+\]
+<p>这一步要求 $\mathbb E\xi^\pm$ 都有限（即 $\xi$ 可积），否则两边是 $\infty-\infty$。</p>
+
+<div class="box warn">
+<p class="label">两个容易踩的坑</p>
+<p><strong>① 只证 $a\ge0$ 就收工。</strong> $a\lt0$ 时 $(a\xi)^\pm$ 是<strong>对调</strong>，不是同乘。写「$\mathbb E(a\xi)=a\mathbb E\xi$」当然没错，但被追问「为什么」时说不出对调这一步，等于没证。</p>
+<p><strong>② 把 $a\in\mathbb R$ 记成「$a$ 可以取 $+\infty$」。</strong> 定义里 $a$ 是实数。若允许 $a=+\infty$，$\infty\cdot0$ 与 $\infty-\infty$ 立刻冒出来。</p>
+</div>
+
+<h4>(3) 可加性：$\mathbb E(\xi+\eta)=\mathbb E\xi+\mathbb E\eta$</h4>
+
+<p>前提是 $\xi,\eta$ 都可积（板书标题「设 $\xi,\eta$ 可积」已假定；性质 (3) 只写「$\xi+\eta$ 可积」，但右边要有意义仍须两者可积）。<strong>这条是五条里唯一需要真正的分析工具（MCT）的</strong>，也是 (4)(5) 反复调用的那条。</p>
+
+<p><strong>层 1（简单）。</strong> 设 $\xi=\sum_{x\in I}x1_{\{\xi=x\}}$、$\eta=\sum_{y\in J}y1_{\{\eta=y\}}$，$I,J$ 有限。按<strong>联合取值</strong>展开：</p>
+\[
+\xi+\eta=\sum_{x\in I}\sum_{y\in J}(x+y)\,1_{\{\xi=x,\eta=y\}} .
+\]
+<p>在任一 $\omega$ 上只有一对 $(x,y)=(\xi(\omega),\eta(\omega))$ 的示性函数为 $1$，故右边 $=x+y=\xi(\omega)+\eta(\omega)$——这是<strong>恒等式</strong>，不是近似。而 $\{\xi=x,\eta=y\}$ 是 $\Omega$ 的有限分割，于是</p>
+\[
+\mathbb E(\xi+\eta)=\sum_{x,y}(x+y)\mathbb P(\xi=x,\eta=y)=\sum_x x\,\mathbb P(\xi=x)+\sum_y y\,\mathbb P(\eta=y)=\mathbb E\xi+\mathbb E\eta .
+\]
+<p><strong>全程没有用到独立性</strong>：联合分布怎么耦合都行，可加性照旧成立。</p>
+
+<p><strong>层 2（非负）。</strong> 设 $\xi,\eta\in\mathcal F_+$。取简单列 $\xi_n\uparrow\xi$、$\eta_n\uparrow\eta$（定理 4.1.1(3) 的构造），则 $\xi_n+\eta_n\in\mathcal S$ 且 $\xi_n+\eta_n\uparrow\xi+\eta$。两次 MCT 加层 1：</p>
+\[
+\mathbb E(\xi+\eta)=\lim_n\mathbb E(\xi_n+\eta_n)=\lim_n\big(\mathbb E\xi_n+\mathbb E\eta_n\big)=\lim_n\mathbb E\xi_n+\lim_n\mathbb E\eta_n=\mathbb E\xi+\mathbb E\eta .
+\]
+<p>中间那步是「两个收敛数列（取值在 $[0,+\infty]$）之和的极限 = 极限之和」；首尾各用一次 MCT。注意<strong>这一层允许 $\mathbb E\xi=+\infty$</strong>，等式在 $[0,+\infty]$ 里成立。</p>
+
+<p><strong>层 3（一般）。</strong> 分三小步，缺一不可。</p>
+
+<p><em>(i) 先证 $\xi+\eta$ 可积。</em> $|\xi+\eta|\le|\xi|+|\eta|$，而 $|\xi|,|\eta|\in\mathcal F_+$，用层 2 得 $\mathbb E|\xi+\eta|\le\mathbb E|\xi|+\mathbb E|\eta|\lt\infty$。<strong>不先证这一条，下面移项就是非法的。</strong></p>
+
+<p><em>(ii) 重排成「两边都是非负之和」。</em> 由 $\xi+\eta=(\xi+\eta)^+-(\xi+\eta)^-$ 与 $\xi+\eta=\xi^+-\xi^-+\eta^+-\eta^-$，把负部全搬到另一边：</p>
+\[
+(\xi+\eta)^++\xi^-+\eta^-=\xi^++\eta^++(\xi+\eta)^- .
+\]
+
+<p><em>(iii) 两边用层 2 取期望，再移项。</em></p>
+\[
+\mathbb E(\xi+\eta)^++\mathbb E\xi^-+\mathbb E\eta^-=\mathbb E\xi^++\mathbb E\eta^++\mathbb E(\xi+\eta)^- ,
+\]
+<p>由 (i) 每项都有限，可以自由移项，得</p>
+\[
+\mathbb E(\xi+\eta)=\mathbb E(\xi+\eta)^+-\mathbb E(\xi+\eta)^-=\mathbb E\xi^+-\mathbb E\xi^-+\mathbb E\eta^+-\mathbb E\eta^-=\mathbb E\xi+\mathbb E\eta .\qquad\blacksquare
+\]
+
+<div class="box key">
+<p class="label">为什么 (ii) 那一步不能省：MCT 只吃非负</p>
+<p>层 2 的证明<strong>整条建立在 MCT 上</strong>，而 MCT 要求 $0\le X_n\uparrow X$。$\xi+\eta$ 有正有负，两个因子各自的逼近列加起来仍然有正有负，正负抵消让「单调递增」根本无从谈起。</p>
+<p>重排的作用是把<strong>减法从式子内部挪到两个非负量之间</strong>：左右两边各自都是非负项之和，层 2 就能分别作用；减法只在最后一步出现，而那时每项有限，减法合法。这一行在板书上只有一个花括号，最容易被当成「代数变形」跳过，实际上它承担了整个证明的合法性。</p>
+</div>
+
+<p>把 (2)(3) 合起来就是完整的线性性 $\mathbb E(a\xi+b\eta)=a\mathbb E\xi+b\mathbb E\eta$。<strong>它不需要独立性、也不需要非负</strong>（只要可积），是后面几乎所有计算的起点；更长的版本见《期望》<a href="./概率论笔记-第四章期望.html#s31">§3.1</a>，两条路完全一致。</p>
 
 <div class="box key">
 <p class="label">为什么 (4) 里要专门加一句「$\xi\eta$ 可积」</p>
