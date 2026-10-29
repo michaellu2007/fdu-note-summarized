@@ -2588,6 +2588,71 @@ $$
 </table>
 </div>
 
+<h4>把一次更新完整走一遍 <span class="tag n">补充</span></h4>
+
+<p>先破除一个最容易卡住的错觉：<strong>训练 $V$ 的时候，答案是已知的。</strong></p>
+
+<div class="box key">
+<span class="label">两个时刻，别混</span>
+<table>
+<thead><tr><th></th><th>回答的状态</th><th>$R$ 知道吗</th><th>这一步在干什么</th></tr></thead>
+<tbody>
+<tr><td><strong>训练时</strong></td><td>已经写完了</td><td><strong>知道</strong>（RM 已打分）</td><td>让 $V$ 去猜一个<strong>已知的答案</strong></td></tr>
+<tr><td><strong>使用时</strong></td><td>正在写</td><td>不知道</td><td>让 $V$ 给个估计，拿去当 baseline</td></tr>
+</tbody>
+</table>
+<p>所以训练 $V$ 和「根据房屋面积预测房价」<strong>没有任何区别</strong>：输入一个东西，输出一个数，
+和已知标签比，改参数。同一句话「预测最终得分」，在两个时刻是完全不同的任务。</p>
+</div>
+
+<p>下面把一次更新从头走到尾。为了能手算，假设一条回答只有 4 个 token，最终得分 $R=0.9$。</p>
+
+<p><strong>第 1 步，前向。</strong>把 4 个前缀分别喂进 $V$（就是 4 次普通的前向传播）：</p>
+
+<table>
+<thead><tr><th>前缀</th><th class="num">$V$ 的输出</th></tr></thead>
+<tbody>
+<tr><td>$s_1=(x)$</td><td class="num">0.50</td></tr>
+<tr><td>$s_2=(x,y_1)$</td><td class="num">0.52</td></tr>
+<tr><td>$s_3=(x,y_1,y_2)$</td><td class="num">0.48</td></tr>
+<tr><td>$s_4=(x,y_1,y_2,y_3)$</td><td class="num">0.51</td></tr>
+</tbody>
+</table>
+
+<p><strong>第 2 步，拿真值。</strong>这条回答已经写完了，RM 给了 $R=0.9$。
+注意它对<strong>四个位置都是同一个值</strong>——因为奖励只在最后给一次。</p>
+
+<p><strong>第 3 步，算误差。</strong>$(V-R)^2$ 分别是 $0.16$、$0.1444$、$0.1764$、$0.1521$，平均 <strong>0.158</strong>。</p>
+
+<p><strong>第 4 步，反向传播。</strong>四个位置全都在低估（都小于 0.9），所以梯度会把它们<strong>一起往上推</strong>：</p>
+
+$$
+\psi \;\leftarrow\; \psi - \eta\,\nabla_\psi\mathcal{L}_V,
+\qquad
+\nabla_\psi\mathcal{L}_V
+= \frac{2}{T}\sum_{t}\big(V_\psi(s_t)-G_t\big)\,\nabla_\psi V_\psi(s_t)
+$$
+
+<p>更新一轮之后，四个预测大概会变成 $0.58$、$0.60$、$0.56$、$0.59$。</p>
+
+<p><strong>第 5 步，重复几万次。</strong>它会逐渐收敛：</p>
+
+<table>
+<thead><tr><th>轮次</th><th class="num">四个预测</th><th class="num">平均误差</th></tr></thead>
+<tbody>
+<tr><td>初始（随机）</td><td class="num">0.50 / 0.52 / 0.48 / 0.51</td><td class="num">0.158</td></tr>
+<tr><td>第 100 次</td><td class="num">0.78 / 0.80 / 0.83 / 0.86</td><td class="num">0.011</td></tr>
+<tr><td>第 1000 次</td><td class="num">0.88 / 0.89 / 0.89 / 0.90</td><td class="num">0.0001</td></tr>
+</tbody>
+</table>
+
+<p>注意一个细节：<strong>靠后的位置更早接近 0.9</strong>。因为写到后面时信息更多，好坏已经能看出来；
+开头只有一个问题，最难猜。这就是图 7 里曲线「从左往右爬」的原因。</p>
+
+<p><strong>它凭什么能预测？</strong>因为训练让它见过几万条「这样的前缀 → 这样的分数」的配对。
+它学到的是模式：开头就答非所问 → 低分；出现了具体步骤和数字 → 高分。
+<strong>没有魔法，就是一个回归器。</strong></p>
+
 <h4>Advantage：比平均好多少</h4>
 
 $$
