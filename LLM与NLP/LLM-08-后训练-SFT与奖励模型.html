@@ -252,7 +252,7 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
   <ol>
     <li><a href="#s01">0.1 用一个例子贯穿全讲</a></li>
     <li><a href="#s02">0.2 为什么必须按这个顺序</a></li>
-    <li><a href="#s03">0.3 先认识三个词</a></li>
+    <li><a href="#s03">0.3 符号表：每个变量到底是什么</a></li>
     <li><a href="#s04">0.4 公式怎么读：本笔记的约定</a></li>
     <li><a href="#s05">0.5 如果你只有十分钟</a></li>
   </ol>
@@ -421,12 +421,70 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
 
 <p>每一步都不是「更高级的技术」，而是<strong>上一步留下的那个窟窿，只能用这个办法补</strong>。</p>
 
-<h3 id="s03">0.3 先认识三个词 <span class="tag n">补充</span></h3>
+<h3 id="s03">0.3 符号表：每个变量到底是什么 <span class="tag n">补充</span></h3>
 
-<p>后面所有公式都在用这三个词，先认脸：</p>
+<p>后面会反复出现一堆带下标的字母。这一节把它们一次列清，<strong>看到不认识的随时回来查</strong>。</p>
+
+<p>先说最容易卡住的一点：<strong>同一个东西有两套名字</strong>。强化学习有一套，语言模型有一套，板书把它们并排写，
+是为了让你能把 RL 的公式直接套到 LLM 上——但它们指的是同一批东西。</p>
+
+<table>
+<thead><tr><th>强化学习的叫法</th><th>语言模型的叫法</th><th>举例</th></tr></thead>
+<tbody>
+<tr><td>状态 $s_t$</td><td>前缀 $(x, y_{&lt;t})$：问题 + 已经写出来的部分</td><td>写到第 3 个词时，$s_3=(x, y_1, y_2)$</td></tr>
+<tr><td>动作 $a_t$</td><td>第 $t$ 个 token $y_t$</td><td>$a_1 = y_1$</td></tr>
+<tr><td>策略 $\pi_\theta(a_t\mid s_t)$</td><td>模型 softmax 之后给每个候选词的概率</td><td>「巴黎」0.62、「里昂」0.03……</td></tr>
+</tbody>
+</table>
+
+<p>注意 $s_t$ 的下标：<strong>它每写一个 token 就变长一次</strong>，所以叫「第 $t$ 步的状态」。
+而 $V_\psi(s_t)$ 就是把这一串 token 喂给价值网络，让它吐一个数。</p>
+
+<h4>完整符号表</h4>
+
+<table>
+<thead><tr><th>符号</th><th>在 LLM 里具体是什么</th><th>出现在</th></tr></thead>
+<tbody>
+<tr><td>$x$</td><td>用户的问题（prompt）</td><td>全文</td></tr>
+<tr><td>$y$</td><td>模型写出的回答，一整条</td><td>全文</td></tr>
+<tr><td>$y_t$</td><td>回答里的第 $t$ 个 token</td><td>全文</td></tr>
+<tr><td>$y_{&lt;t}$</td><td>第 $t$ 个 token <strong>之前</strong>的所有 token</td><td>全文</td></tr>
+<tr><td>$T$，$\lvert y\rvert$</td><td>回答的长度（一共几个 token）</td><td>§2、§4</td></tr>
+<tr><td>$\lvert V\rvert$</td><td>词表大小（约 10 万）</td><td>§2</td></tr>
+<tr><td>$\theta$</td><td>模型的全部参数（几百亿个数）</td><td>全文</td></tr>
+<tr><td>$\pi_\theta(y_t\mid x, y_{&lt;t})$</td><td>模型在第 $t$ 步给某个候选 token 的概率</td><td>全文</td></tr>
+<tr><td>$\pi_{\text{ref}}$</td><td>参考模型：冻结的 SFT 模型，只用来算「别走太远」</td><td>§4.8</td></tr>
+<tr><td>$\psi$</td><td>价值网络的参数（<strong>和 $\theta$ 是两个不同的网络</strong>）</td><td>§4.5</td></tr>
+<tr><td>$V_\psi(s_t)$</td><td>价值网络对「从这儿继续写得多少分」的<strong>预测</strong></td><td>§4.5</td></tr>
+<tr><td>$s_t$</td><td><strong>状态</strong>：第 $t$ 步手上有的东西 $=(x, y_{&lt;t})$</td><td>§4.2</td></tr>
+<tr><td>$a_t$</td><td><strong>动作</strong>：第 $t$ 步选的那个 token，就是 $y_t$</td><td>§4.2</td></tr>
+<tr><td>$r_t$</td><td>第 $t$ 步拿到的奖励。LLM 里<strong>除最后一步外都是 0</strong></td><td>§4.5</td></tr>
+<tr><td>$R$，$G_t$</td><td>整条回答的总分 / 从第 $t$ 步起累加到的奖励</td><td>§4.5</td></tr>
+<tr><td>$\hat A_t$</td><td><strong>优势</strong>：$G_t - V_\psi(s_t)$，比预期好多少</td><td>§4.5</td></tr>
+<tr><td>$b$（§4）</td><td><strong>baseline</strong>：参照系，见 §4.9</td><td>§4.9</td></tr>
+<tr><td>$\phi$</td><td>奖励模型的参数</td><td>§3</td></tr>
+<tr><td>$r_\phi(x,y)$</td><td>奖励模型给一条回答打的分（一个实数）</td><td>§3</td></tr>
+<tr><td>$h_t$</td><td>第 $t$ 个位置的隐状态，一个 $d$ 维向量</td><td>§3.2</td></tr>
+<tr><td>$w$</td><td>打分头的权重，也是 $d$ 维（<strong>只有一个方向</strong>）</td><td>§3.2</td></tr>
+<tr><td>$b$（§3）</td><td>打分头的<strong>偏置</strong>，一个数</td><td>§3.2</td></tr>
+<tr><td>$\Delta$</td><td>两条回答的分数差 $r_w - r_l$</td><td>§3.3</td></tr>
+<tr><td>$z$</td><td>人类标签：1 = 前者更好，0 = 后者更好</td><td>§3.3</td></tr>
+<tr><td>$m_t$</td><td>loss 掩码：1 = 这个位置参与训练，0 = 跳过</td><td>§2.3</td></tr>
+<tr><td>$\beta$</td><td>KL 约束系数（同时是「温度」）</td><td>§4.8</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">易错 · 有两个 $b$，不是一回事</span>
+<p>§3 的 $b$ 是<strong>打分头的偏置</strong>（$r = h^\top w + b$），一个固定的常数，训练完就不动了。</p>
+<p>§4 的 $b$ 是<strong>baseline</strong>（参照系），是用来减掉「这道题本来该得几分」的那个量，每次更新都在变。</p>
+<p>板书两处都写了 $b$，这是符号复用，不是同一个东西。本文在两处都就地标了 §3 / §4。</p>
+</div>
+
+<h4>三个词：策略、示范、偏好</h4>
 
 <dl class="kv">
-<dt>策略 $\pi_\theta$</dt><dd>就是模型本身。准确说是一个函数：给定前面所有的词，输出「下一个词是各个候选的概率」。下标 $\theta$ 是它的参数（几百亿个数）。</dd>
+<dt>策略 $\pi_\theta$</dt><dd>就是模型本身。准确说是一个函数：给定前面所有的词，输出「下一个词是各个候选的概率」。</dd>
 <dt>示范</dt><dd>人亲手写的标准答案。SFT 用的就是它。</dd>
 <dt>偏好</dt><dd>人对「两条回答哪条更好」的判断。奖励模型用的就是它。</dd>
 </dl>
