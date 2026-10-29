@@ -63,6 +63,12 @@ pre code{background:none;border:none;padding:0;font-size:13.5px}
 .box.warn .label{color:var(--warn)}
 .box.ok .label{color:var(--ok)}
 .box.gold .label{color:var(--gold)}
+.box.read{background:var(--teal-bg);border-color:transparent}
+.box.read .label{color:var(--teal)}
+.box.read dl.kv{margin:6px 0 2px;gap:2px 16px}
+.box.read dt{color:var(--teal);font-weight:650}
+blockquote.qa{margin:14px 0;padding:10px 18px;background:var(--bg3);
+  border-left:3px solid var(--ok);border-radius:0 8px 8px 0;color:var(--ink2);font-size:15px}
 .box p:first-of-type{margin-top:0}
 .box p:last-child{margin-bottom:0}
 .box ul:last-child,.box ol:last-child{margin-bottom:0}
@@ -86,7 +92,7 @@ svg{max-width:100%;height:auto;display:block;margin:0 auto}
 
 .toc{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:26px 0 34px}
 .toc h3{margin:0 0 10px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
-.toc ol{margin:0;padding-left:20px}
+.toc ol{list-style:none;margin:0;padding-left:18px}
 .toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
 .toc ol ol li{font-size:13.5px;color:var(--ink2)}
 .toc li{font-size:14.5px}
@@ -242,6 +248,15 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
 <div class="toc">
 <h3 id="toc">目录</h3>
 <ol>
+<li><a href="#p0">第零部分 · 先建立整体图像</a>
+  <ol>
+    <li><a href="#s01">0.1 用一个例子贯穿全讲</a></li>
+    <li><a href="#s02">0.2 为什么必须按这个顺序</a></li>
+    <li><a href="#s03">0.3 先认识三个词</a></li>
+    <li><a href="#s04">0.4 公式怎么读：本笔记的约定</a></li>
+    <li><a href="#s05">0.5 如果你只有十分钟</a></li>
+  </ol>
+</li>
 <li><a href="#p1">第一部分 · 为什么预训练不够</a>
   <ol>
     <li><a href="#s11">1.1 预训练给了什么、没给什么</a></li>
@@ -305,7 +320,158 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
 
 <hr>
 
+<hr>
+
+<h2 id="p0">第零部分 · 先建立整体图像</h2>
+
+<div class="box key">
+<span class="label">这一部分只回答一个问题</span>
+<p><strong>一个已经会写字的模型，为什么还要被「再训练」三次？</strong></p>
+<p>这一部分没有公式。如果你时间很紧，只读 0.2 和 0.3，就能把后面四部分的顺序立起来。</p>
+</div>
+
+<h3 id="s01">0.1 用一个例子贯穿全讲 <span class="tag n">补充</span></h3>
+
+<p>后面的公式很多，但它们全都在回答同一个场景。先把这个场景记住：</p>
+
+<div class="box">
+<span class="label">贯穿全讲的例子</span>
+<p>用户问：<strong>「我一个月想减 5 公斤，怎么吃？」</strong></p>
+<p>我们看这个模型在四个阶段分别会怎么回答。</p>
+</div>
+
+<h4>阶段一：预训练之后 —— 它会「接着写」，不会「回答你」</h4>
+
+<p>你问它减肥，它很可能这样开头：</p>
+
+<blockquote class="qa">「随着生活水平的提高，肥胖已经成为影响国民健康的重要公共卫生问题。近年来……」</blockquote>
+
+<p>这不是它笨，而是它<strong>从来没被要求回答问题</strong>。它这辈子只做过一件事：看一段文字，猜下一个词。
+它见过一万篇减肥文章，所以它给你<strong>续写了一篇文章的开头</strong>——这正是它被训练出来的行为。</p>
+
+<p>它甚至不知道「有人在问它」。它只知道「前面出现了这些字，后面通常接什么字」。</p>
+
+<h4>阶段二：SFT 之后 —— 它学会了「回答」这个格式</h4>
+
+<p>我们给它几千条「问题 + 人写的好回答」，它很快就学会了：</p>
+
+<blockquote class="qa">「先算你的基础代谢（约 1500 千卡），每天制造 500 千卡的热量缺口，一个月大约能减 2 公斤……」</blockquote>
+
+<p>这次像样了。但要注意它到底学到了什么：<strong>它学到的是「像示范那样写」，不是「什么是对的」</strong>。
+示范里没出现过的答法，它不会。示范里如果有人写错了，它也会照着错。</p>
+
+<h4>阶段三：奖励模型（RM）之后 —— 模型本身没变，我们多了一个「裁判」</h4>
+
+<p>这一步很容易误解。训完奖励模型，<strong>那个回答问题的模型一点都没变</strong>。</p>
+
+<p>变的是：我们手上多了一个函数，喂给它（问题，回答），它吐一个分数。比如</p>
+
+<table>
+<thead><tr><th>回答</th><th class="num">裁判给的分</th></tr></thead>
+<tbody>
+<tr><td>「少吃多动，坚持就是胜利」</td><td class="num">0.2</td></tr>
+<tr><td>「先算基础代谢，每天缺口 500 千卡，蛋白质每公斤体重 1.6 克……」</td><td class="num">0.9</td></tr>
+</tbody>
+</table>
+
+<p>这个裁判是怎么来的？让人看几万对回答，每次只回答「这两条哪个更好」。裁判从这些「哪个更好」里，
+学会了给任何一条新回答打分。它的全部本领就是<strong>把「好坏」变成一个数</strong>。</p>
+
+<h4>阶段四：RL 之后 —— 模型开始「自己找更好的答案」</h4>
+
+<p>现在有了裁判，就可以让模型自己练：</p>
+
+<ol class="steps">
+<li>同一个问题，模型自己写 8 条回答（不是人写的）；</li>
+<li>裁判给这 8 条各打一个分；</li>
+<li>分高的那条，让它以后更容易出现；分低的，让它更不容易出现；</li>
+<li>换下一个问题，重复几万次。</li>
+</ol>
+
+<p>神奇的地方在这里：<strong>模型会写出示范里根本没有的答法</strong>。因为它是随机采样的，偶尔会采到一个
+「人没写过、但裁判觉得好」的回答。这种回答一旦出现，就会被强化，下次更容易出现。</p>
+
+<div class="box key">
+<span class="label">记住这一句</span>
+<p>四个阶段不是四个不同的模型，而是<strong>四种不同的能力</strong>：
+预训练给它<strong>语言</strong>，SFT 给它<strong>格式</strong>，RM 给我们<strong>判断力</strong>，RL 让它<strong>自己变强</strong>。</p>
+</div>
+
+<h3 id="s02">0.2 为什么必须按这个顺序 <span class="tag n">补充</span></h3>
+
+<p>初学者最容易糊涂的地方就是「为什么不能直接上 RL」。答案很简单：<strong>每一步都是被上一步的缺陷逼出来的。</strong></p>
+
+<table>
+<thead><tr><th>步骤</th><th>它解决了什么</th><th>它又留下了什么新问题</th></tr></thead>
+<tbody>
+<tr><td>预训练</td><td>学会了语言、事实、推理的片段</td><td>只会续写，不会回答问题</td></tr>
+<tr><td>SFT</td><td>学会了「看到问题就写答案」这个格式</td><td>只会模仿示范，永远超不过示范；而且示范只有「对的」，没有「错的」</td></tr>
+<tr><td>奖励模型</td><td>能判断两条回答哪条更好了</td><td>它只能判断，不能生成；而且这个裁判是可以被骗的</td></tr>
+<tr><td>RL</td><td>模型能自己搜出比示范更好的答案</td><td>会钻裁判的空子；训久了会崩</td></tr>
+</tbody>
+</table>
+
+<p>顺着这张表读一遍，整讲的顺序就出来了：</p>
+
+<ul>
+<li>因为预训练只会续写 → 所以要 <strong>SFT</strong>（§2）；</li>
+<li>因为 SFT 只有「对的示范」、没有「哪个更好」→ 所以要 <strong>奖励模型</strong>（§3）；</li>
+<li>因为奖励模型只能打分、不会写 → 所以要 <strong>RL</strong> 拿这个分数去搜（§4）。</li>
+</ul>
+
+<p>每一步都不是「更高级的技术」，而是<strong>上一步留下的那个窟窿，只能用这个办法补</strong>。</p>
+
+<h3 id="s03">0.3 先认识三个词 <span class="tag n">补充</span></h3>
+
+<p>后面所有公式都在用这三个词，先认脸：</p>
+
+<dl class="kv">
+<dt>策略 $\pi_\theta$</dt><dd>就是模型本身。准确说是一个函数：给定前面所有的词，输出「下一个词是各个候选的概率」。下标 $\theta$ 是它的参数（几百亿个数）。</dd>
+<dt>示范</dt><dd>人亲手写的标准答案。SFT 用的就是它。</dd>
+<dt>偏好</dt><dd>人对「两条回答哪条更好」的判断。奖励模型用的就是它。</dd>
+</dl>
+
+<p>一句话区分后两个：<strong>示范是「写给你看」，偏好是「选给你看」。</strong>写比选贵得多——这也是为什么后面要换成偏好。</p>
+
+<h3 id="s04">0.4 公式怎么读：本笔记的约定 <span class="tag n">补充</span></h3>
+
+<p>你说「有公式但看不懂」，问题通常不在数学，而在<strong>没人告诉你先看哪里</strong>。
+所以从这一节开始，凡标着「<strong>这个公式怎么读</strong>」的框，都按固定的五步写：</p>
+
+<ol>
+<li><strong>它在算什么？</strong>——一句中文，不用符号。</li>
+<li><strong>每个符号是什么？</strong>——逐项点名，包括下标和上标。</li>
+<li><strong>代一组数字。</strong>——能手算的那种，看到数字就有感觉。</li>
+<li><strong>什么时候变大、什么时候变小？</strong>——这一步决定它是不是一个「好用的损失」。</li>
+<li><strong>它叫什么名字？</strong>——放到最后。名字是给人查的，不是给人理解的。</li>
+</ol>
+
+<div class="box gold">
+<span class="label">为什么第 5 步要放最后</span>
+<p>因为术语是用来<strong>检索</strong>的，不是用来<strong>理解</strong>的。先告诉你「这叫 log odds」，你只会记住四个字母；
+先算一遍「3 分减 1 分等于 2 分，代进 sigmoid 得到 88%」，你才知道它在干什么，这时候再告诉你「这叫 log odds」才有用。</p>
+<p>后面凡是先抛术语再解释的地方，都是我写坏了，可以直接跳过去骂。</p>
+</div>
+
+<h3 id="s05">0.5 如果你只有十分钟 <span class="tag n">补充</span></h3>
+
+<p>按这个顺序读，能拿到这一讲 80% 的骨架：</p>
+
+<ol>
+<li><strong>0.1 + 0.2</strong>（本节）——建立「四步为什么是这个顺序」。</li>
+<li><strong>§2.2 的「这个公式怎么读」</strong>——看懂交叉熵到底是什么。</li>
+<li><strong>§3.3 的 3 分 vs 1 分</strong>——看懂「胜率」是算出来的，不是统计出来的。</li>
+<li><strong>§4.1</strong>——看懂 RL 和前面三步到底差在哪。</li>
+</ol>
+
+<p>剩下的（各种变体、工程细节、评估指标）都是在这四块骨头上长出来的肉，第二遍再看。</p>
+
 <h2 id="p1">第一部分 · 为什么预训练不够</h2>
+
+<div class="box key">
+<span class="label">这一部分只回答一个问题</span>
+<p><strong>预训练模型到底缺什么？</strong><br>答完这一部分你会知道：它缺的不是知识，而是「有人在问我」这件事。</p>
+</div>
 
 <h3 id="s11">1.1 预训练给了什么、没给什么 <span class="tag s">板书</span></h3>
 
@@ -547,6 +713,11 @@ SFT 做得不好，后面两级都在放大它的缺陷。</p>
 
 <h2 id="p2">第二部分 · SFT：监督微调</h2>
 
+<div class="box key">
+<span class="label">这一部分只回答一个问题</span>
+<p><strong>怎么让它学会「回答问题」？这个办法的极限在哪？</strong><br>这一部分前半是「怎么做」（公式与工程细节），后半是「为什么它只能做到这一步」（三个结构性问题 + 优缺点）。</p>
+</div>
+
 <p>SFT（supervised fine-tuning，也叫 instruction tuning）是后训练里最没有悬念的一步：
 <strong>拿一批「问题 + 人类写的好回答」，当成普通的语言建模数据继续训练。</strong>
 没有新损失、没有新框架，和预训练用的是同一行代码。</p>
@@ -583,6 +754,21 @@ $$
 \pi_\theta(y \mid x) \;=\; \prod_{t=1}^{|y|} \pi_\theta\big(y_t \mid x,\, y_{&lt;t}\big),
 \qquad y_{&lt;t} = (y_1,\dots,y_{t-1})
 $$
+
+<div class="box read">
+<span class="label">这个公式怎么读</span>
+<p><strong>它在算什么：</strong>一整条回答出现的概率。比如「今天天气不错」这几个字，作为一个整体，模型认为它出现的可能性有多大。</p>
+<p><strong>每个符号：</strong>$\pi_\theta$ 是模型本身；$y$ 是整条回答；$y_t$ 是第 $t$ 个字；$y_{&lt;t}$ 是它前面的所有字；$\prod$ 是连乘。</p>
+<p><strong>为什么是连乘：</strong>生成是一条路走到底——先选第 1 个字，再在「第 1 个字已知」的条件下选第 2 个，
+再在「前两个字已知」的条件下选第 3 个……每一步都是一个条件概率。
+走完整条路的概率，按概率的乘法法则就是<strong>每步相乘</strong>。</p>
+<p><strong>代一组数字：</strong>假设只有 3 个字，模型每一步给正确答案的概率是 $0.5$、$0.2$、$0.1$，
+那么整条回答的概率是 $0.5\times0.2\times0.1=0.01$。注意它比每一步都小——<strong>「整条都对」比「某一步对」难得多</strong>。</p>
+<p><strong>这条式子的毛病：</strong>句子越长，乘的项越多，乘积越小。100 个字的回答，概率会小到 $10^{-30}$ 这种量级，
+既存不下也没法比较。所以实际训练时<strong>两边取对数</strong>，把连乘变成连加：
+$\log\pi_\theta(y\mid x)=\sum_t\log\pi_\theta(y_t\mid\cdot)$。
+这就是下面那个损失函数里为什么到处都是 $\log$。</p>
+</div>
 
 <h4>板书：前缀–回答记号与 teacher forcing <span class="tag s">板书</span></h4>
 
@@ -662,6 +848,21 @@ $$
 m_t = \begin{cases} 0, & t \le |x| \quad(\text{prompt})\\[2pt] 1, & t &gt; |x| \quad(\text{response})\end{cases}
 $$
 
+<div class="box read">
+<span class="label">这个公式怎么读</span>
+<p><strong>它在算什么：</strong>平均每一步「模型给正确答案留了多少概率」，然后取负号。</p>
+<p><strong>每个符号：</strong>$m_t$ 是开关（回答段为 1、prompt 段为 0）；
+分子把所有「开关打开的位置」的 $\log$ 概率加起来；分母 $\sum_t m_t$ 是「一共打开了几个位置」，除它就是取平均；
+最前面的负号是因为我们想「让概率尽量大」，而优化器只会「让损失尽量小」，所以翻个号。</p>
+<p><strong>为什么要取 $\log$：</strong>接上面那条——连乘会下溢，连加不会。
+而且 $\log$ 把「概率 0.9 和 0.1」变成「$-0.105$ 和 $-2.30$」，差距从 9 倍拉成 22 倍：
+<strong>错得越离谱，罚得越重</strong>，这正是我们要的。</p>
+<p><strong>代一组数字：</strong>模型给正确词的概率是 $0.9$ → $\ell=-\log0.9=0.105$；是 $0.5$ → $0.693$；
+是 $0.1$ → $2.30$；是 $0.01$ → $4.61$。所以 <strong>loss 越小，说明模型越「笃定地答对」</strong>。</p>
+<p><strong>什么时候变大：</strong>模型看到正确答案时越「惊讶」，loss 越大。完全猜中（$p=1$）时 loss 是 0，
+但永远达不到——这也意味着 loss 永远不会变成 0，别拿「loss 到 0」当训练目标。</p>
+</div>
+
 <figure class="diagram">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 174" role="img" aria-label="一条拼接序列中前 8 个 token 属于 prompt，掩码为 0；后 12 个 token 属于回答，掩码为 1。">
   <g font-family="system-ui,Segoe UI,Microsoft YaHei,sans-serif">
@@ -725,6 +926,23 @@ $$
 \;-\;\nabla_\theta z_{t,\,y_t}
 \right)
 $$
+
+<div class="box read">
+<span class="label">这个公式怎么读</span>
+<p><strong>它在算什么：</strong>往哪个方向调参数，能让「正确答案」的概率变大。</p>
+<p><strong>括号里两项在打架：</strong></p>
+<ul>
+<li>第二项 $\nabla_\theta z_{t,y_t}$：把正确答案的分数<strong>推高</strong>；</li>
+<li>第一项 $\mathbb{E}_{v\sim\pi}[\nabla_\theta z_{t,v}]$：按模型当前的想法，
+把所有候选词的分数<strong>按概率加权平均地压低</strong>。</li>
+</ul>
+<p><strong>为什么必须有第一项：</strong>因为 softmax 之后所有概率加起来必须等于 1。推高一个，别的必然被压低。
+所以这个梯度天生是「对比」的——它不是单纯「抬高正确答案」，而是<strong>抬高它、同时压低其余的</strong>。
+像跷跷板：不能只抬一头而不让另一头下去。</p>
+<p><strong>一个顺带的结论：</strong>当模型已经很确定正确答案（$p\approx1$）时，括号里两项几乎相等，梯度趋近 0——
+<strong>已经学会的样本不再产生梯度</strong>。所以训练后期真正在起作用的，是那些「还不会」的样本，
+以及……标注写错的样本。这也是为什么数据清洗比多训几轮更有用。</p>
+</div>
 
 <div class="box key">
 <span class="label">补充 · 读这个梯度：它已经在做「对比」了，只是对比对象不对</span>
@@ -983,6 +1201,11 @@ SFT 没有「理解意图」的机制，它只有「提高这些 token 的概率
 <hr>
 
 <h2 id="p3">第三部分 · 奖励模型</h2>
+
+<div class="box key">
+<span class="label">这一部分只回答一个问题</span>
+<p><strong>怎么把「哪个更好」变成一个能算的数？</strong><br>这一部分的关键只有一句：让模型给两条回答各打一个分，用分差算出「谁更好的概率」，再拿人类的真实选择去纠正它。</p>
+</div>
 
 <p>SFT 之后，模型会「像一个助手那样说话」了。但我们仍然没法回答一个最基本的问题：
 <strong>两个都像助手的回答，哪个更好？</strong></p>
@@ -1756,6 +1979,11 @@ $$
 
 <h2 id="p4">第四部分 · 第三种方法：通用 RL 算法</h2>
 
+<div class="box key">
+<span class="label">这一部分只回答一个问题</span>
+<p><strong>有了分数，怎么让模型自己变得更好？</strong><br>这一部分先讲清「RL 和前面三步到底差在哪」（4.1），再一步步推公式。看不懂 4.6 的推导，可以先只看 4.1 和 4.7 的三步算法。</p>
+</div>
+
 <p>板书上这一部分叫 <em>General RL Algo</em>。前两级都是「拟合一个数据集」，这一级换成「优化一个期望」——
 而且数据<strong>由模型自己在训练过程中生成</strong>。这个区别比损失函数长什么样重要得多。</p>
 
@@ -2109,6 +2337,25 @@ $$
 $$
 \theta \;\leftarrow\; \theta + \eta\; r(x,y)\;\nabla_\theta \log P_\theta(y\mid x)
 $$
+
+<div class="box read">
+<span class="label">这个公式怎么读</span>
+<p><strong>它在算什么：</strong>这条回答得了多少分，就按这个分数去调整它里面每个词的概率。</p>
+<p><strong>每个符号：</strong>$r(x,y)$ 是裁判给这条回答的分数；
+$\nabla_\theta\log P_\theta(y\mid x)$ 是一个<strong>方向</strong>——沿着它走，这条回答会更容易被生成；
+$\eta$ 是步长。两者相乘 = <strong>按分数缩放这个方向</strong>。</p>
+<p><strong>四种情况，一眼看懂：</strong></p>
+<ul>
+<li>分数高 → 沿这个方向走一大步：这条回答以后更常见；</li>
+<li>分数低（但为正）→ 走一小步：稍微更常见一点；</li>
+<li>分数是 0 → 一步都不走：这条回答白写了；</li>
+<li>分数是负的 → 反方向走：这条回答以后更少见。</li>
+</ul>
+<p><strong>和 SFT 的唯一区别：</strong>SFT 的权重恒为 $-1$、样本是人写的；这里权重是分数、样本是模型自己写的。
+<strong>形式几乎一模一样，差别全在「权重从哪来」。</strong></p>
+<p><strong>一句话总结这个公式的性格：</strong>它非常「粗暴」——它不知道这条回答里哪个词立了功、哪个词拖了后腿，
+只知道整条得了多少分，然后<strong>把整条所有词一起按这个分数推或压</strong>。这就是为什么 RL 要喂大量样本才学得动。</p>
+</div>
 
 <h4>实践中的三条修正</h4>
 
