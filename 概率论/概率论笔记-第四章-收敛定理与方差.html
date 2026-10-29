@@ -938,49 +938,71 @@ $n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
 <p>关键词是「<strong>对一切 $n$</strong>」和「<strong>同一个 $\eta$</strong>」：盒子必须一次做好、管住整列。若每个 $\xi_n$ 各配一个盒子（$|\xi_n|\le\eta_n$），盒子自己就在长大，等于没关——尖峰反例就是这样溜走的。</p>
 </div>
 
-<h4>证明：对盒子的上下两条边各用一次 Fatou</h4>
+<h4>证明：把 $\xi_n$ 平移到非负，各用一次 Fatou</h4>
 
-<p>先把目标说清楚。$\xi_n\to\xi$ 逐点已知，所以只要证</p>
+<div class="box key">
+<p class="label">卡住的话先看这里：liminf / limsup 到底是什么</p>
+<p>数列不一定收敛，但「最终的天花板」和「最终的底板」总是存在的：</p>
 \[
-\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n ,
+\varlimsup_n a_n=\lim_{n\to\infty}\Big(\sup_{k\ge n}a_k\Big),\qquad
+\varliminf_n a_n=\lim_{n\to\infty}\Big(\inf_{k\ge n}a_k\Big).
 \]
-<p>两头一夹，$\lim_n\mathbb E\xi_n$ 就存在且等于 $\mathbb E\xi$。</p>
+<p>说人话：<strong>从第 $n$ 项往后看，取这一段的最大（最小）值；$n$ 越大视野越窄，这个值最后会稳定下来。</strong></p>
+<p>例：$a_n=2,0,2,0,\dots$ 不收敛。但从任何一项往后看，最大值恒为 $2$、最小值恒为 $0$，所以</p>
+\[
+\varlimsup_n a_n=2,\qquad \varliminf_n a_n=0 .
+\]
+<p>下面只用到三条事实：</p>
+<p>① 若 $\lim a_n$ 存在，则 $\varliminf a_n=\lim a_n=\varlimsup a_n$（三者合一）；<br>
+② 恒有 $\varliminf a_n\le\varlimsup a_n$；<br>
+③ $\varliminf(-a_n)=-\varlimsup a_n$（把数列上下翻转，最大的变成最小的）。</p>
+</div>
 
-<p><strong>全证明只有一个观察：</strong>由 $|\xi_n|\le\eta$ 得</p>
+<p><strong>先说清楚：为什么要凭空加一个 $\eta$。</strong>因为 Fatou 只吃<strong>非负</strong>序列，而 $\xi_n$ 有正有负，直接套不上。$|\xi_n|\le\eta$ 的作用就是把 $\xi_n$ 抬起来变成非负：</p>
 \[
 \eta-\xi_n\ge0,\qquad \eta+\xi_n\ge0 .
 \]
-<p>两个都是<strong>非负</strong>随机变量，正好各套一次 Fatou 引理（定理 4.2.2(1)：$\mathbb E\liminf\le\liminf\mathbb E$）。<strong>整条证明就是这一句话用两次。</strong></p>
+<p>这就是全部技巧——<strong>先平移到非负，用完 Fatou 再平移回来</strong>。加 $\eta$ 不改变「收不收敛」，只改变数值。平移的方向有两个，所以下面要算两支：抬上去一次（管上界），压下来一次（管下界）。</p>
 
-<p><strong>第一支：用上边界，压住 $\varlimsup$。</strong>对非负列 $\eta-\xi_n$ 用 Fatou：</p>
+<p><strong>第一支：用 $\eta-\xi_n$，证明 $\varlimsup_n\mathbb E\xi_n\le\mathbb E\xi$。</strong></p>
+
+<p>令 $a_n:=\mathbb E(\eta-\xi_n)$。注意 $a_n$ 是一个<strong>数列</strong>——每个 $n$ 对应一个实数，而且 $a_n\ge0$。对非负随机变量序列 $\eta-\xi_n$ 用 Fatou：</p>
 \[
-\mathbb E\big[\liminf_n(\eta-\xi_n)\big]\ \le\ \liminf_n\mathbb E(\eta-\xi_n).
+\underbrace{\mathbb E\big[\liminf_n(\eta-\xi_n)\big]}_{\text{左边}}\ \le\ \underbrace{\liminf_n\,\mathbb E(\eta-\xi_n)}_{\text{右边}} .
 \]
-<p>左边：$\liminf_n(\eta-\xi_n)=\eta-\limsup_n\xi_n=\eta-\xi$（因为 $\xi_n\to\xi$），故左边 $=\mathbb E\eta-\mathbb E\xi$。<br>
-右边：$\liminf_n\big(\mathbb E\eta-\mathbb E\xi_n\big)=\mathbb E\eta-\limsup_n\mathbb E\xi_n$（数列事实 $\liminf(-a_n)=-\limsup a_n$）。</p>
-<p>于是</p>
+<p>两边分别算，都不难：</p>
+<p>· <strong>左边</strong>：先算里面的逐点极限。$\liminf_n(\eta-\xi_n)=\eta-\limsup_n\xi_n=\eta-\xi$，最后一步用了 $\xi_n\to\xi$（事实 ①：极限存在时 $\limsup$ 就是 $\lim$）。再取期望：$\mathbb E\eta-\mathbb E\xi$。<br>
+· <strong>右边</strong>：$a_n=\mathbb E\eta-\mathbb E\xi_n$ 是「常数减数列」，由事实 ③ 得 $\liminf_n(\mathbb E\eta-\mathbb E\xi_n)=\mathbb E\eta-\limsup_n\mathbb E\xi_n$。</p>
+<p>把两边代回 Fatou 的不等式：</p>
 \[
-\mathbb E\eta-\mathbb E\xi\ \le\ \mathbb E\eta-\varlimsup_n\mathbb E\xi_n
-\quad\Longrightarrow\quad
+\mathbb E\eta-\mathbb E\xi\ \le\ \mathbb E\eta-\varlimsup_n\mathbb E\xi_n .
+\]
+<p>两边同时减去 $\mathbb E\eta$，再两边乘 $-1$（不等号翻向）：</p>
+\[
+-\mathbb E\xi\ \le\ -\varlimsup_n\mathbb E\xi_n
+\qquad\Longleftrightarrow\qquad
 \varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi .
 \]
-<p>最后一步能「消去 $\mathbb E\eta$」，靠的正是 $\mathbb E\eta\lt\infty$——<strong>这是「$\eta$ 必须可积」在证明里第一次真正出力</strong>。</p>
+<p><strong>「两边同时减去 $\mathbb E\eta$」就是 $\mathbb E\eta\lt\infty$ 唯一真正出力的地方</strong>：$\mathbb E\eta=+\infty$ 时是 $\infty-\infty$，减不了，整条推导当场作废。</p>
 
-<p><strong>第二支：用下边界，压住 $\varliminf$。</strong>对非负列 $\eta+\xi_n$ 用 Fatou：</p>
+<p><strong>第二支：用 $\eta+\xi_n$，证明 $\mathbb E\xi\le\varliminf_n\mathbb E\xi_n$。</strong></p>
+
+<p>流程一模一样，只是把减号换成加号，Fatou 给的是</p>
 \[
-\mathbb E\big[\liminf_n(\eta+\xi_n)\big]\ \le\ \liminf_n\mathbb E(\eta+\xi_n)
-\quad\Longrightarrow\quad
-\mathbb E\eta+\mathbb E\xi\ \le\ \mathbb E\eta+\varliminf_n\mathbb E\xi_n ,
+\mathbb E\big[\liminf_n(\eta+\xi_n)\big]\ \le\ \liminf_n\mathbb E(\eta+\xi_n),
 \]
-<p>消去 $\mathbb E\eta$，得 $\mathbb E\xi\le\varliminf_n\mathbb E\xi_n$。</p>
-
-<p><strong>夹住。</strong></p>
+<p>即</p>
 \[
-\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n
-\quad\Longrightarrow\quad
-\lim_n\mathbb E\xi_n=\mathbb E\xi .\qquad\blacksquare
+\mathbb E\eta+\mathbb E\xi\ \le\ \mathbb E\eta+\varliminf_n\mathbb E\xi_n
+\qquad\Longrightarrow\qquad
+\mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n .
 \]
 
+<p><strong>合起来。</strong>两支拼上：</p>
+\[
+\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n .
+\]
+<p>而由事实 ② 恒有 $\varliminf_n\mathbb E\xi_n\le\varlimsup_n\mathbb E\xi_n$。三个数被夹成一条链，只能<strong>全部相等</strong>，于是 $\lim_n\mathbb E\xi_n$ 存在且 $=\mathbb E\xi$。$\blacksquare$</p>
 <p>板书 15 是把这两支并排写的。左边是原始提纲，右边是补全后的读法：</p>
 
 <pre>对 η − ξₙ ≥ 0 用 Fatou    Eη − Eξ ≤ Eη − limsup Eξₙ    ⇒   limsup Eξₙ ≤ Eξ
