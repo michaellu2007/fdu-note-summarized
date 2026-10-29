@@ -319,13 +319,55 @@ E(ξη) = lim E(ξₙηₙ) = lim E(ξₙ)·E(ηₙ) = Eξ·Eη</pre>
 
 <p><strong>③ 为什么 $\mathbb E(\xi_n\eta_n)=\mathbb E\xi_n\,\mathbb E\eta_n$。</strong> 因为 $\xi_n,\eta_n$ 都是<strong>简单随机变量</strong>，这一步在上一节已经证过（讲义 p43 / 教材 p70 的引理 4.1.3）。简单情形下 $\xi_n\eta_n=\sum_{i,j}x_iy_j1_{A_i\cap B_j}$，独立性给出 $\mathbb P(A_i\cap B_j)=\mathbb P(A_i)\mathbb P(B_j)$，代进去就分开了。</p>
 
-<p>然后两次用单调收敛定理把 $\lim$ 搬进 $\mathbb E$：</p>
+<p>然后连用单调收敛定理，让 $\lim$ 在 $\mathbb E$ 内外来回跨（第一个等号和最后一个等号各是一次 MCT，最后一个其实对 $\xi_n$、$\eta_n$ 各用了一次）：</p>
 
 \[
 \mathbb E(\xi\eta)\overset{\text{MCT}}{=}\lim_{n}\mathbb E(\xi_n\eta_n)=\lim_n\big(\mathbb E\xi_n\,\mathbb E\eta_n\big)=\lim_n\mathbb E\xi_n\cdot\lim_n\mathbb E\eta_n\overset{\text{MCT}}{=}\mathbb E\xi\,\mathbb E\eta .
 \]
 
 <p>板书最后一行右边还写了「$\mathbb E(\xi_n)\to\mathbb E\xi$、$\mathbb E(\eta_n)\to\mathbb E\eta$」，就是在交代最后一个等号。</p>
+
+<div class="box warn">
+<p class="label">为什么 $\lim$ 写在 $\mathbb E$ 外面</p>
+<p>这行式子最容易被读成「$\lim$ 写反了」：既然 $\xi_n\to\xi$，为什么不写成 $\mathbb E(\lim_n\xi_n\eta_n)$，非要把 $\lim$ 拉到 $\mathbb E$ 外面？答案是：<strong>这两个 $\lim$ 根本不是同一个东西</strong>。</p>
+
+<p><strong>(1) 它们作用的对象不同。</strong> $\mathbb E(\xi_n\eta_n)$ 对每个固定的 $n$ 是一个<em>实数</em>——$\xi_n,\eta_n$ 是简单随机变量，它的期望前面已经能逐项算出来。$n$ 动起来就得到一列实数 $a_n=\mathbb E(\xi_n\eta_n)$，而 $\lim_n a_n$ 是对<em>数列</em>取极限，理所当然写在 $\mathbb E$ 外面。反过来，$\mathbb E(\lim_n\xi_n\eta_n)$ 里的那个 $\lim$ 作用在<em>随机变量序列</em>上，是逐点极限 $\omega\mapsto\lim_n\xi_n(\omega)\eta_n(\omega)$，$\mathbb E$ 再作用在这个极限随机变量上。前者是「先算期望，再取极限」，后者是「先取极限，再算期望」。</p>
+
+<p><strong>(2) MCT 说的正是「这两件事结果一样」。</strong> 定理 4.1.1(2)：$0\le X_n\uparrow X$ $\Rightarrow$ $\lim_n\mathbb E X_n=\mathbb E X$。同一个等式有两种读法：</p>
+\[
+\mathbb E\Big(\lim_n X_n\Big)=\lim_n\mathbb E X_n
+\qquad\Longleftrightarrow\qquad
+\mathbb E X=\lim_n\mathbb E X_n ,
+\]
+<p>左边那种把 $\lim$ 留在 $\mathbb E$ 里，右边那种把 $\lim$ 放到外面，<strong>它们是同一句话</strong>。笔记里取后一种，因为要解的未知量是 $\mathbb E X$，而右边整条都是已知的。</p>
+
+<p><strong>(3) 板书那一步其实是两步，被压成了一步。</strong> 完整写出来是</p>
+\[
+\mathbb E(\xi\eta)=\mathbb E\Big(\lim_n\xi_n\eta_n\Big)=\lim_n\mathbb E(\xi_n\eta_n),
+\]
+<p>第一个等号只是 $\xi_n\eta_n\uparrow\xi\eta$ 的定义（$\lim$ 还在 $\mathbb E$ 里，<em>零信息量</em>：它只是把 $\xi\eta$ 换了个名字）；第二个等号才是 MCT（$\lim$ 跨出 $\mathbb E$，<em>全部信息量都在这里</em>）。所以「$\lim$ 在外面」不是笔误，而是把唯一有内容的那一步显式写了出来。</p>
+
+<p><strong>(4) 为什么非跨出去不可。</strong> 因为这段证明里「能算的」只有 $\mathbb E(\xi_n\eta_n)$：$\xi_n,\eta_n$ 简单、独立，它可以拆成 $\mathbb E\xi_n\cdot\mathbb E\eta_n$。而 $\mathbb E(\xi\eta)$ 本身没有任何可直接下手的表达式。把 $\lim$ 跨出来之后，右边变成一列<em>已知实数</em>的极限；留在里面，就只是一个恒等重述，一步也走不动。<strong>MCT 在这里的角色不是「化简」，而是「把不可算的量，换成一列可算的量的极限」。</strong></p>
+
+<p><strong>(5) 这一步不是白给的。</strong> 「先取极限再算期望 = 先算期望再取极限」一般<em>不成立</em>。反例：$\Omega=[0,1]$、$\mathbb P$ 为 Lebesgue 测度，$X_n=n\,1_{(0,1/n)}$。任取 $\omega\gt0$，$n$ 足够大时 $X_n(\omega)=0$，故 $X_n\to0$ 处处；但 $\mathbb E X_n=1$ 对一切 $n$ 成立，于是</p>
+\[
+\lim_n\mathbb E X_n=1\ \ne\ 0=\mathbb E\Big(\lim_n X_n\Big).
+\]
+<p>差的正是「逃到无穷远的那一块质量」。这里 $X_n$ 不单调（$X_2$ 在 $(1/2,1)$ 上从 $1$ 掉回 $0$），MCT 用不上。<strong>本段能用 MCT，靠的就是 ① 里那句 $\xi_n\eta_n\uparrow\xi\eta$：非负 + 递增，两个条件缺一不可。</strong>换句话说，$\lim$ 能跨出 $\mathbb E$，不是因为它长得像可以跨，而是因为 ① 已经把条件挣到了。</p>
+
+<p>整条链上 $\lim$ 进出 $\mathbb E$ 一共三次，方向来回，每次依据都不同：</p>
+<table>
+<thead><tr><th>等号</th><th>依据</th><th>$\lim$ 的动向</th></tr></thead>
+<tbody>
+<tr><td>$\mathbb E(\xi\eta)=\lim_n\mathbb E(\xi_n\eta_n)$</td><td>MCT（$\xi_n\eta_n\uparrow\xi\eta$，非负）</td><td>从 $\mathbb E$ 里跨到外面</td></tr>
+<tr><td>$=\lim_n\big(\mathbb E\xi_n\,\mathbb E\eta_n\big)$</td><td>简单情形的乘积分解 ③</td><td>不动，只换被取极限的对象</td></tr>
+<tr><td>$=\lim_n\mathbb E\xi_n\cdot\lim_n\mathbb E\eta_n$</td><td>收敛数列的乘积法则（与期望无关）</td><td>一个 $\lim$ 拆成两个</td></tr>
+<tr><td>$=\mathbb E\xi\,\mathbb E\eta$</td><td>对 $\xi_n$、$\eta_n$ 各再用一次 MCT</td><td>从外面跨回 $\mathbb E$ 里</td></tr>
+</tbody>
+</table>
+<p>最后一步再补一句：$\lim_n\mathbb E\xi_n=\mathbb E\xi$ 之所以成立，是因为 $\xi_n\uparrow\xi$ 且非负，可以<em>单独</em>对 $\xi_n$ 用一次 MCT——不需要回头管 $\eta_n$。<strong>MCT 是按序列逐条用的，不是按整条等式用的。</strong></p>
+</div>
+
 
 <h4>第二段：一般情形</h4>
 
