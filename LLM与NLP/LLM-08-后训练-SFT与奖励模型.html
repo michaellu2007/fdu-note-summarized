@@ -3239,6 +3239,108 @@ $$
 <p>形式上它和 §3.3 的 RM 损失<strong>一模一样</strong>，只是把 $r_\phi$ 换成了「策略相对参考策略的 log 比值」。
 所以 DPO 可以读成：<strong>让策略自己当奖励模型</strong>。</p>
 
+<h4>它到底怎么工作：一轮训练走一遍 <span class="tag n">补充</span></h4>
+
+<p>先记住一句话：<strong>DPO 不训奖励模型，也不做 RL 采样，它只是让「好回答相对参考模型的概率」比「差回答相对参考模型的概率」更高。</strong></p>
+
+<p><strong>第一步：一条训练样本长什么样</strong></p>
+
+<p>和奖励模型完全一样，是一个三元组 $(x,\,y_w,\,y_l)$——<strong>只有两条回答</strong>，不需要采样 8 条，也不需要人工打分。</p>
+
+<p><strong>第二步：四次前向</strong></p>
+
+<p>这是最容易忽略的工程细节：公式里的 $\pi(y\mid x)$ 是<strong>整条序列的概率</strong>，不是某个位置的：</p>
+
+$$
+\log\pi(y\mid x) \;=\; \sum_{t=1}^{|y|}\log\pi\big(y_t\mid x, y_{&lt;t}\big)
+$$
+
+<p>所以要跑四次前向：</p>
+
+<table>
+<thead><tr><th>要算的量</th><th>谁算的</th><th>在做什么</th></tr></thead>
+<tbody>
+<tr><td>$\log\pi_\theta(y_w\mid x)$</td><td>当前策略</td><td>把 $y_w$ 喂进去，累加每个 token 的 log 概率</td></tr>
+<tr><td>$\log\pi_\theta(y_l\mid x)$</td><td>当前策略</td><td>同上，换成 $y_l$</td></tr>
+<tr><td>$\log\pi_{\text{ref}}(y_w\mid x)$</td><td>冻结的参考模型</td><td>同上（<strong>不更新</strong>）</td></tr>
+<tr><td>$\log\pi_{\text{ref}}(y_l\mid x)$</td><td>冻结的参考模型</td><td>同上（<strong>不更新</strong>）</td></tr>
+</tbody>
+</table>
+
+<p><strong>第三步：算一个差，套 sigmoid</strong></p>
+
+<p>把四个数拼成两个「log 比值」，再相减乘 $\beta$：</p>
+
+$$
+\Delta \;=\; \beta\underbrace{\left[\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)} \;-\; \log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}\right]}_{\text{好回答的「涨幅」减差回答的「涨幅」}}
+$$
+
+<p>然后和 §3.3 完全一样的流程：$p=\sigma(\Delta)$ 是「$y_w$ 更好的概率」，
+人类已经说了 $y_w$ 更好（标签 1），所以 $\mathcal{L}=-\log p$。</p>
+
+<p><strong>第四步：代一组数字</strong></p>
+
+<p>取 $\beta=1$（方便手算；实际常用 $0.1$）：</p>
+
+<table>
+<thead><tr><th></th><th class="num">$\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}$</th><th class="num">$\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}$</th><th class="num">$\Delta$</th><th class="num">$p=\sigma(\Delta)$</th><th class="num">loss</th></tr></thead>
+<tbody>
+<tr><td>训练开始时</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0.500</td><td class="num">0.693</td></tr>
+<tr><td>训练一会儿</td><td class="num">+0.3</td><td class="num">−0.7</td><td class="num">1.0</td><td class="num">0.731</td><td class="num">0.313</td></tr>
+</tbody>
+</table>
+
+<p>训练开始时 $\pi_\theta=\pi_{\text{ref}}$，两个比值都是 1，$\log$ 都是 0，所以 $\Delta=0$、$p=0.5$、
+loss $=0.693$——<strong>模型完全分不出好坏，这就是 0.693 这个数的来源</strong>（它等于 $\ln 2$）。</p>
+
+<p>训练后，模型把 $y_w$ 的相对概率抬高了一点（$+0.3$），把 $y_l$ 的相对概率压低了不少（$-0.7$），
+于是 $\Delta=1$、$p=0.731$、loss 降到 $0.313$。</p>
+
+<div class="box warn">
+<span class="label">易错 · 它比的是「相对」，不是「绝对」</span>
+<p>注意 $y_w$ 的 log 比值只是 $+0.3$——<strong>DPO 并不要求提高 $y_w$ 的绝对概率</strong>。
+它只要求：$y_w$ 相对 $\pi_{\text{ref}}$ 的比值，比 $y_l$ 相对 $\pi_{\text{ref}}$ 的比值更高。</p>
+<p>极端情况下，$y_w$ 和 $y_l$ 的绝对概率可以<strong>同时下降</strong>，只要 $y_l$ 降得更多，loss 照样下降。
+这就是为什么 DPO 训久了模型会「变得不会说话」——它把大量回答的概率都压下去了，只保住少数几个。</p>
+</div>
+
+<p><strong>第五步：反向传播，只更新 $\theta$</strong></p>
+
+<p>$\pi_{\text{ref}}$ 全程冻结，梯度只流进 $\pi_\theta$。所以每一轮的实际动作是：</p>
+
+<ul>
+<li>$y_w$ 里每个 token 的概率，按「相对参考模型的涨幅」被<strong>往上推</strong>；</li>
+<li>$y_l$ 里每个 token 的概率，按同样的逻辑被<strong>往下压</strong>；</li>
+<li>推多少、压多少，由 $\Delta$ 离 0 有多远决定——<strong>已经分对了的样本，梯度会自动变小</strong>（和 §3.3 一样）。</li>
+</ul>
+
+<p><strong>为什么这叫「隐式奖励模型」</strong></p>
+
+<p>回到 §4.8 的反解式：$r(x,y)=\beta\log\frac{\pi^\star}{\pi_{\text{ref}}}+\beta\log Z(x)$。
+把 $\pi^\star$ 换成正在训的 $\pi_\theta$，那么</p>
+
+$$
+\underbrace{\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}}_{\text{隐式奖励}}
+$$
+
+<strong>就是模型自己心里的那个奖励</strong>。所以 DPO 在训练策略的同时，顺手把奖励模型也「训」出来了——
+只是它没有被单独存成一个模型，而是藏在 $\pi_\theta/\pi_{\text{ref}}$ 这个比值里。</p>
+
+<p>这也解释了为什么 DPO 不需要 PPO：<strong>既然最优策略和奖励是一一对应的，那直接对策略做梯度就行了</strong>，
+不用先学 $r$、再用 $r$ 去搜。</p>
+
+<div class="box gold">
+<span class="label">易错 · DPO 也有它自己的坑</span>
+<p>PPO 里有一个显式的 KL 项 $\beta\,\mathrm{KL}(\pi_\theta\|\pi_{\text{ref}})$ 把模型拴住；
+DPO 里 $\beta$ <strong>只是隐式地</strong>起这个作用，没有显式约束。所以：</p>
+<ul>
+<li>训太久 → log 比值越拉越大 → 模型退化（只会说那几条"标准答案"）；</li>
+<li>数据里有噪声（标注错了）→ 模型会认真地去拟合那个错误，而且没有 RM 帮你兜底；</li>
+<li>它是<strong>纯离线</strong>的，不会自己去采样探索，所以超不过数据集里最好的那条。</li>
+</ul>
+<p>工程上的对策：早停、$\beta$ 别太小、数据质量比数量重要得多。</p>
+</div>
+
 <table>
 <thead><tr><th></th><th>RLHF（PPO）</th><th>DPO</th></tr></thead>
 <tbody>
