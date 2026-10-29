@@ -2523,6 +2523,71 @@ $$
 <p>板书注：<em>expected remaining return from the current step</em>。它由另一个网络 $\psi$ 估计——
 在 PPO 里这就是那个和策略同规模的 value head。它回答的问题是：<strong>站在这个前缀上，平均还能拿多少分？</strong></p>
 
+<div class="box read">
+<span class="label">$V_\psi$ 到底是个什么东西、怎么训</span>
+
+<p><strong>形状：</strong>一个网络，输入当前前缀 $s_t$，输出<strong>一个数</strong>。通常是「共享主干 + 一个 $d\to1$ 的线性头」
+（也有实现用完全独立的模型）。</p>
+
+<p><strong>它和策略头只差在输出维度：</strong></p>
+
+<table>
+<thead><tr><th>头</th><th>输出维度</th><th>输出什么</th><th>训练信号</th></tr></thead>
+<tbody>
+<tr><td>策略头（$\theta$）</td><td>$|V|$ 维（约 10 万）</td><td>下一个词的概率</td><td>交叉熵（SFT）或策略梯度（RL）</td></tr>
+<tr><td>价值头（$\psi$）</td><td><strong>1 维</strong></td><td>这条回答最终能得几分</td><td><strong>均方误差（回归）</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>它一次输出很多个数：</strong>因为对每个位置都要预测。一条 500 token 的回答，
+$V$ 会给 500 个预测值——分别对应「写到第 1、2、…、500 个 token 时，估计最后能得几分」。</p>
+
+<p><strong>怎么训：回归。</strong>让预测逼近实际：</p>
+
+$$
+\mathcal{L}_V(\psi) = \frac{1}{T}\sum_{t=1}^{T}\big(V_\psi(s_t) - G_t\big)^2
+$$
+
+<p>LLM 里 $G_t$ 处处等于最终得分 $R$（奖励只在末尾给），所以这一行读作：
+<strong>让每个位置的预测都逼近那个最终分数。</strong></p>
+
+<p><strong>代一组数字</strong>（$R=0.9$）：</p>
+
+<table>
+<thead><tr><th>位置</th><th class="num">$V$ 的预测</th><th class="num">误差 $(V-R)^2$</th><th class="num">advantage $=R-V$</th></tr></thead>
+<tbody>
+<tr><td>第 10 个 token</td><td class="num">0.55</td><td class="num">0.1225</td><td class="num"><strong>+0.35</strong></td></tr>
+<tr><td>第 200 个 token</td><td class="num">0.88</td><td class="num">0.0004</td><td class="num"><strong>+0.02</strong></td></tr>
+</tbody>
+</table>
+
+<p>两件事同时发生：<strong>越往后预测越准（误差从 0.12 掉到 0.0004），advantage 也越小（从 0.35 掉到 0.02）。</strong>
+这正是图 7 那两条线在结尾合拢的原因。</p>
+
+<div class="box gold">
+<span class="label">易错 · value 预测的是「得分」，不是「loss」</span>
+<p>这两个方向相反，很容易混：</p>
+<ul>
+<li><strong>loss</strong> 是训练时要<strong>最小化</strong>的东西（比如 $-\log\pi$）；</li>
+<li><strong>value</strong> 预测的是 <strong>reward / return</strong>，越大越好，要<strong>最大化</strong>。</li>
+</ul>
+<p>所以「$V$ 预测后续的 loss」这个说法是反的。它预测的是「这条回答最后能拿多少分」。</p>
+</div>
+
+<p><strong>它和奖励模型长得一模一样，但完全不同</strong>（两者都是 $d\to1$ 的标量头，最容易混）：</p>
+
+<table>
+<thead><tr><th></th><th>奖励模型 $r_\phi$</th><th>价值网络 $V_\psi$</th></tr></thead>
+<tbody>
+<tr><td>看哪里</td><td>只取<strong>最后</strong>一个位置</td><td><strong>每个位置</strong>都看</td></tr>
+<tr><td>输入</td><td>完整回答 $(x,y)$</td><td>只有前缀 $(x, y_{&lt;t})$</td></tr>
+<tr><td>训练信号</td><td>人类的成对比较</td><td>实际拿到的回报（回归）</td></tr>
+<tr><td>RL 中</td><td><strong>冻结不动</strong></td><td><strong>一直更新</strong></td></tr>
+<tr><td>回答的问题</td><td>这条回答好不好？</td><td>写到这儿，最后大概能得几分？</td></tr>
+</tbody>
+</table>
+</div>
+
 <h4>Advantage：比平均好多少</h4>
 
 $$
