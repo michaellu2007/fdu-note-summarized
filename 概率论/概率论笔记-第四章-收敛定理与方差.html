@@ -952,10 +952,12 @@ $n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
 \[
 \varlimsup_n a_n=2,\qquad \varliminf_n a_n=0 .
 \]
-<p>下面只用到三条事实：</p>
+<p>下面只用到四条事实：</p>
 <p>① 若 $\lim a_n$ 存在，则 $\varliminf a_n=\lim a_n=\varlimsup a_n$（三者合一）；<br>
 ② 恒有 $\varliminf a_n\le\varlimsup a_n$；<br>
-③ $\varliminf(-a_n)=-\varlimsup a_n$（把数列上下翻转，最大的变成最小的）。</p>
+③ $\varliminf(-a_n)=-\varlimsup a_n$（把数列上下翻转，最大的变成最小的）；<br>
+④ 常数可以提出来：$\varliminf(c+a_n)=c+\varliminf a_n$，$\varlimsup(c+a_n)=c+\varlimsup a_n$（整条数列上下平移，谁最大谁最小都不变）。</p>
+<p>③ 和 ④ 合起来就是这一节唯一反复用的东西：<strong>「常数减数列」的 $\liminf$ = 常数减那个数列的 $\limsup$</strong>。</p>
 </div>
 
 <p><strong>先说清楚：为什么要凭空加一个 $\eta$。</strong>因为 Fatou 只吃<strong>非负</strong>序列，而 $\xi_n$ 有正有负，直接套不上。$|\xi_n|\le\eta$ 的作用就是把 $\xi_n$ 抬起来变成非负：</p>
@@ -973,6 +975,15 @@ $n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
 <p>两边分别算，都不难：</p>
 <p>· <strong>左边</strong>：先算里面的逐点极限。$\liminf_n(\eta-\xi_n)=\eta-\limsup_n\xi_n=\eta-\xi$，最后一步用了 $\xi_n\to\xi$（事实 ①：极限存在时 $\limsup$ 就是 $\lim$）。再取期望：$\mathbb E\eta-\mathbb E\xi$。<br>
 · <strong>右边</strong>：$a_n=\mathbb E\eta-\mathbb E\xi_n$ 是「常数减数列」，由事实 ③ 得 $\liminf_n(\mathbb E\eta-\mathbb E\xi_n)=\mathbb E\eta-\limsup_n\mathbb E\xi_n$。</p>
+
+<div class="box ok">
+<p class="label">这一步最容易卡：代个具体数字验一遍</p>
+<p>取 $c:=\mathbb E\eta=5$，并假装 $\mathbb E\xi_n$ 依次是 $2,0,2,0,\dots$（不收敛，但这是允许的）。</p>
+<p>那么 $c-\mathbb E\xi_n$ 依次是 $3,5,3,5,\dots$。从任何一项往后看，最小值恒为 $3$，所以 $\liminf(c-\mathbb E\xi_n)=3$。</p>
+<p>用公式算：$c-\varlimsup\mathbb E\xi_n=5-2=3$。<strong>对上了。</strong></p>
+<p>反过来如果写成 $c-\varliminf\mathbb E\xi_n=5-0=5$，就错了——<strong>减号会把「最大」翻成「最小」</strong>，所以左边取 $\liminf$ 时，右边对应的必须是 $\limsup$。</p>
+</div>
+
 <p>把两边代回 Fatou 的不等式：</p>
 \[
 \mathbb E\eta-\mathbb E\xi\ \le\ \mathbb E\eta-\varlimsup_n\mathbb E\xi_n .
