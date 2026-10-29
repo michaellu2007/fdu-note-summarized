@@ -910,7 +910,7 @@ $n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
 
 <text x="74" y="290" font-size="12.5" fill="var(--ink3)">对每个固定的 ω 都这样取一次 inf，就把「不单调」改造成了「单调」</text>
 </svg>
-<figcaption>图 2 · Fatou 的核心手法。$\hat\xi_n=\inf_{k\ge n}\xi_k$ 是「从第 $n$ 项往后看的最小值」，它一定单调不减、一定不超过 $\xi_n$，于是可以套 MCT。</figcaption>
+<figcaption>图 3 · Fatou 的核心手法。$\hat\xi_n=\inf_{k\ge n}\xi_k$ 是「从第 $n$ 项往后看的最小值」，它一定单调不减、一定不超过 $\xi_n$，于是可以套 MCT。</figcaption>
 </figure>
 
 <div class="box key">
@@ -923,52 +923,74 @@ $n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
 
 <div class="thm">
 <p class="nm">定理 4.1.2(2)（Lebesgue 控制收敛定理，DCT）· 教材版</p>
-<p>如果 $\lim_n\xi_n=\xi$，并且存在<strong>可积的非负随机变量 $\eta$</strong> 使得对任何 $n$ 都有 $|\xi_n|\le\eta$，那么</p>
+<p>设 $\xi_n\to\xi$（逐点），并且存在<strong>可积</strong>的非负随机变量 $\eta$，使得对<strong>一切</strong> $n$ 都有 $|\xi_n|\le\eta$。那么 $\xi$ 可积，且</p>
 \[
 \mathbb E\xi=\lim_{n\to\infty}\mathbb E\xi_n .
 \]
 </div>
 
-<p>讲义把它写在定理 4.2.2 的 (3) 里（用「$\eta\le\xi_n\le\eta$」的形式），意思一样。</p>
+<p>讲义把它写在定理 4.2.2 的 (3) 里（用 $-\eta\le\xi_n\le\eta$ 的夹逼形式），意思一样。</p>
 
-<h4>证明：双 Fatou 夹逼（板书 15 就是这一段）</h4>
+<div class="box key">
+<p class="label">一句话读懂：$\eta$ 是一把「不随 $n$ 变的尺子」</p>
+<p>MCT 管的是「只增不减」，可现实里的 $\xi_n$ 往往既不单调也不非负。DCT 换了个思路：<strong>不去管这一列怎么动，只要求它们全都待在一个固定的、面积有限的盒子里。</strong></p>
+<p>盒子就是 $\pm\eta$：上边 $\eta$、下边 $-\eta$，而 $\mathbb E\eta\lt\infty$（盒子面积有限）。整列被关在里面，逐点收敛就足以推出期望收敛——因为<strong>质量既窜不出去，也不会凭空多出来</strong>。</p>
+<p>关键词是「<strong>对一切 $n$</strong>」和「<strong>同一个 $\eta$</strong>」：盒子必须一次做好、管住整列。若每个 $\xi_n$ 各配一个盒子（$|\xi_n|\le\eta_n$），盒子自己就在长大，等于没关——尖峰反例就是这样溜走的。</p>
+</div>
 
-<p>板书的写法是把两个方向的 Fatou 并排放，中间画一个大括号写 $\xi=\lim\xi_n$：</p>
+<h4>证明：对盒子的上下两条边各用一次 Fatou</h4>
 
-<pre>由 ξ ≤ ξₙ, 由(1)     E(lim ξₙ) ≤ lim E(ξₙ)
-又 ξₙ ≤ η, 由(2)     E(lim ξₙ) ≥ lim E(ξₙ)   }  ξ = lim ξₙ
-lim E(ξₙ) = lim E(ξₙ) = lim E(ξₙ) = E(lim ξₙ) = E(ξ)</pre>
-
-<p>展开成标准写法。因为 $|\xi_n|\le\eta$，所以 $\eta-\xi_n\ge0$、$\eta+\xi_n\ge0$，两个都能套 Fatou：</p>
-
-<p><strong>第一个（控制上界）：</strong></p>
-
+<p>先把目标说清楚。$\xi_n\to\xi$ 逐点已知，所以只要证</p>
 \[
-\mathbb E\eta-\mathbb E\xi=\mathbb E\big[\liminf_n(\eta-\xi_n)\big]\le\liminf_n\big(\mathbb E\eta-\mathbb E\xi_n\big)=\mathbb E\eta-\varlimsup_n\mathbb E\xi_n ,
+\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n ,
 \]
+<p>两头一夹，$\lim_n\mathbb E\xi_n$ 就存在且等于 $\mathbb E\xi$。</p>
 
-<p>两边消去 $\mathbb E\eta$（有限，可以消）得 $\varlimsup_n\mathbb E\xi_n\le\mathbb E\xi$。</p>
-
-<p><strong>第二个（控制下界）：</strong></p>
-
+<p><strong>全证明只有一个观察：</strong>由 $|\xi_n|\le\eta$ 得</p>
 \[
-\mathbb E\eta+\mathbb E\xi=\mathbb E\big[\liminf_n(\eta+\xi_n)\big]\le\liminf_n\big(\mathbb E\eta+\mathbb E\xi_n\big)=\mathbb E\eta+\varliminf_n\mathbb E\xi_n ,
+\eta-\xi_n\ge0,\qquad \eta+\xi_n\ge0 .
 \]
+<p>两个都是<strong>非负</strong>随机变量，正好各套一次 Fatou 引理（定理 4.2.2(1)：$\mathbb E\liminf\le\liminf\mathbb E$）。<strong>整条证明就是这一句话用两次。</strong></p>
 
-<p>消去 $\mathbb E\eta$ 得 $\mathbb E\xi\le\varliminf_n\mathbb E\xi_n$。</p>
+<p><strong>第一支：用上边界，压住 $\varlimsup$。</strong>对非负列 $\eta-\xi_n$ 用 Fatou：</p>
+\[
+\mathbb E\big[\liminf_n(\eta-\xi_n)\big]\ \le\ \liminf_n\mathbb E(\eta-\xi_n).
+\]
+<p>左边：$\liminf_n(\eta-\xi_n)=\eta-\limsup_n\xi_n=\eta-\xi$（因为 $\xi_n\to\xi$），故左边 $=\mathbb E\eta-\mathbb E\xi$。<br>
+右边：$\liminf_n\big(\mathbb E\eta-\mathbb E\xi_n\big)=\mathbb E\eta-\limsup_n\mathbb E\xi_n$（数列事实 $\liminf(-a_n)=-\limsup a_n$）。</p>
+<p>于是</p>
+\[
+\mathbb E\eta-\mathbb E\xi\ \le\ \mathbb E\eta-\varlimsup_n\mathbb E\xi_n
+\quad\Longrightarrow\quad
+\varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi .
+\]
+<p>最后一步能「消去 $\mathbb E\eta$」，靠的正是 $\mathbb E\eta\lt\infty$——<strong>这是「$\eta$ 必须可积」在证明里第一次真正出力</strong>。</p>
 
-<p><strong>夹住：</strong></p>
+<p><strong>第二支：用下边界，压住 $\varliminf$。</strong>对非负列 $\eta+\xi_n$ 用 Fatou：</p>
+\[
+\mathbb E\big[\liminf_n(\eta+\xi_n)\big]\ \le\ \liminf_n\mathbb E(\eta+\xi_n)
+\quad\Longrightarrow\quad
+\mathbb E\eta+\mathbb E\xi\ \le\ \mathbb E\eta+\varliminf_n\mathbb E\xi_n ,
+\]
+<p>消去 $\mathbb E\eta$，得 $\mathbb E\xi\le\varliminf_n\mathbb E\xi_n$。</p>
 
+<p><strong>夹住。</strong></p>
 \[
 \varlimsup_n\mathbb E\xi_n\ \le\ \mathbb E\xi\ \le\ \varliminf_n\mathbb E\xi_n
 \quad\Longrightarrow\quad
 \lim_n\mathbb E\xi_n=\mathbb E\xi .\qquad\blacksquare
 \]
 
+<p>板书 15 是把这两支并排写的。左边是原始提纲，右边是补全后的读法：</p>
+
+<pre>对 η − ξₙ ≥ 0 用 Fatou    Eη − Eξ ≤ Eη − limsup Eξₙ    ⇒   limsup Eξₙ ≤ Eξ
+对 η + ξₙ ≥ 0 用 Fatou    Eη + Eξ ≤ Eη + liminf Eξₙ    ⇒   liminf Eξₙ ≥ Eξ
+                             └────── 两头一夹：lim Eξₙ = Eξ ──────┘</pre>
+
 <figure>
 <svg viewBox="0 0 680 260" width="100%" role="img" aria-labelledby="f3t f3d">
 <title id="f3t">控制收敛定理的夹逼结构</title>
-<desc id="f3d">两条上下边界 η 与 −η 之间夹着若干条 ξₙ 曲线，整列被同一个可积函数控制。</desc>
+<desc id="f3d">两条上下边界 η 与 −η 之间夹着两条 ξₙ 曲线，整列被同一个可积函数控制。</desc>
 <defs>
 <marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
 <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
@@ -993,15 +1015,14 @@ lim E(ξₙ) = lim E(ξₙ) = lim E(ξₙ) = E(lim ξₙ) = E(ξ)</pre>
 <text x="80" y="202" font-size="12" fill="var(--warn)">−η</text>
 <text x="74" y="246" font-size="12" fill="var(--ink3)">整列被同一个可积的 η 压住：|ξₙ| ≤ η，Eη &lt; ∞</text>
 </svg>
-<figcaption>图 3 · 控制收敛定理的几何含义。整列曲线都被关在 $\pm\eta$ 这条「可积的走廊」里，谁也跑不出去，所以极限和期望可以交换。</figcaption>
+<figcaption>图 4 · 控制收敛定理的几何含义。整列曲线都被关在 $\pm\eta$ 这条「可积的走廊」里，谁也跑不出去，所以极限和期望可以交换。</figcaption>
 </figure>
 
-<div class="box key">
-<p class="label">为什么「双向」控制是必须的</p>
-<p>上一节说 Fatou 只能给单向不等式。现在把这个单向的不等式用两次：</p>
-<p>· 用在上方（$\eta-\xi_n\ge0$）→ 得到 $\varlimsup\mathbb E\xi_n\le\mathbb E\xi$，即「期望不会突然变大」；</p>
-<p>· 用在下方（$\eta+\xi_n\ge0$）→ 得到 $\mathbb E\xi\le\varliminf\mathbb E\xi_n$，即「期望不会突然变小」。</p>
-<p>两条合起来才夹出等号。<strong>只有上界没有下界，就漏掉了「质量掉到 $-\infty$」的可能；只有下界没有上界，就漏掉了图 1 那种「尖峰跑掉」的可能。</strong>所以条件必须写成 $|\xi_n|\le\eta$，一个绝对值符号同时管住两头。</p>
+<div class="box warn">
+<p class="label">三个条件，各挡掉一种失效</p>
+<p><strong>① 为什么要绝对值（双向控制）。</strong>只压上边，漏掉「质量掉到 $-\infty$」；只压下边，漏掉图 1 那种「尖峰跑掉」。第一支证的是「期望不会突然变大」，第二支证的是「期望不会突然变小」，缺一支就只剩半个不等式。</p>
+<p><strong>② 为什么 $\eta$ 必须可积。</strong>两支证明的最后都要消去 $\mathbb E\eta$；$\mathbb E\eta=+\infty$ 时是 $\infty-\infty$，整个推导作废。尖峰反例里 $\sup_n\xi_n\approx1/\omega$ 恰好不可积，于是它正好溜了出去。</p>
+<p><strong>③ 为什么要求「对一切 $n$」共用一个 $\eta$。</strong>若允许盒子随 $n$ 变，取 $\eta_n=\xi_n$ 就退化成什么都不要求——盒子自己在长大，等于没关。</p>
 </div>
 
 <p>教材 p74 还补了两个有用的观察：</p>
@@ -1526,7 +1547,7 @@ g_\Delta(x)\ \uparrow\ \varphi(x)\,1_{(a,b]}(x).
 <text x="140" y="212" font-size="12.5" fill="var(--ink2)">偏离 Eξ 越远，</text>
 <text x="140" y="232" font-size="12.5" fill="var(--ink2)">平方误差越大</text>
 </svg>
-<figcaption>图 4 · 以 $\mathbb P(\xi=0)=\mathbb P(\xi=2)=\tfrac12$ 为例：$\mathbb E(\xi-C)^2=C^2-2C+2$，抛物线最低点在 $C=\mathbb E\xi=1$，最低值恰好是 $\mathrm{Var}(\xi)=1$。</figcaption>
+<figcaption>图 5 · 以 $\mathbb P(\xi=0)=\mathbb P(\xi=2)=\tfrac12$ 为例：$\mathbb E(\xi-C)^2=C^2-2C+2$，抛物线最低点在 $C=\mathbb E\xi=1$，最低值恰好是 $\mathrm{Var}(\xi)=1$。</figcaption>
 </figure>
 
 <div class="box ok">
