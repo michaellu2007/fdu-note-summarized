@@ -2825,7 +2825,17 @@ $$
 <h3 id="s49">4.9 PPO 与 GRPO：baseline 从哪来 <span class="tag n">补充</span></h3>
 
 <p>回到 §4.6 的梯度。它有一个致命的实践问题：方差太大。所有后续算法都在回答同一个问题——
-<strong>用什么当 $b$，使得 $\mathbb{E}[(r-b)\nabla\log\pi]=\mathbb{E}[r\nabla\log\pi]$ 但方差更小。</strong></p>
+<strong>用什么当 $b$，使得 $\mathbb{E}_{a\sim\pi}\big[(r-b)\nabla_\theta\log\pi\big]$ 与
+$\mathbb{E}_{a\sim\pi}\big[r\,\nabla_\theta\log\pi\big]$ <em>完全相等</em>（不引入偏差），同时方差更小。</strong></p>
+
+<div class="box gold">
+<span class="label">易错 · 这句话有两个条件，漏了就不成立</span>
+<p><strong>① 期望是对动作 $a\sim\pi$ 取的。</strong>只写 $\mathbb{E}[\cdot]$ 不标分布，读起来像「对什么都成立」，其实不是。</p>
+<p><strong>② $b$ 只能依赖状态 $s$，不能依赖动作 $a$。</strong>依赖动作的话，它就提不出求和号，
+下面那步 $\sum_a\nabla\pi=0$ 作废，梯度立刻有偏。</p>
+<p>另外「方差更小」<strong>也不是自动的</strong>——减 $b$ 只保证期望不变，方差升降取决于 $b$ 猜得准不准。
+$b$ 要逼近 $V(s)$ 才会降，随便挑个数反而会升（下面有具体数字）。</p>
+</div>
 
 <div class="box read">
 <span class="label">这个 $b$ 到底是什么</span>
@@ -2841,6 +2851,42 @@ $$
 
 <p>注意 $b(s)$ 被提到了求和号外面——<strong>所以 $b$ 只能依赖状态 $s$，不能依赖动作 $a$</strong>。
 依赖动作的话这一步不成立，梯度会有偏。</p>
+<p><strong>更直观的说法：$\nabla_\theta\log\pi$ 本身的期望就是 0。</strong></p>
+
+$$
+\mathbb{E}_{a\sim\pi}\big[\nabla_\theta\log\pi(a\mid s)\big]
+= \sum_a \pi(a\mid s)\,\nabla_\theta\log\pi(a\mid s)
+= \sum_a \nabla_\theta\pi(a\mid s)
+= \nabla_\theta\underbrace{\sum_a\pi(a\mid s)}_{=\,1}
+= 0
+$$
+
+<p>任何分布的对数概率的梯度，平均下来都是 0。所以给它加一个「不依赖动作」的常数倍，平均之后仍然是 0——
+<strong>这就是「白拿」的来源</strong>：减掉的东西，对梯度的平均贡献本来就是零。</p>
+
+<p><strong>代一组数字验算</strong>（一个状态、三个动作，$\pi=(0.5,\,0.3,\,0.2)$）：</p>
+
+<table>
+<thead><tr><th>动作</th><th class="num">$\pi$</th><th class="num">$r$</th><th class="num">$\nabla\log\pi$</th><th class="num">$r\cdot\nabla\log\pi$</th><th class="num">$(r-0.8)\cdot\nabla\log\pi$</th></tr></thead>
+<tbody>
+<tr><td>$a_1$</td><td class="num">0.5</td><td class="num">2</td><td class="num">−1.0</td><td class="num">−2.00</td><td class="num">−1.20</td></tr>
+<tr><td>$a_2$</td><td class="num">0.3</td><td class="num">0</td><td class="num">−0.5</td><td class="num">0.00</td><td class="num">0.40</td></tr>
+<tr><td>$a_3$</td><td class="num">0.2</td><td class="num">−1</td><td class="num">3.25</td><td class="num">−3.25</td><td class="num">−5.85</td></tr>
+<tr><td><strong>期望</strong></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"><strong>−1.65</strong></td><td class="num"><strong>−1.65</strong></td></tr>
+</tbody>
+</table>
+
+<p>两列期望完全一样（$0.5\times(-1.2)+0.3\times0.4+0.2\times(-5.85)=-1.65$），
+但<strong>每一项的波动幅度完全不同</strong>——这就是方差会变的来源。</p>
+
+<div class="box warn">
+<span class="label">易错 · 减错了反而更大</span>
+<p>还是这组数字：$b=0$ 时方差是 <strong>1.39</strong>；取 $b=0.8$ 之后变成 <strong>4.89</strong>，
+<strong>大了三倍多</strong>。因为 0.8 并不能很好地预测 $r$，减完的残差乘上那个 $3.25$，波动被放大了。</p>
+<p>所以「减 $b$ 降方差」是有前提的：<strong>$b$ 要逼近 $V(s)$</strong>。这也解释了为什么 PPO 宁可多训一个
+和策略同规模的 value 网络，而不是随便用个 batch 均值。</p>
+</div>
+
 <p><strong>为什么 value 是最优的 $b$：</strong>在所有「只依赖 $s$」的函数里，让方差最小的是 $\mathbb{E}[G\mid s]$，
 也就是 value 的定义。猜得越准，剩下的「意外」越少，梯度越不抖。所以 $b=V_\psi(s_t)$ 不是随手选的，是理论最优解。</p>
 <p><strong>但 $b$ 不必是 value。</strong>它只是一个参照系，便宜货也能用：</p>
