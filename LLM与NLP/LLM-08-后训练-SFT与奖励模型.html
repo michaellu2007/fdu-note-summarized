@@ -3097,6 +3097,43 @@ $$
 <p><strong>$\lambda=1$ 时有一个漂亮的恒等式：</strong>那些 $\delta$ 会一项项抵消，最后
 $\sum_l \delta_{t+l} = G_t - V(s_t)$。所以 GAE 不是新东西，它是「$G_t-V(s_t)$」和「一步 TD 误差」之间的<strong>连续插值</strong>。</p>
 
+<div class="box key">
+<span class="label">这张表到底在说什么</span>
+
+<p><strong>先解释「偏差」和「方差」</strong>——用打靶打比方：</p>
+
+<ul>
+<li><strong>偏差大</strong> = 瞄歪了。每次都打在左上角，而且每次都很一致——<strong>稳定地错</strong>。</li>
+<li><strong>方差大</strong> = 手抖。弹孔散得很开，平均下来可能正中靶心，但单看一次说不准。</li>
+</ul>
+
+<p>理想情况两者都小，但实际里它们往往<strong>此消彼长</strong>。这就是「偏差-方差权衡」。</p>
+
+<p><strong>放到 GAE 上：估计「这一步好不好」，有两个信息来源。</strong></p>
+
+<table>
+<thead><tr><th>来源</th><th>优点</th><th>缺点</th></tr></thead>
+<tbody>
+<tr><td>A. 用 $V$ 的预测</td><td>不用等，马上有数</td><td>$V$ 可能不准 → <strong>偏差</strong></td></tr>
+<tr><td>B. 用实际走完的结果</td><td>一定准（就是实际发生的）</td><td>只有一条采样，噪声大 → <strong>方差</strong></td></tr>
+</tbody>
+</table>
+
+<p>$\lambda$ 就是在这两者之间调配比。</p>
+
+<p><strong>$\lambda=0$：几乎全用 $V$。</strong>此时 $\hat A_t=\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$——
+这个式子里出现了<strong>两个</strong> $V$。如果 $V$ 系统性地低估了 0.1，这两个 0.1 都会留在结果里，
+<strong>不会被抵消</strong>。所以 $V$ 越不准，偏差越大。</p>
+
+<p><strong>$\lambda=1$：几乎全用实际结果。</strong>回到上面那个恒等式 $\sum_l\delta_{t+l}=G_t-V(s_t)$：
+中间那些 $V(s_{t+1}),V(s_{t+2}),\dots$ <strong>全部抵消掉了</strong>，只剩 $G_t$ 和一个 $V(s_t)$。
+所以 $V$ 准不准几乎不影响结果（偏差小）；但 $G_t$ 是<strong>一次采样</strong>的结果，
+换个随机种子就是另一个值（方差大）。</p>
+
+<p><strong>$\lambda=0.95$ 具体是多少：</strong>权重 $(\gamma\lambda)^l$ 每往后一步衰减 5%，
+$0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$。也就是说「<strong>大约算到后面二十步，再远的基本忽略</strong>」。</p>
+</div>
+
 <p class="small">LLM 里通常取 $\gamma=1$（不做折扣），因为一条回答最多几千 token，不需要给「晚出现的奖励」打折。</p>
 
 <p><strong>再说 clip。先问：为什么要 $\rho$？</strong></p>
