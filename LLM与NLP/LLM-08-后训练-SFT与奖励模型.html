@@ -3201,8 +3201,23 @@ $0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$。也就是说「<strong>大约�
 
 <h3 id="s410">4.10 DPO：把奖励模型隐式化 <span class="tag a">推导</span></h3>
 
-<p>§4.8 已经得到 $r(x,y) = \beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta\log Z(x)$。
-把它代回 BT 的 $\Delta$：</p>
+<p>§4.8 已经得到反解式：</p>
+
+$$
+r(x,y) \;=\; \beta\log\frac{\pi^\star(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \;+\; \beta\log Z(x)
+$$
+
+<p>BT 里的 $\Delta$ 是<strong>两条</strong>回答的分数之差，所以要把它<strong>代入两次</strong>——
+每一项都会带一个 $\beta\log Z(x)$：</p>
+
+$$
+\begin{aligned}
+r(x,y_w) &amp;=\; \beta\log\frac{\pi^\star(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)} \;+\; \beta\log Z(x)\\[4pt]
+r(x,y_l) &amp;=\; \beta\log\frac{\pi^\star(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)} \;+\; \beta\log Z(x)
+\end{aligned}
+$$
+
+<p>两式相减，<strong>两个 $\beta\log Z(x)$ 就撞在一起了</strong>：</p>
 
 $$
 \Delta = r(x,y_w) - r(x,y_l)
