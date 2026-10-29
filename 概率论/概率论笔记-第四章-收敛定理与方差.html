@@ -715,6 +715,78 @@ f(t)=t^2\,\mathbb E\xi^2-2t\,\mathbb E(\xi\eta)+\mathbb E\eta^2 .
 </figure>
 
 <div class="box key">
+<p class="label">卡住的大概是这句：「每个点都趋于 0，面积怎么还是 1？」</p>
+<p>因为这个反例的全部内容，就是让<strong>「横着看」和「竖着看」给出不同答案</strong>。把两种看法分开，就不矛盾了。</p>
+
+<p><strong>看法一：固定 $n$，横着扫一遍整条曲线。</strong>这正是期望（积分）在做的事。</p>
+<p>$n=1$：整段 $(0,1]$ 高 $1$，面积 $1\times1=1$；<br>
+$n=2$：$(0,\tfrac12]$ 高 $2$，面积 $2\times\tfrac12=1$；<br>
+$n=10$：$(0,\tfrac1{10}]$ 高 $10$，面积 $10\times\tfrac1{10}=1$；<br>
+$n=1000$：$(0,\tfrac1{1000}]$ 高 $1000$，面积还是 $1$。</p>
+<p>峰越来越高、越来越窄，<strong>高 × 宽恒等于 1</strong>——所以 $\mathbb E\xi_n\equiv1$。这里的 $1/n$ 就是区间长度：$\mathbb P\big((0,\tfrac1n]\big)=\tfrac1n$，乘上高度 $n$ 正好抵消。</p>
+
+<p><strong>看法二：固定 $\omega$，竖着看这一点的值随 $n$ 怎么变。</strong>这正是逐点极限在做的事。</p>
+<p>取 $\omega=0.3$：$n\le\frac1{0.3}\approx3.3$ 时 $0.3\in(0,\tfrac1n]$，取值依次是 $1,2,3$；$n\ge4$ 时 $0.3\notin(0,\tfrac1n]$，取值 $0$，此后再不改变。<br>
+取 $\omega=0.01$：要等到 $n\gt100$ 才掉到 $0$，前 $100$ 项是 $1,2,\dots,100$。<br>
+但不管 $\omega$ 多小，<strong>只要 $\omega\gt0$，总有 $n\gt1/\omega$ 让它落到峰外</strong>。所以每个点的取值序列都是「有限多个非零值 + 无穷多个 $0$」，极限当然是 $0$。</p>
+
+<p><strong>关键在于：峰是「缩向 $0$」，不是「停在原地变高」。</strong>每个点只被峰覆盖<strong>有限次</strong>，之后永久为 $0$；而每一时刻整条曲线的面积都是 $1$。这两件事不矛盾，因为<strong>面积不是「把每点的最终值加起来」，而是「每个时刻横着扫一遍」</strong>——顺序换了，答案就变了。</p>
+
+<p><strong>那 1 份质量去哪了？</strong>没消失。每一时刻它都完整地在某处（面积恒为 $1$），但它一路往 $\omega=0$ 挤，<strong>任何一个固定的 $\omega\gt0$ 都留不住它</strong>——它只是在 $\omega$ 那里「路过」有限次，然后永远离开。所以逐点看处处是 $0$；而期望是对 Lebesgue 测度积分，测度只认「点集的长度」，不认「某点被路过多少次」。</p>
+
+<p><strong>一句话：</strong>$\mathbb E$ 是横着积分，$\lim$ 是竖着取极限。方向不同，一般不能交换——这就是 §2.2 之后三个定理要处理的事。</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="f2t f2d">
+<title id="f2t">竖着看：固定 ω₀ = 0.3 时取值随 n 的变化</title>
+<desc id="f2d">固定 ω₀=0.3，ξₙ(ω₀) 在 n=1,2,3 时分别取 1,2,3，从 n=4 起恒为 0，故逐点极限为 0。</desc>
+<defs>
+<marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<text x="76" y="26" font-size="12" fill="var(--ink3)">固定 ω₀ = 0.3：ξₙ(ω₀) 在 n ≤ 3 时取 1, 2, 3，n ≥ 4 起恒为 0</text>
+
+<line x1="70" y1="200" x2="648" y2="200" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwB)"/>
+<line x1="70" y1="200" x2="70" y2="52" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwB)"/>
+<text x="654" y="206" font-size="12" fill="var(--ink3)">n</text>
+
+<line x1="110" y1="200" x2="110" y2="160" stroke="var(--accent)" stroke-width="2"/>
+<circle cx="110" cy="160" r="4" fill="var(--accent)"/>
+<text x="110" y="152" font-size="11.5" fill="var(--accent)" text-anchor="middle">1</text>
+
+<line x1="176" y1="200" x2="176" y2="120" stroke="var(--accent)" stroke-width="2"/>
+<circle cx="176" cy="120" r="4" fill="var(--accent)"/>
+<text x="176" y="112" font-size="11.5" fill="var(--accent)" text-anchor="middle">2</text>
+
+<line x1="242" y1="200" x2="242" y2="80" stroke="var(--accent)" stroke-width="2"/>
+<circle cx="242" cy="80" r="4" fill="var(--accent)"/>
+<text x="242" y="72" font-size="11.5" fill="var(--accent)" text-anchor="middle">3</text>
+
+<circle cx="308" cy="200" r="3.5" fill="var(--ink3)"/>
+<circle cx="374" cy="200" r="3.5" fill="var(--ink3)"/>
+<circle cx="440" cy="200" r="3.5" fill="var(--ink3)"/>
+<circle cx="506" cy="200" r="3.5" fill="var(--ink3)"/>
+<circle cx="572" cy="200" r="3.5" fill="var(--ink3)"/>
+
+<text x="110" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">1</text>
+<text x="176" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">2</text>
+<text x="242" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">3</text>
+<text x="308" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">4</text>
+<text x="374" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">5</text>
+<text x="440" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">6</text>
+<text x="506" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">7</text>
+<text x="572" y="218" font-size="11.5" fill="var(--ink3)" text-anchor="middle">8</text>
+
+<path d="M 290 180 L 600 180" stroke="var(--warn)" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="445" y="174" font-size="12" fill="var(--warn)" text-anchor="middle">从这里起全是 0，再也不会变</text>
+</svg>
+<figcaption>图 2 · 竖着看：固定 $\omega_0=0.3$，把 $\xi_n(\omega_0)$ 随 $n$ 的取值画出来。非零项只有有限多个，所以逐点极限是 $0$。$\omega_0$ 越小，非零项越多，但永远是有限个。</figcaption>
+</figure>
+
+<div class="box key">
 <p class="label">这个反例为什么能「逃过」控制收敛定理</p>
 <p>控制收敛定理要求存在一个<strong>可积</strong>的 $\eta$ 把整列压住：$|\xi_n|\le\eta$。这里压不住——因为</p>
 \[
