@@ -1155,7 +1155,70 @@ $$
 
 <h3 id="s33">3.3 损失函数与梯度 <span class="tag s">板书</span></h3>
 
-<p>有了概率模型，训练就是标准的极大似然：让「人类选的那一个赢」的概率尽量大。取负对数：</p>
+<h4>先把「胜率」算出来：3 分和 1 分，谁更好？ <span class="tag n">补充</span></h4>
+
+<p>在写损失之前，必须先把一件事说清楚，否则后面每一步都看不懂：<strong>公式里的「胜率」$p$ 不是统计出来的。</strong></p>
+
+<p>它不是「打 100 场赢了 73 场」那种频率，而是<strong>模型根据自己的打分、自己算出来的一个概率</strong>——
+「模型认为人类会选 A 的概率」，不是「A 真实赢了多少次」。整个计算只有三步。</p>
+
+<p><strong>第一步，打分。</strong>同一个问题有两条回答，奖励模型给它们各打一个绝对分数：</p>
+
+$$
+r(A) = 3, \qquad r(B) = 1
+$$
+
+<p><strong>第二步，算分差。</strong></p>
+
+$$
+\Delta = r(A) - r(B) = 3 - 1 = 2
+$$
+
+<p><strong>第三步，把分差塞进 sigmoid，变成胜率。</strong></p>
+
+$$
+p = \sigma(\Delta) = \frac{1}{1+e^{-\Delta}}
+= \frac{1}{1+e^{-2}} = \frac{1}{1+0.135} = 0.8808
+$$
+
+<p>结果：模型认为「3 分 vs 1 分」这 2 分的差距，<strong>意味着 A 比 B 好的概率是 88%</strong>。</p>
+
+<div class="box gold">
+<span class="label">易错 · 这个 p 是「模型的想法」，不是「事实」</span>
+<p>它不代表 A 在真实世界里赢了 88% 的场次。它只是模型把「2 分的差距」按一条<strong>固定规则</strong>翻译成概率的结果——
+规则就是 $\sigma$，模型改不了它，能改的只有分数本身。</p>
+<p>所以：<strong>模型的「信心」不是学出来的，是分数差决定的。</strong>分差 2 就一定是 88%，分差 0 就一定是 50%，与训练数据无关。
+真正的「胜率」只能在评测时用大量人工比较估出来（§3.7 的 pairwise accuracy）。</p>
+</div>
+
+<h4>这个函数的形状：几个极端值 <span class="tag n">补充</span></h4>
+
+<table>
+<thead><tr><th class="num">$\Delta$</th><th class="num">$p=\sigma(\Delta)$</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td class="num">−20</td><td class="num">0.000000002</td><td>几乎不可能</td></tr>
+<tr><td class="num">−2</td><td class="num">0.119</td><td>只有一成把握</td></tr>
+<tr><td class="num">0</td><td class="num">0.500</td><td><strong>完全分不出来</strong></td></tr>
+<tr><td class="num">1</td><td class="num">0.731</td><td>七成把握</td></tr>
+<tr><td class="num">2</td><td class="num">0.881</td><td>接近九成</td></tr>
+<tr><td class="num">4</td><td class="num">0.982</td><td>几乎确定</td></tr>
+<tr><td class="num">20</td><td class="num">0.999999998</td><td>几乎必然</td></tr>
+</tbody>
+</table>
+
+<p>两点值得记住：</p>
+
+<ul>
+<li><strong>打平就是五五开。</strong>$\Delta=0$ 时 $e^0=1$，$p=1/(1+1)=0.5$。分不出来，就只能猜。</li>
+<li><strong>分差再大也到不了 1。</strong>$\Delta=20$ 时 $e^{-20}\approx2.1\times10^{-9}$，分母几乎是 1，$p\approx0.999999998$。
+函数是<strong>饱和</strong>的：2 分对应 88%，4 分对应 98%，20 分还差那么一点点——<strong>分数差的价值递减</strong>。</li>
+</ul>
+
+<p>为什么非得是这个形状？因为它来自 §3.2 那条很自然的假设（Bradley–Terry）：
+<strong>实力越接近，胜率越接近 50%；差距越大，强者赢的概率越无限接近 100%。</strong>
+sigmoid 正好是满足这条的最小假设——中间近似线性，两端饱和。</p>
+
+<p>那么怎么用这个 $p$ 训练？<strong>极大似然</strong>：让「人类选的那一条赢」的概率尽量大。取负对数就得到下面这个损失。</p>
 
 $$
 \mathcal{L}_{\text{RM}}(\phi)
@@ -1193,6 +1256,56 @@ $$
 <p>交换顺序这个操作还有个副作用：它顺手消掉了<strong>位置偏置</strong>——如果模型偏爱「先出现的那个」，
 两种顺序各出现一半，偏置会互相抵消。这也是为什么很多实现坚持做随机交换，尽管从 BT 的形式上看它不必要。</p>
 </div>
+
+<h4>训练在比什么：两个「概率」别混 <span class="tag n">补充</span></h4>
+
+<p>到这里出现了两个概率，一定要分开，否则训练过程会看错：</p>
+
+<table>
+<thead><tr><th>记号</th><th>是什么</th><th>从哪来</th></tr></thead>
+<tbody>
+<tr><td>$z$</td><td>人类标注的<strong>真实答案</strong>（1 = A 更好，0 = B 更好）</td><td>标注数据</td></tr>
+<tr><td>$p=\sigma(\Delta)$</td><td>模型自己算的<strong>预测胜率</strong></td><td>模型的打分</td></tr>
+</tbody>
+</table>
+
+<p>训练就是让 $p$ 靠近 $z$。举个具体数字：人类标了「A 更好」（$z=1$），但模型算出来只有 $p=0.60$，</p>
+
+$$
+\mathcal{L} = -\log 0.60 = 0.511
+$$
+
+<p>想把这个 loss 降下来，模型只有一条路：<strong>把 $\Delta$ 拉大</strong>。它改不了 $\sigma$，只能改分数。</p>
+
+<table>
+<thead><tr><th></th><th class="num">$\Delta$</th><th class="num">$p$</th><th class="num">loss</th><th class="num">梯度权重 $\sigma(-\Delta)$</th></tr></thead>
+<tbody>
+<tr><td>训练前</td><td class="num">0.405</td><td class="num">0.60</td><td class="num">0.511</td><td class="num">0.40</td></tr>
+<tr><td>训练后</td><td class="num">2.000</td><td class="num">0.88</td><td class="num">0.127</td><td class="num">0.12</td></tr>
+</tbody>
+</table>
+
+<p>把 $\Delta$ 从 $0.405$ 拉到 $2$，$p$ 就从 $0.60$ 变成 $0.88$，loss 从 $0.511$ 降到 $0.127$——降了 4 倍。
+这就是「训练奖励模型」的全部内容：<strong>不是教它「3 分是高分」，而是把「好的比差的高出多少」这个差距撑开。</strong></p>
+
+<p>注意最后一列同时发生的事：梯度权重 $\sigma(-\Delta)$ 从 $0.40$ 掉到 $0.12$。<strong>越接近「分对」，学得越慢</strong>——
+这就是下一小节那个「梯度权重 = 判错的概率」。</p>
+
+<div class="box key">
+<span class="label">补充 · 这个换算的名字：log odds</span>
+<p>正着用是 $\Delta \mapsto p=\sigma(\Delta)$；反过来解是</p>
+
+$$
+\Delta = \log\frac{p}{1-p}
+$$
+
+<p>右边是<strong>几率（odds）取对数</strong>，所以板书在 $\Delta$ 旁边注 <em>log odds of preference</em>。
+$\Delta$ 有三个名字：margin（间隔）、logit（逻辑回归里的线性预测值）、log odds（对数几率）——指的是同一个量。</p>
+<p>这也给出一把刻度尺：$p=0.5$ 要 $\Delta=0$，$p=0.75$ 要 $\Delta=\ln3\approx1.10$，$p=0.9$ 要 $\ln9\approx2.20$，
+$p=0.99$ 要 $\ln99\approx4.60$。<strong>越往两头，$\Delta$ 要走的距离越长</strong>——所以「分差 2 和分差 4」差得比想象中多。</p>
+</div>
+
+
 
 <div class="box key">
 <span class="label">补充 · 分数差就是「偏好」的 log odds</span>
