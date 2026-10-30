@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概率论 · 第四章（三）四个分布的方差 · 四个不等式</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+h1{font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:21px;margin:56px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:34px 0 10px;color:var(--ink)}
+h4{font-size:15px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:10px 0}
+.lede{color:var(--ink2);font-size:15px;margin:0 0 8px}
+.meta{color:var(--ink3);font-size:13px;margin:0}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.2px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13.5px;background:var(--bg2)}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:6px;
+  background:var(--bg2);color:var(--ink3);border:1px solid var(--line);
+  vertical-align:2px;margin-left:8px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.tag.a{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.tag.b{background:var(--gold-bg);color:var(--gold);border-color:transparent}
+.tag.c{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.toc{border:1px solid var(--line);border-radius:12px;padding:16px 24px;background:var(--bg3);margin:26px 0 10px}
+.toc ol{margin:6px 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+figure{margin:24px 0}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px;text-align:center}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:12px 16px;overflow-x:auto;font-size:13px;line-height:1.6;
+  font-family:ui-monospace,Consolas,monospace;color:var(--ink2)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;
+  background:var(--bg2);padding:1px 5px;border-radius:4px}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12.8px;color:var(--ink3);line-height:1.75}
+.q{border-left:3px solid var(--line);padding-left:14px;color:var(--ink2);margin:16px 0}
+ol.work{padding-left:24px}
+ol.work>li{margin:20px 0}
+ol.work .stem{font-weight:500}
+.hint{margin:8px 0 0;padding:10px 14px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;font-size:14px;color:var(--ink2)}
+.hint b{color:var(--ink)}
+.thm{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0}
+.thm .nm{font-weight:650;color:var(--accent);font-size:14.5px;margin:0 0 4px}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
+</style>
+</head>
+<body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+<div class="wrap">
+
+<h1>概率论 · 第四章（三）四个分布的方差 · 四个不等式</h1>
+<p class="lede">上一节把方差<b>定义</b>出来了，也证明了它的几条性质；这一节做两件事：先用四个具体分布把「怎么算」练熟，再补上一套不等式工具，把方差从一个数变成关于概率的信息。</p>
+<p class="meta">整理日期 2026-10-30　|　手写笔记 3 页　|　对应讲义 §4.4 后半（方差计算）、§4.4 不等式部分，教材 §4.3–4.4</p>
+
+<div class="box warn">
+<p class="label">这份笔记的写法：讲明白，不是复习清单</p>
+<p>下面每个例题都按同一个顺序写：<b>这题卡在哪 → 该想到什么 → 怎么做 → 为什么能这么做 → 结果对不对</b>。</p>
+<p>如果你只想背结论，每节末尾都有一张表；但那样下次换个题还是会卡。<b>真正要带走的是「四种算 $\mathbb E\xi^2$ 的手法」和「不等式在把什么翻译成什么」。</b></p>
+</div>
+
+<div class="toc">
+<strong style="font-size:13.5px;color:var(--ink2)">目录</strong>
+<ol>
+<li><a href="#p0">第零部分 · 这次课的两条线</a></li>
+<li><a href="#p1">第一部分 · 四个分布：四种算 $\mathbb E\xi^2$ 的手法</a>
+  <ol>
+  <li><a href="#s11">§1.1　空盒数：指示变量 + 展开平方</a></li>
+  <li><a href="#s12">§1.2　Poisson：把 $k^2$ 拆成 $k(k-1)+k$</a></li>
+  <li><a href="#s13">§1.3　几何分布：等比级数求两次导</a></li>
+  <li><a href="#s14">§1.4　均匀分布：直接积分，顺便看见平移不变性</a></li>
+  <li><a href="#s15">§1.5　四个结果放在一起看</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 不等式：把一个数变回概率</a>
+  <ol>
+  <li><a href="#s21">§2.1　为什么需要不等式</a></li>
+  <li><a href="#s22">§2.2　Cauchy–Schwarz：判别式法</a></li>
+  <li><a href="#s23">§2.3　Chebyshev：把事件翻译成期望</a></li>
+  <li><a href="#s24">§2.4　Hölder：Young 不等式是引擎</a></li>
+  <li><a href="#s25">§2.5　$L^p$ 空间：为什么 $p\gt q$ 时 $L^q\supset L^p$</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 板书里的两处要留意</a></li>
+<li><a href="#pa">附录 · 这些工具后面在哪儿用</a></li>
+</ol>
+</div>
+
+<h2 id="p0">第零部分 · 这次课的两条线</h2>
+
+<p>这次课的内容看着散（四个例题 + 四个不等式），其实是一条直线：</p>
+
+<p><b>线一：把 $\mathbb E\xi^2$ 算出来。</b>方差的定义 $\mathrm{Var}(\xi)=\mathbb E(\xi-\mathbb E\xi)^2$ 里，$\mathbb E\xi$ 一般好算，难的是 $\mathbb E\xi^2$。四个例题正好对应四种手法：</p>
+
+<table>
+<tr><th style="width:150px">例题</th><th style="width:230px">卡点</th><th>手法</th></tr>
+<tr><td>空盒数</td><td>$\xi$ 的分布根本写不出来</td><td>拆成指示变量之和，再展开平方（<b>绕开独立性</b>）</td></tr>
+<tr><td>Poisson</td><td>$\sum k^2\frac{\lambda^k}{k!}$ 算不动</td><td>把 $k^2$ 拆成 $k(k-1)+k$，<b>喂回分布自己</b></td></tr>
+<tr><td>几何分布</td><td>同样是 $k^2$ 的求和</td><td>等比级数<b>求两次导</b></td></tr>
+<tr><td>均匀分布</td><td>没有卡点</td><td>直接积分（顺便看清方差的<b>平移不变性</b>）</td></tr>
+</table>
+
+<p><b>线二：把方差用出去。</b>方差只是一个数，可实际问题问的往往是「偏离超过 $m$ 的概率有多大」。这个概率一般算不出来（要知道分布），但 Chebyshev 不等式说：<b>只要知道方差，就能给它一个界</b>。这就是后半段四个不等式存在的理由。</p>
+
+<div class="box key">
+<p class="label">一句话把两条线连起来</p>
+<p>期望和方差是<b>把整个分布压成两个数</b>；不等式是<b>把这两个数再还原成关于概率的结论</b>。压缩一定丢信息，所以不等式给出来的界通常很松——但它不需要知道分布，这就是它值钱的地方。</p>
+</div>
+
+<h2 id="p1">第一部分 · 四个分布：四种算 $\mathbb E\xi^2$ 的手法</h2>
+
+<h3 id="s11">§1.1　空盒数：指示变量 + 展开平方<span class="tag b">手写 1</span></h3>
+
+<p><b>题目。</b>$n$ 个球独立地、等可能地放进 $n$ 个盒子，$\xi$ 为空盒的个数。求 $\mathbb E\xi$ 与 $\mathrm{Var}(\xi)$。</p>
+
+<p><b>先看卡在哪。</b>想直接算 $\mathbb P(\xi=k)$？这是「恰好有 $k$ 个盒子空着」的概率，要用容斥原理，写出来是一串组合数求和。<b>这条路走不通，而且就算走通了，再算 $\mathbb E\xi^2$ 还要再来一遍。</b></p>
+
+<p><b>该想到什么。</b>凡是「计数型」的随机变量（有多少个……满足……），第一反应都应该是<b>指示变量</b>：不去数总数，而是对每一个盒子问「你空着吗」。</p>
+
+\[
+\xi_i=1_{\{\text{第 }i\text{ 个盒子是空的}\}},\qquad \xi=\sum_{i=1}^{n}\xi_i .
+\]
+
+<p>这一步没有任何技巧，但它把「一个难算的量」换成了「$n$ 个极易算的量」。</p>
+
+<p><b>每个 $\xi_i$ 的分布。</b>第 $i$ 个盒子空着 $\iff$ 每个球都没进它。每个球避开它的概率是 $\frac{n-1}{n}$，$n$ 个球独立，所以</p>
+
+\[
+\mathbb P(\xi_i=1)=\Big(\frac{n-1}{n}\Big)^{n},\qquad
+\mathbb E\xi_i=\mathbb P(\xi_i=1)=\Big(\frac{n-1}{n}\Big)^{n}.
+\]
+
+<p>于是 $\mathbb E\xi=\sum_i\mathbb E\xi_i=n\big(\frac{n-1}{n}\big)^{n}$。<b>注意这里能直接相加，是因为期望永远可以相加——不需要独立性。</b>（上一节 §3.1 的线性性。）</p>
+
+<div class="box warn">
+<p class="label">陷阱：到这里很多人会顺手写 $\mathrm{Var}(\xi)=\sum_i\mathrm{Var}(\xi_i)$</p>
+<p><b>这是错的，因为 $\xi_i$ 之间不独立。</b>而且不独立的程度很直观：如果盒 1 空着，说明 $n$ 个球全挤在剩下 $n-1$ 个盒子里，那盒 2 被占的概率就变大了。</p>
+<p>算一下就知道差多少：</p>
+\[
+\mathbb P(\xi_1=1,\xi_2=1)=\Big(\frac{n-2}{n}\Big)^{n}
+\quad\ne\quad
+\Big(\frac{n-1}{n}\Big)^{2n}=\mathbb P(\xi_1=1)\mathbb P(\xi_2=1).
+\]
+<p>所以 $\mathrm{Cov}(\xi_1,\xi_2)\ne0$，方差不能直接加。<b>但期望可以加，这就是指示变量法好用的原因：它只在期望那一层工作。</b></p>
+</div>
+
+<p><b>那方差怎么算？</b>绕开协方差，直接从 $\mathbb E(\xi^2)$ 下手。展开平方：</p>
+
+\[
+\xi^2=\Big(\sum_{i=1}^{n}\xi_i\Big)^2=\sum_{i=1}^{n}\xi_i^2+\sum_{i\ne j}\xi_i\xi_j ,
+\]
+
+<p>取期望，并用<b>对称性</b>（所有 $\xi_i$ 同分布，所有 $\xi_i\xi_j$ 也同分布）：</p>
+
+\[
+\mathbb E(\xi^2)=n\,\mathbb E(\xi_1^2)+n(n-1)\,\mathbb E(\xi_1\xi_2).
+\]
+
+<p>两个量分别算：</p>
+
+<p>· $\mathbb E(\xi_1^2)=\mathbb E(\xi_1)=\big(\frac{n-1}{n}\big)^{n}$，因为 $\xi_1$ 只取 $0,1$，平方等于自己。<br>
+· $\mathbb E(\xi_1\xi_2)=\mathbb P(\xi_1=1,\xi_2=1)=\big(\frac{n-2}{n}\big)^{n}$，因为两个盒子都空 $\iff$ 每个球都避开了这两个盒子。</p>
+
+<p>代回去：</p>
+
+\[
+\mathbb E(\xi^2)=n\Big(\frac{n-1}{n}\Big)^{n}+n(n-1)\Big(\frac{n-2}{n}\Big)^{n},
+\]
+
+<p>再用 $\mathrm{Var}(\xi)=\mathbb E\xi^2-(\mathbb E\xi)^2$：</p>
+
+\[
+\boxed{\ \mathrm{Var}(\xi)=n\Big(\frac{n-1}{n}\Big)^{n}+n(n-1)\Big(\frac{n-2}{n}\Big)^{n}-n^2\Big(\frac{n-1}{n}\Big)^{2n}\ }
+\]
+
+<div class="box ok">
+<p class="label">为什么这样就能绕开「不独立」</p>
+<p>因为<b>「不独立」只影响 $\mathrm{Var}(\xi_i+\xi_j)$ 能不能拆成两项之和，不影响 $\mathbb E(\xi^2)$ 的展开</b>。展开式 $\xi^2=\sum\xi_i^2+\sum_{i\ne j}\xi_i\xi_j$ 是恒等式，对任何随机变量都成立；取期望也是线性的，也不需要独立。</p>
+<p>不独立唯一造成的影响，是 $\mathbb E(\xi_1\xi_2)$ <b>不等于</b> $\mathbb E\xi_1\mathbb E\xi_2$——那就老老实实算 $\mathbb P(\xi_1=\xi_2=1)$ 好了。<b>独立性只决定「能不能拆」，不决定「能不能算」。</b></p>
+<p>如果非要用协方差公式，也对得上：$\mathrm{Cov}(\xi_1,\xi_2)=\big(\frac{n-2}{n}\big)^n-\big(\frac{n-1}{n}\big)^{2n}$，代进 $\mathrm{Var}(\sum\xi_i)=n\mathrm{Var}(\xi_1)+n(n-1)\mathrm{Cov}(\xi_1,\xi_2)$ 得到同一个结果。两条路等价，但上面那条不需要记协方差公式。</p>
+</div>
+
+<p><b>用 $n=2$ 验一遍。</b>两个球放进两个盒子，4 种等可能：$(1,2)$、$(2,1)$ 时无空盒，$(1,1)$、$(2,2)$ 时空一盒。所以 $\xi$ 以 $\frac12$ 取 $0$、以 $\frac12$ 取 $1$。</p>
+
+\[
+\mathbb E\xi=\tfrac12,\qquad \mathbb E\xi^2=\tfrac12,\qquad \mathrm{Var}(\xi)=\tfrac12-\tfrac14=\tfrac14 .
+\]
+
+<p>公式：$n\big(\frac{n-1}{n}\big)^n=2\cdot\frac14=\frac12$ ✓；$n(n-1)\big(\frac{n-2}{n}\big)^n=2\cdot1\cdot0=0$ ✓；$n^2\big(\frac{n-1}{n}\big)^{2n}=4\cdot\frac1{16}=\frac14$ ✓。<b>对得上。</b></p>
+
+<h3 id="s12">§1.2　Poisson：把 $k^2$ 拆成 $k(k-1)+k$<span class="tag b">手写 1</span></h3>
+
+<p><b>题目。</b>$\xi\sim\mathrm{Poisson}(\lambda)$，即 $\mathbb P(\xi=k)=\frac{\lambda^k}{k!}e^{-\lambda}$，$k=0,1,2,\dots$。已知 $\mathbb E\xi=\lambda$，求 $\mathrm{Var}(\xi)$。</p>
+
+<p><b>卡在哪。</b>要算</p>
+
+\[
+\mathbb E(\xi^2)=\sum_{k=0}^{\infty}k^2\,\frac{\lambda^k}{k!}\,e^{-\lambda},
+\]
+
+<p>直接求和算不动。<b>但注意分母 $k!$ 里其实藏着两个可以约掉的因子。</b></p>
+
+<p><b>该想到什么。</b>把 $k^2$ 写成 $k(k-1)+k$：第一项能被 $k!$ 吃掉两个因子，第二项吃掉一个。吃掉之后剩下的，正好是一个<b>完整的 Poisson 求和</b>——而它等于 $1$（因为总概率为 $1$）。</p>
+
+<p><b>怎么做。</b></p>
+
+\[
+\begin{aligned}
+\mathbb E(\xi^2)
+&=\sum_{k\ge0}\big[k(k-1)+k\big]\frac{\lambda^k}{k!}e^{-\lambda}\\[2pt]
+&=\underbrace{\sum_{k\ge2}\frac{\lambda^k}{(k-2)!}e^{-\lambda}}_{\text{第一块}}
++\underbrace{\sum_{k\ge1}\frac{\lambda^k}{(k-1)!}e^{-\lambda}}_{\text{第二块}} .
+\end{aligned}
+\]
+
+<p>两块分别把公因子提出来：</p>
+
+\[
+\text{第一块}=\lambda^2\sum_{k\ge2}\frac{\lambda^{k-2}}{(k-2)!}e^{-\lambda}=\lambda^2\cdot1,
+\qquad
+\text{第二块}=\lambda\sum_{k\ge1}\frac{\lambda^{k-1}}{(k-1)!}e^{-\lambda}=\lambda\cdot1 .
+\]
+
+<p>（$k=0,1$ 那几项因为 $k(k-1)$、$k$ 为零，本来就不贡献，所以可以从 $k\ge2$、$k\ge1$ 开始。）于是</p>
+
+\[
+\mathbb E(\xi^2)=\lambda^2+\lambda
+\qquad\Longrightarrow\qquad
+\boxed{\ \mathrm{Var}(\xi)=\lambda^2+\lambda-\lambda^2=\lambda\ }
+\]
+
+<div class="box key">
+<p class="label">这个手法值得单独记：把因子「喂回」分布自己</p>
+<p>求和里出现 $k$、$k(k-1)$、$k(k-1)(k-2)\cdots$ 时，先别急着找公式，试试<b>把它们和 $k!$ 约掉</b>。约完之后剩下的求和，往往就是「同一个分布、参数平移了几个」的概率和，等于 $1$。</p>
+<p>Poisson 是这样，二项、几何、负二项也都可以这样算。它比查表可靠，因为<b>它只用到「概率和为 $1$」这一件事</b>。</p>
+</div>
+
+<h3 id="s13">§1.3　几何分布：等比级数求两次导<span class="tag b">手写 1</span></h3>
+
+<p><b>题目。</b>$\xi$ 服从几何分布：$\mathbb P(\xi=k)=q^{k-1}p$，$k=1,2,\dots$（$q=1-p$）。已知 $\mathbb E\xi=\frac1p$，求 $\mathrm{Var}(\xi)$。</p>
+
+<p><b>卡在哪。</b>又是 $\sum k^2q^{k-1}p$，比 Poisson 还难一点，因为没有阶乘可以约。</p>
+
+<p><b>该想到什么。</b>几何分布是<b>等比级数</b>，而等比级数的求和公式对参数求导，就会生出 $k$、$k^2$ 这种因子。这就是「用求导制造 $k$」的手法。</p>
+
+<p><b>怎么做（路线 A：两次求导）。</b>从最基础的等比级数出发：</p>
+
+\[
+\sum_{k\ge1}q^{k}=\frac{q}{1-q}\qquad(0\lt q\lt1).
+\]
+
+<p>两边对 $q$ 求一次导，左边生出 $k$，右边变成 $\frac{1}{(1-q)^2}$：</p>
+
+\[
+\sum_{k\ge1}k\,q^{k-1}=\frac{1}{(1-q)^2}
+\quad\Longrightarrow\quad
+\mathbb E\xi=p\sum_{k\ge1}k\,q^{k-1}=\frac{p}{(1-q)^2}=\frac1p .
+\]
+
+<p>再求一次导：</p>
+
+\[
+\sum_{k\ge1}k(k-1)q^{k-2}=\frac{2}{(1-q)^3}
+\quad\Longrightarrow\quad
+\mathbb E\big[\xi(\xi-1)\big]=\frac{2pq}{(1-q)^3}=\frac{2q}{p^2}.
+\]
+
+<p>由 $\mathbb E[\xi(\xi-1)]=\mathbb E\xi^2-\mathbb E\xi$ 反解：</p>
+
+\[
+\mathbb E\xi^2=\frac{2q}{p^2}+\frac1p=\frac{2q+p}{p^2}=\frac{1+q}{p^2}
+\qquad\Longrightarrow\qquad
+\boxed{\ \mathrm{Var}(\xi)=\frac{1+q}{p^2}-\frac{1}{p^2}=\frac{q}{p^2}\ }
+\]
+
+<p><b>路线 B（不用求导）。</b>同样用 $k^2=k(k-1)+k$，配合两个已知求和：$\sum k q^{k-1}=\frac1{p^2}$、$\sum k(k-1)q^{k-2}=\frac{2}{p^3}$。结果一样。</p>
+
+<div class="box ok">
+<p class="label">直觉：几何分布的方差为什么比期望大那么多</p>
+<p>$\mathbb E\xi=\frac1p$，$\mathrm{Var}(\xi)=\frac{q}{p^2}\approx\frac{1}{p^2}$。当 $p$ 很小时，方差是期望的<b>平方量级</b>——比如 $p=0.01$，平均等 $100$ 次，但标准差也是 $99.5$ 次。</p>
+<p>翻译成人话：<b>「平均等 100 次」完全不代表「一般等 100 次左右」</b>。有 $\frac{1}{e}\approx37\%$ 的概率要等超过 $100$ 次，也有很大概率几次就中。这就是「无记忆性」的代价——之前失败多少次，都不会让下一次更容易。</p>
+</div>
+
+<div class="box warn">
+<p class="label">板书这行有个笔误，别照抄</p>
+<p>板书把 $\mathbb E\xi^2$ 写成了 $\dfrac{pq+1}{p^2}$。<b>正确结果是 $\dfrac{1+q}{p^2}$</b>，两者只在 $p=1$ 时相等。</p>
+<p>代个数字就能看出问题：$p=\frac12$ 时，正确值 $\frac{1+0.5}{0.25}=6$，而 $\frac{0.25+1}{0.25}=5$。直接求和验证：$\sum_{k\ge1}k^2(0.5)^k=6$ ✓。</p>
+<p>正确的推导见上面（$\frac{2q}{p^2}+\frac1p=\frac{2q+p}{p^2}$，而 $p+q=1$ 所以 $2q+p=1+q$）。<b>记住这个检查方法：把 $p+q=1$ 代进去，看分子能不能化成一个只含一个字母的简单形式。</b></p>
+</div>
+
+<h3 id="s14">§1.4　均匀分布：直接积分，顺便看见平移不变性<span class="tag b">手写 2</span></h3>
+
+<p><b>题目。</b>$\xi\sim U(a,b)$，密度 $\frac{1}{b-a}$（$a\lt x\lt b$）。求 $\mathbb E\xi$、$\mathbb E\xi^2$、$\mathrm{Var}(\xi)$。</p>
+
+<p><b>这题没有卡点</b>，就是两个积分。但它值得单独写，因为结果里的<b>结构</b>比结果本身有用。</p>
+
+\[
+\mathbb E\xi=\int_a^b x\cdot\frac{1}{b-a}\,\mathrm dx=\frac{a+b}{2},
+\]
+
+\[
+\mathbb E\xi^2=\int_a^b x^2\cdot\frac{1}{b-a}\,\mathrm dx=\frac{1}{b-a}\cdot\frac{b^3-a^3}{3}=\frac{a^2+ab+b^2}{3}.
+\]
+
+<p>于是</p>
+
+\[
+\mathrm{Var}(\xi)=\frac{a^2+ab+b^2}{3}-\Big(\frac{a+b}{2}\Big)^2
+=\frac{4(a^2+ab+b^2)-3(a^2+2ab+b^2)}{12}
+=\boxed{\ \frac{(b-a)^2}{12}\ }
+\]
+
+<div class="box key">
+<p class="label">结果里藏着的两件事</p>
+<p><b>① 方差只认「宽度」，不认「位置」。</b>$\mathrm{Var}$ 里只有 $b-a$，$a$ 和 $b$ 各自多大完全不影响。这不是巧合：平移 $\xi\mapsto\xi+c$ 时，$\mathbb E\xi$ 跟着平移 $c$，偏差 $\xi-\mathbb E\xi$ 一点不变，所以方差不变。<b>任何分布的方差都对平移不变</b>，以后可以用这个性质快速检查算错没有——如果你的方差表达式里单独出现了 $a$ 或 $b$，那一定错了。</p>
+<p><b>② 系数 $\frac1{12}$ 是「均匀」的指纹。</b>长度一样的区间，方差只由长度决定。$\frac{(b-a)^2}{12}$ 说明：区间长度翻倍，方差变成四倍（标准差翻倍）——和「平方量纲」一致。</p>
+</div>
+
+<h3 id="s15">§1.5　四个结果放在一起看</h3>
+
+<table>
+<tr><th style="width:140px">分布</th><th style="width:230px">$\mathbb P(\xi=k)$ / 密度</th><th style="width:150px">$\mathbb E\xi$</th><th>$\mathrm{Var}(\xi)$</th></tr>
+<tr><td>空盒数（$n$ 球 $n$ 盒）</td><td>无简单表达式</td><td>$n\big(\frac{n-1}{n}\big)^n$</td><td>$n\big(\frac{n-1}{n}\big)^n+n(n-1)\big(\frac{n-2}{n}\big)^n-n^2\big(\frac{n-1}{n}\big)^{2n}$</td></tr>
+<tr><td>$\mathrm{Poisson}(\lambda)$</td><td>$\frac{\lambda^k}{k!}e^{-\lambda}$，$k\ge0$</td><td>$\lambda$</td><td>$\lambda$</td></tr>
+<tr><td>几何分布（参数 $p$）</td><td>$q^{k-1}p$，$k\ge1$</td><td>$\frac1p$</td><td>$\frac{q}{p^2}$</td></tr>
+<tr><td>$U(a,b)$</td><td>$\frac{1}{b-a}$，$a\lt x\lt b$</td><td>$\frac{a+b}{2}$</td><td>$\frac{(b-a)^2}{12}$</td></tr>
+</table>
+
+<p>四个例子对应四种手法，遇到新题时按这个顺序试：<b>能拆成指示变量吗 → 求和里能约掉 $k!$ 吗 → 是等比级数吗 → 能不能直接积分。</b></p>
+
+<h2 id="p2">第二部分 · 不等式：把一个数变回概率</h2>
+
+<h3 id="s21">§2.1　为什么需要不等式<span class="tag b">手写 2</span></h3>
+
+<p>到目前为止，我们做的事都是「从分布算出两个数」：$\mathbb E\xi$ 和 $\mathrm{Var}(\xi)$。但实际问题经常反过来问：</p>
+
+\[
+\mathbb P\big(|\xi-\mathbb E\xi|\ge m\big)=? 
+\]
+
+<p>这个概率<b>算不出来</b>，除非你知道 $\xi$ 的完整分布。可是很多场合你只知道均值和方差（比如只测过一批数据的平均值和波动），却仍然想对「偏离太远」的概率说点什么。</p>
+
+<div class="box key">
+<p class="label">不等式的角色：把「信息不足」量化成「界」</p>
+<p>不等式不会给你精确值，它给你一个<b>保证</b>：不管 $\xi$ 是什么分布，只要方差不超过某个数，偏离超过 $m$ 的概率就不会超过某个数。</p>
+<p>这就像不知道一个人的具体身高，但知道他在 $[1.6,1.9]$ 之间，那你就能保证「他不到 $2$ 米」。<b>信息少，结论就弱，但仍然是结论。</b></p>
+</div>
+
+<p>接下来的三个不等式是一条链：<b>Cauchy–Schwarz → Chebyshev → Hölder</b>。前者是后者的特例或工具，最后落到 $L^p$ 空间上。</p>
+
+<h3 id="s22">§2.2　Cauchy–Schwarz：判别式法<span class="tag b">手写 2</span></h3>
+
+<div class="thm">
+<p class="nm">Cauchy–Schwarz 不等式</p>
+<p>设 $\xi,\eta$ 是随机变量，$\mathbb E\xi^2\lt\infty$、$\mathbb E\eta^2\lt\infty$，则</p>
+\[
+\big[\mathbb E|\xi\eta|\big]^2\ \le\ \mathbb E\xi^2\cdot\mathbb E\eta^2 .
+\]
+<p>等号成立 $\iff$ 存在常数 $c$，使 $|\xi|=c|\eta|$ a.s.（即两者「成比例」）。</p>
+</div>
+
+<p><b>怎么想到的。</b>先看一个更简单的观察：对任何实数 $t$，</p>
+
+\[
+\mathbb E(\xi-t\eta)^2\ \ge\ 0 ,
+\]
+
+<p>因为左边是一个平方的期望，不可能为负。<b>而这个不等式对每个 $t$ 都成立。</b>把左边展开，它是关于 $t$ 的二次函数：</p>
+
+\[
+\mathbb E(\xi-t\eta)^2=t^2\,\mathbb E\eta^2-2t\,\mathbb E(\xi\eta)+\mathbb E\xi^2 .
+\]
+
+<p><b>关键的一步：一个二次函数如果对一切 $t$ 都 $\ge0$，那它要么没有实根，要么只有一个重根——判别式必须 $\le0$。</b></p>
+
+\[
+\Delta=4\big[\mathbb E(\xi\eta)\big]^2-4\,\mathbb E\xi^2\,\mathbb E\eta^2\ \le\ 0
+\quad\Longrightarrow\quad
+\big[\mathbb E(\xi\eta)\big]^2\le\mathbb E\xi^2\,\mathbb E\eta^2 .
+\]
+
+<p>把 $\xi$ 换成 $|\xi|$、$\eta$ 换成 $|\eta|$，就得到带绝对值的形式。$\blacksquare$</p>
+
+<div class="box ok">
+<p class="label">等号什么时候成立</p>
+<p>等号 $\iff$ 判别式为 $0$ $\iff$ 二次函数有重根 $t_0$ $\iff$ $\mathbb E(\xi-t_0\eta)^2=0$。</p>
+<p>而非负随机变量的期望为 $0$，意味着它本身 a.s. 为 $0$（上一节的定理 4.2.3）。所以 $\xi=t_0\eta$ a.s.——<b>「两个变量成比例」正是内积取等号的条件</b>，和向量情形完全一样。</p>
+</div>
+
+<p><b>板书走的是另一条路（截断 + MCT）。</b>先假设 $\xi,\eta$ 有界，证完再放开：</p>
+
+<pre>ξₙ = (ξ∧n)∨(−n),  ηₙ = (η∧n)∨(−n)   ⇒  |ξₙ|, |ηₙ| ≤ n
+ξₙ → ξ,  ηₙ → η   ⇒  |ξₙηₙ| ↑ |ξη|
+[E|ξₙηₙ|]² ≤ Eξₙ² Eηₙ²   （有界情形已证）
+令 n→∞，由 MCT： [E|ξη|]² ≤ Eξ² Eη²</pre>
+
+<p>为什么老师要绕这一圈？<b>因为在有界情形下，二次函数的所有系数都是有限的，判别式那套推理不会碰到 $\infty-\infty$。</b>先用截断把问题搬进「安全区」，证完再用单调收敛定理搬回来——这是测度论里最常见的「先简后繁」套路，值得记住。</p>
+
+<div class="box warn">
+<p class="label">常见误用</p>
+<p>① <b>忘了取绝对值</b>。$\mathbb E(\xi\eta)$ 可以是负数，$[\mathbb E(\xi\eta)]^2$ 和 $[\mathbb E|\xi\eta|]^2$ 一般不等。要写就写 $|\mathbb E(\xi\eta)|\le\mathbb E|\xi\eta|\le\|\xi\|_2\|\eta\|_2$。</p>
+<p>② <b>忘了可积性前提</b>。$\mathbb E\xi^2=+\infty$ 时右边没有意义。</p>
+</div>
+
+<h3 id="s23">§2.3　Chebyshev：把事件翻译成期望<span class="tag b">手写 2</span></h3>
+
+<div class="thm">
+<p class="nm">Chebyshev 不等式</p>
+<p>设 $\xi$ 是随机变量，$\alpha\gt0$、$m\gt0$，则</p>
+\[
+\mathbb P\big(|\xi|\ge m\big)\ \le\ \frac{\mathbb E|\xi|^{\alpha}}{m^{\alpha}} .
+\]
+<p>取 $\alpha=2$：$\mathbb P(|\xi|\ge m)\le\frac{\mathbb E\xi^2}{m^2}$；把 $\xi$ 换成 $\xi-\mathbb E\xi$：$\mathbb P(|\xi-\mathbb E\xi|\ge m)\le\frac{\mathrm{Var}(\xi)}{m^2}$。</p>
+</div>
+
+<p><b>证明只有一行，但那一行值得拆开看。</b></p>
+
+\[
+\mathbb P(|\xi|\ge m)
+=\mathbb E\big[1_{\{|\xi|\ge m\}}\big]
+\le\mathbb E\Big[\frac{|\xi|^{\alpha}}{m^{\alpha}}1_{\{|\xi|\ge m\}}\Big]
+\le\frac{\mathbb E|\xi|^{\alpha}}{m^{\alpha}} .
+\]
+
+<p>三步，每步各管一件事：</p>
+
+<p><b>第一步：把概率写成期望。</b>$\mathbb P(A)=\mathbb E1_A$。这是整门课最有用的一个翻译——<b>事件层面的问题一旦变成期望，就能用期望的工具（线性性、单调性、不等式）</b>。</p>
+
+<p><b>第二步：在事件内部「放大」。</b>在集合 $\{|\xi|\ge m\}$ 上，有 $\frac{|\xi|^\alpha}{m^\alpha}\ge1$。所以在乘上指示函数之后，可以把 $1$ 换成 $\frac{|\xi|^\alpha}{m^\alpha}$——<b>因为在指示函数为 $0$ 的地方两边都是 $0$，在为 $1$ 的地方不等式成立，逐点比较即可</b>。</p>
+
+<p><b>第三步：去掉指示函数放大。</b>$\frac{|\xi|^\alpha}{m^\alpha}1_{\{|\xi|\ge m\}}\le\frac{|\xi|^\alpha}{m^\alpha}$，因为左边在事件外是 $0$，右边非负。</p>
+
+<div class="box ok">
+<p class="label">这个界通常很松，但依然有用</p>
+<p>拿标准正态试：$\mathbb P(|\xi|\ge3)\le\frac{1}{9}\approx0.111$，而真值是 $0.0027$。<b>差了 40 倍。</b></p>
+<p>那为什么还用它？因为它<b>不需要知道分布</b>。只要知道方差，任何分布都通用。而且在大数定律里，样本量 $n$ 一大，$\frac{\mathrm{Var}}{n\varepsilon^2}\to0$，松不松都无所谓了——<b>它要的是「趋于 0」，不是「精确」</b>。</p>
+</div>
+
+<p><b>板书紧接着的一个注。</b>若存在 $d\gt0$ 使 $\mathbb E|\xi|^2\lt\infty$，则</p>
+
+\[
+\mathbb P(|\xi|=\infty)=\lim_{m\to\infty}\mathbb P(|\xi|\gt m)\le\lim_{m\to\infty}\frac{\mathbb E|\xi|^2}{m^2}=0 ,
+\]
+
+<p>即 <b>$\xi$ 几乎必然有限</b>。这件事看起来显然，但严格说需要证明：二阶矩有限排除了「取无穷值」的可能。它保证后面谈 $\xi_n\to\xi$ 时不会遇到 $\xi=\infty$ 这种麻烦。</p>
+
+<p><b>板书还列了两条推论：</b></p>
+
+<p>（2）若 $\xi$ 可积，$\mathbb P(|\xi-\mathbb E\xi|\ge m)\le\frac{\mathrm{Var}(\xi)}{m^2}$。这是最常用的形式——<b>「偏离均值超过 $m$」的概率被方差控制</b>。</p>
+
+<p>（3）$\big(\mathbb E|\xi|\big)^2\le\mathbb E\xi^2$。这是 Cauchy–Schwarz 取 $\eta\equiv1$ 的特例：$[\mathbb E|\xi\cdot1|]^2\le\mathbb E\xi^2\cdot\mathbb E1^2=\mathbb E\xi^2$。<b>它说明「一阶矩有限」比「二阶矩有限」弱</b>——后面 $L^p$ 的包含关系就是这个意思。</p>
+
+<h3 id="s24">§2.4　Hölder：Young 不等式是引擎<span class="tag b">手写 2·3</span></h3>
+
+<div class="thm">
+<p class="nm">Hölder 不等式</p>
+<p>设 $r\gt1$、$s\gt1$ 且 $\frac1r+\frac1s=1$（称 $r,s$ 共轭），则对任意随机变量 $\xi,\eta$，</p>
+\[
+\|\xi\eta\|_1=\mathbb E|\xi\eta|\ \le\ \|\xi\|_r\,\|\eta\|_s ,
+\qquad \|\xi\|_r:=\big(\mathbb E|\xi|^r\big)^{1/r}.
+\]
+<p>$r=s=2$ 时就是 Cauchy–Schwarz。</p>
+</div>
+
+<p><b>先看引擎：Young 不等式。</b>设 $a,b\ge0$，$\alpha,\beta\gt0$，$\alpha+\beta=1$，则</p>
+
+\[
+a^{\alpha}b^{\beta}\ \le\ \alpha a+\beta b ,
+\qquad\text{等号}\iff a=b .
+\]
+
+<p>它的意思是：<b>几何平均不超过算术平均</b>（加权版本）。$a^{\alpha}b^{\beta}$ 是「乘起来再开方」，$\alpha a+\beta b$ 是「按权重平均」，后者总是不小于前者。</p>
+
+<p><b>Hölder 的证明分三步。</b></p>
+
+<p><b>第一步：处理平凡情形。</b>若 $|\xi|=0$ a.s. 或 $|\eta|=0$ a.s.，则 $|\xi\eta|=0$ a.s.，两边都是 $0$，成立。若 $\mathbb E|\xi|^r=+\infty$ 或 $\mathbb E|\eta|^s=+\infty$，右边是 $+\infty$，也成立。</p>
+
+<p><b>第二步：只剩 $0\lt\mathbb E|\xi|^r,\mathbb E|\eta|^s\lt\infty$。</b>这一步是全部技术含量所在：<b>归一化</b>。</p>
+
+\[
+a:=\frac{|\xi|^r}{\mathbb E|\xi|^r},\qquad
+b:=\frac{|\eta|^s}{\mathbb E|\eta|^s},\qquad
+\alpha:=\frac1r,\qquad \beta:=\frac1s .
+\]
+
+<p>注意 $\alpha+\beta=\frac1r+\frac1s=1$，正好满足 Young 不等式的条件。而且此时 $\mathbb E a=1$、$\mathbb E b=1$——<b>两个量都被「标准化」成了平均为 $1$ 的东西</b>。</p>
+
+<p><b>第三步：套 Young，再取期望。</b>把 $a,b,\alpha,\beta$ 代进 Young：</p>
+
+\[
+\Big(\frac{|\xi|^r}{\mathbb E|\xi|^r}\Big)^{1/r}\Big(\frac{|\eta|^s}{\mathbb E|\eta|^s}\Big)^{1/s}
+\le\frac1r\cdot\frac{|\xi|^r}{\mathbb E|\xi|^r}+\frac1s\cdot\frac{|\eta|^s}{\mathbb E|\eta|^s} ,
+\]
+
+<p>左边化简一下：$\big(|\xi|^r\big)^{1/r}=|\xi|$，分母是 $\big(\mathbb E|\xi|^r\big)^{1/r}=\|\xi\|_r$，所以左边正是 $\dfrac{|\xi\eta|}{\|\xi\|_r\|\eta\|_s}$。两边取期望：</p>
+
+\[
+\frac{\mathbb E|\xi\eta|}{\|\xi\|_r\|\eta\|_s}
+\le\frac1r\cdot\frac{\mathbb E|\xi|^r}{\mathbb E|\xi|^r}+\frac1s\cdot\frac{\mathbb E|\eta|^s}{\mathbb E|\eta|^s}
+=\frac1r+\frac1s=1 .
+\]
+
+<p>两边乘 $\|\xi\|_r\|\eta\|_s$ 即得。$\blacksquare$</p>
+
+<div class="box key">
+<p class="label">「归一化」这一步到底在干什么</p>
+<p>Young 不等式要求 $a,b$ 是<b>普通数字</b>，可我们手里是随机变量，没法直接套。归一化做的事是：<b>把「两个大小未知的量」变成「两个平均为 1 的量」</b>。</p>
+<p>变换之后，右边取期望恰好变成 $\frac1r+\frac1s=1$，这就是为什么必须取 $1/r+1/s=1$ 这组权重——<b>它不是凑出来的，是被「期望要为 1」逼出来的</b>。</p>
+<p>反过来看：如果你自己设计一个不等式，想让 $\mathbb E[\alpha a+\beta b]=1$，而 $\mathbb E a=\mathbb E b=1$，那就必须有 $\alpha+\beta=1$。整个证明的骨架就是这样。</p>
+</div>
+
+<h3 id="s25">§2.5　$L^p$ 空间：为什么 $p\gt q$ 时 $L^q\supset L^p$<span class="tag b">手写 2·3</span></h3>
+
+<p><b>定义。</b>对 $p\ge1$，</p>
+
+\[
+\|\xi\|_p:=\big(\mathbb E|\xi|^p\big)^{1/p},\qquad
+L^p(\mathbb P):=\big\{\xi:\ \|\xi\|_p\lt\infty\big\}.
+\]
+
+<p>$\|\cdot\|_p$ 是一个<b>范数</b>（满足三角不等式，靠的是 Minkowski 不等式），所以 $L^p$ 是<b>完备的赋范空间，即 Banach 空间</b>。完备的意思是：Cauchy 列一定收敛——$\|\xi_n-\xi_m\|_p\to0$（$m,n\to\infty$）就能推出存在 $\xi\in L^p$ 使 $\xi_n\to\xi$。</p>
+
+<div class="box warn">
+<p class="label">$0\lt p\lt1$ 时会坏掉</p>
+<p>此时 $\|\cdot\|_p$ 不满足三角不等式，不是范数。但 $d(\xi,\eta):=\mathbb E|\xi-\eta|^p$ 仍然是一个<b>度量</b>（距离），配上完备性叫 <b>F 空间</b>（Fréchet 空间）。</p>
+<p>为什么坏掉？因为 $p\lt1$ 时 $t\mapsto t^p$ 是<b>凹函数</b>，$(x+y)^p\le x^p+y^p$，方向反了——三角不等式要的是「和的范数不超过范数的和」，而这里恰好相反。</p>
+</div>
+
+<p><b>包含关系。</b>设 $p\gt q\ge1$，则</p>
+
+\[
+L^p(\mathbb P)\ \subset\ L^q(\mathbb P).
+\]
+
+<p><b>证明（一行 Hölder）。</b>要证 $\|\xi\|_q\lt\infty$。把 $|\xi|^q$ 写成 $|\xi|^q\cdot1$，用 Hölder，取共轭指标 $\frac{p}{q}$ 与 $\frac{p}{p-q}$（验证：$\frac{q}{p}+\frac{p-q}{p}=1$ ✓）：</p>
+
+\[
+\mathbb E|\xi|^q=\mathbb E\big[|\xi|^q\cdot1\big]
+\le\Big(\mathbb E\big[(|\xi|^q)^{p/q}\big]\Big)^{q/p}\big(\mathbb E\,1\big)^{(p-q)/p}
+=\big(\mathbb E|\xi|^p\big)^{q/p}=\|\xi\|_p^{q}\lt\infty .
+\]
+
+<p>（最后一步用到 $\mathbb E1=1$，也就是<b>总概率为 1</b>。）</p>
+
+<div class="box key">
+<p class="label">为什么这里能嵌套，一般测度空间里却不能</p>
+<p>关键就在那个 $\big(\mathbb E1\big)^{(p-q)/p}=1$。<b>概率空间的总测度是 1，这个「1」让不等式的右边不爆掉。</b></p>
+<p>换成一般的测度空间（比如 $\mathbb R$ 上的 Lebesgue 测度），总测度是 $+\infty$，这一步就断了：$L^p(\mathbb R)$ 和 $L^q(\mathbb R)$ <b>互不包含</b>。例如 $f(x)=x^{-1/2}1_{(0,1)}$ 属于 $L^1$ 但不属于 $L^2$；$g(x)=x^{-3/4}1_{(1,\infty)}$ 属于 $L^2$ 但不属于 $L^1$。</p>
+<p><b>「概率空间上 $L^p$ 随 $p$ 增大而变小」是概率论特有的结论，不是测度论的普遍现象。</b>这一点很多教材不强调，但它解释了为什么后面的大数定律、$L^2$ 收敛这些结论在概率里那么好用。</p>
+</div>
+
+<h2 id="p3">第三部分 · 板书里的两处要留意</h2>
+
+<p>手写笔记有两处按字面读不成立，应该是笔误。抄的时候注意：</p>
+
+<table>
+<tr><th style="width:210px">板书原文</th><th style="width:200px">正确形式</th><th>说明</th></tr>
+<tr><td>几何分布 $\mathbb E\xi^2=\dfrac{pq+1}{p^2}$</td><td>$\dfrac{1+q}{p^2}$</td><td>由 $\frac{2q}{p^2}+\frac1p$ 化简，且 $p+q=1$。代 $p=\frac12$：正确值 $6$，原文给 $5$。</td></tr>
+<tr><td>$\mathbb E(|\xi|)\le\mathbb E(\xi^2)$</td><td>$\big(\mathbb E|\xi|\big)^2\le\mathbb E\xi^2$</td><td>Cauchy–Schwarz 取 $\eta\equiv1$。照字面读不成立：$\xi\equiv\frac12$ 时左边 $\frac12$、右边 $\frac14$。</td></tr>
+</table>
+
+<p>这两处都不影响后面的结论（一个是中间结果，一个只是推论），但<b>如果你照着抄去做题，会在验算时对不上</b>。检查办法很简单：代一个具体数字进去。</p>
+
+<h2 id="pa">附录 · 这些工具后面在哪儿用</h2>
+
+<table>
+<tr><th style="width:170px">工具</th><th>下一站</th></tr>
+<tr><td>Chebyshev 不等式</td><td>弱大数定律：$\mathbb P(|\bar\xi_n-\mu|\ge\varepsilon)\le\frac{\mathrm{Var}(\xi)}{n\varepsilon^2}\to0$。<b>它就是把「平均值的稳定性」变成一个概率界。</b></td></tr>
+<tr><td>Cauchy–Schwarz</td><td>$L^2$ 理论：相关系数、最小二乘、条件期望的投影性质。$\mathrm{Cov}(\xi,\eta)$ 的绝对值不超过两个标准差之积，就是它。</td></tr>
+<tr><td>Hölder</td><td>$L^p$ 空间的全部结构（三角不等式/Minkowski 也是它推出来的）；以及 $L^p$ 收敛之间的强弱关系。</td></tr>
+<tr><td>指示变量法</td><td>一切「计数型」随机变量：二项、Poisson 分解、生日问题、 coupon collector。<b>只要能用「每个位置一个 0-1 变量」描述，就先这么写。</b></td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">如果只记三句话</p>
+<p>① <b>算方差卡住时，先算 $\mathbb E\xi^2$，别硬碰 $\mathrm{Var}$ 的定义。</b></p>
+<p>② <b>不独立不影响期望的加法，只影响「能不能拆成乘积」。</b></p>
+<p>③ <b>不等式的本质是把「已知的矩」翻译成「未知的概率」的界，翻译过程靠指示函数。</b></p>
+</div>
+
+<div class="footnote">
+<p><strong>关于这份笔记</strong></p>
+<p>· 这是《概率论》第四章的<strong>第三份</strong>笔记。前两份：<a href="./概率论笔记-第四章期望.html">第四章期望（三层定义）</a>、<a href="./概率论笔记-第四章-收敛定理与方差.html">第四章（二）收敛定理与方差</a>。三份合起来覆盖讲义 §4.1–§4.4。</p>
+<p>· 公式用离线 KaTeX 渲染，不依赖网络；配套资源在 <code>assets/katex/</code>。</p>
+<p>· 来源标注：<span class="tag b">手写 N</span> 表示课上手写笔记第 N 页；无标签的内容是为讲通「为什么」而补的推导、直觉与反例，<strong>不要当成老师讲过</strong>。</p>
+</div>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
+})();
+</script>
+</body></html>
