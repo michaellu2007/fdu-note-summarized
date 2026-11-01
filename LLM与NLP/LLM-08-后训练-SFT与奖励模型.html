@@ -144,6 +144,17 @@ details .body p:first-child{margin-top:12px}
 .quiz .q::before{content:"Q";display:inline-block;width:20px;height:20px;border-radius:5px;
   background:var(--accent);color:#fff;font-size:12px;text-align:center;line-height:20px;margin-right:8px;vertical-align:1px}
 
+.exam{border:1px solid var(--line);border-radius:11px;margin:20px 0;background:var(--bg);overflow:hidden}
+.exam .head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;background:var(--bg3);
+  padding:10px 18px;border-bottom:1px solid var(--line)}
+.exam .head .no{font-weight:700;color:var(--accent);font-size:14px;letter-spacing:.02em}
+.exam .head .ttl{font-weight:650;font-size:14.5px;color:var(--ink)}
+.exam .head .pt{margin-left:auto;font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.exam .stem{padding:12px 18px 0;margin:0}
+.exam ol.asks{margin:8px 18px 12px;padding-left:24px;font-size:14.5px}
+.exam ol.asks li{margin:6px 0}
+.exam details{margin:0 14px 14px;background:var(--bg)}
+
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14.5px;margin:14px 0}
 .kv dt{color:var(--ink3)}
 .kv dd{margin:0}
@@ -313,6 +324,11 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
     <li><a href="#apB">B · 符号表</a></li>
     <li><a href="#apC">C · 自测十题</a></li>
     <li><a href="#apD">D · 板书逐张对照</a></li>
+    <li><a href="#apF">F · 考前数值速查</a></li>
+    <li><a href="#apG">G · 模拟卷 A：SFT 与参数量</a></li>
+    <li><a href="#apH">H · 模拟卷 B：奖励模型</a></li>
+    <li><a href="#apI">I · 模拟卷 C：RL 与 DPO</a></li>
+    <li><a href="#apJ">J · 计算题库：二十道快问快答</a></li>
     <li><a href="#apE">E · 参考文献</a></li>
   </ol>
 </li>
@@ -3613,6 +3629,492 @@ $y$ 的空间是 $|V|^{|y|}$，枚举不了。所以这一步买到的是「可�
 <p class="small">板书没写、本文补的部分（都标了 <span class="tag n">补充</span>）：缩放律的常数项与 U 形解释、loss mask 的三个理由、
 前向 KL 与 mode averaging、RM 的 bias 为何消失、为何只训 1 个 epoch、reward hacking 的机制、
 KL 约束的闭式解、DPO 的推导、PPO/GRPO 的对照、RLVR 的新问题。</p>
+
+<h3 id="apF">F · 考前数值速查 <span class="tag n">补充</span></h3>
+
+<p>这一讲的计算题几乎都在用下面这三张表里的数。考场上现推太慢，建议直接背。</p>
+
+<h4>表 F-1 · sigmoid 与两个损失</h4>
+
+<table>
+<thead><tr><th class="num">$\Delta$</th><th class="num">$p=\sigma(\Delta)$</th><th class="num">$-\log\sigma(\Delta)$<br>分对时的 loss</th><th class="num">$\sigma(-\Delta)$<br>梯度权重 = 判错的概率</th></tr></thead>
+<tbody>
+<tr><td class="num">−4</td><td class="num">0.0180</td><td class="num">4.018</td><td class="num">0.982</td></tr>
+<tr><td class="num">−3</td><td class="num">0.0474</td><td class="num">3.049</td><td class="num">0.953</td></tr>
+<tr><td class="num">−2</td><td class="num">0.1192</td><td class="num">2.127</td><td class="num">0.881</td></tr>
+<tr><td class="num">−1</td><td class="num">0.2689</td><td class="num">1.313</td><td class="num">0.731</td></tr>
+<tr><td class="num"><strong>0</strong></td><td class="num"><strong>0.5000</strong></td><td class="num"><strong>0.693</strong></td><td class="num"><strong>0.500</strong></td></tr>
+<tr><td class="num">1</td><td class="num">0.7311</td><td class="num">0.313</td><td class="num">0.269</td></tr>
+<tr><td class="num">2</td><td class="num"><strong>0.8808</strong></td><td class="num"><strong>0.127</strong></td><td class="num"><strong>0.119</strong></td></tr>
+<tr><td class="num">3</td><td class="num">0.9526</td><td class="num">0.049</td><td class="num">0.047</td></tr>
+<tr><td class="num">4</td><td class="num">0.9820</td><td class="num">0.018</td><td class="num">0.018</td></tr>
+</tbody>
+</table>
+
+<p class="small">记忆点：$\Delta=0$ 时 $p=0.5$、loss $=\ln 2=0.693$；$\Delta=2$ 时 $p=0.881$、loss $=0.127$。
+第三、四列是两个不同的量，别混：第三列是「分对时的损失」，第四列是「梯度权重」，也就是 $1-p$。
+分错时的损失则是 $-\log\sigma(-\Delta)=-\log(1-p)$，$\Delta=2$ 时为 $2.127$——所以两列的「和」随 $|\Delta|$ 增大而增大
+（$\Delta=0$ 时两列相等，都是 $0.693$）。</p>
+
+<h4>表 F-2 · 常用对数</h4>
+
+<table>
+<thead><tr><th class="num">$p$</th><th class="num">$\Delta=\ln\frac{p}{1-p}$</th><th>出现场合</th></tr></thead>
+<tbody>
+<tr><td class="num">0.50</td><td class="num">0</td><td>打平，完全分不出</td></tr>
+<tr><td class="num">0.75</td><td class="num">$\ln 3=1.0986$</td><td>三比一</td></tr>
+<tr><td class="num">0.80</td><td class="num">$\ln 4=1.3863$</td><td>四比一</td></tr>
+<tr><td class="num">0.90</td><td class="num">$\ln 9=2.1972$</td><td>九比一</td></tr>
+<tr><td class="num">0.95</td><td class="num">$\ln 19=2.9444$</td><td>十九比一</td></tr>
+<tr><td class="num">0.99</td><td class="num">$\ln 99=4.5951$</td><td>九十九比一</td></tr>
+</tbody>
+</table>
+
+<p class="small">另有 $\ln 2=0.6931$、$\ln 10=2.3026$。看到 $p$ 换算 $\Delta$，一律先想「几比一」：$p=0.9$ 就是九比一，$\Delta=\ln 9$。</p>
+
+<h4>表 F-3 · 参数量与显存</h4>
+
+<table>
+<thead><tr><th>量</th><th>公式</th><th class="num">$d=4096,\ |V|=128000$ 时的值</th></tr></thead>
+<tbody>
+<tr><td>lm_head（$d\times|V|$）</td><td>$4096\times128000$</td><td class="num">$5.24\times10^{8}$（5.24 亿）</td></tr>
+<tr><td>RM 标量头（$d\to1$，无偏置）</td><td>$d$</td><td class="num">4096</td></tr>
+<tr><td>LoRA（$r=16$，方阵 $4096^2$）</td><td>$r(d+k)$</td><td class="num">$1.31\times10^{5}$（占 0.78%）</td></tr>
+<tr><td>全参微调显存</td><td>16 bytes / 参数</td><td class="num">7B → 112 GB</td></tr>
+<tr><td>bf16 推理权重</td><td>2 bytes / 参数</td><td class="num">7B → 14 GB</td></tr>
+<tr><td>bf16 梯度</td><td>2 bytes / 参数</td><td class="num">7B → 14 GB</td></tr>
+<tr><td>Adam 一阶 + 二阶动量（fp32）</td><td>8 bytes / 参数</td><td class="num">7B → 56 GB</td></tr>
+<tr><td>fp32 主权重（master weight）</td><td>4 bytes / 参数</td><td class="num">7B → 28 GB</td></tr>
+</tbody>
+</table>
+
+<p class="small">16 bytes 的来历：权重 2 + 梯度 2 + 动量 4 + 4 + 主权重 4 = 16。这是混合精度全参微调的标准记账方式，
+考试里只要记住「全参 16 B/参数、LoRA 只算 $r(d+k)$」两句话就够。</p>
+
+<div class="box key">
+<span class="label">三条考场口诀</span>
+<ol>
+<li><strong>$p\leftrightarrow\Delta$ 只会双向换。</strong>$p=\sigma(\Delta)$，$\Delta=\ln\frac{p}{1-p}$；两者都是「分数差」的两种写法。</li>
+<li><strong>所有损失都能化成 $-\log\sigma(\pm\Delta)$。</strong>分对用 $+\Delta$，分错用 $-\Delta$；$\Delta=0$ 时都是 $\ln 2$。</li>
+<li><strong>参数量先算乘除再算占比。</strong>lm_head 是 $d|V|$，LoRA 是 $r(d+k)$，标量头是 $d$——三个数差着三四个数量级。</li>
+</ol>
+</div>
+
+<h3 id="apG">G · 模拟卷 A：SFT 与参数量</h3>
+
+<p class="small">本卷按考试形式出：3 道题，每题 2–3 问。建议限时 25 分钟，先算数再写结论。</p>
+
+<div class="exam">
+<div class="head"><span class="no">题 A1</span><span class="ttl">参数量与显存</span><span class="pt">10 分</span></div>
+<p class="stem">一个语言模型：隐层维度 $d=4096$，层数 $L=32$，词表 $|V|=128000$，总参数约 $7\times10^{9}$。
+它的输出头是一个 $d\to|V|$ 的线性层（无偏置），输入嵌入矩阵是 $|V|\times d$。</p>
+<ol class="asks">
+<li>若输出头与嵌入矩阵<strong>不共享</strong>，输出头有多少参数？占总参数量的百分之几？</li>
+<li>奖励模型把输出头换成 $d\to1$ 的线性层（无偏置），这个头有多少参数？是原输出头的几分之一？</li>
+<li>用 LoRA 微调其中一个 $4096\times4096$ 的方阵，取秩 $r=16$。可训练参数是多少？占该矩阵的百分之几？比全参少多少倍？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 输出头参数量 $=d\times|V|=4096\times128000=5.24288\times10^{8}$，即约 <strong>5.24 亿</strong>。</p>
+<p>占比 $=\dfrac{5.24\times10^{8}}{7\times10^{9}}=0.0749\approx\mathbf{7.5\%}$。</p>
+<p>这 7.5% 很值得注意：一个 7B 模型的输出头就占了近十分之一，所以很多实现让嵌入与输出头共享权重，省掉这一块。</p>
+
+<p><strong>(2)</strong> 标量头参数量 $=d=4096$（若带偏置是 4097）。</p>
+<p>比值 $=\dfrac{4096}{5.24\times10^{8}}=\dfrac{1}{128000}$——正好是 $1/|V|$。直觉：输出头是「每个词一个分数」，标量头只留「一个分数」，所以少了 $|V|$ 倍。</p>
+
+<p><strong>(3)</strong> LoRA 把 $\Delta W$ 分解成 $B\in\mathbb{R}^{d\times r}$、$A\in\mathbb{R}^{r\times k}$，可训练参数</p>
+
+$$
+r(d+k)=16\times(4096+4096)=16\times8192=\mathbf{131072}
+$$
+
+<p>原矩阵参数量 $4096^{2}=16\,777\,216$，占比 $\dfrac{131072}{16777216}=0.0078=\mathbf{0.78\%}$。</p>
+<p>少了 $\dfrac{1}{0.0078}\approx\mathbf{128}$ 倍。注意这个 128 正好是 $d/r=4096/16$——方阵情形下，压缩比就是 $d/r$。</p>
+
+<p class="small">顺带一个常考的显存数：全参微调按 16 bytes/参数记，$7\times10^{9}\times16=112$ GB，单张 80G 卡放不下；LoRA 只多存 0.78% 的参数和对应的优化器状态，其余全部冻结。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 A2</span><span class="ttl">SFT 损失与 loss mask</span><span class="pt">10 分</span></div>
+<p class="stem">一条训练样本由 3 个 prompt token 和 3 个回答 token 组成，共 6 个位置。模型对每个位置「正确的下一个 token」给出的
+对数概率如下（已取 $\log$，单位 nats）：</p>
+
+<table>
+<thead><tr><th>位置 $t$</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th></tr></thead>
+<tbody>
+<tr><td>属于</td><td class="num">prompt</td><td class="num">prompt</td><td class="num">prompt</td><td class="num"><strong>回答</strong></td><td class="num"><strong>回答</strong></td><td class="num"><strong>回答</strong></td></tr>
+<tr><td>$\log\pi_\theta$</td><td class="num">−0.2</td><td class="num">−0.3</td><td class="num">−0.1</td><td class="num">−0.7</td><td class="num">−1.2</td><td class="num">−0.4</td></tr>
+</tbody>
+</table>
+
+<ol class="asks">
+<li>按 loss mask（只算回答）计算这条样本的 SFT 损失，并换算成困惑度。</li>
+<li>如果<strong>不</strong>做 mask，损失是多少？</li>
+<li>第 (2) 问的数更小，是否说明模型更好？为什么这个现象恰恰是必须 mask 的理由？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 掩码 $m_t=1$ 只在位置 4、5、6。损失</p>
+
+$$
+\mathcal{L}=\frac{1}{\sum_t m_t}\sum_t m_t\left(-\log\pi_\theta\right)
+=\frac{0.7+1.2+0.4}{3}=\frac{2.3}{3}=\mathbf{0.7667}
+$$
+
+<p>困惑度 $\mathrm{PPL}=e^{0.7667}\approx\mathbf{2.15}$——平均相当于在 2.15 个候选里犹豫。</p>
+
+<p><strong>(2)</strong> 六位全算：$\dfrac{0.2+0.3+0.1+0.7+1.2+0.4}{6}=\dfrac{2.9}{6}=\mathbf{0.4833}$，PPL $=1.62$。</p>
+
+<p><strong>(3)</strong> <strong>不是。</strong>损失变小，只是因为分母里混进了三个「容易的位置」——prompt 是给定的，模型只需复述，
+所以那三位的对数概率天然很高（$-0.2,-0.3,-0.1$），把整体平均拉低了。</p>
+<p>后果有三层：</p>
+<ul>
+<li><strong>梯度被稀释。</strong>分子里 prompt 只贡献 0.6，回答贡献 2.3，但分母从 3 变成 6——回答那部分的梯度权重直接砍半。</li>
+<li><strong>学到错的东西。</strong>模型被要求提高「复述问题」的概率，推理时它更容易自问自答、或者把用户的话抄一遍。</li>
+<li><strong>损失不再可比。</strong>不同样本的 prompt 长度不同，不 mask 之后损失值取决于「prompt 有多长」，而不是「回答有多好」，
+验证集上的曲线失去意义。</li>
+</ul>
+<p>所以 mask 不是优化技巧，是<strong>让损失的定义对得上任务</strong>：我们要学的是 $p(y\mid x)$，不是 $p(x,y)$。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 A3</span><span class="ttl">softmax 与交叉熵梯度</span><span class="pt">8 分</span></div>
+<p class="stem">某个位置上只有 3 个候选 token，logits 为 $z=(2,\,1,\,0)$，正确答案是第 1 个。</p>
+<ol class="asks">
+<li>求 softmax 概率与交叉熵损失。</li>
+<li>求损失对 logits 的梯度，并验证三个分量之和为 0。这个「和为 0」在物理上意味着什么？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $e^{2}=7.389$、$e^{1}=2.718$、$e^{0}=1$，和 $S=11.107$。</p>
+
+$$
+\pi=\left(\frac{7.389}{11.107},\ \frac{2.718}{11.107},\ \frac{1}{11.107}\right)
+=(0.6652,\ 0.2447,\ 0.0900)
+$$
+
+<p>损失 $=-\log\pi_{1}=-\log 0.6652=\mathbf{0.4076}$。</p>
+<p class="small">核对：$-\ln 0.6652=0.4076$，与 $\ln(1/0.6652)=\ln 1.503$ 一致。</p>
+
+<p><strong>(2)</strong> 交叉熵对 logits 的梯度是「one-hot 减 softmax」：</p>
+
+$$
+\nabla_z\mathcal{L}=e_{y^{\star}}-\pi
+=(1-0.6652,\ 0-0.2447,\ 0-0.0900)
+=\mathbf{(0.3348,\ -0.2447,\ -0.0900)}
+$$
+
+<p>求和：$0.3348-0.2447-0.0900=0.0001\approx 0$（舍入误差）。</p>
+
+<p><strong>物理含义：</strong>softmax 对「所有 logits 同加一个常数」不变，所以梯度只能落在「和为零」的子空间里——
+它<strong>不能只抬高一个</strong>，必须同时压低其余。这就是笔记里那个跷跷板：
+推高正确答案的同时，按当前概率分配去压低其他候选。</p>
+<p>顺带一个结论：当 $\pi_1\to1$ 时，$e_{y^{\star}}-\pi\to0$，梯度消失。所以<strong>已经学会的样本不再产生梯度</strong>，
+训练后期真正起作用的，是那些还没学会的样本（以及标注写错的样本）。</p>
+</div>
+</details>
+</div>
+
+<h3 id="apH">H · 模拟卷 B：奖励模型</h3>
+
+<div class="exam">
+<div class="head"><span class="no">题 B1</span><span class="ttl">Bradley–Terry 的基本计算</span><span class="pt">12 分</span></div>
+<p class="stem">奖励模型给同一 prompt 下的两条回答打分：$r(y_w)=3$，$r(y_l)=1$。人类标注为 $y_w$ 更好。</p>
+<ol class="asks">
+<li>求分数差 $\Delta$、模型认为「$y_w$ 更好」的概率 $p$、以及这条样本的损失。</li>
+<li>如果标注写反了（人其实更喜欢 $y_l$），损失变成多少？</li>
+<li>这条样本的梯度权重是多少？它和「判错的概率」是什么关系？这说明训练后期会发生什么？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $\Delta=r(y_w)-r(y_l)=3-1=\mathbf{2}$。</p>
+
+$$
+p=\sigma(2)=\frac{1}{1+e^{-2}}=\frac{1}{1+0.1353}=\mathbf{0.8808}
+$$
+
+<p>损失 $\mathcal{L}=-\log\sigma(\Delta)=-\log 0.8808=\mathbf{0.1269}$。</p>
+<p class="small">注意这里 $p$ 是<strong>模型自己按固定规则算出来的</strong>，不是统计频率（§3.3）。</p>
+
+<p><strong>(2)</strong> 标注反了意味着「$y_l$ 更好」，模型要给它高概率，即 $p'=1-p=0.1192$：</p>
+
+$$
+\mathcal{L}'=-\log(1-p)=-\log 0.1192=\mathbf{2.1269}
+$$
+
+<p>从 0.127 涨到 2.127，<strong>涨了 16.8 倍</strong>。两个数相加 $0.1269+2.1269=2.2538$，
+不等于 $\ln 2$——它们不是互补的，因为分母不同（一个除以 $p$，一个除以 $1-p$）。</p>
+
+<p><strong>(3)</strong> 梯度权重是 $\sigma(-\Delta)=\sigma(-2)=\mathbf{0.1192}$，正好等于 $1-p$。</p>
+<p>也就是说：<strong>梯度大小 = 模型判错的概率</strong>。判对得越干脆（$p\to1$），梯度越小；判错得越离谱（$p\to0$），梯度越大。</p>
+<p>后果：训练后期绝大多数样本都已经被分对，梯度整体变得很小，<strong>loss 曲线会很快变平</strong>。
+此时还在提供梯度的，恰恰是那些「模型觉得反常」的样本——它们要么是真难例，要么是标注噪声。
+这就是为什么 RM 只训 1 个 epoch：再训下去，模型开始专门去拟合这些噪声。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 B2</span><span class="ttl">反解 $\Delta$ 与「把握」的刻度</span><span class="pt">8 分</span></div>
+<p class="stem">沿用题 B1 的 $\Delta=2$、$p=0.8808$。</p>
+<ol class="asks">
+<li>要把 $p$ 提到 $0.95$，$\Delta$ 需要多大？比现在增加多少？</li>
+<li>分别写出 $p=0.5,\,0.75,\,0.9,\,0.99$ 对应的 $\Delta$。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 由 $\Delta=\ln\dfrac{p}{1-p}$：</p>
+
+$$
+\Delta_{0.95}=\ln\frac{0.95}{0.05}=\ln 19=2.9444
+$$
+
+<p>比现在的 $2$ 只多 $0.944$，但「把握」从 88% 抬到了 95%。<strong>$\Delta$ 与 $p$ 不是线性关系</strong>，
+越靠近 1，同样的 $\Delta$ 增量换来的 $p$ 增量越小（饱和）。</p>
+
+<p><strong>(2)</strong></p>
+
+<table>
+<thead><tr><th class="num">$p$</th><th>几比一</th><th class="num">$\Delta$</th></tr></thead>
+<tbody>
+<tr><td class="num">0.5</td><td>一比一</td><td class="num">$\ln 1=0$</td></tr>
+<tr><td class="num">0.75</td><td>三比一</td><td class="num">$\ln 3=1.0986$</td></tr>
+<tr><td class="num">0.9</td><td>九比一</td><td class="num">$\ln 9=2.1972$</td></tr>
+<tr><td class="num">0.99</td><td>九十九比一</td><td class="num">$\ln 99=4.5951$</td></tr>
+</tbody>
+</table>
+
+<p>这张表值得记成「几比一」：$p$ 是「赢的比例」，$\Delta$ 是这个比例的<strong>对数几率</strong>。
+所以 RM 的分数差从 2 涨到 4，不是「好了一倍」，而是从「九成把握」变成「九成九把握」。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 B3</span><span class="ttl">数据量与信息量</span><span class="pt">10 分</span></div>
+<p class="stem">某奖励模型有 $7\times10^{9}$ 个参数，用 10 万条人类偏好 pair 训练。</p>
+<ol class="asks">
+<li>每条 pair 只提供 1 bit 标签。10 万条一共多少 bit？折成 KB 是多少？</li>
+<li>这个模型的「参数 / 样本」比是多少？</li>
+<li>这个比例比预训练大了好几个数量级，为什么它还能训得动、而且不容易过拟合？那为什么又只训 1 个 epoch？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $10^{5}$ bit $=10^{5}/8=12500$ 字节 $\approx\mathbf{12.2\ KB}$。</p>
+<p>12 KB 就是这 10 万条标注的<strong>全部信息量</strong>。对比：预训练语料 15T token，按每 token 约 1.4 nats 计，
+约 $2\times10^{13}$ nats，折成 bit 是 $3\times10^{13}$ bit——差了八个数量级。</p>
+
+<p><strong>(2)</strong> 参数 / 样本 $=\dfrac{7\times10^{9}}{10^{5}}=7\times10^{4}$，即<strong>每个样本对应 7 万个参数</strong>。
+这个比例在普通监督学习里是「必然过拟合」的信号（经验法则通常要求样本数远多于参数量）。</p>
+
+<p><strong>(3)</strong> 关键在于<strong>它不是在学新知识，而是在已有表征里挑一个方向</strong>（§3.9）：</p>
+<ul>
+<li>输入不是原始 token，而是预训练模型已经算好的隐状态 $h$。那里面早就编码了「条理、切题、有依据」这些特征，
+这些信息来自预训练，不来自偏好数据。</li>
+<li>RM 只学一个 $d$ 维的 $w$（再加一个偏置），其余参数冻结。真正需要从偏好数据里学的东西，
+量级是 $d$ 而不是 $7\times10^{9}$。</li>
+</ul>
+<p>但「只训 1 个 epoch」仍然成立，原因是<strong>标签噪声</strong>：人类之间的一致率只有 70%–80%，
+剩下 20%–30% 是「同一条 pair 换个人标就会翻」的样本。第 2 个 epoch 开始，模型会去拟合这部分噪声——
+表现为<strong>训练损失继续降、验证准确率反而降</strong>。这就是 reward hacking 的种子。</p>
+<p class="small">一句话：参数量大不是问题（它只是在做选择），标签有噪声才是问题（再训就会去背噪声）。</p>
+</div>
+</details>
+</div>
+
+<h3 id="apI">I · 模拟卷 C：RL 与 DPO</h3>
+
+<div class="exam">
+<div class="head"><span class="no">题 C1</span><span class="ttl">GRPO 的组内优势</span><span class="pt">12 分</span></div>
+<p class="stem">同一个 prompt 采 8 条回答，奖励模型给分依次为</p>
+
+$$
+(r_1,\dots,r_8)=(0,\ 0.2,\ 0.4,\ 0.6,\ 0.8,\ 1.0,\ 0.3,\ 0.7)
+$$
+
+<ol class="asks">
+<li>求组内均值 $\mu$ 与标准差 $\sigma$（用总体标准差，除以 $n$ 而不是 $n-1$）。</li>
+<li>按 $\hat A_i=\dfrac{r_i-\mu}{\sigma}$ 求 8 个优势值（保留三位小数）。</li>
+<li>若这 8 条<strong>全部答对</strong>（奖励都是 1.0），会发生什么？工程上怎么处理？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $\mu=\dfrac{0+0.2+0.4+0.6+0.8+1.0+0.3+0.7}{8}=\dfrac{4.0}{8}=\mathbf{0.5}$。</p>
+<p>各偏差：$-0.5,\,-0.3,\,-0.1,\,0.1,\,0.3,\,0.5,\,-0.2,\,0.2$；平方：$0.25,\,0.09,\,0.01,\,0.01,\,0.09,\,0.25,\,0.04,\,0.04$，和 $=0.78$。</p>
+
+$$
+\sigma^{2}=\frac{0.78}{8}=0.0975,\qquad \sigma=\sqrt{0.0975}=\mathbf{0.3122}
+$$
+
+<p><strong>(2)</strong> 逐项 $(r_i-0.5)/0.3122$：</p>
+
+<table>
+<thead><tr><th class="num">$i$</th><th class="num">$r_i$</th><th class="num">$r_i-\mu$</th><th class="num">$\hat A_i$</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td class="num">0.0</td><td class="num">−0.5</td><td class="num">−1.601</td></tr>
+<tr><td class="num">2</td><td class="num">0.2</td><td class="num">−0.3</td><td class="num">−0.961</td></tr>
+<tr><td class="num">3</td><td class="num">0.4</td><td class="num">−0.1</td><td class="num">−0.320</td></tr>
+<tr><td class="num">4</td><td class="num">0.6</td><td class="num">+0.1</td><td class="num">+0.320</td></tr>
+<tr><td class="num">5</td><td class="num">0.8</td><td class="num">+0.3</td><td class="num">+0.961</td></tr>
+<tr><td class="num">6</td><td class="num">1.0</td><td class="num">+0.5</td><td class="num">+1.601</td></tr>
+<tr><td class="num">7</td><td class="num">0.3</td><td class="num">−0.2</td><td class="num">−0.641</td></tr>
+<tr><td class="num">8</td><td class="num">0.7</td><td class="num">+0.2</td><td class="num">+0.641</td></tr>
+</tbody>
+</table>
+
+<p>校验：8 个 $\hat A_i$ 之和为 0（这是标准化的必然结果），所以一定有正有负、正负抵消。</p>
+
+<p><strong>(3)</strong> 全部为 1.0 时 $\mu=1$、$\sigma=0$：</p>
+<ul>
+<li>直接算会<strong>除以零</strong>，实现里必须加 $\epsilon$（如 $10^{-8}$）；</li>
+<li>即使加了 $\epsilon$，$r_i-\mu=0$，所以 8 个 $\hat A_i$ <strong>全为 0</strong>，这一组<strong>不产生任何梯度</strong>。</li>
+</ul>
+<p>这不是 bug，是设计的必然：GRPO 的信号完全来自「组内的相对好坏」。一组里没有好坏之分，就没有学习信号。
+工程上的对策：</p>
+<ol>
+<li><strong>过滤</strong>掉全对 / 全错的组（这也是为什么很多实现报「有效样本率」）；</li>
+<li>难度太低的 prompt 对 RL 没有贡献，数据配比要向「中等难度」倾斜；</li>
+<li>实在要保住这些样本，可以和 SFT 损失混合（保留一个「正确答案也要学」的项）。</li>
+</ol>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 C2</span><span class="ttl">baseline 到底在扣掉什么</span><span class="pt">10 分</span></div>
+<p class="stem">同一 prompt 采 3 条回答，奖励为 $(0.2,\,0.5,\,0.9)$。</p>
+<ol class="asks">
+<li>用组内标准化求三个优势值。</li>
+<li>如果直接用 reward 当权重（即 $b=0$），三条的权重符号都是正的，会出什么问题？</li>
+<li>若三条奖励换成 $(0.9,\,0.95,\,1.0)$，不除 $\sigma$ 的优势是多少？这说明 baseline 真正扣掉的是什么？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $\mu=\dfrac{0.2+0.5+0.9}{3}=\dfrac{1.6}{3}=0.5333$。</p>
+<p>偏差：$-0.3333,\,-0.0333,\,+0.3667$；平方和 $=0.1111+0.0011+0.1344=0.2467$；方差 $=0.0822$，$\sigma=0.2867$。</p>
+
+$$
+\hat A=\left(\frac{-0.3333}{0.2867},\ \frac{-0.0333}{0.2867},\ \frac{0.3667}{0.2867}\right)
+=\mathbf{(-1.162,\ -0.116,\ +1.279)}
+$$
+
+<p><strong>(2)</strong> $b=0$ 时三条权重是 $(0.2,\,0.5,\,0.9)$，<strong>全是正的</strong>——意味着三条回答的概率都被推高，只是幅度不同。</p>
+<p>问题在于<strong>绝对分数不可跨题比较</strong>：一道简单题得 0.9 是正常发挥，一道难题得 0.9 是超常发挥。
+如果按绝对值加权，模型会把「答对简单题」和「答对难题」当成同样值得学，学不到「难题更该奖励」。</p>
+<p>减掉 $\mu$ 之后，权重变成「比同题平均好多少」，有一条是负的，正负分离才产生真正的对比。</p>
+
+<p><strong>(3)</strong> $\mu=0.95$，偏差为 $(-0.05,\,0,\,+0.05)$。</p>
+<p>注意：<strong>绝对值都是 0.9 以上，但优势只有 ±0.05。</strong>这说明 baseline 扣掉的是「这道题本来该得几分」，
+留下的是「相对于这道题的平均水平好多少」。题目难易、评分尺度这些「整体水平」被一起消掉了。</p>
+<p>再除以 $\sigma=0.0408$，得到 $(-1.225,\,0,\,+1.225)$——除 $\sigma$ 只是把尺度拉回统一量级，
+<strong>不改变符号、也不改变排序</strong>。所以 $(r-\mu)/\sigma$ 里，$\mu$ 决定「谁被推谁被压」，$\sigma$ 只决定「推多狠」。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 C3</span><span class="ttl">DPO 的一步计算</span><span class="pt">10 分</span></div>
+<p class="stem">DPO 训练中某条样本：$\beta=0.1$，当前模型对两条回答的「相对参考模型的涨幅」为</p>
+
+$$
+\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}=+0.5,
+\qquad
+\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}=-0.5
+$$
+
+<ol class="asks">
+<li>求 $\Delta$、$p=\sigma(\Delta)$ 与损失。</li>
+<li>若这条样本的标注写反了（其实 $y_l$ 更好），损失变成多少？为什么涨得不多？换成 $\beta=1$ 呢？</li>
+<li>要让 $p$ 达到 $0.9$，两个 log 比值之差需要多大？$\beta=1$ 时呢？这说明 $\beta$ 在调什么？</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 先算括号里的差：$+0.5-(-0.5)=1.0$，再乘 $\beta$：</p>
+
+$$
+\Delta=\beta\left[\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}-\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}\right]
+=0.1\times1.0=\mathbf{0.1}
+$$
+
+<p>$p=\sigma(0.1)=\dfrac{1}{1+e^{-0.1}}=\dfrac{1}{1+0.9048}=\mathbf{0.5250}$。</p>
+<p>损失 $\mathcal{L}=-\log 0.5250=\mathbf{0.6444}$。</p>
+<p class="small">对照：训练刚开始时 $\pi_\theta=\pi_{\text{ref}}$，两个 log 比值都是 0，$\Delta=0$、$p=0.5$、loss $=\ln2=0.693$。
+所以这条样本已经从「完全分不出」走到了「略微偏向 $y_w$」。</p>
+
+<p><strong>(2)</strong> 标注反了，模型要给「其实更好的 $y_l$」高概率，即用 $1-p=0.4750$：</p>
+
+$$
+\mathcal{L}'=-\log(1-0.5250)=-\log 0.4750=\mathbf{0.7444}
+$$
+
+<p>只从 0.644 涨到 0.744，涨了 0.10。原因：<strong>$\Delta$ 很小，模型本来就没把握</strong>——
+一个「五五开」的预测，标错也不太痛。</p>
+<p>换成 $\beta=1$：$\Delta=1\times1.0=1$，$p=0.7311$，$\mathcal{L}=0.3133$；标注反了则
+$\mathcal{L}'=-\log 0.2689=\mathbf{1.3133}$，涨了 1.0。</p>
+<p>所以<strong>标注错误造成的伤害，与当前 margin 成正比</strong>：margin 越大，一旦标错，损失越剧烈。
+这也是 DPO 对噪声数据敏感的原因——它没有 RM 做缓冲，会认真地去拟合那个错误。</p>
+
+<p><strong>(3)</strong> 由 $\Delta=\ln\frac{p}{1-p}$，$p=0.9$ 需要 $\Delta=\ln 9=2.1972$。</p>
+
+$$
+\text{log 比值差}=\frac{\Delta}{\beta}
+=\frac{2.1972}{0.1}=\mathbf{21.97}
+\qquad\text{（}\beta=1\text{ 时只要 }2.197\text{）}
+$$
+
+<p>$\beta$ 越小，要「赢」就需要拉出越大的比值差，也就是<strong>允许模型偏离 $\pi_{\text{ref}}$ 越远</strong>；
+$\beta$ 越大，同样的比值差就被判为越大的 margin，模型越<strong>保守</strong>。</p>
+<p>这就是为什么 $\beta$ 被叫作「KL 强度」：它虽然没在 DPO 损失里显式出现 KL 项，但通过缩放 $\Delta$，
+间接决定了「离参考模型能走多远」。工程上 $\beta$ 常取 0.1 左右，太小会退化（只会说那几条标准答案），
+太大学不到东西。</p>
+</div>
+</details>
+</div>
+
+<h3 id="apJ">J · 计算题库：二十道快问快答</h3>
+
+<p>遮住右列自测。这些是最容易被出成「第一问」的送分题，答不出来说明对应小节还没过。</p>
+
+<table>
+<thead><tr><th class="num">#</th><th>题目</th><th>答案</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>$\sigma(1.5)=?$</td><td>$0.8176$</td></tr>
+<tr><td class="num">2</td><td>$-\log\sigma(1)=?$</td><td>$0.3133$</td></tr>
+<tr><td class="num">3</td><td>$p=0.8$ 对应 $\Delta=?$</td><td>$\ln 4=1.3863$</td></tr>
+<tr><td class="num">4</td><td>$p=0.99$ 对应 $\Delta=?$</td><td>$\ln 99=4.5951$</td></tr>
+<tr><td class="num">5</td><td>$\Delta=0$ 时 BT 损失 $=?$</td><td>$\ln 2=0.6931$</td></tr>
+<tr><td class="num">6</td><td>$\Delta=2$ 时的梯度权重 $\sigma(-\Delta)=?$</td><td>$0.1192$（$=1-p$）</td></tr>
+<tr><td class="num">7</td><td>一条 500 token 的回答，$G_t$ 有几个不同取值（奖励只在末尾给）？</td><td>$1$ 个——处处等于 $R$</td></tr>
+<tr><td class="num">8</td><td>GAE 在 $\lambda=0$ 时 $\hat A_t=?$</td><td>$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$</td></tr>
+<tr><td class="num">9</td><td>一组 8 条奖励全相同时 $\hat A_i=?$</td><td>全为 $0$，该组无梯度</td></tr>
+<tr><td class="num">10</td><td>$d=4096,\ |V|=128000$ 时 lm_head 参数量 $=?$</td><td>$5.24\times10^{8}$</td></tr>
+<tr><td class="num">11</td><td>$d=k=4096$、$r=8$ 的 LoRA 参数量 $=?$</td><td>$65536$（占 $0.39\%$）</td></tr>
+<tr><td class="num">12</td><td>7B 全参微调显存（16 B/参数）$=?$</td><td>$112$ GB</td></tr>
+<tr><td class="num">13</td><td>7B 的 bf16 推理权重 $=?$</td><td>$14$ GB</td></tr>
+<tr><td class="num">14</td><td>100 万条 pair 的标签信息量 $=?$</td><td>$10^{6}$ bit $=125$ KB</td></tr>
+<tr><td class="num">15</td><td>缩放律 $L\propto N^{-\alpha}$，$\alpha=0.34$，$N$ 翻倍后 $L$ 变成原来的几倍？</td><td>$2^{-0.34}=0.790$</td></tr>
+<tr><td class="num">16</td><td>SFT 里把 $m_t$ 全设为 1 会怎样？</td><td>prompt 也参与损失，梯度被「复述问题」占据</td></tr>
+<tr><td class="num">17</td><td>DPO 中 $\beta=0.5$、log 比值差 $=2$，则 $\Delta$ 与 $p=?$</td><td>$\Delta=1$，$p=0.7311$</td></tr>
+<tr><td class="num">18</td><td>KL 约束下的最优策略 $\pi^{\star}\propto?$</td><td>$\pi_{\text{ref}}(y\mid x)\exp\!\big(r(x,y)/\beta\big)$</td></tr>
+<tr><td class="num">19</td><td>$|V|=5\times10^{4}$、回答 10 token，可能的回答有几种？</td><td>$(5\times10^{4})^{10}\approx9.8\times10^{46}$</td></tr>
+<tr><td class="num">20</td><td>BT 损失的下确界 $=?$</td><td>$0$（$\Delta\to\infty$ 时），永远取不到</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">最后三条提醒</span>
+<ol>
+<li><strong>凡是问「损失」，先问「分对还是分错」。</strong>分对是 $-\log\sigma(\Delta)$，分错是 $-\log\sigma(-\Delta)$，
+两者在 $\Delta=0$ 处都等于 $\ln 2$。</li>
+<li><strong>凡是问「参数量」，先问「是 $d|V|$ 还是 $r(d+k)$ 还是 $d$」。</strong>三者差三到四个数量级，写错量纲基本全错。</li>
+<li><strong>凡是问「优势 / 权重」，先看有没有减 baseline。</strong>减了才叫相对好坏，不减就是绝对分数——
+绝对分数跨题不可比，这是 RL 那一部分所有推导的出发点。</li>
+</ol>
+</div>
 
 <h3 id="apE">E · 参考文献</h3>
 
