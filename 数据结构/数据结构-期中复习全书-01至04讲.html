@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 · 期中复习全书（01–04 讲）— 带推导版</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+  .t-coral{background:var(--coral-bg); color:var(--coral-tx);}
+  .t-red{background:var(--red-bg); color:var(--red);}
+  /* 习题块 */
+  .q{border:1px solid var(--bd); border-radius:10px; padding:14px 18px; margin:14px 0; background:#fff;}
+  .q .no{font-family:var(--mono); font-size:12px; color:var(--tx3); margin-right:8px;}
+  .q .diff{font-size:11.5px; color:var(--tx3); float:right; font-family:var(--mono);}
+  .q p:first-child{margin-top:0;}
+  .q p:last-child{margin-bottom:0;}
+  details{background:#f6f6f3; border:1px solid var(--bd2); border-left:3px solid var(--blue); border-radius:0 8px 8px 0; padding:10px 16px; margin:12px 0;}
+  details summary{cursor:pointer; font-size:13.5px; color:var(--blue); font-weight:600; outline:none;}
+  details summary:hover{color:var(--blue-tx);}
+  details[open] summary{margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed var(--bd2);}
+  details p:first-of-type{margin-top:6px;}
+  .steps{counter-reset:st; list-style:none; padding-left:0;}
+  .steps>li{counter-increment:st; padding-left:30px; position:relative; margin:8px 0;}
+  .steps>li:before{content:counter(st); position:absolute; left:0; top:2px; width:20px; height:20px; border-radius:50%;
+    background:var(--blue-bg); color:var(--blue-tx); font-size:11.5px; text-align:center; line-height:20px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>数据结构（与算法）· 期中复习全书</h1>
+    <div class="sub">复旦大学 数据科学学院 · 覆盖 01–04 讲 &nbsp;|&nbsp; 每个复杂度都给推导，每条递归式都解一遍</div>
+    <div class="meta">
+      <span class="pill">范围：复杂度工具 / 六种排序 / 选择问题 / BST / 红黑树 / 跳表</span>
+      <span class="pill">写法：结论 + 推导 + 严格性（最坏 / 期望）</span>
+      <span class="pill">配套：习题册（33 题 + 模拟卷）</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">渐进记号与三类分析</a></li>
+      <li><a href="#s2">求和的四把工具</a></li>
+      <li><a href="#s3">解递归式的三条路</a></li>
+      <li><a href="#s4">插入排序</a></li>
+      <li><a href="#s5">归并排序</a></li>
+      <li><a href="#s6">堆与堆排序</a></li>
+      <li><a href="#s7">快速排序</a></li>
+      <li><a href="#s8">线性时间排序</a></li>
+      <li><a href="#s9">比较排序的下界</a></li>
+      <li><a href="#s10">选择问题</a></li>
+      <li><a href="#s11">二叉搜索树</a></li>
+      <li><a href="#s12">红黑树</a></li>
+      <li><a href="#s13">跳表</a></li>
+      <li><a href="#s14">横向对比与决策</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note" style="margin-top:0">
+      <strong>这份和「习题册」的分工：</strong>
+      习题册（<code>数据结构-期中冲刺-复杂度与细节-习题精练.html</code>）是<strong>练手</strong>用的，里面的三张表只够最后默写；
+      <strong>这一份是讲懂用的</strong> —— 每一个复杂度都给出「为什么是这个数」，每一条递归式都完整解一遍，
+      每个结论都标出它是<strong>最坏 / 期望 / 摊还</strong>哪一种。
+      <br>覆盖 01–04 四讲全部考点，按「基础工具 → 排序 → 选择 → 树 → 横向对比」的顺序排，可以顺着读，也可以按目录跳。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 渐进记号与三类分析：复杂度到底在算什么</h2>
+
+      <p>先把一件事说清楚：<strong>复杂度不是「跑多久」，而是「增长多快」</strong>。
+      我们故意扔掉两样东西 —— <strong>机器快慢</strong>（常数因子）和<strong>小规模行为</strong>（低阶项），
+      只留下「$n$ 变大时，代价以什么速度涨」。这就是为什么 $2n^2$ 和 $100n^2$ 被当成同一类。</p>
+
+      <h3>五个记号：一张图看懂</h3>
+      <table>
+        <thead><tr><th style="width:70px">记号</th><th style="width:150px">读法</th><th>严格含义</th><th style="width:150px">类比</th></tr></thead>
+        <tbody>
+          <tr><td>$O$</td><td>$f$ 不超过 $g$ 的量级</td><td>$\exists c,n_0$，$\forall n\ge n_0$：$0\le f(n)\le c\,g(n)$</td><td>$\le$</td></tr>
+          <tr><td>$\Omega$</td><td>$f$ 不低于 $g$ 的量级</td><td>$\exists c,n_0$：$f(n)\ge c\,g(n)$</td><td>$\ge$</td></tr>
+          <tr><td>$\Theta$</td><td>$f$ 与 $g$ 同阶</td><td>$O$ 且 $\Omega$ 同时成立</td><td>$=$</td></tr>
+          <tr><td>$o$</td><td>$f$ 比 $g$ <strong>严格</strong>小</td><td>$\forall c\gt0$，$\exists n_0$：$f(n)\lt c\,g(n)$，即 $\lim f/g=0$</td><td>$\lt$</td></tr>
+          <tr><td>$\omega$</td><td>$f$ 比 $g$ <strong>严格</strong>大</td><td>$\forall c\gt0$：$f(n)\gt c\,g(n)$，即 $\lim f/g=\infty$</td><td>$\gt$</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>为什么 $O$ 和 $o$ 必须分开：</strong>$2n=O(n)$ 且 $2n=\Theta(n)$，但 $2n\ne o(n)$。
+        $O$ 允许「同阶」，$o$ 要求「差一个无界的倍数」。
+        <br>考试里凡是要你「证明严格小于」（比如证明主定理的 $\varepsilon$ 条件），必须用 $o$ 或 $O(n^{p-\varepsilon})$，写 $O(n^p)$ 是不合格的。
+      </div>
+
+      <h3>三类分析：为什么最坏情况最常用</h3>
+      <table>
+        <thead><tr><th style="width:90px">分析</th><th>定义</th><th>怎么算</th><th>什么时候用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>最坏</strong></td><td>所有规模为 $n$ 的输入中代价最大的那个</td><td>构造最坏的输入，或对「每次操作都走最长路径」求和</td><td><strong>默认</strong>。给出保证，不依赖输入分布</td></tr>
+          <tr><td><strong>平均</strong></td><td>按输入分布取期望（通常假设均匀随机）</td><td>对输入空间求和再除以规模；或指示器随机变量</td><td>需要「输入大致随机」的假设，快排/选择/跳表</td></tr>
+          <tr><td><strong>最好</strong></td><td>代价最小的输入</td><td>通常只用来做对比，很少单独考</td><td>几乎不用，除非问「适应性」</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warn">
+        <strong>三个「平均」不是一回事，答题必须写清楚：</strong>
+        ① <strong>平均情况</strong>（average case）—— 对<strong>输入</strong>取期望，如插入排序 $\Theta(n^2)$；
+        ② <strong>期望时间</strong>（expected）—— 对<strong>算法内部的随机选择</strong>取期望，如随机化快排 $O(n\lg n)$；
+        ③ <strong>摊还</strong>（amortized）—— 对<strong>一串操作</strong>取平均，如动态数组扩容 $O(1)$。
+        <br>快排的 $O(n\lg n)$ 属于 ②，<strong>不是</strong> ①：因为随机化之后，坏切分的概率由硬币决定，与输入无关。
+      </div>
+
+      <h3>怎么比较两个函数的增长速度（四种手法，按可靠性排序）</h3>
+      <ol class="steps">
+        <li><strong>取对数</strong>：$f$ 与 $g$ 都化成 $2^{\text{指数}}$ 的形式，比指数。例：$n^{\lg n}=2^{(\lg n)^2}$，与 $2^n$ 比就是比 $(\lg n)^2$ 与 $n$。</li>
+        <li><strong>求比值极限</strong>：算 $\lim_{n\to\infty}f/g$。为 $0$ 则 $f=o(g)$，为 $\infty$ 则 $f=\omega(g)$，为常数则同阶。</li>
+        <li><strong>代入具体值</strong>：取 $n=2^{16}$ 或 $2^{20}$ 各算一遍。$2^{\sqrt{2\lg n}}$、$n^{0.9}$ 这类怪函数只有这招最稳。</li>
+        <li><strong>背增长阶梯</strong>：$1\lt\lg\lg n\lt\lg n\lt\sqrt n\lt n\lt n\lg n\lt n^2\lt n^3\lt 2^n\lt n!$，中间可以插入 $n^{\lg n}$（在 $n^2$ 与 $2^n$ 之间）、$n^{0.9}$（在 $\sqrt n$ 与 $n$ 之间）。</li>
+      </ol>
+
+      <div class="warn">
+        <strong>三个致命错误（都来自「凭感觉」）：</strong>
+        <ul style="margin:6px 0 0">
+          <li><strong>$O$ 不能穿过指数</strong>：$f=O(g)$ <strong>不</strong>推出 $2^f=O(2^g)$。反例 $f=2n,g=n$。</li>
+          <li><strong>$\lg$ 的底数不影响阶</strong>：$\log_2 n$ 与 $\log_{10}n$ 只差常数 $\log_2 10$，所以写 $\Theta(\lg n)$ 都对；但<strong>指数里的底数影响巨大</strong>（$2^n$ 与 $4^n$ 不同阶）。</li>
+          <li><strong>$\log^k n$ 永远被 $n^\varepsilon$ 压住</strong>：$\lg^{100}n=o(n^{0.001})$。这条决定了主定理里「多项式差距」的判定。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · 求和的四把工具：每个公式都推一遍</h2>
+
+      <p>复杂度分析里 80% 的卡壳不是不会算法，而是<strong>一个和算不出来</strong>。真正要掌握只有四类，每一类都给你推导过程 —— 记住推导比记住结论有用。</p>
+
+      <h3>工具一：等差数列（高斯配对）</h3>
+      <p>求和 $S=\sum_{k=1}^{n}k$。把和正着写一遍、倒着写一遍，两式相加：</p>
+      $$\begin{aligned}
+      S&=1+2+\cdots+n\\
+      S&=n+(n-1)+\cdots+1\\
+      \Rightarrow\ 2S&=\underbrace{(n+1)+(n+1)+\cdots+(n+1)}_{n\ \text{个}}
+      \end{aligned}$$
+      <p>右边有 $n$ 个 $(n+1)$，所以 $2S=n(n+1)$，即</p>
+      $$\sum_{k=1}^{n}k=\frac{n(n+1)}{2}=\Theta(n^2)$$
+      <p><strong>用在哪</strong>：插入排序最坏（第 $j$ 个元素比较 $j-1$ 次，求和）、选择问题最坏、两层嵌套循环里内层跑 $i$ 次的情形。</p>
+
+      <h3>工具二：等比数列（乘公比相减）</h3>
+      <p>求和 $S=\sum_{k=0}^{n}x^k$。两边乘 $x$ 再相减：</p>
+      $$S-xS=(1+x+\cdots+x^n)-(x+x^2+\cdots+x^{n+1})=1-x^{n+1}$$
+      <p>于是 $S=\dfrac{1-x^{n+1}}{1-x}$。当 $|x|\lt1$ 且 $n\to\infty$ 时，$x^{n+1}\to0$：</p>
+      $$\sum_{k=0}^{\infty}x^k=\frac{1}{1-x}$$
+      <p><strong>用在哪</strong>：递归树里「每层按固定比例缩小」的情形 —— $T(n)=T(9n/10)+n$ 的总代价
+      $n\left(1+\frac9{10}+\left(\frac9{10}\right)^2+\cdots\right)=10n=O(n)$；跳表每层概率 $1/2$ 的几何级数。</p>
+
+      <div class="note">
+        <strong>这是「为什么线性选择是 $O(n)$」的唯一理由：</strong>每层代价按 $9/10$ 缩水，等比级数收敛到常数倍，
+        所以总和被<strong>首项</strong>压住。对比快排：每层代价不缩水（两边加起来还是 $n$），只是层数多了 $\lg n$ 倍。
+        <br><strong>判断口诀：每层和衰减 → 首项主导（$O(n)$）；每层和不变 → 乘层数（$O(n\lg n)$）。</strong>
+      </div>
+
+      <h3>工具三：调和级数（积分界）</h3>
+      <p>求和 $H_n=\sum_{k=1}^{n}\dfrac1k$。它没有闭式，但可以夹住：因为 $1/x$ 单调递减，</p>
+      $$\int_{1}^{n+1}\frac{dx}{x}\ \le\ \sum_{k=1}^{n}\frac1k\ \le\ 1+\int_{1}^{n}\frac{dx}{x}$$
+      <p>即 $\ln(n+1)\le H_n\le 1+\ln n$。所以</p>
+      $$H_n=\ln n+O(1)=\Theta(\lg n)$$
+      <p><strong>更精确</strong>：$H_n=\ln n+\gamma+\frac{1}{2n}+O\left(\frac{1}{n^2}\right)$，$\gamma\approx0.5772$（欧拉常数）。</p>
+      <p><strong>用在哪</strong>：快排平均比较次数 $2nH_n$；$\sum n/i=nH_n=\Theta(n\lg n)$ 型循环；基数排序的期望趟数。</p>
+
+      <div class="note">
+        <strong>积分界是通用技巧</strong>：对单调函数 $f$，$\int_1^{n+1}f\le\sum_{k=1}^n f(k)\le f(1)+\int_1^n f$。
+        算不出精确值时，用它给出 $\Theta$ 就够了 —— 考试里写「由积分界，该和为 $\Theta(\cdot)$」是标准答法。
+      </div>
+
+      <h3>工具四：带权等比（乘 $k$ 的等比）</h3>
+      <p>求和 $\sum_{k\ge0}\dfrac{k}{2^k}$。这是 BuildHeap 分析的关键，有两种推法：</p>
+      <p><strong>推法一（错位相减）</strong>：设 $S=\sum_{k\ge0}k x^k$（$|x|\lt1$）。注意到 $k x^k=x\cdot\frac{d}{dx}x^k$，于是</p>
+      $$S=x\frac{d}{dx}\sum_{k\ge0}x^k=x\frac{d}{dx}\left(\frac{1}{1-x}\right)=\frac{x}{(1-x)^2}$$
+      <p>取 $x=1/2$：$S=\dfrac{1/2}{(1/2)^2}=2$。</p>
+      <p><strong>推法二（拆成竖列再求和）</strong>：把 $\frac{k}{2^k}$ 想成 $k$ 个 $\frac{1}{2^k}$ 相加，交换求和顺序：</p>
+      $$\sum_{k\ge1}\frac{k}{2^k}=\sum_{k\ge1}\sum_{j=1}^{k}\frac{1}{2^k}
+        =\sum_{j\ge1}\sum_{k\ge j}\frac{1}{2^k}
+        =\sum_{j\ge1}\frac{1}{2^{j-1}}=2$$
+      <p><strong>用在哪</strong>：BuildHeap 的 $O(n)$ 证明（见 §6），这是唯一一处必须用到它的地方。</p>
+
+      <h3>四个「考试专用」求和，直接背</h3>
+      <table>
+        <thead><tr><th style="width:38%">和</th><th style="width:26%">结果</th><th>为什么 / 用在哪</th></tr></thead>
+        <tbody>
+          <tr><td>$\sum_{k=1}^{n}k\lg k$</td><td>$\le\frac{1}{2}n^2\lg n-\frac{1}{8}n^2$</td><td>快排平均的代换法：把 $\lg k$ 放大成 $\lg n$，再扣掉前一半的高估</td></tr>
+          <tr><td>$\sum_{i=1}^{n}\lceil\lg i\rceil$</td><td>$\Theta(n\lg n)$</td><td>$\lceil\lg i\rceil$ 是 $i$ 的二进制位数；夹在 $\sum\lg i$ 与 $\sum\lg i+n$ 之间</td></tr>
+          <tr><td>$\sum_{h\ge0}\frac{h}{2^{h}}$</td><td>$2$</td><td>工具四；BuildHeap 的收敛因子</td></tr>
+          <tr><td>$\sum_{k=1}^{n}\frac{n}{k}$</td><td>$nH_n=\Theta(n\lg n)$</td><td>工具三；双重循环中内层是 $n/i$ 的情形</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 解递归式的三条路：什么时候用哪条</h2>
+
+      <p>递归式是分治算法的「成本合同」。三条路各有适用面，<strong>选错方法比算错更浪费时间</strong>。</p>
+
+      <table>
+        <thead><tr><th style="width:110px">方法</th><th style="width:26%">能干什么</th><th>什么时候用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>递归树</strong></td><td>猜出答案，能处理不等分</td><td>形式不标准（$T(n/3)+T(2n/3)$）、或想先知道答案再证</td></tr>
+          <tr><td><strong>主定理</strong></td><td>直接给结论</td><td>严格是 $aT(n/b)+f(n)$，且 $f$ 与 $n^{\log_b a}$ 差多项式量级</td></tr>
+          <tr><td><strong>代换法</strong></td><td>严格证明</td><td>已经有猜测答案；或主定理失效但树能画</td></tr>
+        </tbody>
+      </table>
+
+      <h3>路一：递归树 —— 只数两样东西</h3>
+      <p>画树时把「$aT(n/b)$」画成 $a$ 个孩子，「$f(n)$」写在节点旁边（表示<strong>这一层自己</strong>的代价）。然后只数：</p>
+      <ol>
+        <li><strong>每层的和</strong>：等分时通常是常数 × 根代价；不等分时 $\le$ 根代价（因为子问题规模之和 $\le n$）。</li>
+        <li><strong>层数</strong>：取<strong>最长</strong>路径（最深叶子），不是最短。</li>
+      </ol>
+
+      <div class="card">
+        <p style="margin-top:0"><strong>例：$T(n)=T(n/3)+T(2n/3)+cn$</strong></p>
+        <p>第 0 层 $cn$；第 1 层 $\frac{cn}{3}+\frac{2cn}{3}=cn$；第 2 层 $\frac{cn}{9}+\frac{2cn}{9}+\frac{2cn}{9}+\frac{4cn}{9}=cn$。
+        每层都恰好 $cn$（因为 $\frac13+\frac23=1$，规模不膨胀也不缩水）。</p>
+        <p>层数看最深路径：一直沿 $\frac23$ 走，$\left(\frac23\right)^k n=1\Rightarrow k=\log_{3/2}n\approx1.71\lg n$。</p>
+        <p>所以 $T(n)\le cn\log_{3/2}n=O(n\lg n)$；又每层至少 $cn$（最浅路径 $\log_3 n$ 层内都满），$T(n)=\Omega(n\lg n)$。故</p>
+        $$T(n)=\Theta(n\lg n)$$
+        <p><strong>这题主定理用不了</strong>（两个子问题规模不同），只能画树。</p>
+      </div>
+
+      <h3>路二：主定理 —— 本质是「比谁重」</h3>
+      <p>对 $T(n)=aT(n/b)+f(n)$，关键量是<strong>叶子总数</strong>：</p>
+      $$a^{\log_b n}=n^{\log_b a}$$
+      <p>把「每层代价」$f(n)$ 和「叶子总数」$n^{\log_b a}$ 比大小，谁大谁决定答案：</p>
+      <table>
+        <thead><tr><th style="width:70px">情形</th><th style="width:32%">条件</th><th style="width:26%">结论</th><th>直觉</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>$f(n)=O(n^{\log_b a-\varepsilon})$，$\varepsilon\gt0$</td><td>$\Theta(n^{\log_b a})$</td><td>叶子重：越往下越贵，总量≈最后一层</td></tr>
+          <tr><td>2</td><td>$f(n)=\Theta(n^{\log_b a})$</td><td>$\Theta(n^{\log_b a}\lg n)$</td><td>每层一样重：总量 = 每层 × 层数</td></tr>
+          <tr><td>3</td><td>$f(n)=\Omega(n^{\log_b a+\varepsilon})$ 且 $af(n/b)\le cf(n)$，$c\lt1$</td><td>$\Theta(f(n))$</td><td>根重：等比衰减，总量≈第一层</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>为什么情形 3 还要一个正则条件</strong>：$af(n/b)\le cf(n)$ 保证「每层代价按固定比例缩水」。
+      没有它，$f$ 可能在层间抖动，根就不一定主导。这也是为什么主定理不能只看「$f$ 更大」。</p>
+
+      <div class="warn">
+        <strong>三个最容易判错的地方：</strong>
+        <ol style="margin:6px 0 0">
+          <li><strong>$\varepsilon$ 必须是多项式差距</strong>。$100n^{0.9}$ 与 $n$ 差 $\varepsilon=0.1$ → 情形 1；
+              但 $n\lg n$ 与 $n$ 只差一个 $\lg$ 因子 → <strong>不是</strong>情形 1，也不是情形 2，<strong>主定理失效</strong>。</li>
+          <li><strong>$2T(n/2)+n/\lg n$ 主定理失效</strong>（差一个 $\lg$，不是多项式），答案是 $\Theta(n\lg\lg n)$。</li>
+          <li><strong>$T(n/3)+T(2n/3)$ 根本不是主定理形式</strong>，别硬套。</li>
+        </ol>
+      </div>
+
+      <h3>路三：代换法 —— 三步 + 一个技巧</h3>
+      <p>步骤固定：<strong>猜答案 → 写归纳假设 → 代入证明</strong>。难的是第三步入不进去时怎么办。</p>
+
+      <div class="card">
+        <p style="margin-top:0"><strong>例：$T(n)=2T(n/2)+n$，证 $T(n)=O(n\lg n)$</strong></p>
+        <p>猜 $T(n)\le cn\lg n$，假设对所有 $k\lt n$ 成立，代入：</p>
+        $$T(n)\le 2\cdot c\frac n2\lg\frac n2+n=cn(\lg n-1)+n=cn\lg n-cn+n$$
+        <p>要它 $\le cn\lg n$，只需 $-cn+n\le0$，即 $c\ge1$。✓</p>
+      </div>
+
+      <p><strong>技巧一：猜的界要带低阶项。</strong>对 $T(n)=2T(n/2)+n$ 这种还好，但对带 $\Theta(n)$ 常数项的递归式，
+      猜 $cn\lg n$ 在 $n=1$ 时右边是 0，基例就崩了。标准做法是猜 $cn\lg n+b$，让 $b$ 兜住小规模和低阶项。</p>
+
+      <p><strong>技巧二：算出来差一点点时，去找「余量」。</strong>如果得到 $T(n)\le cn\lg n-\text{某个正数}$，那正好；
+      如果得到 $T(n)\le cn\lg n+\text{正数}$，说明猜的界太紧，要么加 $b$，要么把 $c$ 调大。</p>
+
+      <div class="ok">
+        <strong>三条路怎么串起来用（考试标准流程）：</strong>
+        <br>① 先看能不能套主定理（30 秒）→ ② 套不上就画递归树，得到猜测答案 → ③ 再用代换法把猜测写成严格证明。
+        <br>只写递归树通常给一半分，因为「画树不是证明」。
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 插入排序：为什么最坏是 $\Theta(n^2)$，最好却是 $\Theta(n)$</h2>
+
+      <p><strong>一句话原理</strong>：像整理手里的扑克牌 —— 左手是已排好的牌，每次从右手拿一张，插入左手的正确位置。</p>
+
+<pre>INSERTION-SORT(A)
+1  for j = 2 to A.length
+2      key = A[j]
+3      i = j - 1
+4      while i &gt; 0 and A[i] &gt; key      <span class="c"># 严格大于才后移 → 稳定</span>
+5          A[i+1] = A[i]
+6          i = i - 1
+7      A[i+1] = key</pre>
+
+      <h3>正确性：循环不变式（考试爱考「证明排序正确」）</h3>
+      <p>不变式：<strong>每次外层循环开始时，$A[1..j-1]$ 是原来那 $j-1$ 个元素的有序排列</strong>。三步验证：</p>
+      <ul>
+        <li><strong>初始化</strong>：$j=2$ 时 $A[1..1]$ 只有一个元素，显然有序；</li>
+        <li><strong>保持</strong>：第 4–6 行把 $A[1..j-1]$ 中大于 <code>key</code> 的元素整体后移一格，空出的位置正好是 <code>key</code> 该在的位置，插入后 $A[1..j]$ 有序；</li>
+        <li><strong>终止</strong>：$j=n+1$ 时 $A[1..n]$ 有序，即整个数组有序。</li>
+      </ul>
+
+      <h3>复杂度：三个数字分别从哪来</h3>
+      <table>
+        <thead><tr><th style="width:80px">情形</th><th>第 $j$ 轮比较次数</th><th>求和</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td><strong>最坏</strong>（逆序）</td><td>$j-1$ 次（一路比到最前）</td><td>$\sum_{j=2}^{n}(j-1)=\frac{n(n-1)}{2}$</td><td>$\Theta(n^2)$</td></tr>
+          <tr><td><strong>最好</strong>（已排序）</td><td>$1$ 次（第 4 行一判就失败）</td><td>$n-1$</td><td>$\Theta(n)$</td></tr>
+          <tr><td><strong>平均</strong></td><td>约 $j/2$ 次（平均插到中间）</td><td>$\sum_{j=2}^{n}\frac j2\approx\frac{n^2}{4}$</td><td>$\Theta(n^2)$</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>一个漂亮但常被忽略的结论：</strong>插入排序的<strong>移动次数恰好等于数组的逆序对数量</strong>。
+        <br>因为每个逆序对 $(i,j)$（$i\lt j$ 但 $A[i]\gt A[j]$）在 $A[j]$ 被插入时<strong>恰好</strong>被「交换」一次，且每个元素只被插入一次。
+        <br>所以「已排序」= 0 个逆序对 → 0 次移动；「逆序」= $\binom n2$ 个逆序对 → $\binom n2$ 次移动。
+        <br>这也解释了为什么它在<strong>近乎有序</strong>的数据上极快：逆序对少，移动就少，只有 $n-1$ 次比较是跑不掉的。
+      </div>
+
+      <div class="warn">
+        <strong>两个答题细节：</strong>
+        ① <strong>比较次数 ≠ 移动次数</strong>，题目问哪个就答哪个。逆序时两者都是 $\frac{n(n-1)}{2}$，但最好情况下比较是 $n-1$、移动是 <strong>0</strong>（若把最后的 <code>A[i+1]=key</code> 也算赋值，则是 $n-1$，答题时说明口径）。
+        ② 稳定性来自第 4 行的<strong>严格大于</strong>：相等时循环停止，后来的元素不会越过先来的。
+      </div>
+
+      <p><strong>为什么工程上小数组还用它</strong>：没有递归开销、没有额外数组、顺序访问缓存友好、常数因子最小。
+      这就是 <code>std::sort</code> 在小规模时切到插入排序的原因。</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 归并排序：为什么「分」免费、「合」花钱</h2>
+
+      <p><strong>一句话原理</strong>：把数组对半切开，各自排好，再把两个有序表合并成一个。</p>
+
+<pre>MERGE-SORT(A, p, r)
+    if p &lt; r
+        q = ⌊(p+r)/2⌋
+        MERGE-SORT(A, p, q)          <span class="c"># 按位置切</span>
+        MERGE-SORT(A, q+1, r)
+        MERGE(A, p, q, r)            <span class="c"># 合：Θ(n)</span></pre>
+
+      <h3>递归式怎么读出来</h3>
+      <p>把三行的代价直接写在右边：</p>
+      <table>
+        <thead><tr><th style="width:52%">代码</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td>基例判断 <code>p &lt; r</code></td><td>$\Theta(1)$</td></tr>
+          <tr><td>两次递归</td><td>$2T(n/2)$</td></tr>
+          <tr><td>MERGE</td><td>$\Theta(n)$</td></tr>
+        </tbody>
+      </table>
+      $$T(n)=\begin{cases}\Theta(1) & n=1\\ 2T(n/2)+\Theta(n) & n\gt1\end{cases}$$
+
+      <h3>解：递归树一眼看出 $\Theta(n\lg n)$</h3>
+      <p>第 0 层 $n$；第 1 层两个 $n/2$，和还是 $n$；第 $i$ 层 $2^i$ 个 $n/2^i$，和还是 $n$。
+      <strong>每层和恒等于 $n$</strong>，共 $\lg n+1$ 层（从 $n$ 除到 1 要 $\lg n$ 次）：</p>
+      $$T(n)=n\cdot(\lg n+1)=\Theta(n\lg n)$$
+      <p>用主定理验证：$a=2,b=2$，$\log_2 2=1$，$f(n)=\Theta(n^1)$ → 情形 2 → $\Theta(n\lg n)$ ✓</p>
+
+      <h3>MERGE 为什么是 $\Theta(n)$（而不是 $n\lg n$ 或 $n^2$）</h3>
+      <p>两个指针各指向一个子数组的开头，每次比较后输出较小的那个，指针前进一格。<strong>指针只进不退</strong>，
+      一共输出 $n$ 个元素，所以循环体执行 $n$ 次、每次常数时间。</p>
+      <p><strong>比较次数的精确上界</strong>：每比较一次就输出一个元素；当某一方被取空时循环终止，剩下的整体接上。
+      所以比较次数 $\le n-1$（第 $n-1$ 次比较后必有一方为空）。</p>
+
+      <div class="note">
+        <strong>为什么稳定性来自「相等时取左边」：</strong>MERGE 里若写成 <code>if A[i] &lt;= B[j]</code> 取左边，相等时左边的先输出，
+        保持原有次序 → 稳定；写成 <code>&lt;</code> 就会取右边，破坏稳定性。
+        <br>整棵递归树每一层都稳定，整体就稳定。
+      </div>
+
+      <h3>代价与取舍</h3>
+      <table>
+        <thead><tr><th style="width:100px">维度</th><th>归并排序</th></tr></thead>
+        <tbody>
+          <tr><td>最坏/平均</td><td>都是 $\Theta(n\lg n)$ —— 唯一一个「不看输入脸色」的 $n\lg n$ 排序</td></tr>
+          <tr><td>空间</td><td>$\Theta(n)$（merge 要临时数组）—— <strong>不就地</strong></td></tr>
+          <tr><td>稳定</td><td>是</td></tr>
+          <tr><td>适合</td><td>链表排序（不需要随机访问）、外部排序（分块读入）、要求稳定且最坏可控的场景</td></tr>
+        </tbody>
+      </table>
+      <p>归并排序的意义不止「一个排序」：它是<strong>分治的样板</strong>，也是「最坏 $O(n\lg n)$」这条线的基准 ——
+      后面的堆排序、快排都在跟它比。</p>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 堆与堆排序：$O(n)$ 建堆是怎么省下来的</h2>
+
+      <p><strong>一句话原理</strong>：用<strong>近完全二叉树</strong>存数组，保证「父亲 ≥ 孩子」；于是最大值永远在根，取走再修复即可排序。</p>
+
+      <h3>数组表示：为什么不用指针</h3>
+      <p>近完全二叉树「除最后一层外全填满、最后一层靠左」的性质，让位置关系可以<strong>直接算</strong>（1-indexed）：</p>
+      $$\text{Parent}(i)=\lfloor i/2\rfloor,\qquad \text{Left}(i)=2i,\qquad \text{Right}(i)=2i+1$$
+      <p>代价是「树必须填满」，否则数组里出现空洞。（写成 0-indexed 时三个公式变成 $\lfloor(i-1)/2\rfloor$、$2i+1$、$2i+2$。）</p>
+
+      <h3>高度：$\lfloor\lg n\rfloor$ —— 所有操作的地基</h3>
+      <p>高度 $h$ 的二叉树节点数在 $h+1$（一条链）到 $2^{h+1}-1$（满）之间；而堆是<strong>近完全</strong>的，
+      $n$ 恰好落在 $[2^h,\,2^{h+1}-1]$ 里，解出 $h=\lfloor\lg n\rfloor$。</p>
+      <p>Heapify、Insert、ExtractMax 都是「沿一条根到叶的路径走」，代价正比于高度，所以都是 $O(\lg n)$。
+      <strong>高度是 $O(\lg n)$ 是整个堆结构的前提。</strong></p>
+
+      <h3>Heapify：$O(h)$，不是 $O(\lg n)$</h3>
+<pre>Heapify(A, i)
+    l = 2i; r = 2i+1; largest = i
+    if l &lt;= heap_size and A[l] &gt; A[largest]  largest = l
+    if r &lt;= heap_size and A[r] &gt; A[largest]  largest = r
+    if largest != i
+        swap(A[i], A[largest])
+        Heapify(A, largest)        <span class="c"># 只递归一条路径</span></pre>
+      <p><strong>为什么只递归一次</strong>：交换只影响「被换下去的那个孩子」所在子树，另一棵子树没动过、仍是堆。
+      所以每层最多一个递归调用 → $T(h)=T(h-1)+O(1)=O(h)$。</p>
+
+      <h3>BuildHeap 为什么是 $O(n)$：两种证法</h3>
+      <p>先看那个「显然」的分析错在哪：$n/2$ 次调用 × 每次 $O(\lg n)$ = $O(n\lg n)$。
+      这是<strong>正确上界但不紧</strong> —— 因为它假设每个节点都要下沉 $\lg n$ 层，而实际上<strong>绝大多数节点在树底</strong>，根本沉不动。</p>
+
+      <h4>证法一：按高度分组求和（讲义的写法）</h4>
+      <p>高度为 $h$ 的节点最多 $\left\lceil\dfrac{n}{2^{h+1}}\right\rceil$ 个（因为高度 $h$ 的节点在最下面，每往上一层节点数翻倍），
+      每个下沉 $O(h)$：</p>
+      $$T(n)=\sum_{h=0}^{\lfloor\lg n\rfloor}\left\lceil\frac{n}{2^{h+1}}\right\rceil O(h)
+        =O\left(n\sum_{h\ge0}\frac{h}{2^{h}}\right)=O(2n)=O(n)$$
+      <p>最后一步用了 §2 工具四：$\sum_{h\ge0}h/2^h=2$，<strong>收敛</strong>。</p>
+
+      <h4>证法二：换个角度数「每个节点的下沉代价」</h4>
+      <p>一个节点在 BuildHeap 中被 Heapify 一次，下沉代价 = <strong>它自己的高度</strong>。所以总代价 = 所有节点高度之和：</p>
+      $$\sum_{v}\text{height}(v)=\sum_{h\ge0}h\cdot(\text{高度为 }h\text{ 的节点数})\le\sum_{h\ge0}h\cdot\frac{n}{2^{h+1}}=O(n)$$
+      <p>直观说法：<strong>一半的节点是叶子（高度 0，不干活），1/4 高度 1，1/8 高度 2……「人多的地方活少，活多的地方人少」，加权求和只有常数倍。</strong></p>
+
+      <div class="ok">
+        <strong>这题的得分结构</strong>：① 指出 $O(n\lg n)$ 不紧、为什么；② 写出 $\lceil n/2^{h+1}\rceil$ 这个计数；
+        ③ 用 $\sum h/2^h=2$ 收敛收尾。三样缺一样都要扣分。
+      </div>
+
+      <h3>Heapsort：$n-1$ 次取堆顶</h3>
+<pre>Heapsort(A)
+    BuildHeap(A)                                  <span class="c"># O(n)</span>
+    for i = n downto 2
+        swap(A[1], A[i])
+        heap_size -= 1                            <span class="c"># 先缩小，再 Heapify</span>
+        Heapify(A, 1)                             <span class="c"># O(lg n)</span></pre>
+      $$T(n)=O(n)+(n-1)\cdot O(\lg n)=O(n\lg n)$$
+      <p><strong>为什么就地</strong>：全在原数组里交换，额外空间只有几个下标变量。
+      <strong>为什么不稳定</strong>：交换 $A[1]$ 与 $A[i]$ 是<strong>远距离</strong>交换，会把相等元素的相对次序打乱。</p>
+
+      <div class="warn">
+        <strong>三个实现细节（考试和写代码都会踩）：</strong>
+        ① <code>heap_size -= 1</code> 必须在 Heapify <strong>之前</strong>，否则刚换到末尾的最大值会被当成堆的一部分又换回来；
+        ② Heapify 是跟<strong>较大的</strong>那个孩子换，跟小的换之后仍然违反堆序；
+        ③ 建堆必须从 $\lfloor n/2\rfloor$ <strong>倒序</strong>到 1 —— 因为「孩子已经是堆」是 Heapify 的前提，正序会破坏它。
+      </div>
+
+      <h3>堆的真正价值：优先队列</h3>
+      <table>
+        <thead><tr><th style="width:170px">操作</th><th>做法</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td><code>Maximum</code></td><td>返回 <code>A[1]</code></td><td>$O(1)$</td></tr>
+          <tr><td><code>ExtractMax</code></td><td>取根 → 末尾搬到根 → Heapify 下沉</td><td>$O(\lg n)$</td></tr>
+          <tr><td><code>Insert</code></td><td>放到末尾 → <strong>向上浮</strong>（与父亲比，比父亲大就换）</td><td>$O(\lg n)$</td></tr>
+        </tbody>
+      </table>
+      <p>Heapify 是「小值往下沉」（修复父亲太小），Insert 是「大值往上浮」（修复新元素比父亲大）—— 一个自顶向下、一个自底向上，都只走一条路径。</p>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 快速排序：$O(n\lg n)$ 的平均值是怎么来的</h2>
+
+      <p><strong>一句话原理</strong>：选一个 pivot，把数组分成「≤ pivot」和「≥ pivot」两堆，pivot 归位，两堆各自递归。
+      和归并的区别是<strong>按值切而不是按位置切</strong>，所以切完就已经「整体有序」，<strong>不需要合并</strong>。</p>
+
+      <h3>Partition 的不变式</h3>
+      <p>CLRS 版（Lomuto，pivot 取最后一个）循环每一轮开始时，区间分成四段：</p>
+      $$A[p..i]\le x,\qquad A[i+1..j-1]\gt x,\qquad A[j..r-1]\ \text{未处理},\qquad A[r]=x$$
+      <p>每次 $A[j]\le x$ 就把「≤ 区」扩一格（交换 $A[i+1]$ 与 $A[j]$），否则只让 $j$ 前进。
+      循环结束时把 pivot 换到 $i+1$，正好卡在两段中间。<strong>一个指针扫描 $O(n)$，所以 partition 是 $O(n)$。</strong></p>
+
+      <h3>最坏：$\Theta(n^2)$，而且触发条件很常见</h3>
+      <p>每次切成 $0:(n-1)$（pivot 是极值）：</p>
+      $$T(n)=T(n-1)+\Theta(n)=\Theta(n)+\Theta(n-1)+\cdots=\Theta(n^2)$$
+      <p><strong>什么时候发生</strong>：pivot 取首元素 + 输入<strong>已排序</strong>（或逆序）。此时 pivot 永远是最小值，每次只切掉一个元素。
+      递归树是一条斜线，每层只少一个元素却要付 $O(n)$。</p>
+      <p>这才是快排真正的「liability」：最坏情况不是运气差，而是<strong>可预测、且很常见</strong>的输入。</p>
+
+      <h3>最好：$\Theta(n\lg n)$</h3>
+      $$T(n)=2T(n/2)+\Theta(n)\ \Rightarrow\ \Theta(n\lg n)\quad(\text{主定理情形 2})$$
+
+      <h3>平均：完整推导（三步，每步都有坑）</h3>
+      <p><strong>第一步：写递归式。</strong>$n$ 种 split 等概率，pivot 不属于任何子数组，所以</p>
+      $$T(n)=\frac1n\sum_{k=0}^{n-1}\Big[T(k)+T(n-1-k)\Big]+\Theta(n)$$
+
+      <p><strong>第二步：化简。</strong>求和里 $T(k)$ 与 $T(n-1-k)$ 是同一个和（下标翻转），合并后系数变 2：</p>
+      $$T(n)=\frac2n\sum_{k=0}^{n-1}T(k)+\Theta(n)$$
+
+      <p><strong>第三步：代换法。</strong>猜 $T(k)\le ck\lg k$（或更宽松的 $ck\lg k+b$）：</p>
+      $$T(n)\le\frac2n\sum_{k=0}^{n-1}ck\lg k+\Theta(n)
+        \le\frac{2c}{n}\left(\frac{n^2}{2}\lg n-\frac{n^2}{8}\right)+\Theta(n)
+        =cn\lg n-\frac{cn}{4}+\Theta(n)\le cn\lg n$$
+      <p>最后一步：只要 $c$ 足够大，让 $\frac{cn}{4}$ 吃掉 $\Theta(n)$ 即可。中间那个不等式用了 §2 的「考试专用求和」$\sum k\lg k\le\frac12n^2\lg n-\frac18n^2$。</p>
+
+      <div class="note">
+        <strong>为什么必须「只对后半段求和」：</strong>另一种写法是把 $\max(k,n-1-k)$ 处理成
+        $T(n)\le\frac2n\sum_{k=\lfloor n/2\rfloor}^{n-1}T(k)+\Theta(n)$。此时求和只占 $\frac38n^2$ 而不是 $\frac12n^2$，
+        系数从 $c$ 掉到 $\frac34c$，<strong>留出 $\frac{cn}{4}$ 的余量</strong>去吸收 $\Theta(n)$。
+        <br>如果对全部 $k$ 求和，系数恰好是 $c$，一点余量都没有，归纳闭合不了 —— 这是本题最容易被扣分的地方。
+      </div>
+
+      <h3>平均的第二种算法：指示器随机变量（更漂亮，也更常考）</h3>
+      <p>不写递归式，直接数比较次数。设 $X$ 为总比较次数，$z_1\lt\cdots\lt z_n$ 是排序后的元素，$Z_{ij}=\{z_i,\dots,z_j\}$。</p>
+      <p><strong>关键观察</strong>：每一对元素<strong>最多比较一次</strong> —— 元素只在<strong>被选作 pivot 的那一刻</strong>和别的元素比较，
+      之后它退出所有递归，再也不出现。</p>
+      <p>定义 $X_{ij}=\mathbf 1\{z_i\text{ 与 }z_j\text{ 比较}\}$，则 $X=\sum_{i\lt j}X_{ij}$，由<strong>期望的线性性</strong>（不需要独立性）：</p>
+      $$\mathbb{E}[X]=\sum_{i\lt j}\Pr\{z_i\text{ 与 }z_j\text{ 比较}\}$$
+
+      <p><strong>核心引理</strong>：$\Pr\{z_i\text{ 与 }z_j\text{ 比较}\}=\dfrac{2}{j-i+1}$。</p>
+      <p>为什么：看 $Z_{ij}$ 里<strong>谁最先被选为 pivot</strong>。若最先选中 $z_i$ 或 $z_j$，两者必比较；若最先选中中间的 $z_k$，
+      则 $z_i$ 被分到左边、$z_j$ 被分到右边，从此不在同一区间，永不比较。区间内每个元素被最先选中的概率相同，所以是 $\frac{2}{j-i+1}$。</p>
+
+      <p>代入求和（令 $k=j-i$）：</p>
+      $$\mathbb{E}[X]=\sum_{i=1}^{n-1}\sum_{k=1}^{n-i}\frac{2}{k+1}\lt 2(n-1)\sum_{k=1}^{n}\frac1k=2(n-1)H_n=O(n\lg n)$$
+      <p>更精确：$\mathbb{E}[X]=2nH_n-O(n)\approx 2n\ln n\approx1.39\,n\lg n$。</p>
+
+      <div class="ok">
+        <strong>两个数字要记住：</strong>平均比较次数 $\approx1.39n\lg n$（比归并的 $1n\lg n$ 多），
+        但快排的<strong>常数因子小得多</strong>（无额外数组、顺序扫描、内层循环只有几次比较和一次自增），所以实际更快。
+        <br><strong>「渐进相同、常数不同」是排序算法对比题的万能答案。</strong>
+      </div>
+
+      <h3>随机化：消除的不是最坏情况，是「对手」</h3>
+      <p>随机选 pivot 之后，pivot 的<strong>名次</strong>在 $1..n$ 上均匀分布，与输入是否有序<strong>无关</strong>。
+      所以没有任何特定输入能构造出坏切分 —— 最坏情况理论上仍在（每次都选到极值），但概率是 $(1/n)^n$ 量级，
+      代价变成<strong>期望</strong> $O(n\lg n)$。</p>
+
+      <table>
+        <thead><tr><th style="width:100px">情形</th><th>切分</th><th>递归式</th><th>结果</th><th>严格性</th></tr></thead>
+        <tbody>
+          <tr><td>最坏</td><td>$0:(n-1)$（有序输入）</td><td>$T(n-1)+\Theta(n)$</td><td>$\Theta(n^2)$</td><td>最坏保证</td></tr>
+          <tr><td>最好</td><td>$n/2:n/2$</td><td>$2T(n/2)+\Theta(n)$</td><td>$\Theta(n\lg n)$</td><td>最好情况</td></tr>
+          <tr><td>「很差」</td><td>$1:9$</td><td>$T(9n/10)+T(n/10)+\Theta(n)$</td><td>$\Theta(n\lg n)$</td><td>仍然是 $n\lg n$</td></tr>
+          <tr><td>平均</td><td>随机</td><td>$\frac2n\sum T(k)+\Theta(n)$</td><td>$O(n\lg n)$</td><td><strong>期望</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p>第四行那个「$1:9$ 还是 $n\lg n$」的结论很关键：只要切分比例是<strong>固定的常数比</strong>，
+      深度就是 $\log_{1/c}n=\Theta(\lg n)$，每层 $\le n$，总代价还是 $\Theta(n\lg n)$。
+      <strong>唯一会退化的情形是「切分比例随 $n$ 变化」</strong>（每次只切掉常数个元素）。</p>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2>8 · 线性时间排序：为什么可以比 $n\lg n$ 更快</h2>
+
+      <p>先解决一个矛盾：§9 会证明「任何<strong>比较排序</strong>至少 $\Omega(n\lg n)$」，可计数排序明明是 $O(n)$。
+      不矛盾 —— 因为<strong>它一次比较都没做</strong>，用的是「元素的值可以直接当下标」这条额外信息。
+      <strong>下界约束的是「只用比较」的算法，不是所有算法。</strong></p>
+
+      <h3>计数排序：四步，每步都要能说出复杂度</h3>
+<pre>CountingSort(A, B, k)
+1  for i = 1 to k        C[i] = 0            <span class="c"># ① O(k)</span>
+2  for j = 1 to n        C[A[j]] += 1        <span class="c"># ② O(n) 统计频次</span>
+3  for i = 2 to k        C[i] += C[i-1]      <span class="c"># ③ O(k) 前缀和</span>
+4  for j = n downto 1    B[C[A[j]]] = A[j]; C[A[j]] -= 1   <span class="c"># ④ O(n)</span></pre>
+      <p>合计 $O(n+k)$。当 $k=O(n)$ 时就是 $O(n)$。</p>
+
+      <h3>第 ③ 步为什么是灵魂</h3>
+      <p>前缀和之后，$C[i]$ 表示「值 $\le i$ 的元素一共有多少个」。这正好是<strong>值为 $i$ 的那一组在输出数组里的右边界下标</strong>。
+      所以第 ④ 步 <code>B[C[A[j]]] = A[j]</code> 就是「把它放到自己那一组的最后一个空位」，然后 $C$ 减 1，空位左移一格。</p>
+
+      <div class="note">
+        <strong>为什么必须从后往前扫（稳定性）：</strong>$C[A[j]]$ 是这一组的<strong>最右空位</strong>。
+        倒序扫时，同一组里<strong>后出现的元素先被放到靠右的位置</strong>，于是它们在 $B$ 中保持原相对次序 —— 这就是稳定。
+        正序扫会把同组元素<strong>反转</strong>。
+        <br>稳定性不是装饰：基数排序<strong>必须</strong>靠它才能成立（见下）。
+      </div>
+
+      <h3>为什么不能排 32 位整数</h3>
+      <p>$k=2^{32}\approx4.29\times10^9$。光第 ① 步清零 $C$ 就要几十亿次操作，比 $n\lg n$ 慢得多。
+      <strong>计数排序的代价是「与值域成正比」，不是「与元素个数成正比」。</strong></p>
+      <p>适用：年龄、成绩、百分制分数、作为基数排序的子程序（每一「位」值域很小）。</p>
+
+      <h3>基数排序：把大值域拆成小位</h3>
+<pre>RadixSort(A, d)
+    for i = 1 to d
+        StableSort(A) on digit i        <span class="c"># 从最低位开始，必须稳定</span></pre>
+
+      <p><strong>为什么必须从最低位开始</strong>：最后一趟按最高位排，它的结果会<strong>覆盖</strong>前面所有趟 ——
+      所以最后一趟必须是权重最大的那一位。排序趟数越靠后，权重越大。</p>
+
+      <p><strong>为什么子排序必须稳定（归纳证明）</strong>：做完前 $i-1$ 趟后，数组已按低 $i-1$ 位有序。现在按第 $i$ 位稳定排序：</p>
+      <ul>
+        <li>第 $i$ 位<strong>不同</strong>：相对顺序由第 $i$ 位决定，正确（高位权重更大）；</li>
+        <li>第 $i$ 位<strong>相同</strong>：相对顺序应由低 $i-1$ 位决定，而它们<strong>已经有序</strong>；
+        又因为排序<strong>稳定</strong>，相同第 $i$ 位的元素保持原次序 → 仍然正确。</li>
+      </ul>
+      <p>第二种情况完全依赖稳定性。<strong>如果第 $i$ 位排序不稳定，低位的成果就丢了。</strong></p>
+
+      <h3>复杂度与常数</h3>
+      $$T(n)=d\cdot O(n+k)=O(dn+dk)$$
+      <p>当 $d$ 是常数、$k=O(n)$ 时是 $O(n)$。</p>
+      <div class="note">
+        <strong>讲义 p58 的例子</strong>：100 万个 64 位数，看成 4 个「$2^{16}$ 进制」的位（$4\times16=64$），
+        则 $d=4$、$k=2^{16}=65536$，只要 <strong>4 趟</strong>；而典型比较排序要 $\lg n=20$ 次操作<strong>每个元素</strong>。
+        <br>关键换算：把 $b$ 位的数拆成 $\lceil b/r\rceil$ 个 $r$ 位的块，趟数 $d=\lceil b/r\rceil$，值域 $k=2^r$。
+        选 $r$ 就是权衡「趟数」与「每趟的值域」。
+      </div>
+
+      <div class="warn">
+        <strong>浮点数为什么不能直接排（补充）：</strong>IEEE 754 用「符号位 + 移码」表示，负数的位模式越大值越小 ——
+        直接按无符号整数排，负数的顺序会<strong>整体反掉</strong>。要正确处理必须把负数的位取反。
+        这是「看起来能用、其实有陷阱」的典型。
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2>9 · 比较排序的下界：决策树为什么给出 $\Omega(n\lg n)$</h2>
+
+      <p>这个证明只有三句话，但每句都必须写清楚，否则拿不到分。</p>
+
+      <h3>模型：把算法抽象成一棵树</h3>
+      <p>对固定的 $n$，任何比较排序都可以画成一棵<strong>决策树</strong>：</p>
+      <ul>
+        <li><strong>内部节点</strong> = 一次比较（如「$a_1:a_2$」）；</li>
+        <li><strong>两条出边</strong> = 两种结果（$\le$ 或 $\gt$）；</li>
+        <li><strong>叶子</strong> = 一个输出排列。</li>
+      </ul>
+      <p>一条从根到叶的路径 = 一次完整的执行过程，<strong>路径长度 = 这次执行的比较次数</strong>。
+      所以「最坏情况比较次数」= 树高 $h$。</p>
+
+      <h3>三句话的证明</h3>
+      <ol class="steps">
+        <li><strong>叶子至少 $n!$ 个。</strong>$n$ 个元素有 $n!$ 种排列，每一种都必须能被某个输入产生，而不同的排列必须落到不同的叶子（否则算法会输出错的顺序）。</li>
+        <li><strong>高度 $h$ 的二叉树最多 $2^h$ 个叶子。</strong>第 $i$ 层最多 $2^i$ 个节点，求和 $\sum_{i=0}^{h}2^i=2^{h+1}-1$，其中叶子最多 $2^h$。</li>
+        <li><strong>「至少需要的」$\le$「最多可能的」</strong>，即 $n!\le2^h$，取对数 $h\ge\lg(n!)$。</li>
+      </ol>
+
+      <p>再用 Stirling 近似 $n!\gt\left(\dfrac ne\right)^n$：</p>
+      $$h\ge\lg\left(\frac ne\right)^n=n\lg n-n\lg e=\Omega(n\lg n)$$
+
+      <div class="ok">
+        <strong>结论与推论：</strong>任何比较排序最坏至少 $\Omega(n\lg n)$ 次比较。
+        而堆排序、归并排序达到了这个界，所以它们是<strong>渐近最优</strong>的比较排序。
+        <br><strong>信息论视角（可加分）</strong>：$n!$ 种可能结果，每次比较只给 1 bit，所以至少需要 $\lg(n!)$ bit 的信息 ——
+        和决策树是同一个论证的两种说法。
+      </div>
+
+      <div class="warn">
+        <strong>三个常见失分点：</strong>
+        ① 写成 $2^h\le n!$（方向反了）；
+        ② 说「决策树有 $n!$ 个叶子」—— 是<strong>至少</strong> $n!$ 个；
+        ③ 忘记说明「$h$ 就是最坏情况比较次数」，直接跳到结论。
+      </div>
+
+      <p><strong>小结论（常考）</strong>：$n=4$ 时 $\lg(4!)\approx4.58$，所以至少 <strong>5</strong> 次比较；归并排序正好 5 次，所以 5 是最优。</p>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2>10 · 选择问题：从 $O(n\log n)$ 到 $O(n)$ 的三级跳</h2>
+
+      <p>选择问题：找第 $i$ 小的元素。排序后取是 $O(n\lg n)$，但这件事<strong>不需要</strong>排好全部顺序。</p>
+
+      <h3>第一级：最小值 $n-1$ 次，且不能更少</h3>
+      <p>$n$ 个元素里除最大值外，每个都必须「输过至少一次」—— 而一次比较只能让一个元素输。
+      要让 $n-1$ 个元素都被排除出「最小」的候选，至少 $n-1$ 次。所以 $n-1$ 既是上界也是下界。</p>
+
+      <h3>第二级：同时求最大最小，$\lceil 3n/2\rceil-2$ 次</h3>
+      <p><strong>朴素</strong>：找最小 $n-1$ + 找最大 $n-1$ = $2n-2$。</p>
+      <p><strong>优化思路</strong>：让「大者永远不可能成为 min、小者永远不可能成为 max」，每个元素就只需要被比较一次。做法：</p>
+      <ol class="steps">
+        <li>两两配对，每对内部比 1 次 → 分出赢家和输家（$\lfloor n/2\rfloor$ 次）；</li>
+        <li>在所有<strong>赢家</strong>里找最大（$\lceil n/2\rceil-1$ 次）；</li>
+        <li>在所有<strong>输家</strong>里找最小（$\lceil n/2\rceil-1$ 次）。</li>
+      </ol>
+      $$T(n)=\lfloor n/2\rfloor+2\left(\lceil n/2\rceil-1\right)=\lceil 3n/2\rceil-2$$
+      <p>$n=8$：$4+3+3=10$；$n=7$：$3+3+3=9$。</p>
+
+      <div class="note">
+        <strong>为什么这是最优的（对手论证，可加分）：</strong>把元素分成四类：既没赢过也没输过、只赢过、只输过、都干过。
+        要确定 max，除它之外的所有元素都必须「输过」；要确定 min，除它之外的所有元素都必须「赢过」。
+        于是每个非 max 非 min 的元素必须同时「赢一次 + 输一次」，至少参与 2 次比较 ——
+        把它们加起来就得到 $\lceil 3n/2\rceil-2$ 的下界。
+      </div>
+
+      <h3>第三级：RandomizedSelect，$O(n)$ 期望</h3>
+      <p>用快排的 partition，但<strong>只递归一边</strong> —— 这就是从 $O(n\lg n)$ 掉到 $O(n)$ 的全部原因。</p>
+<pre>RandomizedSelect(A, p, r, i)
+    if p == r  return A[p]
+    q = RandomizedPartition(A, p, r)
+    k = q - p + 1                       <span class="c"># pivot 在当前区间内的名次</span>
+    if i == k  return A[q]
+    if i &lt; k   return RandomizedSelect(A, p, q-1, i)      <span class="c"># 左半，名次不变</span>
+    else       return RandomizedSelect(A, q+1, r, i-k)    <span class="c"># 右半，名次减 k</span></pre>
+
+      <table>
+        <thead><tr><th style="width:110px">情形</th><th>递归式</th><th>结果</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>最坏</td><td>$T(n)=T(n-1)+O(n)$</td><td>$O(n^2)$</td><td>等差求和，和排序一样慢</td></tr>
+          <tr><td>9:1 分割</td><td>$T(n)=T(9n/10)+O(n)$</td><td>$O(n)$</td><td>主定理情形 3（$f$ 主导，$n^{\log_b a}=1$）</td></tr>
+          <tr><td>平均</td><td>见下</td><td>$O(n)$</td><td>代换法</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>平均的推导</strong>：对上界，假设目标每次都落在<strong>较大</strong>的一侧。$n$ 种 split 等概率：</p>
+      $$T(n)\le\frac1n\sum_{k=0}^{n-1}T(\max(k,n-1-k))+\Theta(n)\le\frac2n\sum_{k=\lfloor n/2\rfloor}^{n-1}T(k)+\Theta(n)$$
+      <p>（第二步：$\max$ 会取到后半段各两次，提出系数 2，只对 $k\ge n/2$ 求和。）</p>
+      <p>代换 $T(k)\le ck$：</p>
+      $$T(n)\le\frac{2c}{n}\sum_{k=\lfloor n/2\rfloor}^{n-1}k+\Theta(n)
+        \le\frac{2c}{n}\cdot\frac{3n^2}{8}+\Theta(n)
+        =\frac{3cn}{4}+\Theta(n)\le cn$$
+      <p>求和那里用了 $\sum_{k=n/2}^{n-1}k=\frac{n(n-1)}{2}-\frac{(n/2)(n/2-1)}{2}=\frac{3n^2}{8}-\frac n4$。</p>
+
+      <div class="ok">
+        <strong>这个 $\frac34$ 是本题的得分点：</strong>只对<strong>后一半</strong>求和，求和项占 $\frac38n^2$ 而非 $\frac12n^2$，
+        系数从 $c$ 掉到 $\frac34c$，<strong>留出 $\frac14cn$ 吃掉 $\Theta(n)$</strong>。
+        对全部 $k$ 求和则系数恰好是 $c$，没有余量，归纳不闭合。
+      </div>
+
+      <h3>第四级：最坏也是 $O(n)$ —— 五元组中位数</h3>
+      <p><strong>思路</strong>：随机化的不确定性来自 pivot。如果能<strong>保证</strong> pivot 落在中间一段（比如 $1/4$ 到 $3/4$），
+      递归规模就按固定比例缩小，必然是 $O(n)$。所以问题变成「怎么在 $O(n)$ 内找到一个大致居中的元素」。</p>
+
+      <h4>算法五步</h4>
+      <ol class="steps">
+        <li>分成 $\lceil n/5\rceil$ 组，每组 5 个；</li>
+        <li>每组求中位数（5 个数排序只要常数次比较，总共 $O(n)$）；</li>
+        <li>递归求这 $\lceil n/5\rceil$ 个中位数的中位数 $x$；</li>
+        <li>以 $x$ 为 pivot 做一次 partition，得名次 $k$；</li>
+        <li>按 $k$ 与 $i$ 的关系在左半或右半递归。</li>
+      </ol>
+
+      <h4>计数论证：为什么 $x$ 一定居中</h4>
+      <ul>
+        <li>一共有 $\lceil n/5\rceil$ 个组中位数，$x$ 是它们的中位数，所以<strong>至少一半</strong>的组中位数 $\le x$，
+        即 $\lfloor\lceil n/5\rceil/2\rfloor=\lfloor n/10\rfloor$ 个；</li>
+        <li>每个这样的组，组内已排序，中位数 $\le x$，所以该组<strong>至少 3 个元素 $\le x$</strong>（中位数 + 比它小的两个）；</li>
+        <li>于是 $\ge3\lfloor n/10\rfloor$ 个元素 $\le x$；对称地，$\ge3\lfloor n/10\rfloor$ 个元素 $\ge x$。</li>
+      </ul>
+      <p><strong>要多大 $n$ 才够</strong>：由 $\lfloor n/10\rfloor\gt n/10-1$，</p>
+      $$3\left\lfloor\frac n{10}\right\rfloor\gt\frac{3n}{10}-3\ \ge\ \frac n4
+        \iff \frac n{20}\ge3\iff n\ge60$$
+      <p>所以 $n\ge60$ 时「每侧至少 $n/4$」，即 <strong>partition 后任一侧最多 $3n/4$</strong>。$n\lt60$ 用暴力。</p>
+
+      <h4>递归式与代换法</h4>
+      $$T(n)\le T(\lfloor n/5\rfloor)+T(3n/4)+\Theta(n)$$
+      $$\begin{aligned}
+      T(n)&\le c\frac n5+c\frac{3n}{4}+\Theta(n)
+        =\frac{19cn}{20}+\Theta(n)\\
+        &=cn-\left(\frac{cn}{20}-\Theta(n)\right)\le cn\qquad(c\text{ 足够大})
+      \end{aligned}$$
+
+      <div class="ok">
+        <strong>关键数字 $\frac15+\frac34=\frac{19}{20}\lt1$。</strong>
+        只要两个子问题的规模系数之和<strong>严格小于 1</strong>，代换法就留出余量，结论是 $O(n)$。
+        <br>这条判据比记递归式有用：任何「$T(\alpha n)+T(\beta n)+cn$」只要 $\alpha+\beta\lt1$ 就是 $O(n)$，$\alpha+\beta=1$ 就是 $O(n\lg n)$。
+      </div>
+
+      <h4>为什么不能 3 个一组</h4>
+      <p>每组 3 个时，中位数的中位数只能保证 $\ge n/6$ 个元素 $\le x$，另一侧最多 $2n/3$，递归式变成</p>
+      $$T(n)\le T(n/3)+T(2n/3)+O(n)$$
+      <p>$\frac13+\frac23=1$，<strong>没有余量</strong>，代换法得到 $cn+O(n)$ 收不住，实际解是 $\Theta(n\lg n)$ —— 退化成快排，白做。
+      7 个一组可以（$\frac17+\frac57=\frac67\lt1$），但每组找中位数常数更大，所以 <strong>5 是最优折中</strong>。</p>
+
+      <h3>应用：最坏 $O(n\lg n)$ 的快排</h3>
+      <p>有了 $O(n)$ 中位数黑盒，每次取中位数作 pivot，partition 一定对半分：</p>
+      $$T(n)=2T(n/2)+O(n)+O(n)=2T(n/2)+O(n)=\Theta(n\lg n)$$
+      <p>对<strong>任何</strong>输入都成立（不是平均）。代价是常数极大，实际比随机化快排慢数倍 —— 只有理论意义。</p>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11">
+      <h2>11 · 二叉搜索树：为什么复杂度只能写 $O(h)$</h2>
+
+      <p><strong>一句话原理</strong>：把有序性编码进树形结构 —— 左边都比根小、右边都比根大，于是查找可以「每次砍掉一半」。</p>
+
+      <h3>性质与中序有序</h3>
+      $$\text{key}\big[\text{left}(x)\big]\le\text{key}[x]\le\text{key}\big[\text{right}(x)\big]\quad(\text{整棵子树})$$
+      <p><strong>为什么中序遍历得到升序（归纳证明）</strong>：对子树高度归纳。中序输出顺序是「左子树 → $x$ → 右子树」。
+      由归纳假设，左子树输出升序且每个元素 $\le x$，右子树输出升序且每个元素 $\ge x$，三段拼接仍升序。</p>
+
+      <h3>为什么所有操作都是 $O(h)$</h3>
+      <p>Search、Insert、Min、Max、Successor、Predecessor、Delete 都只做一件事：<strong>沿一条从根到叶的路径走</strong>（或走两段）。
+      每层常数时间，所以代价 = 路径长度 $\le h$。</p>
+
+      <div class="warn">
+        <strong>不能写 $O(\lg n)$ 的原因</strong>：$h$ 取决于<strong>插入顺序</strong>，不是 $n$。
+        按 $1,2,3,\dots,n$ 升序插入会得到一条右斜链，$h=n-1$，每次操作 $O(n)$。
+        <br>所以标准写法是「$O(h)$，最坏 $O(n)$」；只有在「随机插入」的假设下才能说「期望 $O(\lg n)$」。
+      </div>
+
+      <h3>期望高度：为什么随机建树是 $O(\lg n)$</h3>
+      <p>把「随机顺序插入建 BST」和「随机选 pivot 的快排」对照，会发现两者做的是<strong>同一批比较</strong>：
+      插入 $A[i]$ 时与路径上每个节点比一次，而快排 partition 也是拿 pivot 与每个元素比一次。</p>
+      <p>结论可以直接借用：随机 BST 的期望高度 $O(\lg n)$（精确值约 $4.311\ln n\approx1.39\lg n$），
+      期望总代价与快排相同，也是 $O(n\lg n)$。</p>
+
+      <h3>BSTSort 与快排：同一件事，不同顺序</h3>
+<pre>BSTSort(A)
+    for i = 1 to n  TreeInsert(A[i])
+    InorderTreeWalk(root)</pre>
+      <p>快排按「层」做比较（先全部和第一个 pivot 比，再递归），BST 按「插入顺序」做比较。比较<strong>集合相同</strong>，只是顺序不同，
+      所以复杂度相同。但 <strong>快排更好</strong>：常数更小、就地、不用先建数据结构、不用指针。</p>
+
+      <h3>Successor：两种情况</h3>
+      <ul>
+        <li><strong>有右子树</strong> → 后继 = 右子树的<strong>最小值</strong>（一直往左走到底）；</li>
+        <li><strong>无右子树</strong> → 往上爬，直到「$x$ 是从<strong>左</strong>边爬上来的」那一步，那个祖先就是后继；爬到根还没遇到则无后继。</li>
+      </ul>
+      <p><strong>直觉</strong>：往上爬时，只要还在往右走，说明经过的节点都比 $x$ 小（因为 $x$ 在它们的右子树里）；
+      一旦改成往左走，那个父节点就比 $x$ 大，且是「比 $x$ 大的里面最小的」。<code>Predecessor</code> 完全对称。</p>
+
+      <h3>Delete：三种情况，以及一个必须解释的点</h3>
+      <table>
+        <thead><tr><th style="width:100px">情况</th><th>做法</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>0 个孩子</td><td>父亲指针置 NIL</td><td>不影响其他节点</td></tr>
+          <tr><td>1 个孩子</td><td>让孩子顶替它（splice）</td><td>孩子的整个子树仍满足大小关系</td></tr>
+          <tr><td>2 个孩子</td><td>用<strong>后继</strong>的 key 覆盖，再删后继</td><td>后继是「比左子树都大、比右子树都小」的唯一候选</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>为什么删后继一定简单</strong>：后继是右子树的<strong>最小值</strong>，<strong>它不可能有左孩子</strong>
+      （否则还有更小的）。所以后继最多只有一个右孩子，删除它只会落入情况 0 或 1，<strong>不会无限递归</strong>。</p>
+
+      <div class="note">
+        <strong>CLRS 的 TRANSPLANT 抽象</strong>：把「用子树 $v$ 替换子树 $u$」单独写成一个函数，只改三个指针（父指向、$u$ 的父亲的孩子指针、$v$ 的父指针）。
+        删两孩子节点时要注意顺序：当后继<strong>不是</strong> $z$ 的右孩子（即在右子树深处）时，必须<strong>先</strong>把后继从原位摘掉，
+        <strong>再</strong>让它接管 $z$ 的右子树，否则它会同时出现在两个位置。
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section id="s12">
+      <h2>12 · 红黑树：$h\le 2\lg(n+1)$ 是怎么证出来的</h2>
+
+      <p><strong>一句话原理</strong>：在 BST 上加「颜色」约束，用<strong>黑高相等</strong>强制树不能太歪，从而把高度锁在 $2\lg(n+1)$ 以内。</p>
+
+      <h3>五条性质，每条都在干活</h3>
+      <table>
+        <thead><tr><th style="width:34px">#</th><th>性质</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>每节点非红即黑</td><td>定义</td></tr>
+          <tr><td>2</td><td>叶子（NIL）是黑的</td><td>让「空」也算节点，路径长度统一，性质 4 才有意义</td></tr>
+          <tr><td>3</td><td>红节点的孩子都黑</td><td>禁止连续红 → <strong>任一路径上黑节点至少占一半</strong></td></tr>
+          <tr><td>4</td><td>每条路径黑节点数相同</td><td>强制「大致平衡」，是高度上界的<strong>核心</strong></td></tr>
+          <tr><td>5</td><td>根黑</td><td>简化边界（不满足时染黑即可）</td></tr>
+        </tbody>
+      </table>
+
+      <h3>黑高与引理</h3>
+      <p>$\mathrm{bh}(x)$：从 $x$ 出发（<strong>不含 $x$</strong>）到任一后代叶子的黑节点数。性质 4 保证它<strong>定义良好</strong>。</p>
+
+      <p><strong>引理</strong>：以 $x$ 为根的子树至少有 $2^{\mathrm{bh}(x)}-1$ 个内部节点。对<strong>高度</strong>归纳：</p>
+      <ul>
+        <li><strong>基例</strong>：$x$ 是 NIL，高度 0，$\mathrm{bh}=0$，$2^0-1=0$ 个内部节点 ✓</li>
+        <li><strong>归纳步</strong>：$x$ 有两个孩子。孩子是红色时 $\mathrm{bh}$ 不变，是黑色时少 1，所以每个孩子的黑高 $\ge\mathrm{bh}(x)-1$。
+        由归纳假设，每个子树 $\ge2^{\mathrm{bh}(x)-1}-1$ 个节点，加上 $x$ 自己：
+        $$\big(2^{\mathrm{bh}(x)-1}-1\big)\times2+1=2^{\mathrm{bh}(x)}-1$$</li>
+      </ul>
+
+      <h3>从引理到高度上界</h3>
+      <p>由性质 3（无连续红），任一路径上<strong>黑节点至少占一半</strong>，所以 $\mathrm{bh}(\text{root})\ge h/2$。于是</p>
+      $$n\ \ge\ 2^{\mathrm{bh}(\text{root})}-1\ \ge\ 2^{h/2}-1
+        \ \Longrightarrow\ n+1\ge2^{h/2}
+        \ \Longrightarrow\ \lg(n+1)\ge\frac h2
+        \ \Longrightarrow\ h\le2\lg(n+1)$$
+
+      <div class="ok">
+        <strong>三个得分点</strong>：① 引理必须说「对<strong>高度</strong>归纳」；② 必须解释「孩子黑高为什么是 $\mathrm{bh}$ 或 $\mathrm{bh}-1$」（红孩子不增加黑高）；
+        ③ 从 $\mathrm{bh}\ge h/2$ 到结论的代数不能跳。
+        <br><strong>常数 2 的含义</strong>：红黑树最坏高度约为 AVL 的两倍（AVL 是 $1.44\lg n$），换来的是插入删除只需 $O(1)$ 次旋转。
+      </div>
+
+      <h3>旋转：唯一能改结构的操作</h3>
+      <p>不能靠「重排 key」修复（会破坏 BST 性质），只能旋转。以右旋 $y$ 为例，四句话：</p>
+      <ol>
+        <li>$x$ 保留它的<strong>左</strong>孩子 $A$；</li>
+        <li>$y$ 保留它的<strong>右</strong>孩子 $C$；</li>
+        <li>$x$ 的<strong>右</strong>孩子 $B$ <strong>过继</strong>给 $y$ 当左孩子；</li>
+        <li>$x$ 顶替 $y$ 的位置（父指针互换）。</li>
+      </ol>
+      <p>中序始终是 $A\to x\to B\to y\to C$，所以 BST 性质不变；只有常数次指针操作，所以 $O(1)$。
+      <strong>「$B$ 过继」是唯一容易写错的一步。</strong></p>
+
+      <h3>插入：为什么染红、三种情况怎么分</h3>
+      <p><strong>先按 BST 插入，把新节点染红。</strong>为什么染红？</p>
+      <ul>
+        <li>染<strong>红</strong>只可能违反性质 3（红红相邻），且<strong>不改变任何路径的黑节点数</strong>（性质 4 保住）→ 可以局部修复；</li>
+        <li>染<strong>黑</strong>会让该路径黑高 +1，直接破坏性质 4，且影响所有祖先的路径 → 无法局部修复。</li>
+      </ul>
+
+      <p>设 $x$ 新节点、$p$ 父亲、$g$ 祖父、$y$ 叔叔（$g$ 的另一个孩子）。分三种情况：</p>
+      <table>
+        <thead><tr><th style="width:64px">情况</th><th style="width:34%">条件</th><th>动作</th><th>之后</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>叔叔 $y$ 是<strong>红</strong></td><td>$p,y$ 染黑，$g$ 染红</td><td>$x\leftarrow g$，<strong>继续循环</strong></td></tr>
+          <tr><td><strong>2</strong></td><td>叔叔<strong>黑</strong>，$x$ 是<strong>右</strong>孩子（内侧）</td><td>对 $p$ 做一次<strong>左旋</strong></td><td>转成情况 3</td></tr>
+          <tr><td><strong>3</strong></td><td>叔叔<strong>黑</strong>，$x$ 是<strong>左</strong>孩子（外侧）</td><td>$p$ 染黑、$g$ 染红，对 $g$ 做<strong>右旋</strong></td><td><strong>结束</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>为什么情况 1 能「上移」：</strong>重染之后 $g$ 变红，而 $g$ 的父亲可能是红的 —— 违反从 $x$ 层<strong>搬到了 $g$ 层</strong>。
+        同时黑高没有变化（$p,y$ 由红变黑各 +1，$g$ 由黑变红 −1，上下抵消），性质 4 仍成立，所以可以放心继续往上修。
+        <br><strong>为什么情况 3 一次就完：</strong>旋转 + 重染后新子树根是黑的，它的父亲不可能再是红（否则原来就违反了），违反彻底消除。
+        <br><strong>为什么情况 2 要单独处理：</strong>$x$ 在内侧时直接重染 + 旋转会让「$B$ 过继」后仍然红红相邻，所以先旋转把 $x$ 转到外侧。
+      </div>
+
+      <p><strong>旋转次数</strong>：插入<strong>至多 2 次</strong>（情况 2 一次 + 情况 3 一次），删除<strong>至多 3 次</strong>。
+      情况 1 只染色不旋转，可以沿树一路上传，但每层 $O(1)$，总代价仍是 $O(\lg n)$。</p>
+
+      <p>（讲义明确说删除<strong>课上不 cover</strong>，只要求读 CLRS 14.4 了解大图景。考试若出，通常只问「最多几次旋转」。）</p>
+    </section>
+
+    <!-- 13 -->
+    <section id="s13">
+      <h2>13 · 跳表：不用旋转，用抛硬币拿到同样的复杂度</h2>
+
+      <p><strong>一句话原理</strong>：给有序链表加几层「快车线」，搜索时先坐快车再换慢车；分层不靠维护、靠<strong>随机</strong>。</p>
+
+      <h3>为什么需要它：链表的唯一瓶颈是 Search</h3>
+      <p>排好序的双向链表里，Min / Max / Successor / Predecessor / Delete / Insert 全是 $O(1)$ ——
+      只有 <code>Search</code> 是 $O(n)$，因为不能随机访问。所以目标很明确：<strong>只把 Search 降下来</strong>。</p>
+
+      <h3>一层快车：$\sqrt n$ 的由来</h3>
+      <p>上层留 $k$ 个「站」：上层最多走 $k$ 步，下层在相邻两站之间最多走 $n/k$ 步，总代价</p>
+      $$k+\frac nk\ \ge\ 2\sqrt n\quad(\text{均值不等式，}k=\sqrt n\text{ 时取等})$$
+      <p>所以两层的最优代价是 $2\sqrt n$。</p>
+
+      <h3>$k$ 层：$k\cdot n^{1/k}$，取 $k=\lg n$ 得 $\Theta(\lg n)$</h3>
+      <p>$k$ 层时每层把元素分成 $n^{1/k}$ 份，每层最多走 $n^{1/k}$ 步，总代价 $k\cdot n^{1/k}$。代入 $k=\lg n$：</p>
+      $$n^{1/\lg n}=2\quad\Longleftrightarrow\quad \lg\left(n^{1/\lg n}\right)=\frac{1}{\lg n}\cdot\lg n=1$$
+      <p>所以 $k\cdot n^{1/k}=\lg n\cdot2=\Theta(\lg n)$。</p>
+
+      <div class="note">
+        <strong>这个恒等式是跳表分析里最常考的一步，务必会推：</strong>$n^{1/\lg n}=2$。
+        <br>直觉：$\lg n$ 层意味着「每层把候选缩到 1/2」，而缩 $\lg n$ 次正好从 $n$ 缩到 1。
+      </div>
+
+      <h3>为什么改成随机分层</h3>
+      <p>固定分层的问题是：<em>插入删除会不断打破均匀，维护它本身就要 $O(n)$</em>。
+      跳表的解法是<strong>不维护</strong>：每个元素插入时以概率 $p=1/2$ 逐层上升，直到抛到反面。</p>
+
+      <h3>搜索代价：为什么是 $O(\lg n)$</h3>
+      <ol>
+        <li>顶层元素个数<strong>以高概率是 $O(1)$</strong>；</li>
+        <li>在顶层定位后，得到一个范围，下降一层在这个范围内继续；</li>
+        <li>每层期望 $O(1)$ 步（每次下降范围减半，几何分布）；</li>
+        <li>层数以高概率 $O(\lg n)$。</li>
+      </ol>
+      <p>合计 $O(\lg n)$ <strong>以高概率（with high probability）成立</strong>。</p>
+
+      <p><strong>层数上界（联合界）</strong>：固定元素 $x$ 出现在 $\ge c\lg n$ 层的概率是 $(1/2)^{c\lg n}=1/n^c$。对所有 $n$ 个元素取并：</p>
+      $$\Pr\big[\exists x:\ x\text{ 超过 }c\lg n\text{ 层}\big]\le n\cdot\frac1{n^c}=\frac1{n^{c-1}}$$
+      <p>取 $c=2$ 就是 $1/n$ —— 这就是「以高概率」的含义。</p>
+
+      <p><strong>反向分析</strong>：不数「搜索走了几步」，而是从目标节点<strong>倒着走</strong>：每上升一层相当于抛到一次正面，
+      于是「访问的节点数 = 抛到 $c\lg n$ 个正面所需的抛硬币次数」。抛 $10c\lg n$ 次得到 $c\lg n$ 个正面的概率极高（Chernoff 界），
+      所以访问数 $\le10c\lg n$ 以高概率成立。</p>
+
+      <h3>插入、删除、空间</h3>
+      <table>
+        <thead><tr><th style="width:110px">操作</th><th>做法</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td>Insert</td><td>搜索定位 → 第 1 层插入 → 以概率 $p$ 递归往上层插</td><td>$O(\lg n)$ w.h.p.</td></tr>
+          <tr><td>Delete</td><td>搜索到 → 在各层摘掉</td><td>$O(1)$ 期望（层数期望常数）</td></tr>
+          <tr><td>Min/Max/Succ/Pred</td><td>第 1 层直接走</td><td>$O(1)$</td></tr>
+          <tr><td>空间</td><td>每元素平均出现在 $1+p+p^2+\cdots=\frac1{1-p}=2$ 层</td><td>$O(n)$ 期望</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warn">
+        <strong>答题时最容易丢分的一句：</strong>跳表是<strong>随机化结构</strong>，它的 $O(\lg n)$ 是<strong>期望 / 以高概率</strong>意义，
+        <strong>没有最坏保证</strong>（理论上可能所有元素都在同一层，退化成链表）。
+        <br>红黑树的 $O(\lg n)$ 是<strong>最坏保证</strong>（由性质 4 强制）。这是两者最本质的区别。
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section id="s14">
+      <h2>14 · 横向对比：一张表决定「该用哪个」</h2>
+
+      <h3>排序算法</h3>
+      <table>
+        <thead><tr><th style="width:17%">算法</th><th style="width:12%">最坏</th><th style="width:12%">平均</th><th style="width:9%">就地</th><th style="width:9%">稳定</th><th>卖点 / 短板</th></tr></thead>
+        <tbody>
+          <tr><td>插入排序</td><td>$\Theta(n^2)$</td><td>$\Theta(n^2)$</td><td>✓</td><td>✓</td><td>近乎有序时 $O(n)$；小数组常数最小。<strong>短板</strong>：逆序对多就慢</td></tr>
+          <tr><td>归并排序</td><td>$\Theta(n\lg n)$</td><td>$\Theta(n\lg n)$</td><td>✗</td><td>✓</td><td>唯一「不看输入脸色」的稳定 $n\lg n$。<strong>短板</strong>：要 $O(n)$ 空间</td></tr>
+          <tr><td>堆排序</td><td>$\Theta(n\lg n)$</td><td>$\Theta(n\lg n)$</td><td>✓</td><td>✗</td><td>就地 + 最坏保证。<strong>短板</strong>：常数大、缓存不友好、不稳定</td></tr>
+          <tr><td>快速排序</td><td>$\Theta(n^2)$</td><td>$\Theta(n\lg n)$</td><td>✓</td><td>✗</td><td>常数最小、实际最快。<strong>短板</strong>：有序输入触发最坏，必须随机化</td></tr>
+          <tr><td>计数排序</td><td>$\Theta(n+k)$</td><td>$\Theta(n+k)$</td><td>✗</td><td>✓</td><td>线性。<strong>短板</strong>：要求值域 $[1,k]$ 且 $k$ 小</td></tr>
+          <tr><td>基数排序</td><td>$\Theta(d(n+k))$</td><td>$\Theta(d(n+k))$</td><td>✗</td><td>✓</td><td>大值域也能线性。<strong>短板</strong>：依赖「可按位分解 + 稳定子排序」</td></tr>
+        </tbody>
+      </table>
+
+      <h3>动态集合结构</h3>
+      <table>
+        <thead><tr><th style="width:16%">结构</th><th style="width:14%">Search</th><th style="width:12%">Insert/Delete</th><th style="width:12%">Min/Max</th><th>严格性 / 特点</th></tr></thead>
+        <tbody>
+          <tr><td>有序数组</td><td>$O(\lg n)$</td><td>$O(n)$</td><td>$O(1)$</td><td>最坏；不能动态</td></tr>
+          <tr><td>有序双向链表</td><td>$O(n)$</td><td>$O(1)$</td><td>$O(1)$</td><td>最坏；除 Search 外都快</td></tr>
+          <tr><td>BST</td><td>$O(h)$，最坏 $O(n)$</td><td>$O(h)$</td><td>$O(h)$</td><td>无平衡保证；期望 $O(\lg n)$</td></tr>
+          <tr><td>红黑树</td><td>$O(\lg n)$</td><td>$O(\lg n)$</td><td>$O(\lg n)$</td><td><strong>最坏</strong>保证；插入 ≤2 旋、删除 ≤3 旋</td></tr>
+          <tr><td>跳表</td><td>$O(\lg n)$ w.h.p.</td><td>$O(\lg n)$ w.h.p.</td><td>$O(1)$</td><td><strong>期望</strong>；代码短、常数小</td></tr>
+          <tr><td>堆（优先队列）</td><td>$O(n)$</td><td>$O(\lg n)$</td><td>Max $O(1)$</td><td>不支持任意查找/删除</td></tr>
+        </tbody>
+      </table>
+
+      <h3>什么时候用哪个（考简答题就照这个答）</h3>
+      <div class="grid2">
+        <div class="card">
+          <h4 style="margin-top:0">排序</h4>
+          <ul style="margin:6px 0">
+            <li>要<strong>稳定</strong> → 归并（或小规模插入）</li>
+            <li>要<strong>就地 + 最坏保证</strong> → 堆排序</li>
+            <li>要<strong>实际最快</strong> → 快排（随机化）</li>
+            <li><strong>值域小</strong> → 计数排序；<strong>定长整数</strong> → 基数排序</li>
+            <li>工程上：<strong>小数组插入 + 中段快排 + 深递归切堆排</strong>（introsort）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">有序动态集合</h4>
+          <ul style="margin:6px 0">
+            <li>要<strong>最坏保证</strong> → 红黑树</li>
+            <li>要<strong>好写、常数小</strong> → 跳表（Redis / LevelDB 的选择）</li>
+            <li>只要<strong>最值</strong>，不需要有序遍历 → 堆</li>
+            <li>数据<strong>静态</strong>（建好只查） → 排序数组 + 二分</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>复习路线（按考试分值排）</h3>
+      <table>
+        <thead><tr><th style="width:64px">优先级</th><th>内容</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td><strong>P0</strong></td><td>§3 三条解递归式的路 + §2 求和工具</td><td>几乎所有大题都要用，且是纯技术活，练了就稳</td></tr>
+          <tr><td><strong>P0</strong></td><td>§6 BuildHeap $O(n)$、§7 快排平均、§10 五元组 $19/20$</td><td>三个「必考证明」，模板固定</td></tr>
+          <tr><td><strong>P1</strong></td><td>§8 计数/基数排序的细节（稳定性、低位优先）</td><td>容易出「走一遍」的计算题，送分也送命</td></tr>
+          <tr><td><strong>P1</strong></td><td>§12 红黑树高度证明 + 插入三情况</td><td>证明题高频；三情况的分支条件必须能背</td></tr>
+          <tr><td><strong>P2</strong></td><td>§9 决策树下界、§11 BST 操作、§13 跳表分析</td><td>多为简答或小题，性价比中等</td></tr>
+        </tbody>
+      </table>
+
+      <div class="ok">
+        <strong>一句话总收：</strong>
+        这门课的复杂度分析其实只有三个动作 ——
+        <strong>① 把代价写成和或递归式；② 用求和/递归树/主定理/代换法把它解出来；③ 说清楚这个界是「最坏」还是「期望」。</strong>
+        你缺的不是算法原理，是把这三个动作练成条件反射。
+      </div>
+    </section>
+
+
+    <footer>
+为《数据结构（与算法）》期中复习整理 · 覆盖 01Introduction / 02lecture / 03lecture / 04lecture<br>
+      所有推导均按讲义思路重排；补充部分（对手论证、信息论视角、工程实践）已单独标注
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
