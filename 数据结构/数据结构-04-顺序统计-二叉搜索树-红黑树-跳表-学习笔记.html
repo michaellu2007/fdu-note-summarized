@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 04 · 顺序统计量与平衡结构 — 学习笔记</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+  .t-coral{background:var(--coral-bg); color:var(--coral-tx);}
+  .t-red{background:var(--red-bg); color:var(--red);}
+  /* 习题块 */
+  .q{border:1px solid var(--bd); border-radius:10px; padding:14px 18px; margin:14px 0; background:#fff;}
+  .q .no{font-family:var(--mono); font-size:12px; color:var(--tx3); margin-right:8px;}
+  .q .diff{font-size:11.5px; color:var(--tx3); float:right; font-family:var(--mono);}
+  .q p:first-child{margin-top:0;}
+  .q p:last-child{margin-bottom:0;}
+  details{background:#f6f6f3; border:1px solid var(--bd2); border-left:3px solid var(--blue); border-radius:0 8px 8px 0; padding:10px 16px; margin:12px 0;}
+  details summary{cursor:pointer; font-size:13.5px; color:var(--blue); font-weight:600; outline:none;}
+  details summary:hover{color:var(--blue-tx);}
+  details[open] summary{margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed var(--bd2);}
+  details p:first-of-type{margin-top:6px;}
+  .steps{counter-reset:st; list-style:none; padding-left:0;}
+  .steps>li{counter-increment:st; padding-left:30px; position:relative; margin:8px 0;}
+  .steps>li:before{content:counter(st); position:absolute; left:0; top:2px; width:20px; height:20px; border-radius:50%;
+    background:var(--blue-bg); color:var(--blue-tx); font-size:11.5px; text-align:center; line-height:20px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>数据结构（与算法）· 第四讲 顺序统计量 · 二叉搜索树 · 红黑树 · 跳表</h1>
+    <div class="sub">复旦大学 数据科学学院 · Zengfeng Huang &nbsp;|&nbsp; 学习笔记整理</div>
+    <div class="meta">
+      <span class="pill">教材：CLRS《算法导论》(3rd)</span>
+      <span class="pill">语言：Python</span>
+      <span class="pill">来源：04lecture.pdf（93 页）</span>
+      <span class="pill">主线：选择问题 → BST → 红黑树 → 跳表</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">顺序统计量与 max/min</a></li>
+      <li><a href="#s2">RandomizedSelect</a></li>
+      <li><a href="#s3">最坏线性选择</a></li>
+      <li><a href="#s4">二叉搜索树</a></li>
+      <li><a href="#s5">红黑树</a></li>
+      <li><a href="#s6">跳表</a></li>
+      <li><a href="#s7">本讲速查</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note" style="margin-top:0">
+      <strong>来源标注：</strong>本讲整理自 <code>04lecture.pdf</code>（93 页），一共四块内容：
+      <strong>顺序统计量 / 选择</strong>（p1–p17）、<strong>二叉搜索树</strong>（p18–p44）、
+      <strong>红黑树</strong>（p45–p78）、<strong>跳表</strong>（p79–p93）。
+      小节标题后的页码对应原幻灯片。
+      <br>本讲是<strong>期中考试的重点区</strong>：三处「递归式 + 代换法」的推导（平均选择、最坏线性选择、红黑树高度）几乎必考。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 顺序统计量与「同时找最大最小」 <span class="tag t-blue">p2–p3</span></h2>
+
+      <p>第 $i$ 个<strong>顺序统计量</strong>（order statistic）就是 $n$ 个元素里<strong>第 $i$ 小</strong>的那个。
+      三个特例：最小值是第 1 个，最大值是第 $n$ 个，<strong>中位数</strong>是第 $\lceil n/2\rceil$ 个（$n$ 为偶数时有两个中位数，讲义特意点了一句）。</p>
+
+      <h3>单独找最小值：$n-1$ 次比较，且不能更少</h3>
+      <p>$n$ 个元素里除了最大值，每个元素都「至少输过一次」—— 每次比较只能让一个元素输。
+      要让 $n-1$ 个元素都被确认「不是最小」，至少需要 $n-1$ 次比较。所以 $n-1$ 既是上界也是下界。</p>
+
+      <h3>同时找最大和最小：为什么不是 $2n-2$，而是 $\lfloor 3n/2\rfloor$</h3>
+      <p>朴素做法是「各扫一遍」：找最小 $n-1$ 次，找最大 $n-1$ 次，共 $2n-2$。讲义问：
+      <em>Can we find the minimum and maximum with less than twice the cost?</em></p>
+
+      <p><strong>能。</strong>关键在于「一次比较能同时获得两个信息」：</p>
+      <ol class="steps">
+        <li>把元素<strong>两两配对</strong>，每对内部比一次 → $\lfloor n/2\rfloor$ 次比较，分出「大者」和「小者」；</li>
+        <li>把每对的<strong>大者</strong>和当前 max 比，<strong>小者</strong>和当前 min 比 → 每对 2 次。</li>
+      </ol>
+      <p>于是每 2 个元素只花 <strong>3 次</strong>比较，总共</p>
+      $$\left\lfloor\frac{n}{2}\right\rfloor+\left\lfloor\frac{n}{2}\right\rfloor\times 2=\left\lfloor\frac{3n}{2}\right\rfloor\ \text{次}$$
+      <p>（$n$ 为奇数时剩一个元素，最多再花 2 次。）</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 230" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>成对比较同时求最大最小</title>
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="60" y="30" width="46" height="34"/><rect x="106" y="30" width="46" height="34"/>
+              <rect x="196" y="30" width="46" height="34"/><rect x="242" y="30" width="46" height="34"/>
+              <rect x="332" y="30" width="46" height="34"/><rect x="378" y="30" width="46" height="34"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="83" y="47">8</text><text x="129" y="47">3</text>
+              <text x="219" y="47">5</text><text x="265" y="47">9</text>
+              <text x="355" y="47">2</text><text x="401" y="47">7</text>
+            </g>
+          </g>
+          <g stroke="#185FA5" stroke-width="1.4">
+            <line x1="106" y1="66" x2="106" y2="92"/><line x1="242" y1="66" x2="242" y2="92"/><line x1="378" y1="66" x2="378" y2="92"/>
+          </g>
+          <text x="470" y="76" font-size="11.5" fill="#185FA5">① 对内比 1 次 → 分出大小</text>
+
+          <g font-family="ui-monospace,monospace" font-size="12" text-anchor="middle" dominant-baseline="central">
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="60" y="94" width="46" height="28"/><rect x="196" y="94" width="46" height="28"/><rect x="332" y="94" width="46" height="28"/>
+            </g>
+            <g fill="#FAECE7" stroke="#993C1D">
+              <rect x="106" y="94" width="46" height="28"/><rect x="242" y="94" width="46" height="28"/><rect x="378" y="94" width="46" height="28"/>
+            </g>
+            <g fill="#27500A"><text x="83" y="108">8</text><text x="219" y="108">9</text><text x="355" y="108">7</text></g>
+            <g fill="#712B13"><text x="129" y="108">3</text><text x="265" y="108">5</text><text x="401" y="108">2</text></g>
+          </g>
+          <text x="470" y="108" font-size="11.5" fill="#5F5E5A">绿色 = 各对大者，红色 = 各对小者</text>
+
+          <g stroke="#3B6D11" stroke-width="1.3" fill="none" marker-end="url(#a1)">
+            <path d="M83 122 L83 152 L120 152"/>
+            <path d="M219 122 L219 152 L120 152"/>
+            <path d="M355 122 L355 152 L120 152"/>
+          </g>
+          <g stroke="#993C1D" stroke-width="1.3" fill="none" marker-end="url(#a1)">
+            <path d="M129 122 L129 190 L320 190"/>
+            <path d="M265 122 L265 190 L320 190"/>
+            <path d="M401 122 L401 190 L320 190"/>
+          </g>
+          <g font-family="ui-monospace,monospace" font-size="13" text-anchor="middle" dominant-baseline="central">
+            <rect x="40" y="140" width="80" height="26" rx="4" fill="#EAF3DE" stroke="#3B6D11"/>
+            <text x="80" y="153" fill="#27500A">max = 9</text>
+            <rect x="322" y="178" width="80" height="26" rx="4" fill="#FAECE7" stroke="#993C1D"/>
+            <text x="362" y="191" fill="#712B13">min = 2</text>
+          </g>
+          <text x="40" y="216" font-size="11.5" fill="#5F5E5A">② 大者只和 max 比、小者只和 min 比：每对再 2 次 → 每 2 个元素共 3 次</text>
+        </svg>
+        <div class="cap">总比较次数 $\lfloor 3n/2\rfloor$，比 $2n-2$ 省掉约 $n/2$ 次</div>
+      </div>
+
+      <div class="warn">
+        <strong>考试常考的「为什么更快」：</strong>朴素做法里，每个元素<strong>既要和 max 比、又要和 min 比</strong>；
+        成对法让「大者永远不可能成为 min、小者永远不可能成为 max」，于是每个元素只被比较<strong>一次</strong>（除了对内那一次）。
+        <br>另一个必答点：$\lfloor 3n/2\rfloor$ 是<strong>最优</strong>的（下界 $\lceil 3n/2\rceil-2$），因为每个元素至少要「输一次或赢一次」才能确定身份。
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · RandomizedSelect：借 partition 拿到 $O(n)$ <span class="tag t-blue">p5–p10</span></h2>
+
+      <p>一般的选择问题（找第 $i$ 小）如果先排序再取，是 $O(n\log n)$。讲义要证的是：<strong>能到 $O(n)$</strong>。</p>
+
+      <h3>核心思想：partition 之后只递归<strong>一边</strong></h3>
+      <p>沿用快排的 <code>RandomizedPartition</code>，得到 $q$ 和 $k=q-p+1$（pivot 是区间内第 $k$ 小）：</p>
+
+<pre>RandomizedSelect(A, p, r, i)
+    if (p == r) then return A[p];              <span class="c"># 只剩一个，就是它</span>
+    q = RandomizedPartition(A, p, r)
+    k = q - p + 1;                            <span class="c"># pivot 在本区间内的名次</span>
+    if (i == k) then return A[q];             <span class="c"># 正好是它</span>
+    if (i &lt; k) then
+        return RandomizedSelect(A, p, q-1, i);        <span class="c"># 只在左半找，名次不变</span>
+    else
+        return RandomizedSelect(A, q+1, r, i-k);      <span class="c"># 只在右半找，名次减 k</span></pre>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>选择只递归一边，快排递归两边</title>
+          <g font-family="ui-monospace,monospace" font-size="11.5" text-anchor="middle" dominant-baseline="central">
+            <text x="30" y="26" font-size="12.5" fill="#0C447C" text-anchor="start">QuickSort：两边都要做</text>
+            <rect x="40" y="38" width="600" height="30" fill="#F1EFE8" stroke="#B4B2A9"/>
+            <rect x="40" y="38" width="280" height="30" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="360" y="38" width="280" height="30" fill="#E6F1FB" stroke="#185FA5"/>
+            <rect x="320" y="38" width="40" height="30" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="340" y="53" fill="#633806">q</text>
+            <text x="180" y="53" fill="#0C447C">n/2</text><text x="500" y="53" fill="#0C447C">n/2</text>
+
+            <text x="30" y="104" font-size="12.5" fill="#085041" text-anchor="start">RandomizedSelect：只做一边（$i\gt k$ 时走右边）</text>
+            <rect x="40" y="116" width="600" height="30" fill="#F1EFE8" stroke="#B4B2A9"/>
+            <rect x="360" y="116" width="280" height="30" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+            <rect x="320" y="116" width="40" height="30" fill="#FAEEDA" stroke="#854F0B"/>
+            <text x="340" y="131" fill="#633806">q</text>
+            <text x="500" y="131" fill="#085041">只递归这里</text>
+            <text x="180" y="131" fill="#888780">丢弃</text>
+            <line x1="60" y1="131" x2="300" y2="131" stroke="#B4B2A9" stroke-width="2" stroke-dasharray="6 4"/>
+          </g>
+          <text x="40" y="176" font-size="12" fill="#5F5E5A">递归式对比：</text>
+          <text x="40" y="200" font-size="13" font-family="ui-monospace,monospace" fill="#0C447C">QuickSort        T(n) = 2T(n/2) + Θ(n)  →  Θ(n lg n)</text>
+          <text x="40" y="224" font-size="13" font-family="ui-monospace,monospace" fill="#085041">RandomizedSelect T(n) = 1·T(n/2) + Θ(n)  →  Θ(n)</text>
+        </svg>
+        <div class="cap">「少递归一边」就是 $O(n\log n)\to O(n)$ 的全部原因</div>
+      </div>
+
+      <h3>三种情况的分析（讲义 p7）</h3>
+      <table>
+        <thead><tr><th style="width:110px">情形</th><th>递归式</th><th>结果</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>最坏</td><td>$T(n)=T(n-1)+O(n)$</td><td>$O(n^2)$</td><td>等差数列求和，<strong>和排序一样慢</strong></td></tr>
+          <tr><td>「最好」</td><td>$T(n)=T(9n/10)+O(n)$</td><td>$O(n)$</td><td>主定理情形 3（$f$ 主导）</td></tr>
+          <tr><td>平均</td><td>见下</td><td>$O(n)$</td><td>代换法</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>为什么 9 : 1 就能到 $O(n)$：</strong>主定理里 $a=1,\ b=10/9,\ f(n)=\Theta(n)$，而 $n^{\log_b a}=n^0=1$，
+        $f(n)=\Theta(n)$ 比 $1$ 大一个多项式量级，属情形 3 → $T(n)=\Theta(f(n))=\Theta(n)$。
+        <br>更直观的理由：等比级数 $n+\frac{9n}{10}+\left(\frac{9n}{10}\right)^2+\cdots=10n=O(n)$ —— <strong>每层缩水固定比例，总和被首项压住</strong>。
+      </div>
+
+      <h3>平均情况：讲义那两步「What happened here?」</h3>
+      <p>对上界，<strong>假设要找的元素每次都落在较大的那一半</strong>（这样只会更坏）。$n$ 种 split 等概率，于是</p>
+      $$T(n)\;\le\;\frac{1}{n}\sum_{k=0}^{n-1}T\big(\max(k,\,n-k-1)\big)+\Theta(n)$$
+
+      <p>讲义在这里打了个问号：<em>What happened here?</em> 答案是把「$k$ 和 $n-k-1$ 里取大者」改写成「只对 $k\ge n/2$ 求和、并把系数从 $1/n$ 变成 $2/n$」：</p>
+
+      $$T(n)\;\le\;\frac{2}{n}\sum_{k=\lfloor n/2\rfloor}^{n-1}T(k)+\Theta(n)$$
+
+      <div class="note">
+        <strong>为什么可以这样改写：</strong>当 $k$ 从 $0$ 扫到 $n-1$ 时，$\max(k,n-k-1)$ 会取到
+        $n-1,n-2,\dots,\lceil n/2\rceil$ <strong>各两次</strong>（一次来自 $k$ 小，一次来自 $k$ 大），
+        中间的 $\lfloor n/2\rfloor$ 只出现一次。把「每个值出现两次」提出来就是 $2/n$，再补一个 $T(\lfloor n/2\rfloor)$ 的误差（被 $\Theta(n)$ 吸收）。
+        所以上界成立，且<strong>只对后半段求和</strong>。
+      </div>
+
+      <h4>代换法：$T(n)\le cn$</h4>
+      <p>归纳假设 $T(k)\le ck$（对 $k\lt n$），代入：</p>
+      $$T(n)\;\le\;\frac{2}{n}\sum_{k=\lfloor n/2\rfloor}^{n-1}ck+\Theta(n)
+        \;=\;\frac{2c}{n}\sum_{k=\lfloor n/2\rfloor}^{n-1}k+\Theta(n)$$
+
+      <p>算那个和（$k$ 从 $n/2$ 到 $n-1$，共 $n/2$ 项）：</p>
+      $$\sum_{k=\lfloor n/2\rfloor}^{n-1}k\;\le\;\frac{n(n-1)}{2}-\frac{\frac{n}{2}\left(\frac{n}{2}-1\right)}{2}
+        =\frac{3n^2}{8}-\frac{n}{4}$$
+
+      <p>代回：</p>
+      $$T(n)\;\le\;\frac{2c}{n}\left(\frac{3n^2}{8}-\frac{n}{4}\right)+\Theta(n)
+        \;=\;\frac{3cn}{4}-\frac{c}{2}+\Theta(n)\;\le\;cn\quad(\text{取 }c\text{ 足够大})$$
+
+      <div class="ok">
+        <strong>这个 $3/4$ 是本题的得分点：</strong>因为只对<strong>后一半</strong>求和，求和项只占 $\frac{3}{8}n^2$ 而不是 $\frac{1}{2}n^2$，
+        于是系数从 $c$ 掉到 $\frac{3}{4}c$，<strong>留出 $\frac{1}{4}cn$ 的余量</strong>去吃掉 $\Theta(n)$ 和低阶项。
+        如果对全部 $k$ 求和，系数恰好是 $c$，没有余量，代换法就卡住了 —— 这正是必须「只对一半求和」的原因。
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 最坏情况线性时间选择：五元组中位数 <span class="tag t-blue">p11–p17</span></h2>
+
+      <p>随机化选择「平均 $O(n)$、最坏 $O(n^2)$」。这一节给出一个<strong>最坏也是 $O(n)$</strong> 的确定性算法 ——
+      讲义自己评价：<em>really of theoretical interest only</em>（常数巨大，实际不用）。但它<strong>是期末最爱考的证明</strong>。</p>
+
+      <h3>思路：先造一个「好」的 pivot</h3>
+      <p>随机化算法的不确定性来自 pivot。如果每次都能<strong>保证 pivot 落在中间一段</strong>（比如 $1/4$ 到 $3/4$ 之间），
+      递归规模就按固定比例缩小，必然是 $O(n)$。所以问题变成：<strong>怎么在 $O(n)$ 时间里找到一个「大致居中」的元素？</strong></p>
+
+      <h3>算法五步（讲义 p12）</h3>
+      <ol class="steps">
+        <li>把 $n$ 个元素分成 $\lceil n/5\rceil$ 组，每组 5 个（最后一组可能不满）；</li>
+        <li>对每组求<strong>中位数</strong>（每组 5 个，排序只要常数次比较，所以是 $O(1)$；总共 $O(n)$）；</li>
+        <li>递归调用 <code>Select</code> 求出这 $\lceil n/5\rceil$ 个中位数的<strong>中位数</strong> $x$；</li>
+        <li>以 $x$ 为 pivot 对整个数组做一次 partition，得到 $x$ 的名次 $k$；</li>
+        <li>若 $i=k$ 返回 $x$；若 $i\lt k$ 在左半递归找第 $i$ 小；否则在右半找第 $i-k$ 小。</li>
+      </ol>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 340" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>五元组划分与「至少 3⌊n/10⌋ 个元素 ≤ x」的计数</title>
+          <g font-size="11" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <text x="40" y="18" font-size="12" fill="#5F5E5A" text-anchor="start" font-family="sans-serif">每组 5 个元素，组内已排序（上小下大）</text>
+
+            <g fill="#F1EFE8" stroke="#B4B2A9">
+              <rect x="60" y="34" width="60" height="26"/><rect x="60" y="60" width="60" height="26"/>
+              <rect x="60" y="86" width="60" height="26"/><rect x="60" y="112" width="60" height="26"/><rect x="60" y="138" width="60" height="26"/>
+              <rect x="150" y="34" width="60" height="26"/><rect x="150" y="60" width="60" height="26"/>
+              <rect x="150" y="86" width="60" height="26"/><rect x="150" y="112" width="60" height="26"/><rect x="150" y="138" width="60" height="26"/>
+              <rect x="240" y="34" width="60" height="26"/><rect x="240" y="60" width="60" height="26"/>
+              <rect x="240" y="86" width="60" height="26"/><rect x="240" y="112" width="60" height="26"/><rect x="240" y="138" width="60" height="26"/>
+              <rect x="330" y="34" width="60" height="26"/><rect x="330" y="60" width="60" height="26"/>
+              <rect x="330" y="86" width="60" height="26"/><rect x="330" y="112" width="60" height="26"/><rect x="330" y="138" width="60" height="26"/>
+              <rect x="420" y="34" width="60" height="26"/><rect x="420" y="60" width="60" height="26"/>
+              <rect x="420" y="86" width="60" height="26"/><rect x="420" y="112" width="60" height="26"/><rect x="420" y="138" width="60" height="26"/>
+            </g>
+
+            <g fill="#E1F5EE" stroke="#0F6E56">
+              <rect x="60" y="34" width="60" height="78"/><rect x="150" y="34" width="60" height="78"/><rect x="240" y="34" width="60" height="78"/>
+            </g>
+            <rect x="60" y="34" width="60" height="78" fill="none" stroke="#0F6E56" stroke-width="1.5"/>
+            <rect x="150" y="34" width="60" height="78" fill="none" stroke="#0F6E56" stroke-width="1.5"/>
+            <rect x="240" y="34" width="60" height="78" fill="none" stroke="#0F6E56" stroke-width="1.5"/>
+
+            <g fill="#FAEEDA" stroke="#854F0B" stroke-width="2">
+              <rect x="60" y="86" width="60" height="26"/><rect x="150" y="86" width="60" height="26"/>
+              <rect x="330" y="86" width="60" height="26"/><rect x="420" y="86" width="60" height="26"/>
+            </g>
+            <rect x="240" y="86" width="60" height="26" fill="#FAECE7" stroke="#993C1D" stroke-width="2.5"/>
+
+            <g fill="#9A9890" font-size="14">
+              <text x="90" y="47">·</text><text x="90" y="73">·</text><text x="90" y="99">m₁</text><text x="90" y="125">·</text><text x="90" y="151">·</text>
+              <text x="180" y="47">·</text><text x="180" y="73">·</text><text x="180" y="99">m₂</text><text x="180" y="125">·</text><text x="180" y="151">·</text>
+              <text x="270" y="47">·</text><text x="270" y="73">·</text><text x="270" y="99">x</text><text x="270" y="125">·</text><text x="270" y="151">·</text>
+              <text x="360" y="47">·</text><text x="360" y="73">·</text><text x="360" y="99">m₄</text><text x="360" y="125">·</text><text x="360" y="151">·</text>
+              <text x="450" y="47">·</text><text x="450" y="73">·</text><text x="450" y="99">m₅</text><text x="450" y="125">·</text><text x="450" y="151">·</text>
+            </g>
+
+            <text x="40" y="186" font-size="11.5" fill="#0F6E56" text-anchor="start" font-family="sans-serif">黄色 = 各组中位数；红色 = 中位数的中位数 x</text>
+            <text x="40" y="206" font-size="11.5" fill="#0F6E56" text-anchor="start" font-family="sans-serif">绿色 = 已知 ≤ x 的区域（3 列 × 每列上 3 个）</text>
+          </g>
+
+          <g stroke="#0F6E56" stroke-width="1.2" stroke-dasharray="4 3" fill="none">
+            <path d="M240 186 L240 176"/>
+          </g>
+          <g font-size="12" fill="#1F1F1D" font-family="sans-serif">
+            <text x="40" y="240">至少有 ⌊⌈n/5⌉/2⌋ = ⌊n/10⌋ 个中位数 ≤ x，每个中位数所在的组贡献 3 个 ≤ x 的元素</text>
+            <text x="40" y="264" font-size="13" fill="#712B13">⇒ 至少 3⌊n/10⌋ 个元素 ≤ x；同理至少 3⌊n/10⌋ 个元素 ≥ x</text>
+            <text x="40" y="290" font-size="13" fill="#712B13">⇒ n ≥ 60 时 3⌊n/10⌋ ≥ n/4，所以 partition 后任一侧最多剩 3n/4 个</text>
+          </g>
+          <rect x="40" y="304" width="470" height="28" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+          <text x="275" y="318" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#27500A">这就是「每层规模按 3/4 缩小」的来源 —— 递归必然收敛</text>
+        </svg>
+        <div class="cap">计数论证是全节的核心：<strong>pivot 一定落在中间一半</strong></div>
+      </div>
+
+      <h3>递归式与代换法（讲义 p14 的六行）</h3>
+      <p>算法要做三件事：递归求中位数的中位数（规模 $\lfloor n/5\rfloor$）、partition（$\Theta(n)$）、递归处理剩下的一侧（规模 $\le 3n/4$）：</p>
+
+      $$T(n)\;\le\;T(\lfloor n/5\rfloor)+T(3n/4)+\Theta(n)$$
+
+      <p>代换法，假设 $T(k)\le ck$（$k\lt n$）：</p>
+      $$\begin{aligned}
+      T(n)&\le c\lfloor n/5\rfloor+c\cdot\frac{3n}{4}+\Theta(n)\\
+          &\le \frac{cn}{5}+\frac{3cn}{4}+\Theta(n)\\
+          &=\frac{19cn}{20}+\Theta(n)\\
+          &=cn-\left(\frac{cn}{20}-\Theta(n)\right)\\
+          &\le cn\qquad(\text{只要 }c\text{ 足够大，使 }\tfrac{cn}{20}\ge\Theta(n))
+      \end{aligned}$$
+
+      <div class="ok">
+        <strong>关键数字 $19/20$：</strong>$\frac{1}{5}+\frac{3}{4}=\frac{4+15}{20}=\frac{19}{20}\lt 1$。
+        只要两个子问题的规模系数之和<strong>严格小于 1</strong>，代换法就能留出余量，结论是 $O(n)$。
+        <br>反过来，如果系数之和 $\ge 1$（比如 $\frac{1}{3}+\frac{3}{4}=\frac{13}{12}\gt1$），这套证明就崩了 —— 这也是<strong>为什么必须用 5 个一组</strong>。
+      </div>
+
+      <div class="warn">
+        <strong>为什么不能 3 个一组（考试爱问）：</strong>若每组 3 个，中位数的中位数只能保证
+        <strong>$\ge n/6$ 个元素 ≤ x</strong>，于是递归式变成
+        $T(n)\le T(n/3)+T(2n/3)+O(n)$，而 $\frac{1}{3}+\frac{2}{3}=1$，<strong>没有余量</strong>，
+        代换法得不出 $cn$，实际解是 $O(n\log n)$ —— 退化成快排。7 个一组可以（$\frac{1}{7}+\frac{5}{7}\lt1$），但常数更大，所以 5 是理论最优的折中。
+      </div>
+
+      <h3>应用一：中位数当黑盒，选择就是 $O(n)$（p16）</h3>
+      <p>如果已经有「$O(n)$ 求中位数」的黑盒，找第 $i$ 小就三步：求中位数 $x$ → 以 $x$ 为 pivot partition → 只在需要的一半递归。
+      每次规模减半：$T(n)=T(n/2)+O(n)=O(n)$。</p>
+
+      <h3>应用二：最坏 $O(n\log n)$ 的快排（p17）</h3>
+      <p>同样的黑盒，每次<strong>取中位数作 pivot</strong>，partition 一定对半分：</p>
+      $$T(n)=2T(n/2)+O(n)=O(n\log n)$$
+      <div class="note">
+        <strong>为什么实际不用：</strong>找中位数的常数极大（分组、递归、大量常数次比较），
+        实际跑起来比随机化快排慢好几倍。它的价值是<strong>理论上证明了「最坏 $O(n\log n)$ 的快排存在」</strong>，
+        以及「选择问题在最坏情况下也是线性的」。
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 二叉搜索树 <span class="tag t-blue">p19–p44</span></h2>
+
+      <p>前面所有结构都是「静态」的（建好就查）。<strong>动态集合</strong>（dynamic set）要支持插入删除，
+      元素带 key 和卫星数据（satellite data），操作分两类：</p>
+      <table>
+        <thead><tr><th style="width:150px">查询</th><th>修改</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>Search(S,k)</code>、<code>Minimum</code>、<code>Maximum</code>、<code>Successor</code>、<code>Predecessor</code></td>
+            <td><code>Insert(S,x)</code>、<code>Delete(S,x)</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>BST 性质与中序遍历</h3>
+      <p>每个节点有 <code>key</code>、<code>left</code>、<code>right</code>、<code>p</code>（父指针，根为 NULL）。
+      <strong>BST 性质</strong>：</p>
+      $$\text{key}\big[\text{leftSubtree}(x)\big]\le \text{key}[x]\le \text{key}\big[\text{rightSubtree}(x)\big]$$
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>BST 示例：15,6,18,3,7,17,20,2,4,13,9</title>
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="340" y1="46" x2="196" y2="82"/><line x1="340" y1="46" x2="484" y2="82"/>
+            <line x1="190" y1="102" x2="116" y2="138"/><line x1="190" y1="102" x2="244" y2="138"/>
+            <line x1="480" y1="102" x2="424" y2="138"/><line x1="480" y1="102" x2="544" y2="138"/>
+            <line x1="110" y1="158" x2="76" y2="194"/><line x1="110" y1="158" x2="152" y2="194"/>
+            <line x1="250" y1="158" x2="276" y2="194"/>
+            <line x1="276" y1="214" x2="248" y2="250"/>
+          </g>
+          <g font-size="13" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <circle cx="340" cy="30" r="16"/><circle cx="190" cy="86" r="16"/><circle cx="480" cy="86" r="16"/>
+              <circle cx="110" cy="142" r="16"/><circle cx="250" cy="142" r="16"/>
+              <circle cx="420" cy="142" r="16"/><circle cx="550" cy="142" r="16"/>
+              <circle cx="70" cy="198" r="16"/><circle cx="156" cy="198" r="16"/>
+              <circle cx="282" cy="198" r="16"/><circle cx="242" cy="254" r="16"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="340" y="30">15</text><text x="190" y="86">6</text><text x="480" y="86">18</text>
+              <text x="110" y="142">3</text><text x="250" y="142">7</text>
+              <text x="420" y="142">17</text><text x="550" y="142">20</text>
+              <text x="70" y="198">2</text><text x="156" y="198">4</text>
+              <text x="282" y="198">13</text><text x="242" y="254">9</text>
+            </g>
+          </g>
+          <g font-size="11.5" fill="#5F5E5A">
+            <text x="40" y="284">中序：2 3 4 6 7 9 13 15 17 18 20（升序）</text>
+            <text x="400" y="284">高度 h = 4，而 n = 11</text>
+          </g>
+        </svg>
+        <div class="cap">同一个 key 集合可以有多种形状；形状决定高度，高度决定所有操作的代价</div>
+      </div>
+
+      <p><strong>中序遍历为什么有序</strong>（讲义 p23 要求证明）：对 $x$ 的子树做归纳。中序先输出左子树、再输出 $x$、再输出右子树；
+      由归纳假设左子树输出升序且都 $\le x$，右子树输出升序且都 $\ge x$，拼起来仍升序。</p>
+
+      <h3>Search / Insert / 高度</h3>
+<pre>TreeSearch(x, k)                      <span class="c"># 递归版</span>
+    if (x = NULL or k = key[x]) return x;
+    if (k &lt; key[x]) return TreeSearch(left[x], k);
+    else            return TreeSearch(right[x], k);
+
+TreeSearch(x, k)                      <span class="c"># 迭代版（更省栈）</span>
+    while (x != NULL and k != key[x])
+        if (k &lt; key[x]) x = left[x];
+        else            x = right[x];
+    return x;</pre>
+
+      <p><code>Insert</code> 就是「搜索到底，把 NULL 换成新节点」（像往链表里插）。两者都<strong>沿一条根到叶的路径走</strong>，所以：</p>
+      $$T_{\text{search}}=T_{\text{insert}}=O(h)$$
+
+      <div class="warn">
+        <strong>$h$ 可以退化成 $n$：</strong>如果按 $1,2,3,\dots,n$ 的顺序插入，树变成一条<strong>右斜链</strong>，$h=n$，
+        每次操作 $O(n)$。所以讲义说「<em>We'll keep all analysis in terms of h</em>」——
+        在没引入平衡之前，BST 的复杂度只能用 $h$ 表达，<strong>不能说 $O(\log n)$</strong>。
+      </div>
+
+      <h3>BSTSort：和快排是「同一件事」</h3>
+<pre>BSTSort(A)
+    for i = 1 to n
+        TreeInsert(A[i]);
+    InorderTreeWalk(root);</pre>
+
+      <p>讲义的关键观察（p32–p35）：按 $3,1,8,2,6,7,5$ 建树，每次插入的比较过程，和快排的 partition 做的是<strong>同一批比较</strong>，
+      只是<strong>顺序不同</strong>（快排按层做，BST 按插入顺序做）。所以：</p>
+      <table>
+        <thead><tr><th style="width:150px">算法</th><th>平均</th><th>最坏</th><th>就地</th><th>额外开销</th></tr></thead>
+        <tbody>
+          <tr><td>BSTSort</td><td>$O(n\log n)$</td><td>$O(n^2)$（有序输入）</td><td>否</td><td>要建树、要指针</td></tr>
+          <tr><td>Quicksort</td><td>$O(n\log n)$</td><td>$O(n^2)$</td><td>是</td><td>常数小</td></tr>
+        </tbody>
+      </table>
+      <p>讲义问 <em>Which is better, quicksort or BSTSort?</em> 答案：<strong>quicksort</strong> —— 常数更小、就地、不用先建数据结构。</p>
+
+      <h3>Successor：两种情况</h3>
+      <p>（下面的「后继」= 比 $x$ 大的最小 key。）</p>
+      <ul>
+        <li><strong>$x$ 有右子树</strong>：后继 = 右子树里的<strong>最小值</strong>（一直往左走到底）；</li>
+        <li><strong>$x$ 没有右子树</strong>：往上爬，直到「$x$ 是从<strong>左</strong>边爬上来的」那一刻，那个祖先就是后继。</li>
+      </ul>
+      <p>直觉（讲义原话）：<em>As long as you move to the left up the tree, you're visiting smaller nodes.</em> ——
+      只要还在往左爬，遇到的都是更小的；一旦往右爬，就跨过了 $x$，那个父节点就是答案。</p>
+
+      <table>
+        <thead><tr><th>例子（上图那棵树）</th><th>属于</th><th>答案</th></tr></thead>
+        <tbody>
+          <tr><td><code>successor(15)</code></td><td>有右子树</td><td>右子树最小值 = <strong>17</strong></td></tr>
+          <tr><td><code>successor(13)</code></td><td>无右子树</td><td>13→7（右）→6（右）→15（左，停）= <strong>15</strong></td></tr>
+          <tr><td><code>successor(20)</code></td><td>无右子树</td><td>一路右爬到根仍无解 → <strong>NULL</strong></td></tr>
+        </tbody>
+      </table>
+      <p><code>Predecessor</code> 完全对称（把左右互换）。两者都是 $O(h)$。</p>
+
+      <h3>Delete：三种情况</h3>
+      <p>删除比插入麻烦，因为要保持 BST 性质。按孩子个数分三种：</p>
+      <table>
+        <thead><tr><th style="width:110px">情况</th><th>做法</th><th>例子（上图）</th></tr></thead>
+        <tbody>
+          <tr><td><strong>0 个孩子</strong>（叶子）</td><td>直接摘掉，把父亲的对应指针置 NULL</td><td>删 4、删 9</td></tr>
+          <tr><td><strong>1 个孩子</strong></td><td>「拼接」（splice）：让父亲直接指向那个孩子</td><td>删 13（让 7 直接指 9）</td></tr>
+          <tr><td><strong>2 个孩子</strong></td><td>把 $x$ 的 key 换成<strong>后继</strong>的 key，然后去删那个后继</td><td>删 6（用 7 覆盖，再删原来的 7）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>为什么「2 个孩子」替换成后继就一定行（讲义 p42 专门问了这个）：</strong>
+        因为 $x$ 的后继是<strong>右子树里的最小值</strong>，它<strong>不可能有左孩子</strong>（否则还能更小）。
+        所以后继最多只有一个右孩子 —— 删它就退化成情况 0 或情况 1，<strong>不会递归下去</strong>。
+        <br>这也是为什么用「后继」而不是「前驱」都一样成立，但不能随便挑一个元素来替换。
+      </div>
+
+      <h4>CLRS 的写法：用 TRANSPLANT 抽象「换子树」</h4>
+<pre>TRANSPLANT(T, u, v)              <span class="c"># 用子树 v 替换子树 u</span>
+    if u.p == NIL        T.root = v
+    elif u == u.p.left   u.p.left = v
+    else                 u.p.right = v
+    if v != NIL          v.p = u.p
+
+TREE-DELETE(T, z)
+    if z.left == NIL              TRANSPLANT(T, z, z.right)      <span class="c"># 情况 0/1（左空）</span>
+    elif z.right == NIL           TRANSPLANT(T, z, z.left)       <span class="c"># 情况 1（右空）</span>
+    else                                                          <span class="c"># 情况 2</span>
+        y = TREE-MINIMUM(z.right)                                 <span class="c"># 后继</span>
+        if y.p != z
+            TRANSPLANT(T, y, y.right)                             <span class="c"># 先把 y 摘出来</span>
+            y.right = z.right; y.right.p = y
+        TRANSPLANT(T, z, y)                                       <span class="c"># 再用 y 顶替 z</span>
+        y.left = z.left; y.left.p = y</pre>
+      <div class="warn">
+        <strong>细节坑（考试爱考）：</strong>当后继 $y$ <strong>不是</strong> $z$ 的右孩子时（即 $y$ 在右子树深处），
+        必须先 <code>TRANSPLANT(T, y, y.right)</code> 把 $y$ 从原位摘掉，再让 $y$ 接管 $z$ 的右子树。
+        漏掉这一步会导致 $y$ 同时出现在两个位置。
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 红黑树：把高度锁在 $O(\log n)$ <span class="tag t-blue">p45–p78</span></h2>
+
+      <p>BST 的所有操作都是 $O(h)$，但 $h$ 最坏是 $n$。红黑树（red-black tree）就是在 BST 上加一层「颜色」约束，
+      <strong>强制</strong>高度 $h=O(\log n)$，于是所有操作自动变成 $O(\log n)$。</p>
+
+      <h3>五条性质（p47）</h3>
+      <table>
+        <thead><tr><th style="width:34px">#</th><th>性质</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>每个节点非红即黑</td><td>定义</td></tr>
+          <tr><td>2</td><td>每个叶子（NULL 指针）是黑的</td><td>让「空」也算节点，路径长度统一</td></tr>
+          <tr><td>3</td><td>红节点的两个孩子都是黑的</td><td><strong>不能有两个连续的红</strong></td></tr>
+          <tr><td>4</td><td>任一节点到其所有后代叶子的路径上<strong>黑节点个数相同</strong></td><td>保证「大致平衡」，是 $h=O(\lg n)$ 的核心</td></tr>
+          <tr><td>5</td><td>根总是黑的</td><td>简化边界（不满足时染黑即可）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>性质 2 的隐含意思：</strong>把 NULL 也当成黑色叶节点之后，「每个真节点都有两个孩子」——
+        这样「路径」的概念才是完整的，性质 4 才有意义。
+      </div>
+
+      <h3>黑高（black-height）</h3>
+      <p>$\mathrm{bh}(x)$：从 $x$ 出发（<strong>不含 $x$ 自己</strong>）到任一后代叶子的路径上黑节点的个数。
+      性质 4 保证了它<strong>定义良好</strong>（不管走哪条路，数出来都一样）。</p>
+
+      <h3>高度上界：$h\le 2\lg(n+1)$（讲义 p50–p53 的完整证明）</h3>
+      <p>分两步，第一步是关键引理。</p>
+
+      <h4>引理：以 $x$ 为根的子树至少有 $2^{\mathrm{bh}(x)}-1$ 个内部节点</h4>
+      <p>对<strong>高度</strong>做归纳：</p>
+      <ul>
+        <li><strong>基例</strong>：$x$ 是 NULL 叶子，高度 0，$\mathrm{bh}(x)=0$，$2^0-1=0$ 个内部节点 ✓；</li>
+        <li><strong>归纳步</strong>：$x$ 高度为正，有两个孩子。
+        孩子是红色时 $\mathrm{bh}$ 不变，是黑色时 $\mathrm{bh}$ 少 1，所以每个孩子的黑高 $\ge \mathrm{bh}(x)-1$。
+        由归纳假设，每个子树至少 $2^{\mathrm{bh}(x)-1}-1$ 个内部节点，于是
+        $$\big(2^{\mathrm{bh}(x)-1}-1\big)+\big(2^{\mathrm{bh}(x)-1}-1\big)+1=2^{\mathrm{bh}(x)}-1$$
+        正好是 $x$ 自己那一个加上两棵子树。</li>
+      </ul>
+
+      <h4>第二步：把 $\mathrm{bh}$ 换成 $h$</h4>
+      <p>根的黑高 $\ge h/2$ —— 因为性质 3 禁止连续红节点，所以任意路径上<strong>至少一半是黑的</strong>。于是</p>
+      $$n\;\ge\;2^{\mathrm{bh}(\text{root})}-1\;\ge\;2^{h/2}-1
+        \;\Longrightarrow\;n+1\ge 2^{h/2}
+        \;\Longrightarrow\;\lg(n+1)\ge \frac{h}{2}
+        \;\Longrightarrow\;h\le 2\lg(n+1)$$
+
+      <div class="ok">
+        <strong>结论：</strong>$h=O(\log n)$。所以 <code>Search</code>、<code>Min</code>、<code>Max</code>、<code>Successor</code>、
+        <code>Predecessor</code> 全部 $O(\log n)$；<code>Insert</code> / <code>Delete</code> 也是 $O(\log n)$，
+        只是要额外修复颜色（修复本身也是 $O(\log n)$）。
+        <br>注意 $2\lg(n+1)$ 里的<strong>常数 2</strong>：红黑树最坏高度约为 AVL 的两倍，换来的是插入删除只需 $O(1)$ 次旋转。
+      </div>
+
+      <h3>旋转：唯一改变结构的操作</h3>
+      <p>插入删除时不能靠「重排 key」来修复（那会破坏 BST 性质），只能<strong>旋转</strong>。旋转保持中序不变：</p>
+
+      <div class="diagram">
+<svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>左旋与右旋互为逆操作，中序 A x B y C 保持不变</title>
+          <defs>
+            <marker id="r1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="150" y1="46" x2="95" y2="120"/><line x1="150" y1="46" x2="205" y2="118"/>
+            <line x1="95" y1="140" x2="70" y2="190"/><line x1="95" y1="140" x2="145" y2="190"/>
+            <line x1="470" y1="46" x2="415" y2="118"/><line x1="470" y1="46" x2="525" y2="120"/>
+            <line x1="530" y1="140" x2="480" y2="190"/><line x1="530" y1="140" x2="610" y2="118"/>
+          </g>
+          <g font-size="13" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="150" cy="46" r="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <circle cx="95" cy="130" r="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <circle cx="470" cy="46" r="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <circle cx="530" cy="130" r="15" fill="#E6F1FB" stroke="#185FA5"/>
+            <g fill="#0C447C">
+              <text x="150" y="46">y</text><text x="95" y="130">x</text>
+              <text x="470" y="46">x</text><text x="530" y="130">y</text>
+            </g>
+            <g fill="#F1EFE8" stroke="#B4B2A9">
+              <rect x="180" y="112" width="50" height="26" rx="4"/><rect x="45" y="188" width="50" height="26" rx="4"/>
+              <rect x="120" y="188" width="50" height="26" rx="4"/>
+              <rect x="390" y="112" width="50" height="26" rx="4"/><rect x="455" y="188" width="50" height="26" rx="4"/>
+              <rect x="585" y="112" width="50" height="26" rx="4"/>
+            </g>
+            <g fill="#5F5E5A" font-size="12">
+              <text x="205" y="125">C</text><text x="70" y="201">A</text><text x="145" y="201">B</text>
+              <text x="415" y="125">A</text><text x="480" y="201">B</text><text x="610" y="125">C</text>
+            </g>
+          </g>
+          <g stroke="#888780" stroke-width="1.5" marker-end="url(#r1)">
+            <line x1="270" y1="88" x2="350" y2="88"/>
+          </g>
+          <text x="310" y="72" text-anchor="middle" font-size="11.5" fill="#854F0B">leftRotate(x)</text>
+          <text x="310" y="108" text-anchor="middle" font-size="11.5" fill="#5F5E5A">rightRotate(y)</text>
+          <text x="340" y="230" text-anchor="middle" font-size="12" fill="#1F1F1D">中序始终是 A → x → B → y → C，所以 BST 性质不变</text>
+        </svg>
+        <div class="cap">$y$ 的左子树 $B$「过继」给 $x$ 当右子树 —— 这是旋转唯一要小心的地方</div>
+      </div>
+
+      <p><code>rightRotate(y)</code> 到底做了什么（讲义 p68 的自问自答，四句话）：</p>
+      <ol>
+        <li>$x$ 保留它的<strong>左</strong>孩子 $A$；</li>
+        <li>$y$ 保留它的<strong>右</strong>孩子 $C$；</li>
+        <li>$x$ 的<strong>右</strong>孩子 $B$ 变成 $y$ 的<strong>左</strong>孩子（过继）；</li>
+        <li>$x$ 和 $y$ 的<strong>父指针</strong>互换（$x$ 顶替 $y$ 的位置）。</li>
+      </ol>
+      <p>只有常数次指针操作，所以旋转是 $O(1)$。</p>
+
+      <h3>插入：染红 + 三种情况</h3>
+      <p>基本思路（p70）：<strong>先按 BST 插入，把新节点染成红色</strong>。为什么染红？因为染红只会违反性质 3（红红相邻），
+      而<strong>不会</strong>改变任何路径上的黑节点个数（性质 4 保住了）。染黑则会直接破坏性质 4，几乎无法修复。</p>
+
+      <p>设 $x$ 是新节点，$p$ 是父亲，$g$ 是祖父，$y$ 是<strong>叔叔</strong>（$g$ 的另一个孩子）。分三种情况：</p>
+
+      <table>
+        <thead><tr><th style="width:76px">情况</th><th>条件</th><th>动作</th><th>之后</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>叔叔 $y$ 是<strong>红</strong></td>
+            <td>$p$ 和 $y$ 染黑，$g$ 染红</td>
+            <td>$x\leftarrow g$，<strong>继续向上循环</strong>（violation 上移两层）</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>叔叔 $y$ 是<strong>黑</strong>，且 $x$ 是<strong>右</strong>孩子（内侧）</td>
+            <td>对 $p$ 做一次<strong>左旋</strong></td>
+            <td>转成情况 3（$x$ 变成左孩子）</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>叔叔 $y$ 是<strong>黑</strong>，且 $x$ 是<strong>左</strong>孩子（外侧）</td>
+            <td>$p$ 染黑、$g$ 染红，对 $g$ 做<strong>右旋</strong></td>
+            <td><strong>结束</strong>（循环退出）</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>为什么情况 1 可以「上移」：</strong>重染之后，$g$ 变红，而 $g$ 的父亲可能是红的 —— 于是「红红相邻」的违反
+        从 $x$ 那一层<strong>搬到了 $g$ 那一层</strong>。子树的黑高没有变化（$p,y$ 由红变黑各 +1，$g$ 由黑变红 −1，上下抵消），
+        所以性质 4 仍然成立，可以放心继续往上修。
+        <br><strong>为什么情况 3 一次就完：</strong>旋转 + 重染之后，新的子树根是黑的，它的父亲不可能再是红（否则原来就违反了），
+        所以违反彻底消除，循环退出。
+      </div>
+
+      <h4>例题：依次插入 10、20、30、25（讲义 p56–p66 的同类演示）</h4>
+      <table>
+        <thead><tr><th style="width:70px">插入</th><th>位置与颜色</th><th>判定</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>空树，染黑</td><td>—</td><td><code>10(B)</code></td></tr>
+          <tr><td>20</td><td>10 的右孩子，染红</td><td>父亲 10 是黑 → 不违反</td><td><code>10(B) → 20(R)</code></td></tr>
+          <tr><td>30</td><td>20 的右孩子，染红</td><td>父亲 20 红，叔叔 = NULL 黑 → <strong>情况 3</strong>（外侧）</td><td>20 染黑、10 染红、对 10 <strong>左旋</strong> → <code>20(B)</code>，左右孩子 <code>10(R) 30(R)</code></td></tr>
+          <tr><td>25</td><td>30 的左孩子，染红</td><td>父亲 30 红，叔叔 10 <strong>红</strong> → <strong>情况 1</strong></td><td>30、10 染黑，20 染红；$x$ 上移到 20（是根）→ 根染黑 → <code>20(B)</code>，<code>10(B) 30(B)</code>，30 的左孩子 <code>25(R)</code></td></tr>
+        </tbody>
+      </table>
+      <p>验证最后一棵树：三条路径（20→10→NULL、20→30→25→NULL、20→30→NULL）上黑节点数都是 1（只数下面的：10 / 30 / 30），性质 4 ✓；
+      红节点 25 的两个孩子是 NULL（黑），性质 3 ✓。</p>
+
+      <div class="warn">
+        <strong>考试最爱问的三句话：</strong>
+        ① 新节点<strong>染红</strong>（染黑会破坏性质 4，无法局部修复）；
+        ② 情况 2 是「内侧」情形，<strong>先旋转把 $x$ 变到外侧</strong>，否则直接重染会破坏性质 4；
+        ③ 情况 1 处理完<strong>还要继续往上循环</strong>，情况 3 处理完<strong>直接结束</strong>。
+      </div>
+
+      <p>讲义 p77 补了一句：以上是「父亲是<strong>左</strong>孩子」的三种情况；如果父亲是<strong>右</strong>孩子，
+      就是情况 4–6，<strong>左右完全对称</strong>（代码里把 left / right 互换即可）。</p>
+
+      <div class="note">
+        <strong>删除（p78）：</strong>讲义明确<strong>课上不 cover</strong>，只要求课后读 CLRS 14.4「了解大图景，不必抠细节」。
+        考试若出，通常只问「删除最多需要几次旋转」（答案：<strong>至多 3 次</strong>，而插入至多 2 次）。
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 跳表：用「快车线」把链表变成 $O(\log n)$ <span class="tag t-blue">p79–p93</span></h2>
+
+      <p>讲义先用一页回顾链表当动态集合用（p80）：<strong>排好序的双向链表</strong>里，
+      Min / Max / Successor / Predecessor / Delete / Insert <strong>全是 $O(1)$</strong> ——
+      唯一慢的是 <code>Search</code>，因为不能随机访问，只能一个个走，$O(n)$。</p>
+
+      <p>目标很明确：<strong>只把 Search 降下来</strong>。</p>
+
+      <h3>第一步：加一条「快车线」</h3>
+      <p>在地铁线上加一条快车线：快车只在少数站停，坐快车走远路、到站再换慢车。链表上就是<strong>两层链表</strong>：
+      上层只保留一部分元素，指针跨得更远。</p>
+      <p>搜索时：先在<strong>上层</strong>往右走，走到「再走就超过目标」为止，然后<strong>下降到下层</strong>继续走。</p>
+
+      <div class="note">
+        <strong>最优的「快车站数」是多少？</strong>假设一共 $n$ 个元素，上层留 $k$ 个站。搜索代价 ≈
+        「上层最多走 $k$ 步」+「下层在两个站之间最多走 $n/k$ 步」$=k+n/k$，在 $k=\sqrt n$ 时最小，代价 $2\sqrt n$。
+        <br>讲义 p81 的问法就是：<em># of express stops should be √n (why?) and the worst case cost is 2√n</em>。
+      </div>
+
+      <h3>第二步：加很多层</h3>
+      <p>如果允许 $k$ 层，每层把元素分成 $n^{1/k}$ 份，则每层最多走 $n^{1/k}$ 步，总代价</p>
+      $$k\cdot n^{1/k}$$
+      <p>取 $k=\log n$：</p>
+      $$\log n\cdot n^{1/\log n}=\log n\cdot 2=\Theta(\log n)$$
+
+      <div class="ok">
+        <strong>为什么 $n^{1/\log n}=2$：</strong>两边取 $\log$：$\frac{1}{\log n}\cdot\log n=1$，所以 $n^{1/\log n}=2^1=2$。
+        这个恒等式是跳表分析里最常被考的一步。
+      </div>
+
+      <h3>第三步：固定分层做不到，那就随机分层</h3>
+      <p>讲义 p83 点出症结：<em>It is hard to keep the "express stops" evenly distributed</em> ——
+      插入删除会不断打破「均匀」，维护它本身就要 $O(n)$。</p>
+      <p><strong>跳表的解法：不维护均匀性，改成抛硬币。</strong>每个元素插入时，以概率 $p=1/2$ 逐层上升：
+      在第 1 层；以 $1/2$ 概率进第 2 层；再以 $1/2$ 概率进第 3 层……直到抛到反面为止。</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>三层跳表：每个元素以 1/2 概率进入上一层</title>
+          <defs>
+            <marker id="sk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g font-family="ui-monospace,monospace" font-size="12" text-anchor="middle" dominant-baseline="central">
+            <g fill="#EAF3DE" stroke="#3B6D11">
+              <rect x="60" y="30" width="40" height="26" rx="4"/><rect x="130" y="30" width="40" height="26" rx="4"/>
+              <rect x="340" y="30" width="40" height="26" rx="4"/><rect x="550" y="30" width="40" height="26" rx="4"/>
+            </g>
+            <g fill="#E1F5EE" stroke="#0F6E56">
+              <rect x="60" y="80" width="40" height="26" rx="4"/><rect x="130" y="80" width="40" height="26" rx="4"/>
+              <rect x="200" y="80" width="40" height="26" rx="4"/><rect x="340" y="80" width="40" height="26" rx="4"/>
+              <rect x="410" y="80" width="40" height="26" rx="4"/><rect x="550" y="80" width="40" height="26" rx="4"/>
+            </g>
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <rect x="60" y="130" width="40" height="26" rx="4"/><rect x="130" y="130" width="40" height="26" rx="4"/>
+              <rect x="200" y="130" width="40" height="26" rx="4"/><rect x="270" y="130" width="40" height="26" rx="4"/>
+              <rect x="340" y="130" width="40" height="26" rx="4"/><rect x="410" y="130" width="40" height="26" rx="4"/>
+              <rect x="480" y="130" width="40" height="26" rx="4"/><rect x="550" y="130" width="40" height="26" rx="4"/>
+            </g>
+            <g fill="#1F1F1D" font-size="12.5">
+              <text x="80" y="43">−∞</text><text x="150" y="43">3</text><text x="360" y="43">18</text><text x="570" y="43">37</text>
+              <text x="80" y="93">−∞</text><text x="150" y="93">3</text><text x="220" y="93">9</text><text x="360" y="93">18</text><text x="430" y="93">29</text><text x="570" y="93">37</text>
+              <text x="80" y="143">−∞</text><text x="150" y="143">3</text><text x="220" y="143">9</text><text x="290" y="143">12</text>
+              <text x="360" y="143">18</text><text x="430" y="143">29</text><text x="500" y="143">35</text><text x="570" y="143">37</text>
+            </g>
+            <g font-size="10.5" fill="#5F5E5A" text-anchor="end">
+              <text x="52" y="43">L3</text><text x="52" y="93">L2</text><text x="52" y="143">L1</text>
+            </g>
+          </g>
+          <g stroke="#888780" stroke-width="1.4" marker-end="url(#sk)">
+            <line x1="102" y1="43" x2="126" y2="43"/><line x1="172" y1="43" x2="336" y2="43"/><line x1="382" y1="43" x2="546" y2="43"/>
+            <line x1="102" y1="93" x2="126" y2="93"/><line x1="172" y1="93" x2="196" y2="93"/><line x1="242" y1="93" x2="336" y2="93"/>
+            <line x1="382" y1="93" x2="406" y2="93"/><line x1="452" y1="93" x2="546" y2="93"/>
+            <line x1="102" y1="143" x2="126" y2="143"/><line x1="172" y1="143" x2="196" y2="143"/><line x1="242" y1="143" x2="266" y2="143"/>
+            <line x1="312" y1="143" x2="336" y2="143"/><line x1="382" y1="143" x2="406" y2="143"/><line x1="452" y1="143" x2="476" y2="143"/>
+            <line x1="522" y1="143" x2="546" y2="143"/>
+          </g>
+          <g stroke="#0F6E56" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#sk)">
+            <line x1="150" y1="58" x2="150" y2="78"/><line x1="360" y1="58" x2="360" y2="78"/><line x1="570" y1="58" x2="570" y2="78"/>
+            <line x1="150" y1="108" x2="150" y2="128"/><line x1="220" y1="108" x2="220" y2="128"/>
+            <line x1="360" y1="108" x2="360" y2="128"/><line x1="430" y1="108" x2="430" y2="128"/><line x1="570" y1="108" x2="570" y2="128"/>
+          </g>
+          <text x="40" y="184" font-size="11.5" fill="#5F5E5A">竖直虚线 = 同一元素在多层出现（每升一层概率 1/2）</text>
+          <text x="40" y="204" font-size="11.5" fill="#5F5E5A">搜索：从 L3 左上角出发，能往右就往右，不能就下降一层</text>
+          <text x="40" y="228" font-size="11.5" fill="#0F6E56">例：找 35 → L3 走到 18（下一步 37 太大）→ 降到 L2 到 29 → 降到 L1 到 35</text>
+        </svg>
+        <div class="cap">每层平均走常数步、层数 $O(\log n)$，所以搜索 $O(\log n)$</div>
+      </div>
+
+      <h3>搜索代价的直觉（p85）</h3>
+      <ol class="steps">
+        <li>在顶层找位置：顶层元素个数<strong>以高概率是 $O(1)$</strong>；</li>
+        <li>确定了一个「范围」，下降一层，在这个范围内继续；</li>
+        <li>每层平均 $O(1)$ 步；层数<strong>以高概率</strong>是 $O(\log n)$；</li>
+        <li>合计 $O(\log n)$。</li>
+      </ol>
+
+      <div class="warn">
+        <strong>注意「以高概率」（with high probability, w.h.p.）这个词：</strong>
+        跳表是<strong>随机</strong>结构，它的 $O(\log n)$ 是<strong>概率意义</strong>上的，
+        不像红黑树那样对<strong>每个输入</strong>都成立。答题时写「expected / with high probability」是加分点，写成「最坏 $O(\log n)$」是错的。
+      </div>
+
+      <h3>层数为什么是 $O(\log n)$（p86 的 union bound）</h3>
+      <p>固定一个元素 $x$，它出现在 $\ge c\log n$ 层的概率是 $(1/2)^{c\log n}=1/n^{c}$。
+      用<strong>联合界</strong>（union bound）对所有 $n$ 个元素取并：</p>
+      $$\Pr\big[\exists x:\ x\text{ 出现在超过 }c\log n\text{ 层}\big]\;\le\;n\cdot\frac{1}{n^{c}}=\frac{1}{n^{c-1}}$$
+      <p>取 $c=2$ 就是 $1/n$ —— 也就是说「层数超过 $2\log n$」的概率只有 $1/n$，这就是「以高概率」的含义。</p>
+
+      <h3>反向分析：把搜索路径倒过来数（p87–p90）</h3>
+      <p>讲义给了一个很巧的办法：不去数「搜索走了几步」，而是<strong>从目标节点倒着往回走</strong>。</p>
+      <ul>
+        <li>倒着走时，每上升一层相当于「抛硬币抛到正面」；</li>
+        <li>于是<strong>访问的节点数 = 抛到 $c\log n$ 个正面所需的抛硬币次数</strong>；</li>
+        <li>抛 $10c\log n$ 次得到 $c\log n$ 个正面的概率极高（Chernoff 界），所以访问节点数 $\le 10c\log n$ 以高概率成立。</li>
+      </ul>
+      <p>讲义 p90 把它写成三个事件：$A$（层数 $\le c\log n$）、$B$（抛硬币次数 $\le 10c\log n$）、$C$（访问数 $\le 10c\log n$）。
+      $A\wedge B\Rightarrow C$，于是</p>
+      $$\Pr[C]\;\ge\;\Pr[A\wedge B]\;\ge\;1-\Pr[\bar A]-\Pr[\bar B]\;\ge\;1-\frac{1}{n^{c-1}}-\frac{1}{n^{d}}$$
+
+      <h3>插入、删除与空间</h3>
+      <table>
+        <thead><tr><th style="width:110px">操作</th><th>做法</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Insert</strong></td><td>先搜索定位 → 在第 1 层插入 → 以概率 $p$ 递归往上一层插</td><td>$O(\log n)$ w.h.p.</td></tr>
+          <tr><td><strong>Delete</strong></td><td>搜索到 → 在各层摘掉</td><td>$O(1)$ expected（各层平均常数）</td></tr>
+          <tr><td><strong>Min/Max/Succ/Pred</strong></td><td>在第 1 层直接走</td><td>$O(1)$</td></tr>
+          <tr><td><strong>空间</strong></td><td>每个元素平均出现在 $1+p+p^2+\cdots=\frac{1}{1-p}=2$ 层</td><td>$O(n)$ expected</td></tr>
+        </tbody>
+      </table>
+      <p>插入时「期望插入几层」正是那个几何级数：$1+p+p^2+\cdots=\frac{1}{1-p}=2$（$p=1/2$），常数。</p>
+
+      <div class="ok">
+        <strong>跳表 vs 红黑树（p93 的定位）：</strong>跳表自称 <em>a probabilistic alternative to balanced trees</em> ——
+        它用<strong>随机化</strong>换掉了平衡树的复杂旋转逻辑：代码短得多、常数更小、实际更快；
+        代价是复杂度变成<strong>期望/高概率</strong>意义，且要多花一倍指针的空间。
+        Redis 的有序集合、LevelDB 的 MemTable 用的都是跳表。
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 本讲速查 <span class="tag t-green">复习用</span></h2>
+
+      <h3>复杂度总表</h3>
+      <table>
+        <thead><tr><th style="width:30%">问题 / 操作</th><th style="width:22%">代价</th><th>关键依据</th></tr></thead>
+        <tbody>
+          <tr><td>找最小值</td><td>$n-1$ 次比较</td><td>除最大值外每个元素都要「输一次」</td></tr>
+          <tr><td>同时找最大最小</td><td>$\lfloor 3n/2\rfloor$</td><td>成对比较，每 2 个元素 3 次</td></tr>
+          <tr><td>RandomizedSelect 平均</td><td>$O(n)$</td><td>只递归一边，$T(n)\le\frac{2}{n}\sum_{k\ge n/2}T(k)+\Theta(n)$</td></tr>
+          <tr><td>RandomizedSelect 最坏</td><td>$O(n^2)$</td><td>$T(n)=T(n-1)+O(n)$</td></tr>
+          <tr><td>中位数的中位数（五元组）</td><td>$O(n)$ 最坏</td><td>$T(n)\le T(n/5)+T(3n/4)+\Theta(n)$，系数和 $19/20\lt1$</td></tr>
+          <tr><td>BST 全部操作</td><td>$O(h)$</td><td>沿一条根到叶路径；$h$ 最坏 $=n$</td></tr>
+          <tr><td>BSTSort</td><td>平均 $O(n\lg n)$，最坏 $O(n^2)$</td><td>与快排做同样的比较，顺序不同</td></tr>
+          <tr><td>红黑树高度</td><td>$h\le 2\lg(n+1)$</td><td>引理 $2^{\mathrm{bh}}-1$ 个内部节点 + $\mathrm{bh}\ge h/2$</td></tr>
+          <tr><td>红黑树全部操作</td><td>$O(\lg n)$</td><td>插入至多 2 次旋转、删除至多 3 次</td></tr>
+          <tr><td>跳表搜索 / 插入</td><td>$O(\lg n)$ w.h.p.</td><td>每层 $O(1)$ 步、层数 $O(\lg n)$</td></tr>
+          <tr><td>跳表空间</td><td>$O(n)$ expected</td><td>每元素平均 $\frac{1}{1-p}=2$ 层</td></tr>
+        </tbody>
+      </table>
+
+      <h3>四个必背的递归式</h3>
+      <table>
+        <thead><tr><th style="width:40%">递归式</th><th>解</th><th>出现在</th></tr></thead>
+        <tbody>
+          <tr><td>$T(n)=T(n-1)+O(n)$</td><td>$O(n^2)$</td><td>选择的最坏 / 快排最坏</td></tr>
+          <tr><td>$T(n)=T(9n/10)+O(n)$</td><td>$O(n)$</td><td>选择的 9:1 分割</td></tr>
+          <tr><td>$T(n)=T(n/5)+T(3n/4)+\Theta(n)$</td><td>$O(n)$</td><td>最坏线性选择</td></tr>
+          <tr><td>$T(n)=2T(n/2)+O(n)$</td><td>$O(n\lg n)$</td><td>中位数快排 / 归并</td></tr>
+        </tbody>
+      </table>
+
+      <div class="ok">
+        <strong>一句话主线：</strong>
+        <strong>选择问题</strong>之所以能比排序快，是因为它<strong>只递归一边</strong>（$T(n)\to T(n/2)$）；
+        而要做到<strong>最坏</strong>也是线性，就必须<strong>自己造一个保证居中的 pivot</strong>，代价是那层 $T(n/5)$ 的递归 ——
+        两个系数加起来 $19/20\lt1$，所以还是线性。
+        <br><strong>BST</strong> 是「排序的另一种实现」（等价于快排），<strong>红黑树</strong>是「给 BST 加颜色约束把 $h$ 压到 $2\lg n$」，
+        <strong>跳表</strong>是「不用旋转，用抛硬币达到同样的期望复杂度」。四者其实都在回答同一个问题：
+        <strong>怎么用 $O(\log n)$ 的时间维护一个有序动态集合。</strong>
+      </div>
+    </section>
+
+
+    <footer>
+整理自 04lecture.pdf · 复旦大学《数据结构（与算法）》第四讲 · 共 93 页<br>
+      小节标题后的页码标注对应原幻灯片；补充内容（如「为什么不能 3 个一组」、浮点细节）已单独标注
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
