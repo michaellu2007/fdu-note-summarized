@@ -508,6 +508,88 @@
 
       <h3>Heapify 是 $O(h)$：$h$ 是「这个节点的子树高度」，不是整堆的高度</h3>
 
+      <h4>先把「下沉」这个词说清楚</h4>
+      <p><code>Heapify(A, i)</code> 只做一件事：如果 $A[i]$ 比孩子小，就<strong>和较大的那个孩子交换</strong>。
+      交换之后这个值就到了<strong>下一层</strong> —— 这个「往下挪一层」的动作就叫<strong>下沉</strong>（讲义原话 <em>float down</em>）。
+      然后在新位置继续比、继续换，直到停下。</p>
+      <p>停下只有两种情况，<strong>别混</strong>：</p>
+      <ul>
+        <li><strong>不需要沉</strong>：值已经比两个孩子都大 —— 比一次就停，代价 $O(1)$；</li>
+        <li><strong>没地方沉</strong>：下面<strong>没有孩子</strong>了 —— 这就是「沉不动」，也是叶子节点的情形。</li>
+      </ul>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>Heapify(A,1)：值 4 从根下沉两层到叶子后停住</title>
+          <defs>
+            <marker id="sink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#854F0B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="170" y1="42" x2="105" y2="96"/><line x1="170" y1="42" x2="235" y2="96"/>
+            <line x1="105" y1="108" x2="70" y2="156"/><line x1="105" y1="108" x2="140" y2="156"/>
+            <line x1="235" y1="108" x2="200" y2="156"/><line x1="235" y1="108" x2="270" y2="156"/>
+            <line x1="490" y1="42" x2="425" y2="96"/><line x1="490" y1="42" x2="555" y2="96"/>
+            <line x1="425" y1="108" x2="390" y2="156"/><line x1="425" y1="108" x2="460" y2="156"/>
+            <line x1="555" y1="108" x2="520" y2="156"/><line x1="555" y1="108" x2="590" y2="156"/>
+          </g>
+          <g font-size="12.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <g fill="#E6F1FB" stroke="#185FA5">
+              <circle cx="170" cy="42" r="16"/><circle cx="105" cy="102" r="16"/><circle cx="235" cy="102" r="16"/>
+              <circle cx="70" cy="162" r="16"/><circle cx="140" cy="162" r="16"/>
+              <circle cx="200" cy="162" r="16"/><circle cx="270" cy="162" r="16"/>
+            </g>
+            <g fill="#0C447C">
+              <text x="170" y="42">4</text><text x="105" y="102">14</text><text x="235" y="102">10</text>
+              <text x="70" y="162">8</text><text x="140" y="162">7</text>
+              <text x="200" y="162">9</text><text x="270" y="162">3</text>
+            </g>
+            <g fill="none" stroke="#854F0B" stroke-width="2.2">
+              <circle cx="170" cy="42" r="19"/><circle cx="105" cy="102" r="19"/><circle cx="70" cy="162" r="19"/>
+            </g>
+
+            <g fill="#E1F5EE" stroke="#0F6E56">
+              <circle cx="490" cy="42" r="16"/><circle cx="425" cy="102" r="16"/><circle cx="555" cy="102" r="16"/>
+              <circle cx="390" cy="162" r="16"/><circle cx="460" cy="162" r="16"/>
+              <circle cx="520" cy="162" r="16"/><circle cx="590" cy="162" r="16"/>
+            </g>
+            <g fill="#085041">
+              <text x="490" y="42">14</text><text x="425" y="102">8</text><text x="555" y="102">10</text>
+              <text x="390" y="162">4</text><text x="460" y="162">7</text>
+              <text x="520" y="162">9</text><text x="590" y="162">3</text>
+            </g>
+          </g>
+
+          <g font-size="11" fill="#633806" font-family="ui-monospace,monospace">
+            <text x="196" y="30">①</text><text x="130" y="92">②</text><text x="96" y="152">③</text>
+          </g>
+          <path d="M170 60 L105 84" stroke="#854F0B" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#sink)"/>
+          <path d="M105 120 L70 144" stroke="#854F0B" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#sink)"/>
+
+          <text x="330" y="98" font-size="12" fill="#5F5E5A" text-anchor="middle">Heapify(A,1)</text>
+          <line x1="300" y1="112" x2="360" y2="112" stroke="#888780" stroke-width="1.4" marker-end="url(#sink)"/>
+
+          <text x="170" y="206" font-size="11" fill="#5F5E5A" text-anchor="middle">初始：4 比孩子小，要往下走</text>
+          <text x="490" y="206" font-size="11" fill="#5F5E5A" text-anchor="middle">结束：4 到叶子，没有孩子 → 停</text>
+          <text x="340" y="232" font-size="11.5" fill="#633806" text-anchor="middle">① 4 与 14、10 比 → 换 14，沉一层　② 4 与 8、7 比 → 换 8，再沉一层　③ 到叶子，无处可沉</text>
+        </svg>
+        <div class="cap">「沉不动」= 下面没有孩子，不是「值够大不用沉」</div>
+      </div>
+
+      <table>
+        <thead><tr><th style="width:26%">节点位置</th><th style="width:22%">子树高度 $h$</th><th style="width:22%">最多能沉几层</th><th>停下的原因</th></tr></thead>
+        <tbody>
+          <tr><td>叶子</td><td>$0$</td><td><strong>0</strong></td><td>下面没有孩子 → 沉不动</td></tr>
+          <tr><td>倒数第二层</td><td>$1$</td><td>$1$</td><td>沉一层就到叶子</td></tr>
+          <tr><td>根</td><td>$\lfloor\lg n\rfloor$</td><td>$\lfloor\lg n\rfloor$</td><td>一路沉到叶子</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>所以「能沉几层」= 「这个节点下面还有几层」= 它的子树高度 $h$。</strong>
+      这就是 Heapify 的代价写成 $O(h)$ 而不是 $O(\lg n)$ 的物理原因 —— 不是数学技巧，是「路有多长就只能走多远」。</p>
+
+
       <div class="warn">
         <strong>两个记号里的字母不是同一个东西：</strong>
         <table style="margin:8px 0 0">
@@ -573,11 +655,60 @@
       $n$ 越大差距越大 —— $n=2^{20}$ 时朴素分析给 $\frac n2\cdot20=10n$，实际约 $2n$，<strong>差 5 倍</strong>。</p>
 
       <h4>证法一：按高度分组求和（讲义的写法）</h4>
-      <p>高度为 $h$ 的节点最多 $\left\lceil\dfrac{n}{2^{h+1}}\right\rceil$ 个（因为高度 $h$ 的节点在最下面，每往上一层节点数翻倍），
-      每个下沉 $O(h)$：</p>
-      $$T(n)=\sum_{h=0}^{\lfloor\lg n\rfloor}\left\lceil\frac{n}{2^{h+1}}\right\rceil O(h)
-        =O\left(n\sum_{h\ge0}\frac{h}{2^{h}}\right)=O(2n)=O(n)$$
-      <p>最后一步用了 §2 工具四：$\sum_{h\ge0}h/2^h=2$，<strong>收敛</strong>。</p>
+
+      <p><strong>先换个问法。</strong>与其「对每个节点问它要沉几层」，不如<strong>把节点按高度分组</strong>：
+      高度相同的节点，下沉代价一样（都是 $O(h)$），所以只要知道「高度 $h$ 的节点有几个」，乘起来再加总就行。</p>
+
+      $$T(n)=\sum_{h=0}^{\lfloor\lg n\rfloor}\big(\text{高度为 }h\text{ 的节点个数}\big)\times O(h)$$
+
+      <h4 style="margin-top:14px">① 高度为 $h$ 的节点有几个？</h4>
+      <p>答案是最多 $\left\lceil\dfrac{n}{2^{h+1}}\right\rceil$ 个。用<strong>下标</strong>看最清楚：</p>
+
+      <p>下标 $i$ 的孩子是 $2i$ 和 $2i+1$，所以「从 $i$ 往下还能走 $h$ 步」等价于
+      $\;2^h\cdot i\le n\lt 2^{h+1}\cdot i\;$，两边除以 $2^{h+1}$ 得</p>
+      $$\frac{n}{2^{h+1}}\ \lt\ i\ \le\ \frac{n}{2^{h}}$$
+      <p>也就是说，<strong>高度为 $h$ 的节点，下标恰好落在 $\left(\dfrac{n}{2^{h+1}},\ \dfrac{n}{2^{h}}\right]$ 这个区间里</strong>。
+      区间长度是 $\dfrac{n}{2^{h}}-\dfrac{n}{2^{h+1}}=\dfrac{n}{2^{h+1}}$，所以最多 $\left\lceil\dfrac{n}{2^{h+1}}\right\rceil$ 个。</p>
+
+      <p>用 $n=15$ 对一遍，每一格都对得上：</p>
+      <table>
+        <thead><tr><th style="width:16%">高度 $h$</th><th style="width:26%">这些节点的下标</th><th style="width:18%">实际个数</th><th style="width:20%">$\lceil n/2^{h+1}\rceil$</th><th>对不对</th></tr></thead>
+        <tbody>
+          <tr><td>0（叶子）</td><td>8 ~ 15</td><td>8</td><td>$\lceil15/2\rceil=8$</td><td>✓</td></tr>
+          <tr><td>1</td><td>4 ~ 7</td><td>4</td><td>$\lceil15/4\rceil=4$</td><td>✓</td></tr>
+          <tr><td>2</td><td>2 ~ 3</td><td>2</td><td>$\lceil15/8\rceil=2$</td><td>✓</td></tr>
+          <tr><td>3（根）</td><td>1</td><td>1</td><td>$\lceil15/16\rceil=1$</td><td>✓</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>直觉版：</strong>树是一层一层往下翻倍的。最底下那层最多占一半节点（$n/2$），它们的子树高度都是 0；
+        往上一层最多占 $n/4$，高度 1；再往上 $n/8$，高度 2……
+        <strong>「高度每加 1，节点数就砍一半」</strong> —— 这就是 $2^{h+1}$ 出现在分母的原因。
+      </div>
+
+      <h4 style="margin-top:14px">② 怎么把求和算成 $O(n)$</h4>
+      <p>代进去，得到</p>
+      $$T(n)=\sum_{h=0}^{\lfloor\lg n\rfloor}\left\lceil\frac{n}{2^{h+1}}\right\rceil O(h)$$
+
+      <p>把上取整拆开（$\lceil x\rceil\le x+1$），一项变成两项：</p>
+      $$T(n)\le\sum_{h=0}^{\lfloor\lg n\rfloor}\left(\frac{n}{2^{h+1}}+1\right)c\,h
+        =\underbrace{cn\sum_{h\ge0}\frac{h}{2^{h+1}}}_{\text{主项}}+\underbrace{c\sum_{h=0}^{\lfloor\lg n\rfloor}h}_{\text{零头}}$$
+
+      <p><strong>主项</strong>：由 §2 工具四，$\sum_{h\ge0}\dfrac{h}{2^{h}}=2$，所以 $\sum_{h\ge0}\dfrac{h}{2^{h+1}}=\dfrac12\times2=1$，
+      主项 $=cn\cdot1=cn=O(n)$。</p>
+
+      <p><strong>零头</strong>：$\sum_{h=0}^{\lfloor\lg n\rfloor}h=\dfrac{\lg n(\lg n+1)}{2}=O(\lg^2 n)$，比 $n$ 小得多（$\lg^2 n=o(n)$），
+      被主项吸收。</p>
+
+      $$\Rightarrow\ T(n)\le cn+O(\lg^2 n)=O(n)$$
+
+      <div class="ok">
+        <strong>三步总结（考试就按这个写）：</strong>
+        <br>① 分组：$T(n)=\sum_h(\text{高度 }h\text{ 的节点数})\times O(h)$；
+        <br>② 计数：高度 $h$ 的节点下标在 $\left(\frac{n}{2^{h+1}},\frac{n}{2^{h}}\right]$，最多 $\lceil\frac{n}{2^{h+1}}\rceil$ 个；
+        <br>③ 求和：拆上取整 → 主项 $n\sum\frac{h}{2^h}=2n$ 主导，零头 $O(\lg^2 n)$ 吸收，得 $O(n)$。
+      </div>
 
       <h4>证法二：换个角度数「每个节点的下沉代价」</h4>
       <p>一个节点在 BuildHeap 中被 Heapify 一次，下沉代价 = <strong>它自己的高度</strong>。所以总代价 = 所有节点高度之和：</p>
