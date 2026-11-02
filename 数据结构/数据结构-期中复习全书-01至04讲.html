@@ -502,10 +502,26 @@
       <h3>高度：$\lfloor\lg n\rfloor$ —— 所有操作的地基</h3>
       <p>高度 $h$ 的二叉树节点数在 $h+1$（一条链）到 $2^{h+1}-1$（满）之间；而堆是<strong>近完全</strong>的，
       $n$ 恰好落在 $[2^h,\,2^{h+1}-1]$ 里，解出 $h=\lfloor\lg n\rfloor$。</p>
-      <p>Heapify、Insert、ExtractMax 都是「沿一条根到叶的路径走」，代价正比于高度，所以都是 $O(\lg n)$。
-      <strong>高度是 $O(\lg n)$ 是整个堆结构的前提。</strong></p>
+      <p><code>Insert</code>（新元素从末尾上浮到根）和 <code>ExtractMax</code>（末尾搬到根、再下沉到叶）
+      都是「走一整条根到叶路径」，所以是 $O(\lg n)$。<strong>高度是 $O(\lg n)$ 是整个堆结构的前提。</strong></p>
+      <p>但 <code>Heapify(A, i)</code> 要单独说 —— 它可以对<strong>任意节点</strong>调用，代价只取决于 <code>i</code> 的子树有多高，见下。</p>
 
-      <h3>Heapify：$O(h)$，不是 $O(\lg n)$</h3>
+      <h3>Heapify 是 $O(h)$：$h$ 是「这个节点的子树高度」，不是整堆的高度</h3>
+
+      <div class="warn">
+        <strong>两个记号里的字母不是同一个东西：</strong>
+        <table style="margin:8px 0 0">
+          <thead><tr><th style="width:22%">写法</th><th style="width:26%">字母指谁</th><th style="width:22%">取值范围</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>$O(\lg n)$</td><td>$n$ = <strong>整个堆</strong>的元素个数</td><td>固定不变</td><td>「整个堆有多高」→ 对<strong>根</strong>调用时的代价</td></tr>
+            <tr><td>$O(h)$</td><td>$h$ = <strong>被调用节点</strong>的子树高度</td><td>$0$ 到 $\lfloor\lg n\rfloor$</td><td>「这条下沉路径有多长」→ 对<strong>该节点</strong>调用的代价</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>一句话：<strong>Heapify 只沿着「$i$ 往下到叶子」这一条路径走，走几步完全由这条路径的长度决定，与堆整体有多大无关。</strong>
+      只有 $i$ 恰好是根时，$h=\lfloor\lg n\rfloor$，$O(h)$ 才等于 $O(\lg n)$。</p>
+
 <pre>Heapify(A, i)
     l = 2i; r = 2i+1; largest = i
     if l &lt;= heap_size and A[l] &gt; A[largest]  largest = l
@@ -515,6 +531,28 @@
         Heapify(A, largest)        <span class="c"># 只递归一条路径</span></pre>
       <p><strong>为什么只递归一次</strong>：交换只影响「被换下去的那个孩子」所在子树，另一棵子树没动过、仍是堆。
       所以每层最多一个递归调用 → $T(h)=T(h-1)+O(1)=O(h)$。</p>
+
+      <h4>具体感受一下：$n=1024$ 的堆里，同一个 Heapify 代价差 10 倍</h4>
+      <table>
+        <thead><tr><th style="width:34%">调用</th><th style="width:20%">该节点子树高度 $h$</th><th style="width:20%">实际代价</th><th>写 $O(\lg n)$ 会高估</th></tr></thead>
+        <tbody>
+          <tr><td><code>Heapify(A, 1024)</code>（叶子）</td><td>$0$</td><td>$O(1)$，一次都不用比</td><td>高估 $10$ 倍</td></tr>
+          <tr><td><code>Heapify(A, 512)</code>（最后一个内部节点，只有一个孩子）</td><td>$1$</td><td>$O(1)$，最多比 1 次</td><td>高估 $10$ 倍</td></tr>
+          <tr><td><code>Heapify(A, 2)</code>（根的左孩子）</td><td>$9$</td><td>$O(\lg n)$ 量级</td><td>基本准确</td></tr>
+          <tr><td><code>Heapify(A, 1)</code>（根）</td><td>$10$</td><td>$O(\lg n)$</td><td>准确</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>为什么这个区别非要较真：</strong>因为 BuildHeap 要对<strong>每一个</strong>节点调一次 Heapify。
+      如果按「每次 $O(\lg n)$」估，$n/2$ 次调用就得到 $O(n\lg n)$；
+      按「高度 $h$ 的节点花 $O(h)$」估，才能算出 $O(n)$。这个差别就是<strong>下一小节 BuildHeap</strong> 的全部内容。</p>
+
+      <div class="note">
+        <strong>两种说法都对，但不能混用：</strong>
+        说「<strong>ExtractMax 里的 Heapify 是 $O(\lg n)$</strong>」—— 对，因为它总是对根调用，$h=\lg n$；
+        说「<strong>BuildHeap 里每个 Heapify 都是 $O(\lg n)$</strong>」—— 错，因为大部分节点在树底，$h$ 很小。
+        <br>判据只有一个：<strong>看它被调在哪个节点上</strong>。
+      </div>
 
       <h3>BuildHeap 为什么是 $O(n)$：两种证法</h3>
       <p>先看那个「显然」的分析错在哪：$n/2$ 次调用 × 每次 $O(\lg n)$ = $O(n\lg n)$。
@@ -531,6 +569,19 @@
       <p>一个节点在 BuildHeap 中被 Heapify 一次，下沉代价 = <strong>它自己的高度</strong>。所以总代价 = 所有节点高度之和：</p>
       $$\sum_{v}\text{height}(v)=\sum_{h\ge0}h\cdot(\text{高度为 }h\text{ 的节点数})\le\sum_{h\ge0}h\cdot\frac{n}{2^{h+1}}=O(n)$$
       <p>直观说法：<strong>一半的节点是叶子（高度 0，不干活），1/4 高度 1，1/8 高度 2……「人多的地方活少，活多的地方人少」，加权求和只有常数倍。</strong></p>
+
+      <p>用 $n=15$（满二叉树）实算一遍，就知道为什么它只有 $O(n)$：</p>
+      <table>
+        <thead><tr><th style="width:18%">子树高度 $h$</th><th style="width:18%">这样的节点有几个</th><th style="width:22%">每个 Heapify 代价</th><th>这一层总代价</th></tr></thead>
+        <tbody>
+          <tr><td>0（叶子）</td><td>8</td><td>0</td><td>0</td></tr>
+          <tr><td>1</td><td>4</td><td>1</td><td>4</td></tr>
+          <tr><td>2</td><td>2</td><td>2</td><td>4</td></tr>
+          <tr><td>3（根）</td><td>1</td><td>3</td><td>3</td></tr>
+          <tr><td><strong>合计</strong></td><td><strong>15</strong></td><td>—</td><td><strong>11</strong></td></tr>
+        </tbody>
+      </table>
+      <p>总代价 $11$，而 $n=15$ —— 只有 $O(n)$ 而不是 $O(n\lg n)=45$。<strong>省下来的就是那 8 个叶子白拿的 0 次、4 个节点的 1 次。</strong></p>
 
       <div class="ok">
         <strong>这题的得分结构</strong>：① 指出 $O(n\lg n)$ 不紧、为什么；② 写出 $\lceil n/2^{h+1}\rceil$ 这个计数；
