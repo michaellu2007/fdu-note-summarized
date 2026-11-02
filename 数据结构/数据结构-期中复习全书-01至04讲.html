@@ -555,8 +555,22 @@
       </div>
 
       <h3>BuildHeap 为什么是 $O(n)$：两种证法</h3>
-      <p>先看那个「显然」的分析错在哪：$n/2$ 次调用 × 每次 $O(\lg n)$ = $O(n\lg n)$。
-      这是<strong>正确上界但不紧</strong> —— 因为它假设每个节点都要下沉 $\lg n$ 层，而实际上<strong>绝大多数节点在树底</strong>，根本沉不动。</p>
+      <p>先看那个「显然」的分析：BuildHeap 调了 $\lfloor n/2\rfloor$ 次 Heapify，每次 $O(\lg n)$，所以 $\dfrac n2\cdot O(\lg n)=O(n\lg n)$。
+      这句话<strong>没有算错</strong>，但它是<strong>「正确上界、不紧」</strong>—— 真实代价只有 $O(n)$。</p>
+
+      <div class="note">
+        <strong>「正确上界」和「紧界」到底差在哪（就是 $O$ 与 $\Theta$ 的差别）：</strong>
+        <ul style="margin:6px 0 0">
+          <li><strong>上界 $O$</strong>：只要「<strong>不超过</strong>」就算对。说「这顿饭最多花 1000 块」，实际只花了 100 块 —— 这句话<strong>没错</strong>，但对你没用。</li>
+          <li><strong>紧界 $\Theta$</strong>：要「<strong>差不多就是这个量级</strong>」。真实代价是 $\Theta(n)$，写 $O(n\lg n)$ 就是那个「1000 块」。</li>
+        </ul>
+        所以上面那句话的问题不在<strong>逻辑</strong>，而在<strong>前提太悲观</strong>：它假设每个节点都要下沉 $\lg n$ 层，
+        但实际上只有<strong>根</strong>能沉 $\lg n$ 层，绝大多数节点在树底，根本沉不动（这正是上一节 $O(h)$ 与 $O(\lg n)$ 的区别）。
+        <br><strong>「显然」打引号就是提醒</strong>：这个推理看着顺理成章，其实藏了一个过强的假设。
+      </div>
+
+      <p>用 $n=15$ 试一下差距：朴素分析算 $\lfloor 15/2\rfloor\times3=21$，实际只要 $11$（见下面证法二的表）。
+      $n$ 越大差距越大 —— $n=2^{20}$ 时朴素分析给 $\frac n2\cdot20=10n$，实际约 $2n$，<strong>差 5 倍</strong>。</p>
 
       <h4>证法一：按高度分组求和（讲义的写法）</h4>
       <p>高度为 $h$ 的节点最多 $\left\lceil\dfrac{n}{2^{h+1}}\right\rceil$ 个（因为高度 $h$ 的节点在最下面，每往上一层节点数翻倍），
@@ -581,7 +595,8 @@
           <tr><td><strong>合计</strong></td><td><strong>15</strong></td><td>—</td><td><strong>11</strong></td></tr>
         </tbody>
       </table>
-      <p>总代价 $11$，而 $n=15$ —— 只有 $O(n)$ 而不是 $O(n\lg n)=45$。<strong>省下来的就是那 8 个叶子白拿的 0 次、4 个节点的 1 次。</strong></p>
+      <p>总代价 $11$（$n=15$）。而如果按「每个内部节点都要沉 $\lg n=3$ 层」估，$\lfloor15/2\rfloor\times3=21$ —— 高估了将近一倍。
+      <strong>省下来的就是那 8 个叶子白拿的 0 次、4 个节点只花 1 次。</strong></p>
 
       <div class="ok">
         <strong>这题的得分结构</strong>：① 指出 $O(n\lg n)$ 不紧、为什么；② 写出 $\lceil n/2^{h+1}\rceil$ 这个计数；
