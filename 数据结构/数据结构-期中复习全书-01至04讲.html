@@ -258,6 +258,39 @@
         =x\cdot\frac{d}{dx}\left(\frac{1}{1-x}\right)=\frac{x}{(1-x)^2}\qquad(|x|\lt1)$$
       <p>取 $x=\dfrac12$：$S=\dfrac{1/2}{(1/2)^2}=2$。</p>
 
+      <div class="warn">
+        <strong>严谨性：这一步凭什么合法？—— 比值判别法定「能不能算」，逐项求导定「等于多少」</strong>
+        <p style="margin-top:8px">上面这条链其实用了<strong>两件事</strong>，缺一不可，它们分工不同、不是二选一：</p>
+        <ol style="margin:6px 0 0">
+          <li><strong>比值判别法 → 定收敛半径（合法性）</strong>。
+          对 $\sum_{k\ge0}x^k$：相邻项比值 $\left|\dfrac{x^{k+1}}{x^{k}}\right|=|x|$，
+          由比值判别法，$|x|\lt1$ 时绝对收敛、$|x|\gt1$ 时发散，故<strong>收敛半径 $R=1$</strong>。
+          <br>对 $\sum_{k\ge0}kx^k$ 同样：$\lim_{k\to\infty}\dfrac{(k+1)|x|^{k+1}}{k|x|^{k}}=|x|$，也是 $R=1$。</li>
+          <li><strong>幂级数逐项求导 → 真的把和算出来（计算）</strong>。
+          幂级数在<strong>收敛区间内部</strong>可以逐项求导，且求导后收敛半径不变，于是
+          $$\frac{d}{dx}\sum_{k\ge0}x^k=\sum_{k\ge0}kx^{k-1}\qquad(|x|\lt1)$$
+          两边乘 $x$，就得到 $\sum_{k\ge0}kx^k=\dfrac{x}{(1-x)^2}$。</li>
+        </ol>
+        <p style="margin-top:8px"><strong>为什么两步都要写：</strong>比值判别法只说「收敛」，它<strong>不会</strong>告诉你和是多少；
+        逐项求导能算出和，但它<strong>只在收敛区间内合法</strong>。所以标准写法是：先比值判别法定出 $R=1$，再在 $|x|\lt1$ 内逐项求导。</p>
+        <p><strong>端点要单独讨论（常见扣分点）：</strong>$x=1$ 时 $\sum kx^k=\sum k$ 发散；$x=-1$ 时 $\sum k(-1)^k$ 条件收敛。
+        这两处<strong>不能</strong>套逐项求导的结论。本题取 $x=\frac12$ 落在区间<strong>内部</strong>，所以代入完全合法。</p>
+      </div>
+
+      <div class="note">
+        <strong>顺带把「两种方法的关系」理一下（考试常问）：</strong>
+        <table style="margin:8px 0 0">
+          <thead><tr><th style="width:30%">工具</th><th style="width:24%">回答什么问题</th><th>能不能算出和</th></tr></thead>
+          <tbody>
+            <tr><td>比值判别法</td><td>级数<strong>收敛还是发散</strong>、收敛半径多少</td><td><strong>不能</strong>，只给「是/否」</td></tr>
+            <tr><td>等比求和公式</td><td>几何级数的<strong>和函数</strong></td><td>能（但只对等比）</td></tr>
+            <tr><td>幂级数逐项求导</td><td>把 $\sum kx^k$ 这类<strong>带 $k$ 的和</strong>化归成已知的和函数</td><td>能（前提：在收敛区间内）</td></tr>
+          </tbody>
+        </table>
+        <br>本题的完整逻辑链是：<strong>比值判别法（$R=1$）→ 等比和函数 $\frac{1}{1-x}$ → 逐项求导 → 代 $x=\frac12$</strong>。
+        四步都在，只是书里为了读起来顺，把前两步压成了一句「$|x|\lt1$」。
+      </div>
+
       <p><strong>推法二（竖列求和）</strong>：把第 $k$ 项 $\dfrac{k}{2^k}$ 拆成「$k$ 个 $\dfrac{1}{2^k}$」，写成三角形：</p>
       $$S=\underbrace{\tfrac12}_{\text{第 }1\text{ 行}}
         +\underbrace{\tfrac14+\tfrac14}_{\text{第 }2\text{ 行}}
