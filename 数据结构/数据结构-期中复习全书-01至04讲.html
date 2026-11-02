@@ -939,11 +939,52 @@
       <p>前缀和之后，$C[i]$ 表示「值 $\le i$ 的元素一共有多少个」。这正好是<strong>值为 $i$ 的那一组在输出数组里的右边界下标</strong>。
       所以第 ④ 步 <code>B[C[A[j]]] = A[j]</code> 就是「把它放到自己那一组的最后一个空位」，然后 $C$ 减 1，空位左移一格。</p>
 
+      <h3>稳定性到底是谁给的：扫描方向，不是 <code>C--</code></h3>
+
+      <p>常见误解：以为 <code>C[A[j]] -= 1</code> 这个「减一」自动保证了稳定。其实<strong>不是</strong> ——
+      它只决定「这一组里填哪个格子」，决定不了「谁先填」。真正决定相对顺序的是 <strong><code>for j = n downto 1</code> 这个扫描方向</strong>。</p>
+
+      <p>用两个相等元素看最清楚。设 $A=[2_a,\,2_b]$（$2_a$ 在前），值 2 的前缀和是 2，所以这一组占 $B[1],B[2]$ 两个格子。</p>
+
+      <table>
+        <thead><tr><th style="width:22%">扫描方向</th><th style="width:40%">过程</th><th style="width:20%">$B$</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>倒序</strong> $j=2\to1$</td>
+            <td>$j=2$：$2_b\to B[2]$，$C[2]$ 变 1；<br>$j=1$：$2_a\to B[1]$</td>
+            <td>$[2_a,\ 2_b]$</td>
+            <td><strong>原序保持 ✓ 稳定</strong></td>
+          </tr>
+          <tr>
+            <td><strong>正序</strong> $j=1\to2$</td>
+            <td>$j=1$：$2_a\to B[2]$，$C[2]$ 变 1；<br>$j=2$：$2_b\to B[1]$</td>
+            <td>$[2_b,\ 2_a]$</td>
+            <td><strong>反了 ✗ 不稳定</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>两次的「减一」都做了，结果却相反 —— 说明<strong>减一不是稳定性的来源</strong>。
+      减一的真正作用只是：<strong>让同组的下一个元素填到左边一格</strong>（组内从右往左填）。</p>
+
+      <div class="ok">
+        <strong>规律：扫描方向必须和「组内填充方向」相反，才稳定。</strong>
+        <table style="margin:8px 0 0">
+          <thead><tr><th style="width:26%">扫描方向</th><th style="width:26%">组内填充方向</th><th style="width:26%">谁先占位</th><th>稳定性</th></tr></thead>
+          <tbody>
+            <tr><td>倒序 $n\to1$</td><td>从右往左（$C$ 递减）</td><td>数组里<strong>靠后</strong>的 → 靠右</td><td><strong>稳定 ✓</strong>（CLRS 用的就是这个）</td></tr>
+            <tr><td>正序 $1\to n$</td><td>从右往左（$C$ 递减）</td><td>数组里<strong>靠前</strong>的 → 靠右</td><td>反序 ✗</td></tr>
+            <tr><td>正序 $1\to n$</td><td>从左往右（$C$ 递增、当左边界用）</td><td>靠前的 → 靠左</td><td><strong>稳定 ✓</strong>（另一种正确写法）</td></tr>
+            <tr><td>倒序 $n\to1$</td><td>从左往右（$C$ 递增）</td><td>靠后的 → 靠左</td><td>反序 ✗</td></tr>
+          </tbody>
+        </table>
+        <br>所以「倒序 + 递减」不是唯一方案，「正序 + 递增」也行。CLRS 之所以选前者，是因为前缀和 $C[v]$ 天然是这一组的<strong>右边界</strong>，
+        从右往左填最自然；既然从右往左填，就<strong>必须</strong>倒序扫描。
+      </div>
+
       <div class="note">
-        <strong>为什么必须从后往前扫（稳定性）：</strong>$C[A[j]]$ 是这一组的<strong>最右空位</strong>。
-        倒序扫时，同一组里<strong>后出现的元素先被放到靠右的位置</strong>，于是它们在 $B$ 中保持原相对次序 —— 这就是稳定。
-        正序扫会把同组元素<strong>反转</strong>。
-        <br>稳定性不是装饰：基数排序<strong>必须</strong>靠它才能成立（见下）。
+        <strong>一句话记：</strong>「减一」负责<strong>组内怎么排</strong>，「倒序」负责<strong>组间谁先进</strong>，两者配合才得到稳定。
+        缺了倒序，同一组的元素会被整体反转 —— 而基数排序<strong>必须</strong>靠这个稳定性才能成立（见下一节）。
       </div>
 
       <h3>为什么不能排 32 位整数</h3>
