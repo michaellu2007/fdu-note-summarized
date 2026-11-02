@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概率论 · 第五章（一）连续型随机变量：密度、分布函数、三个分布</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#fff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d;  --warn-bg:#faece7;
+  --ok:#0f6e56;    --ok-bg:#e1f5ee;
+  --gold:#854f0b;  --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+  --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+  --accent:#85b7eb; --accent-bg:#12304d;
+  --warn:#f0997b;  --warn-bg:#3d1f13;
+  --ok:#5dcaa5;    --ok-bg:#0d3227;
+  --gold:#ef9f27;  --gold-bg:#3a2a0c;
+}}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+h1{font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:21px;margin:56px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:34px 0 10px;color:var(--ink)}
+h4{font-size:15px;margin:22px 0 8px;color:var(--ink2)}
+p{margin:10px 0}
+.lede{color:var(--ink2);font-size:15px;margin:0 0 8px}
+.meta{color:var(--ink3);font-size:13px;margin:0}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.2px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13.5px;background:var(--bg2)}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:6px;
+  background:var(--bg2);color:var(--ink3);border:1px solid var(--line);
+  vertical-align:2px;margin-left:8px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.tag.a{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.tag.b{background:var(--gold-bg);color:var(--gold);border-color:transparent}
+.tag.c{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.toc{border:1px solid var(--line);border-radius:12px;padding:16px 24px;background:var(--bg3);margin:26px 0 10px}
+.toc ol{margin:6px 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+.toc a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+figure{margin:24px 0}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px;text-align:center}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:12px 16px;overflow-x:auto;font-size:13px;line-height:1.6;
+  font-family:ui-monospace,Consolas,monospace;color:var(--ink2)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;
+  background:var(--bg2);padding:1px 5px;border-radius:4px}
+hr{border:none;border-top:1px solid var(--line);margin:52px 0}
+.footnote{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12.8px;color:var(--ink3);line-height:1.75}
+.q{border-left:3px solid var(--line);padding-left:14px;color:var(--ink2);margin:16px 0}
+ol.work{padding-left:24px}
+ol.work>li{margin:20px 0}
+ol.work .stem{font-weight:500}
+.hint{margin:8px 0 0;padding:10px 14px;background:var(--bg3);border:1px solid var(--line);
+  border-radius:8px;font-size:14px;color:var(--ink2)}
+.hint b{color:var(--ink)}
+.thm{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0}
+.thm .nm{font-weight:650;color:var(--accent);font-size:14.5px;margin:0 0 4px}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
+</style>
+</head>
+<body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+<div class="wrap">
+
+<h1>概率论 · 第五章（一）连续型随机变量：密度、分布函数、三个分布</h1>
+<p class="lede">第四章从头到尾都在算「一个数」——期望、方差；随机变量长什么样，我们一直没管。这一节第一次给它画形状：<b>密度函数</b>。整份笔记只回答三个问题：密度是什么、分布函数是什么、它们凭什么能把离散的求和换成积分。</p>
+<p class="meta">整理日期 2026-10-30　|　手写笔记第 4–6 页（共 6 页，第 1–3 页见第四章那份）　|　对应讲义 §5.1（定义 5.1.1、5.1.2、定理 5.1.1）与三个常见分布，教材 §5.1</p>
+
+<div class="box warn">
+<p class="label">这份笔记的写法：讲明白，不是复习清单</p>
+<p>连续型最容易学成「背公式 + 套积分」。真正会卡的地方只有三处：<b>为什么 $\mathbb P(\xi=c)=0$ 却不算不可能事件</b>、<b>分布函数为什么必须右连续</b>、<b>无记忆性为什么只有指数分布满足</b>。这三处下面都单独拆开讲。</p>
+</div>
+
+<div class="toc">
+<strong style="font-size:13.5px;color:var(--ink2)">目录</strong>
+<ol>
+<li><a href="#p0">第零部分 · 从「求和」到「积分」：换掉的到底是什么</a></li>
+<li><a href="#p1">第一部分 · 密度函数（定义 5.1.1）</a>
+  <ol>
+  <li><a href="#s11">§1.1　三条性质各自的来历</a></li>
+  <li><a href="#s12">§1.2　最反直觉的一条：$\mathbb P(\xi=c)=0$</a></li>
+  </ol>
+</li>
+<li><a href="#p2">第二部分 · 分布函数（定义 5.1.2）</a>
+  <ol>
+  <li><a href="#s21">§2.1　三条条件各管什么，为什么是右连续</a></li>
+  <li><a href="#s22">§2.2　$F$ 与 $f$ 的关系，以及 $F$ 不一定可微</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 定理 5.1.1：把 $\varphi$ 塞进期望</a></li>
+<li><a href="#p4">第四部分 · 三个分布</a>
+  <ol>
+  <li><a href="#s41">§4.1　均匀分布 $U[a,b]$</a></li>
+  <li><a href="#s42">§4.2　指数分布 $\mathrm{Exp}(\lambda)$ 与无记忆性</a></li>
+  <li><a href="#s43">§4.3　正态分布 $N(a,\sigma^2)$</a></li>
+  </ol>
+</li>
+<li><a href="#p5">第五部分 · 三个分布放在一起看</a></li>
+<li><a href="#p6">第六部分 · 作业</a></li>
+<li><a href="#pa">附录 · 和第四章的接口</a></li>
+</ol>
+</div>
+
+<h2 id="p0">第零部分 · 从「求和」到「积分」：换掉的到底是什么</h2>
+
+<p>离散型的一切都建立在 $\mathbb P(\xi=x_k)=p_k$ 上：每个取值带一个正的质量 $p_k$，总和为 $1$。连续型把这件事整个换掉了——<b>不是把 $\sum$ 换成 $\int$ 这么简单，而是「质量不再挂在点上」</b>。</p>
+
+<table>
+<tr><th style="width:150px"></th><th style="width:250px">离散型</th><th>连续型</th></tr>
+<tr><td>点的概率</td><td>$\mathbb P(\xi=x_k)=p_k\gt0$</td><td>$\mathbb P(\xi=c)=0$，<b>每个点都是 $0$</b></td></tr>
+<tr><td>「质量」放在哪</td><td>放在点上</td><td>放在<b>区间</b>上，由密度 $f$ 决定疏密</td></tr>
+<tr><td>归一</td><td>$\sum_k p_k=1$</td><td>$\int_{-\infty}^{+\infty}f(t)\,\mathrm dt=1$</td></tr>
+<tr><td>区间概率</td><td>$\mathbb P(\xi\in A)=\sum_{x_k\in A}p_k$</td><td>$\mathbb P(\xi\in A)=\displaystyle\int_A f(t)\,\mathrm dt$</td></tr>
+<tr><td>分布函数</td><td>$F(x)=\sum_{x_k\le x}p_k$（阶梯）</td><td>$F(x)=\displaystyle\int_{-\infty}^{x}f(t)\,\mathrm dt$（连续）</td></tr>
+<tr><td>期望</td><td>$\mathbb E\xi=\sum_k x_kp_k$</td><td>$\mathbb E\xi=\displaystyle\int x f(x)\,\mathrm dx$</td></tr>
+</table>
+
+<div class="box key">
+<p class="label">一句话抓住这个转变</p>
+<p>离散型的概率是<b>称重</b>：每个点有自己的质量，可以问「这个点多重」。<br>
+连续型的概率是<b>量长度</b>：单个点没有长度，只有一段区间才有。所以要问「落在哪一段」，而不能问「落在哪一点」。</p>
+<p>这就是为什么连续型必须引入 $f$：<b>它不是「某个点的概率」，而是「那一点附近概率的密度」</b>——就像密度不是质量，但乘上体积才是质量。</p>
+</div>
+
+<h2 id="p1">第一部分 · 密度函数（定义 5.1.1）</h2>
+
+<div class="thm">
+<p class="nm">定义 5.1.1（连续型随机变量与密度函数）</p>
+<p>若随机变量 $\xi$ 的分布函数 $F$ 可以写成</p>
+\[
+F(x)=\int_{-\infty}^{x}f(t)\,\mathrm dt,\qquad \forall x\in\mathbb R ,
+\]
+<p>其中 $f$ 是非负可积函数，则称 $\xi$ 为<b>连续型随机变量</b>，$f$ 为 $\xi$ 的<b>密度函数</b>（概率密度）。</p>
+</div>
+
+<p>手写笔记只记了性质、没记定义本身，定义按讲义补全。要留意的是：<b>定义里出场的是 $F$，$f$ 只是 $F$ 的一个「原函数式的表示」</b>——这个视角在 §2.2 会很有用。</p>
+
+<p><b>手写笔记列的三条性质：</b></p>
+
+\[
+\text{(1)}\ f\ge0;\qquad
+\text{(2)}\ \int_{-\infty}^{+\infty}f(t)\,\mathrm dt=1;\qquad
+\text{(3)}\ \mathbb P(\xi\in[a,b])=\int_a^b f(t)\,\mathrm dt .
+\]
+
+<h3 id="s11">§1.1　三条性质各自的来历<span class="tag b">手写 4</span></h3>
+
+<p>这三条不是三条独立的公理，而是<b>同一个定义的三张脸</b>。每条都能从 $F(x)=\int_{-\infty}^xf$ 一步推出来：</p>
+
+<p><b>(1) $f\ge0$：因为 $F$ 单调不减，而 $f$ 是它的导数。</b>反过来看更清楚——如果允许 $f$ 取负值，那 $F$ 就会在某个区间上下降，也就不是分布函数了。<b>非负性不是额外要求，是「概率不能减少」这件事在密度上的投影。</b></p>
+
+<p><b>(2) 规范性：把 $x\to+\infty$ 代进定义。</b>$F(+\infty)=1$（定义 5.1.2 的第 2 条），而 $F(+\infty)=\int_{-\infty}^{+\infty}f$，所以 $\int f=1$。<b>它就是「总概率为 $1$」的积分写法。</b></p>
+
+<p><b>(3) 区间概率：两个 $F$ 相减。</b></p>
+
+\[
+\mathbb P(a\le\xi\le b)=F(b)-F(a)=\int_{-\infty}^{b}f-\int_{-\infty}^{a}f=\int_a^b f .
+\]
+
+<p>几何上这就是「<b>区间上的概率 = 密度曲线在该区间下的面积</b>」。整节最该带走的一张图就是这个：</p>
+
+<figure>
+<svg viewBox="0 0 680 262" width="100%" role="img" aria-labelledby="f1t f1d">
+<title id="f1t">密度与分布函数的关系</title>
+<desc id="f1d">左图是密度曲线，阴影部分是从负无穷到 x0 的面积；右图是分布函数，在 x0 处的高度正好等于左边那块面积。</desc>
+<defs>
+<marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<text x="40" y="42" font-size="12.5" font-weight="600" fill="var(--ink2)">密度 f(x)</text>
+<text x="380" y="42" font-size="12.5" font-weight="600" fill="var(--ink2)">分布函数 F(x)</text>
+
+<path d="M 40 215 L 40 80 C 80 125 125 165 170 185 L 170 215 Z" fill="var(--accent)" opacity="0.16"/>
+<path d="M 40 80 C 80 125 125 165 170 185 C 210 197 250 202 300 205" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+
+<line x1="40" y1="215" x2="304" y2="215" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<line x1="40" y1="215" x2="40" y2="58" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<line x1="170" y1="185" x2="170" y2="215" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="164" y="233" font-size="12" fill="var(--ink3)">x₀</text>
+<text x="56" y="205" font-size="10.5" fill="var(--accent)">面积 = F(x₀)</text>
+
+<line x1="380" y1="215" x2="644" y2="215" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<line x1="380" y1="215" x2="380" y2="58" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<line x1="380" y1="72" x2="644" y2="72" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="374" y="76" font-size="11.5" fill="var(--ink3)" text-anchor="end">1</text>
+
+<path d="M 380 215 C 415 155 455 105 520 90 C 565 80 610 76 640 74" fill="none" stroke="var(--ok)" stroke-width="2.2"/>
+<line x1="510" y1="215" x2="510" y2="91" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<line x1="380" y1="91" x2="510" y2="91" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="504" y="233" font-size="12" fill="var(--ink3)">x₀</text>
+<text x="386" y="86" font-size="11" fill="var(--ok)">F(x₀)</text>
+
+<line x1="308" y1="120" x2="372" y2="120" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<text x="312" y="112" font-size="11" fill="var(--ink3)">累积</text>
+<line x1="372" y1="168" x2="308" y2="168" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arwE)"/>
+<text x="312" y="186" font-size="11" fill="var(--ink3)">求导</text>
+</svg>
+<figcaption>图 1 · 同一件事的两种写法：$F(x_0)$ 是 $f$ 从 $-\infty$ 到 $x_0$ 的<b>面积</b>，$f$ 是 $F$ 的<b>斜率</b>。左边的阴影面积，正好等于右边在 $x_0$ 处的高度。</figcaption>
+</figure>
+
+<h3 id="s12">§1.2　最反直觉的一条：$\mathbb P(\xi=c)=0$<span class="tag b">手写 4</span></h3>
+
+<p>手写笔记在这里写了一个夹逼，只有三行，但它推翻了离散型的全部直觉：</p>
+
+\[
+0\ \le\ \mathbb P(\xi=c)\ \le\ \mathbb P(c-\varepsilon\le\xi\le c)
+=F(c)-F(c-\varepsilon)=\int_{c-\varepsilon}^{c}f(t)\,\mathrm dt\ \xrightarrow{\ \varepsilon\to0\ }\ 0 .
+\]
+
+<p>中间那步用了 $F$ 连续：$F(c-\varepsilon)\to F(c)$。最后一步用「$f$ 可积」：<b>一小段区间上的积分，区间长度趋于 $0$ 时积分也趋于 $0$</b>。</p>
+
+<p>两头一夹，$\mathbb P(\xi=c)=0$。<b>对每一个 $c$ 都成立。</b></p>
+
+<div class="box warn">
+<p class="label">但零概率 ≠ 不可能事件——这是本节最容易误解的一句</p>
+<p>$\mathbb P(\xi=c)=0$ 的意思是「这件事的概率是 $0$」，<b>不是</b>「这件事不会发生」。$\{\xi=c\}$ 明明可以发生：往 $[0,1]$ 上随机扔一个点，落在 $0.5$ 的概率是 $0$，但它完全可能正好落在 $0.5$。</p>
+<p>为什么离散型里不会出现这种别扭？因为离散型的概率是<b>称重</b>：每个点有自己的质量，某个点质量为 $0$，那它确实不会被抽到。<b>连续型的概率是量长度</b>：一个点没有长度，但点本身存在——长度为零不等于不存在。</p>
+<p>严格的说法是：<b>「不可能事件」是 $\varnothing$（集合层面），「零概率事件」是 $\mathbb P(A)=0$（测度层面）。离散型里两者恰好重合，连续型里不重合。</b></p>
+</div>
+
+<p><b>这个结论有一个非常好用的副作用：端点随便写。</b>因为单个点的概率是 $0$，所以</p>
+
+\[
+\mathbb P(a\le\xi\le b)=\mathbb P(a\lt\xi\lt b)=\mathbb P(a\lt\xi\le b)=\mathbb P(a\le\xi\lt b)=\int_a^b f .
+\]
+
+<p>四个写法全相等。<b>离散型绝对不行</b>（$\mathbb P(\xi=a)$ 可能很大），这是连续型独有的方便。做题时如果因为端点纠结，记住这一条。</p>
+
+<div class="box ok">
+<p class="label">另一个副作用：密度可以随便改一个点的值</p>
+<p>$f$ 在单个点上的取值不影响任何积分，所以 $\mathbb P$ 完全不变。换句话说，<b>密度不是「那个函数」，而是「那一族几乎处处相等的函数」</b>——严格讲，密度是 $L^1$ 里的一个等价类。</p>
+<p>这解释了为什么均匀分布 $U[a,b]$ 在端点 $a,b$ 上 $f$ 取什么都无所谓，也解释了为什么下面 §4.1 里 $F$ 在端点不可微却不影响任何结论。</p>
+</div>
+
+<div class="box warn">
+<p class="label">最常见的错误：把 $f(x)$ 当成概率</p>
+<p><b>$f(x)$ 可以大于 $1$。</b>取 $\xi\sim U[0,\frac12]$，则 $f(x)=2$（在 $[0,\frac12]$ 上），比 $1$ 大。但 $2\times\frac12=1$，总面积仍然是 $1$，没有任何矛盾。</p>
+<p>概率是<b>面积</b>：$\mathbb P(\xi\in[0,\frac14])=2\times\frac14=\frac12$。<b>密度是「高度」，概率是「高度 × 宽度」</b>。只有当你忘了乘宽度，才会觉得「概率大于 $1$」是荒谬的。</p>
+</div>
+
+<h2 id="p2">第二部分 · 分布函数（定义 5.1.2）</h2>
+
+<div class="thm">
+<p class="nm">定义 5.1.2（分布函数）</p>
+<p>称 $F(x)=\mathbb P(\xi\le x)$（$x\in\mathbb R$）为 $\xi$ 的<b>分布函数</b>。一个函数 $F$ 是某个随机变量的分布函数，<b>当且仅当</b>它满足：</p>
+\[
+\text{(1) 单调不减：}\ x_1\lt x_2\ \Longrightarrow\ F(x_1)\le F(x_2);
+\]
+\[
+\text{(2) 两端极限：}\ F(-\infty):=\lim_{x\to-\infty}F(x)=0,\qquad F(+\infty):=\lim_{x\to+\infty}F(x)=1;
+\]
+\[
+\text{(3) 右连续：}\ F(x+0):=\lim_{y\downarrow x}F(y)=F(x),\qquad \forall x\in\mathbb R .
+\]
+</div>
+
+<h3 id="s21">§2.1　三条条件各管什么，为什么是右连续<span class="tag b">手写 4</span></h3>
+
+<p>这三条都能从「$F(x)=\mathbb P(\xi\le x)$」直接读出来，<b>没有一条是凭空规定的</b>：</p>
+
+<p><b>(1) 单调：事件在变大。</b>$x_1\lt x_2$ 时 $\{\xi\le x_1\}\subset\{\xi\le x_2\}$，概率自然单调。<b>反过来，任何单调不减的函数都能当分布函数——单调性就是「概率不倒退」。</b></p>
+
+<p><b>(2) 两端极限：事件在收缩/膨胀。</b>$x\to-\infty$ 时 $\{\xi\le x\}\downarrow\varnothing$，所以 $F\to0$；$x\to+\infty$ 时 $\{\xi\le x\}\uparrow\Omega$，所以 $F\to1$。这两个极限的存在性本身要用概率的<b>下连续/上连续</b>（第四章的定理），不是自动的。</p>
+
+<p><b>(3) 右连续：为什么偏偏是右边？</b>这一条最容易被当成技术性条款，其实原因只有一句话：</p>
+
+<div class="box key">
+<p class="label">因为 $F$ 的定义里写的是「$\le$」，不是「$\lt$」</p>
+<p>把 $x$ 从<b>右边</b>逼近，事件是<b>从上面收缩</b>：</p>
+\[
+\{\xi\le x\}=\bigcap_{n\ge1}\Big\{\xi\le x+\tfrac1n\Big\} ,
+\]
+<p>这是一列<b>递减</b>事件，概率的<b>上连续</b>给出 $F(x+0)=F(x)$——右连续。</p>
+<p>而如果从<b>左边</b>逼近，事件是<b>从下面膨胀</b>：$\bigcup_n\{\xi\le x-\frac1n\}=\{\xi\lt x\}$，于是</p>
+\[
+F(x-0)=\mathbb P(\xi\lt x)=F(x)-\mathbb P(\xi=x).
+\]
+<p><b>差的那一项正是 $\mathbb P(\xi=x)$。</b>所以左连续一般不成立——除非 $\mathbb P(\xi=x)=0$，也就是连续型的情形。</p>
+</div>
+
+<p><b>由此得到一条很实用的公式：跳跃高度 = 该点的概率。</b></p>
+
+\[
+\mathbb P(\xi=x)=F(x)-F(x-0).
+\]
+
+<p>举例：$\xi\equiv0$（退化分布），$F(x)=1_{\{x\ge0\}}$。在 $x=0$ 处 $F(0)=1$、$F(0-)=0$，跳跃高度 $1=\mathbb P(\xi=0)$ ✓。右连续也成立：$F(0+)=1=F(0)$。</p>
+
+<p><b>所以：离散型的 $F$ 是阶梯（有跳跃），连续型的 $F$ 没有跳跃（$\mathbb P(\xi=x)=0$，处处 $F(x-0)=F(x)$）。</b>——这正好接上 §1.2。</p>
+
+<h3 id="s22">§2.2　$F$ 与 $f$ 的关系，以及 $F$ 不一定可微<span class="tag b">手写 4·5</span></h3>
+
+<p>手写笔记在这里写了一句容易读漏的话：<b>「连续型 $\iff F(x)=\int_{-\infty}^xf(t)\,\mathrm dt$」</b>。它的意思是：</p>
+
+\[
+F\ \text{是连续型}\iff F\ \text{能写成某个非负可积函数的变上限积分}\iff F\ \text{绝对连续}.
+\]
+
+<p>注意这三层里<b>没有「$F$ 可微」</b>。三件事要分清：</p>
+
+<table>
+<tr><th style="width:170px">性质</th><th style="width:110px">离散型</th><th style="width:110px">连续型</th><th>说明</th></tr>
+<tr><td>$F$ 连续</td><td>否（有跳跃）</td><td><b>是</b></td><td>连续型没有跳跃，因为 $\mathbb P(\xi=x)=0$</td></tr>
+<tr><td>$F$ 处处可微</td><td>否</td><td><b>不一定</b></td><td>均匀分布 $U[a,b]$ 的 $F$ 在端点 $a,b$ 是折角（左导 $0$、右导 $\frac1{b-a}$），不可微</td></tr>
+<tr><td>$F$ 几乎处处可微，且 $F'=f$ a.e.</td><td>—</td><td><b>是</b></td><td>Lebesgue 微分定理；个别点无所谓，反正积分不看单点</td></tr>
+</table>
+
+<p>所以「$f$ 是 $F$ 的导数」这句话要加个 a.e.。<b>反过来用是安全的</b>：只要 $F$ 分段可微，就在每一段上求导得到 $f$，段与段之间怎么取都行。</p>
+
+<div class="box key">
+<p class="label">连续型随机变量不一定可微——这句要读对</p>
+<p>手写笔记写的是「连续型随机变量不一定可微」。严格说随机变量本身无所谓可微，<b>该说的是它的分布函数 $F$ 不一定处处可微</b>。</p>
+<p>最干净的例子里就是均匀分布：$F$ 在 $a,b$ 两点是折角，导数从 $0$ 跳到 $\frac1{b-a}$。但这两个点不影响任何概率、也不影响任何积分——<b>「不可微的点」在连续型里是可以被忽略的</b>，这正是「密度是等价类」的第二个后果。</p>
+</div>
+
+<h2 id="p3">第三部分 · 定理 5.1.1：把 $\varphi$ 塞进期望<span class="tag b">手写 5</span></h2>
+
+<div class="thm">
+<p class="nm">定理 5.1.1（连续型的变量替换 / LOTUS）</p>
+<p>设 $\xi$ 的密度函数为 $f$，$\varphi$ 是一个非负（或更一般地，使下面积分有意义的）函数，且</p>
+\[
+\int_{\mathbb R}|\varphi(x)|f(x)\,\mathrm dx\lt+\infty ,
+\]
+<p>则</p>
+\[
+\mathbb E\varphi(\xi)=\int_{\mathbb R}\varphi(x)f(x)\,\mathrm dx .
+\]
+</div>
+
+<p><b>它解决什么问题？</b>要算 $\mathbb E\varphi(\xi)$，原则上得先求出 $\varphi(\xi)$ 的分布——这通常是个噩梦（比如 $\varphi(x)=x^2$ 要先算 $\sqrt{\cdot}$ 的分布）。定理说：<b>不必。直接用 $\xi$ 的密度积过去就行。</b></p>
+
+<p><b>手写笔记的证明只写了一行：</b></p>
+
+\[
+\mathbb E\varphi(\xi)=\int_{\mathbb R}\varphi(x)\,\mathrm dF(x)=\int_{\mathbb R}\varphi(x)f(x)\,\mathrm dx .
+\]
+
+<p>第一个等号是第四章的 Stieltjes 积分（$\mathbb E\varphi(\xi)=\int\varphi\,\mathrm dF$，对离散连续都成立）；<b>第二个等号才是本节的新东西</b>：把 $\mathrm dF$ 换成 $f\,\mathrm dx$。所以这个定理的全部内容，就是一句</p>
+
+\[
+\mathrm dF(x)=f(x)\,\mathrm dx .
+\]
+
+<p><b>严格证明要按 $\varphi$ 的四层走</b>，和期望的三层定义完全平行（这也是为什么第四章要花那么大力气分层）：</p>
+
+<p><b>第 1 层：$\varphi=1_A$（指示函数）。</b></p>
+\[
+\mathbb E1_A(\xi)=\mathbb P(\xi\in A)=\int_A f(x)\,\mathrm dx=\int_{\mathbb R}1_A(x)f(x)\,\mathrm dx .
+\]
+<p>这就是定义 5.1.1 的性质 (3)。</p>
+
+<p><b>第 2 层：$\varphi$ 非负简单函数。</b>$\varphi=\sum_ic_i1_{A_i}$，用期望的线性性 + 第 1 层，直接相加。</p>
+
+<p><b>第 3 层：$\varphi$ 非负可测。</b>取简单函数 $\varphi_n\uparrow\varphi$（第四章的做法：把值域按 $2^{-n}$ 切片），于是 $\varphi_n(\xi)\uparrow\varphi(\xi)$，且 $\varphi_nf\uparrow\varphi f$。<b>两边各用一次单调收敛定理（MCT）</b>：
+\[
+\mathbb E\varphi(\xi)=\lim_n\mathbb E\varphi_n(\xi)=\lim_n\int\varphi_nf=\int\varphi f .
+\]</p>
+
+<p><b>第 4 层：$\varphi$ 一般。</b>拆正负部 $\varphi=\varphi^+-\varphi^-$，各用第 3 层，再相减——<b>可积性条件 $\int|\varphi|f\lt\infty$ 保证这一步不是 $\infty-\infty$</b>。</p>
+
+<div class="box ok">
+<p class="label">这条定理其实就是「$L^1$ 里的换元公式」</p>
+<p>把 $\mathbb P$ 看成测度，$f\,\mathrm d\mathbb P$ 看成另一个测度 $\mu(A)=\int_Af\,\mathrm d\mathbb P$，那定理说的就是 $\int\varphi\,\mathrm d\mu=\int\varphi f\,\mathrm d\mathbb P$——<b>「密度是测度的 Radon–Nikodym 导数」</b>。这句话现在不用深究，但等你看到「条件期望」时它会再出现一次。</p>
+</div>
+
+<h2 id="p4">第四部分 · 三个分布</h2>
+
+<p>这三个分布是整门课出现频率最高的三个。每个都按同一套流程走：<b>密度 → 分布函数 → 期望 → 方差 → 一个「只有它有」的性质</b>。</p>
+
+<h3 id="s41">§4.1　均匀分布 $U[a,b]$<span class="tag b">手写 2·5</span></h3>
+
+<p><b>密度（分段定义）。</b></p>
+
+\[
+f(x)=\begin{cases}\dfrac{1}{b-a}, &amp; x\in[a,b],\\[4pt] 0, &amp; x\notin[a,b].\end{cases}
+\]
+
+<p><b>分布函数：把密度从 $-\infty$ 积到 $x$，分三段。</b></p>
+
+\[
+F(x)=\int_{-\infty}^{x}f(t)\,\mathrm dt=
+\begin{cases}
+0, &amp; x\lt a,\\[4pt]
+\dfrac{x-a}{b-a}, &amp; a\le x\le b,\\[6pt]
+1, &amp; x\gt b .
+\end{cases}
+\]
+
+<p>三段各有各的理由：$x\lt a$ 时还没进入有密度的区域，积分为 $0$；$a\le x\le b$ 时积了长度 $x-a$；$x\gt b$ 时已经把全部质量积完，只能是 $1$。<b>分段点就是密度的「开关点」，这条经验对任何分段密度都适用。</b></p>
+
+<p><b>期望。</b></p>
+
+\[
+\mathbb E\xi=\int_a^b x\cdot\frac{1}{b-a}\,\mathrm dx
+=\frac{1}{b-a}\cdot\frac{b^2-a^2}{2}
+=\frac{a+b}{2}.
+\]
+
+<p>结果就是区间中点——<b>「均匀」的意思就是质量对称地铺开，重心当然在正中。</b></p>
+
+<p><b>方差。</b>按定义直接积：</p>
+
+\[
+\mathrm{Var}(\xi)=\mathbb E(\xi-\mathbb E\xi)^2
+=\int_a^b\Big(x-\frac{a+b}{2}\Big)^2\frac{1}{b-a}\,\mathrm dx
+=\frac{(b-a)^2}{12}.
+\]
+
+<p>手写笔记就是这么算的。但有一个更省力的看法值得记住：</p>
+
+<div class="box key">
+<p class="label">方差只跟「宽度」有关：$U[a,b]=a+(b-a)U[0,1]$</p>
+<p>平移不改变方差（第四章 §4.4 的性质），缩放要平方：</p>
+\[
+\mathrm{Var}(a+cU)=c^2\mathrm{Var}(U).
+\]
+<p>所以只要知道 $U[0,1]$ 的方差是 $\frac1{12}$，立刻得到 $U[a,b]$ 的方差是 $\frac{(b-a)^2}{12}$——<b>$a$ 根本不出现</b>。这也解释了为什么公式里只有 $b-a$：位置参数不影响力度的分散程度。</p>
+</div>
+
+<div class="box warn">
+<p class="label">为什么是 $\frac{(b-a)^2}{12}$，而不是 $\frac{(b-a)^2}{4}$</p>
+<p>如果质量全堆在两端（各占 $\frac12$），方差是 $\big(\frac{b-a}{2}\big)^2=\frac{(b-a)^2}{4}$。<b>均匀分布是「最集中」的极端情形</b>，方差只有它的 $\frac13$。</p>
+<p>数字 $12$ 的来源：$\int_{-\frac12}^{\frac12}t^2\,\mathrm dt=\frac1{12}$——把区间平移到 $[-\frac12,\frac12]$ 再算，就只剩这个纯数字。</p>
+</div>
+
+<p><b>只有它才有的现象：$F$ 在端点不可微。</b>$F$ 在 $a$ 处左导 $0$、右导 $\frac1{b-a}$，在 $b$ 处反过来。<b>但这两个「角点」不影响任何概率</b>——正好是 §2.2 那个表的实例。</p>
+
+<h3 id="s42">§4.2　指数分布 $\mathrm{Exp}(\lambda)$ 与无记忆性<span class="tag b">手写 5·6</span></h3>
+
+<p><b>密度。</b>（$\lambda\gt0$ 是参数）</p>
+
+\[
+f(x)=\begin{cases}\lambda e^{-\lambda x}, &amp; x\ge0,\\ 0, &amp; x\lt0 .\end{cases}
+\]
+
+<p>为什么这个函数能当密度？验一下规范性：$\int_0^{\infty}\lambda e^{-\lambda x}\mathrm dx=\big[-e^{-\lambda x}\big]_0^{\infty}=1$ ✓。<b>那个前置的 $\lambda$ 就是用来把总面积调成 $1$ 的</b>——这解释了为什么密度里必须带一个 $\lambda$。</p>
+
+<p><b>分布函数。</b></p>
+
+\[
+F(x)=\int_{-\infty}^{x}\lambda e^{-\lambda t}\,\mathrm dt=
+\begin{cases}0, &amp; x\le0,\\ 1-e^{-\lambda x}, &amp; x\gt0 .\end{cases}
+\]
+
+<p><b>期望：一次分部积分。</b></p>
+
+\[
+\mathbb E\xi=\int_0^{\infty}x\lambda e^{-\lambda x}\,\mathrm dx
+=\big[-xe^{-\lambda x}\big]_0^{\infty}+\int_0^{\infty}e^{-\lambda x}\,\mathrm dx
+=0+\frac1\lambda .
+\]
+
+<p>边界项为 $0$ 是因为 $xe^{-\lambda x}\to0$（指数压过多项式）。<b>这一步是这类积分唯一要小心的地方。</b></p>
+
+<p><b>二阶矩：同样的手法再用一次。</b></p>
+
+\[
+\mathbb E\xi^2=\int_0^{\infty}x^2\lambda e^{-\lambda x}\,\mathrm dx
+=\frac{2}{\lambda}\int_0^{\infty}x\lambda e^{-\lambda x}\,\mathrm dx
+=\frac{2}{\lambda}\cdot\frac1\lambda=\frac{2}{\lambda^2},
+\qquad
+\mathrm{Var}(\xi)=\frac{2}{\lambda^2}-\frac{1}{\lambda^2}=\frac{1}{\lambda^2}.
+\]
+
+<p>注意中间那步的<b>自相似</b>：$\int x^2\lambda e^{-\lambda x}\mathrm dx=\frac2\lambda\int x\lambda e^{-\lambda x}\mathrm dx$，右边正是 $\mathbb E\xi$。一般地</p>
+
+\[
+I_n:=\int_0^{\infty}x^n\lambda e^{-\lambda x}\,\mathrm dx=\frac{n}{\lambda}I_{n-1},\qquad I_0=1
+\ \Longrightarrow\ I_n=\frac{n!}{\lambda^n}.
+\]
+
+<p><b>一条递推把所有阶矩都算完了</b>，比每次都分部积分省事得多。手写笔记只算了 $n=1,2$，但记住这条递推以后遇到 $\mathbb E\xi^3$ 也不用重算。</p>
+
+<div class="box ok">
+<p class="label">一个特征：均值 = 标准差</p>
+<p>$\mathbb E\xi=\frac1\lambda$，$\sqrt{\mathrm{Var}(\xi)}=\frac1\lambda$，两者相等。<b>变异系数恒为 $1$</b>，这是指数分布独有的（正态是 $\sigma/|a|$，均匀是 $\frac{1}{\sqrt3}\cdot\frac{b-a}{a+b}$，都随参数变）。看到「均值等于标准差」就该想到指数分布。</p>
+</div>
+
+<p><b>无记忆性：指数分布的招牌。</b>对任意 $s,t\ge0$，</p>
+
+\[
+\mathbb P(\xi\gt s+t\mid\xi\gt t)
+=\frac{\mathbb P(\xi\gt s+t)}{\mathbb P(\xi\gt t)}
+=\frac{e^{-\lambda(s+t)}}{e^{-\lambda t}}
+=e^{-\lambda s}
+=\mathbb P(\xi\gt s).
+\]
+
+<p>分子那步能拆开，是因为 $s+t\gt t$ 时 $\{\xi\gt s+t\}\subset\{\xi\gt t\}$，交就是小的那个。</p>
+
+<p><b>读成人话：已经等了 $t$ 小时还没坏，那么「还要再等 $s$ 小时」的概率，和「从头开始等 $s$ 小时」一模一样。</b>换句话说——<b>它不记得自己已经活了多久</b>。灯泡、放射性衰变、电话呼入间隔都是这个模型；而「人的寿命」绝不是，因为老人比年轻人更容易在明年去世。</p>
+
+<p><b>手写笔记把它和几何分布并列，这个对照很值得记住：</b></p>
+
+<table>
+<tr><th style="width:110px"></th><th style="width:250px">几何分布（离散）</th><th>指数分布（连续）</th></tr>
+<tr><td>无记忆性</td><td>$\mathbb P(\xi\gt m+n\mid\xi\gt m)=q^{n}$</td><td>$\mathbb P(\xi\gt s+t\mid\xi\gt t)=e^{-\lambda s}$</td></tr>
+<tr><td>怎么来的</td><td>$\dfrac{q^{m+n}}{q^m}=q^n$</td><td>$\dfrac{e^{-\lambda(s+t)}}{e^{-\lambda t}}=e^{-\lambda s}$</td></tr>
+<tr><td>本质</td><td colspan="2">「已经过去的时间」在比值里被约掉了——<b>两个分布都是「成功/失效与历史无关」的模型，一个是逐次试验版，一个是连续时间版</b></td></tr>
+</table>
+
+<h4>逆命题：满足无记忆性的只有指数分布</h4>
+
+<p>这是手写笔记第 5–6 页最精彩的一段，也是本节唯一一个「反推分布」的证明。<b>它值得完整走一遍，因为方法（函数方程 + 单调性）在后面反复出现。</b></p>
+
+<div class="thm">
+<p class="nm">命题</p>
+<p>设 $\xi\gt0$ a.s.，且对任意 $s,t\gt0$ 满足无记忆性 $\mathbb P(\xi\gt s+t\mid\xi\gt t)=\mathbb P(\xi\gt s)$，则 $\xi$ 服从指数分布。</p>
+</div>
+
+<p><b>第一步：把概率条件翻译成函数方程。</b>令 $G(x):=\mathbb P(\xi\gt x)=1-F(x)$。无记忆性等价于</p>
+
+\[
+\mathbb P(\xi\gt s+t)=\mathbb P(\xi\gt s)\mathbb P(\xi\gt t)
+\quad\Longleftrightarrow\quad
+G(s+t)=G(s)G(t),\qquad\forall s,t\gt0 .
+\]
+
+<p><b>整个证明就是解这个函数方程。</b>注意 $G$ 有两个免费得到的好性质：$G(0)=1$（因为 $\xi\gt0$ a.s.），$G$ <b>单调不增</b>（因为 $F$ 单调不减）。</p>
+
+<p><b>第二步：先在有理性上定值。</b>记 $a:=G(1)$。由方程</p>
+
+\[
+G(1)=G\Big(\tfrac1n+\cdots+\tfrac1n\Big)=G\Big(\tfrac1n\Big)^{n}
+\ \Longrightarrow\
+G\Big(\tfrac1n\Big)=a^{1/n},
+\]
+
+<p>于是对任意正整数 $m$，</p>
+
+\[
+G\Big(\frac{m}{n}\Big)=G\Big(\tfrac1n\Big)^{m}=a^{m/n}.
+\]
+
+<p><b>到这里，所有正有理数上的值都定死了，而且恰好是指数函数的形式。</b></p>
+
+<p><b>第三步：用单调性把有理数推到实数。</b>这一步是全证明的关键，也是最容易被跳过的一步。任取实数 $x\gt0$，取两列有理数</p>
+
+\[
+r_n\uparrow x,\qquad r_n'\downarrow x .
+\]
+
+<p>由 $G$ 单调不增：$G(r_n)\ge G(x)\ge G(r_n')$，即</p>
+
+\[
+a^{r_n}\ \ge\ G(x)\ \ge\ a^{r_n'} .
+\]
+
+<p>而 $a^{r_n}\to a^x$、$a^{r_n'}\to a^x$（指数函数连续），<b>两头夹住</b>：</p>
+
+\[
+G(x)=a^x,\qquad \forall x\gt0 .
+\]
+
+<p><b>第四步：认出它是指数分布。</b>$G$ 单调不增且 $G(0)=1$，所以 $0\lt a\le1$。若 $a=1$，则 $G\equiv1$，即 $\xi=+\infty$ a.s.，与「$\xi$ 是实值随机变量」矛盾。故 $0\lt a\lt1$，令</p>
+
+\[
+a=e^{-\lambda}\quad(\lambda\gt0)
+\qquad\Longrightarrow\qquad
+F(x)=1-G(x)=1-e^{-\lambda x} .
+\]
+
+<p>正是指数分布的分布函数。$\blacksquare$</p>
+
+<div class="box key">
+<p class="label">为什么非要单调性不可</p>
+<p>单看方程 $G(s+t)=G(s)G(t)$，解<b>非常多</b>：你在有理数上可以随便挑一个 $a$，再用某种方式延拓到实数，能造出各种病态解（不连续、无界的都有）。</p>
+<p><b>单调性是唯一把它锁死的条件</b>——它把「有理数上的已知值」变成「任意实数上的上下界」，于是夹逼成立。<b>这就是为什么分布函数的单调性不是装饰品，而是证明工具。</b></p>
+<p>同一套「函数方程 + 单调性 ⟹ 唯一解」的手法，在特征函数、大数定律里还会再出现几次。</p>
+</div>
+
+<h3 id="s43">§4.3　正态分布 $N(a,\sigma^2)$<span class="tag b">手写 6</span></h3>
+
+<p><b>密度。</b>设 $a\in\mathbb R$、$\sigma\gt0$，</p>
+
+\[
+f(x)=\frac{1}{\sqrt{2\pi}\,\sigma}\exp\left(-\frac{(x-a)^2}{2\sigma^2}\right),
+\qquad -\infty\lt x\lt+\infty .
+\]
+
+<p><b>分布函数。</b></p>
+
+\[
+F(x)=\frac{1}{\sqrt{2\pi}\,\sigma}\int_{-\infty}^{x}
+\exp\left(-\frac{(t-a)^2}{2\sigma^2}\right)\,\mathrm dt .
+\]
+
+<p><b>注意：这个积分没有初等原函数。</b>所以正态分布的 $F$ 永远只能写成积分形式，查表查的就是它。<b>这不是我们不会算，是它真的算不出来</b>（Liouville 定理）。</p>
+
+<p><b>验证它是分布函数（手写笔记的三条）。</b></p>
+
+<p>① $f\ge0$（指数函数恒正），所以 $F$ 单调不减；<br>
+② $F$ 是积分，所以连续，自然右连续；<br>
+③ $x\to-\infty$ 时积分为 $0$，$x\to+\infty$ 时为 $1$——这一步需要高斯积分 $\int_{\mathbb R}e^{-t^2/2}\mathrm dt=\sqrt{2\pi}$，<b>课上没证，它是「$\frac{1}{\sqrt{2\pi}}$ 这个系数的全部来历」</b>。</p>
+
+<p><b>标准正态：</b>$a=0,\sigma=1$，密度记作</p>
+
+\[
+\varphi(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2},
+\qquad
+\Phi(x)=\int_{-\infty}^{x}\varphi(t)\,\mathrm dt .
+\]
+
+<p>任何 $N(a,\sigma^2)$ 都能化成标准正态：$\frac{\xi-a}{\sigma}\sim N(0,1)$。<b>所以「一张表查所有正态」是可能的</b>——这也是正态分布好用的原因之一。</p>
+
+<p><b>期望：换元，然后靠两个事实。</b>令 $t=\frac{x-a}{\sigma}$，则 $x=a+\sigma t$、$\mathrm dx=\sigma\,\mathrm dt$：</p>
+
+\[
+\mathbb E\xi=\int_{-\infty}^{\infty}x\cdot\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-a)^2}{2\sigma^2}}\mathrm dx
+=\int_{-\infty}^{\infty}(a+\sigma t)\,\varphi(t)\,\mathrm dt
+=a\underbrace{\int\varphi}_{=1}+\sigma\underbrace{\int t\,\varphi(t)\,\mathrm dt}_{=0}=a .
+\]
+
+<p>两个事实各自很干净：<b>$\int\varphi=1$ 是规范性；$\int t\varphi(t)\mathrm dt=0$ 是奇函数在对称区间上积分为零</b>。手写笔记就写到这里。</p>
+
+<div class="box ok">
+<p class="label">补一句：$\mathrm{Var}(\xi)=\sigma^2$，所以两个参数各有分工</p>
+<p>同样的换元给出 $\mathbb E(\xi-a)^2=\sigma^2\int t^2\varphi(t)\mathrm dt=\sigma^2$（其中 $\int t^2\varphi(t)\mathrm dt=1$，分部积分可得）。于是</p>
+\[
+a=\mathbb E\xi\ (\text{位置}),\qquad \sigma^2=\mathrm{Var}(\xi)\ (\text{尺度}).
+\]
+<p><b>「正态分布由两个参数完全决定」这句话，意思就是「知道均值和方差就够了」</b>——在所有分布里，只有正态有这个性质（一般分布还需要三阶、四阶矩才能刻画形状）。这也是为什么第四章花那么大力气算期望和方差。</p>
+</div>
+
+<div class="box key">
+<p class="label">为什么正态分布这么重要（下一章的预告）</p>
+<p>不是因为现实里的数据「看起来像钟形」，而是因为<b>中心极限定理</b>：大量独立同分布的小扰动加起来，标准化之后一定趋于 $N(0,1)$——<b>不管原来的分布是什么</b>。</p>
+<p>所以正态分布是「和的极限」，是唯一一个被所有分布共同指向的分布。<b>它重要不是因为它常见，而是因为它是「归宿」。</b></p>
+</div>
+
+<h2 id="p5">第五部分 · 三个分布放在一起看</h2>
+
+<table>
+<tr><th style="width:120px">分布</th><th style="width:150px">密度 $f(x)$</th><th style="width:150px">分布函数 $F(x)$</th><th style="width:80px">$\mathbb E\xi$</th><th style="width:80px">$\mathrm{Var}(\xi)$</th><th>记忆点</th></tr>
+<tr><td>$U[a,b]$</td><td>$\frac{1}{b-a}$（区间内）</td><td>分段线性</td><td>$\frac{a+b}{2}$</td><td>$\frac{(b-a)^2}{12}$</td><td><b>平的</b>；$F$ 有角点</td></tr>
+<tr><td>$\mathrm{Exp}(\lambda)$</td><td>$\lambda e^{-\lambda x}$（$x\ge0$）</td><td>$1-e^{-\lambda x}$</td><td>$\frac1\lambda$</td><td>$\frac{1}{\lambda^2}$</td><td><b>无记忆</b>；均值 = 标准差</td></tr>
+<tr><td>$N(a,\sigma^2)$</td><td>$\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-a)^2}{2\sigma^2}}$</td><td>无初等原函数</td><td>$a$</td><td>$\sigma^2$</td><td><b>钟形</b>；两个参数定全部</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 680 205" width="100%" role="img" aria-labelledby="f2t f2d">
+<title id="f2t">三个连续分布的密度形状</title>
+<desc id="f2d">均匀分布的密度是一个矩形，指数分布单调下降，正态分布是中间高两边低的钟形曲线。</desc>
+<defs>
+<marker id="arwF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"/>
+</marker>
+</defs>
+
+<text x="30" y="32" font-size="12" font-weight="600" fill="var(--ink2)">均匀 U[a,b]</text>
+<line x1="30" y1="150" x2="208" y2="150" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<line x1="30" y1="150" x2="30" y2="58" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<rect x="68" y="100" width="82" height="50" fill="var(--accent)" opacity="0.18"/>
+<line x1="68" y1="100" x2="150" y2="100" stroke="var(--accent)" stroke-width="2"/>
+<line x1="68" y1="100" x2="68" y2="150" stroke="var(--accent)" stroke-width="2"/>
+<line x1="150" y1="100" x2="150" y2="150" stroke="var(--accent)" stroke-width="2"/>
+<text x="63" y="166" font-size="11" fill="var(--ink3)">a</text>
+<text x="146" y="166" font-size="11" fill="var(--ink3)">b</text>
+<text x="84" y="182" font-size="11" fill="var(--ink3)">平的一段</text>
+
+<text x="250" y="32" font-size="12" font-weight="600" fill="var(--ink2)">指数 Exp(λ)</text>
+<line x1="250" y1="150" x2="428" y2="150" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<line x1="250" y1="150" x2="250" y2="58" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<path d="M 250 66 C 285 122 330 142 420 148" fill="none" stroke="var(--warn)" stroke-width="2.2"/>
+<text x="242" y="62" font-size="11" fill="var(--ink3)" text-anchor="end">λ</text>
+<text x="296" y="182" font-size="11" fill="var(--ink3)">起点最高，然后单调降</text>
+
+<text x="452" y="32" font-size="12" font-weight="600" fill="var(--ink2)">正态 N(a,σ²)</text>
+<line x1="452" y1="150" x2="650" y2="150" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<line x1="452" y1="150" x2="452" y2="58" stroke="var(--ink3)" stroke-width="1.1" marker-end="url(#arwF)"/>
+<path d="M 470 147 C 505 146 520 130 540 100 C 550 82 556 72 560 66 C 566 72 572 82 582 100 C 602 130 617 146 648 147"
+      fill="none" stroke="var(--ok)" stroke-width="2.2"/>
+<line x1="560" y1="66" x2="560" y2="150" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 4"/>
+<text x="556" y="164" font-size="11" fill="var(--ink3)">a</text>
+<text x="500" y="182" font-size="11" fill="var(--ink3)">关于 a 对称的钟形</text>
+</svg>
+<figcaption>图 2 · 三个密度各自的「性格」。$U$ 是平的（谁都不比谁特殊），$\mathrm{Exp}$ 是单调下降的（小值最密），$N$ 是钟形对称的（中间最密，两侧迅速稀薄）。<b>曲线下的面积都等于 $1$</b>。</figcaption>
+</figure>
+
+<h2 id="p6">第六部分 · 作业</h2>
+
+<p>手写笔记最后记了作业编号：</p>
+
+\[
+\text{P90：20、24、25、26、28、30}\qquad\qquad
+\text{P108：6、7}
+\]
+
+<p>这里只记编号，不抄题目（抄错题号比不做更糟）。做题时有三条经验可以先用：</p>
+
+<p><b>① 题目说「求分布函数」，先分段，再逐段积分。</b>分段的依据永远是<b>密度在哪里不为零</b>——密度的「开关点」就是 $F$ 的分段点。分完段先验一下 $x\to+\infty$ 时是不是 $1$，这一步能抓出大部分积分错误。</p>
+
+<p><b>② 题目说「求密度」，先确认 $F$ 连续，再分段求导。</b>如果 $F$ 在某个点有跳跃，那它根本不是连续型，别硬求导。</p>
+
+<p><b>③ 算 $\mathbb E\varphi(\xi)$ 一律走定理 5.1.1，别先求 $\varphi(\xi)$ 的分布。</b>只有当题目明确问「$\varphi(\xi)$ 的分布」时才需要求分布，问期望就直接积。</p>
+
+<h2 id="pa">附录 · 和第四章的接口</h2>
+
+<p>这一节看着全新，其实每一件工具都是第四章搬过来的：</p>
+
+<table>
+<tr><th style="width:210px">第四章的东西</th><th>在第五章怎么用</th></tr>
+<tr><td>Stieltjes 积分 $\mathbb E\varphi(\xi)=\int\varphi\,\mathrm dF$</td><td>连续型里 $\mathrm dF=f\,\mathrm dx$，于是变成普通 Riemann 积分。<b>定理 5.1.1 就是这一句。</b></td></tr>
+<tr><td>LOTUS（离散版 $\sum\varphi(x_k)p_k$）</td><td>换成 $\int\varphi f$。两个版本形式完全平行：<b>$\sum\leftrightarrow\int$、$p_k\leftrightarrow f(x)\mathrm dx$</b>。</td></tr>
+<tr><td>单调收敛定理（MCT）</td><td>定理 5.1.1 第 3 层的证明：简单函数 $\varphi_n\uparrow\varphi$，两次 MCT。</td></tr>
+<tr><td>期望的三层定义（简单 → 非负 → 一般）</td><td>定理 5.1.1 的证明结构<b>一模一样</b>——这不是巧合，是因为 $\int\varphi\,\mathrm d\mathbb P$ 本身就是按这个顺序定义的。</td></tr>
+<tr><td>Chebyshev 不等式</td><td>下一节算连续型的矩、推大数定律时直接用；$\mathbb P(|\xi-\mathbb E\xi|\ge m)\le\frac{\sigma^2}{m^2}$ 对连续型同样成立，<b>不需要知道 $f$ 长什么样</b>。</td></tr>
+<tr><td>方差的性质（平移不变、缩放平方）</td><td>§4.1 里推 $U[a,b]$ 的方差就靠它，比硬积快得多。</td></tr>
+</table>
+
+<div class="box ok">
+<p class="label">如果只记三句话</p>
+<p>① <b>连续型没有「点的概率」，只有「区间的概率」；密度是高度，概率是面积。</b></p>
+<p>② <b>$F$ 单调 + 两端极限 + 右连续；右连续是因为定义里写的是 $\le$，而 $F(x)-F(x-0)=\mathbb P(\xi=x)$。</b></p>
+<p>③ <b>无记忆性 ⟺ $G(s+t)=G(s)G(t)$，靠单调性夹逼解出 $G(x)=a^x$——指数分布是唯一解。</b></p>
+</div>
+
+<div class="footnote">
+<p><strong>关于这份笔记</strong></p>
+<p>· 这是《概率论》<strong>第五章的第一份</strong>笔记，覆盖 2026-10-30 手写笔记第 4–6 页。上一份：<a href="./概率论笔记-第四章-方差计算与不等式.html">第四章（三）方差计算与不等式</a>。</p>
+<p>· 公式用离线 KaTeX 渲染，不依赖网络；配套资源在 <code>assets/katex/</code>。</p>
+<p>· 来源标注：<span class="tag b">手写 N</span> 表示课上手写笔记第 N 页；无标签的内容是为讲通「为什么」而补的推导、直觉与反例，<strong>不要当成老师讲过</strong>。特别是：正态分布的 $\mathrm{Var}(\xi)=\sigma^2$、定理 5.1.1 的四层证明、以及 §4.1 的方差缩放论证，都是补写的。</p>
+</div>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
+})();
+</script>
+</body></html>

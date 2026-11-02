@@ -142,7 +142,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 
 <h1>概率论 · 第四章（三）四个分布的方差 · 四个不等式</h1>
 <p class="lede">上一节把方差<b>定义</b>出来了，也证明了它的几条性质；这一节做两件事：先用四个具体分布把「怎么算」练熟，再补上一套不等式工具，把方差从一个数变成关于概率的信息。</p>
-<p class="meta">整理日期 2026-10-30　|　手写笔记 3 页　|　对应讲义 §4.4 后半（方差计算）、§4.4 不等式部分，教材 §4.3–4.4</p>
+<p class="meta">整理日期 2026-10-30　|　手写笔记第 1–3 页（共 6 页，第 4–6 页见第五章那份）　|　对应讲义 §4.4 后半（方差计算）、§4.4 不等式部分，教材 §4.3–4.4</p>
 
 <div class="box warn">
 <p class="label">这份笔记的写法：讲明白，不是复习清单</p>
@@ -170,6 +170,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
   <li><a href="#s23">§2.3　Chebyshev：把事件翻译成期望</a></li>
   <li><a href="#s24">§2.4　Hölder：Young 不等式是引擎</a></li>
   <li><a href="#s25">§2.5　$L^p$ 空间：为什么 $p\gt q$ 时 $L^q\supset L^p$</a></li>
+  <li><a href="#s26">§2.6　Minkowski：三角不等式是怎么被「自己除自己」证出来的</a></li>
   </ol>
 </li>
 <li><a href="#p3">第三部分 · 板书里的两处要留意</a></li>
@@ -437,7 +438,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <p>这就像不知道一个人的具体身高，但知道他在 $[1.6,1.9]$ 之间，那你就能保证「他不到 $2$ 米」。<b>信息少，结论就弱，但仍然是结论。</b></p>
 </div>
 
-<p>接下来的三个不等式是一条链：<b>Cauchy–Schwarz → Chebyshev → Hölder</b>。前者是后者的特例或工具，最后落到 $L^p$ 空间上。</p>
+<p>接下来的不等式是一条链：<b>Young → Hölder → Minkowski</b>，旁边挂着 <b>Cauchy–Schwarz</b>（Hölder 在 $r=s=2$ 的特例）和 <b>Chebyshev</b>（把期望翻译回概率的那一步）。最后落到 $L^p$ 空间上：有了 Minkowski，$L^p$ 才真正成为一个赋范空间。</p>
 
 <h3 id="s22">§2.2　Cauchy–Schwarz：判别式法<span class="tag b">手写 2</span></h3>
 
@@ -600,6 +601,19 @@ b:=\frac{|\eta|^s}{\mathbb E|\eta|^s},\qquad
 <p>反过来看：如果你自己设计一个不等式，想让 $\mathbb E[\alpha a+\beta b]=1$，而 $\mathbb E a=\mathbb E b=1$，那就必须有 $\alpha+\beta=1$。整个证明的骨架就是这样。</p>
 </div>
 
+<div class="box warn">
+<p class="label">等号什么时候成立（手写笔记这行要改一个字）</p>
+<p>手写笔记写的是「存在 $C_1,C_2$ 使 $C_1|\xi|^r+C_2|\eta|^s=0$ a.s.」——<b>按字面读不成立</b>：两个非负数相加为 $0$，只能推出两者都为 $0$，那不是等号条件而是平凡情形。它想说的显然是「两项成比例」：</p>
+\[
+C_1|\xi|^r=C_2|\eta|^s\quad\text{a.s.}
+\]
+<p>来源很清楚：整个证明里只有一处用了「$\le$」，就是 Young 不等式；而 Young 取等号 $\iff a=b$。代回去就是</p>
+\[
+\frac{|\xi|^r}{\mathbb E|\xi|^r}=\frac{|\eta|^s}{\mathbb E|\eta|^s}\quad\text{a.s.}
+\]
+<p>所以<b>等号 $\iff$ $|\xi|^r$ 与 $|\eta|^s$ 成比例</b>（比例系数被各自的期望锁死）。$r=s=2$ 时退化成 Cauchy–Schwarz 的「$|\xi|=c|\eta|$」，两处是同一个条件。</p>
+</div>
+
 <h3 id="s25">§2.5　$L^p$ 空间：为什么 $p\gt q$ 时 $L^q\supset L^p$<span class="tag b">手写 2·3</span></h3>
 
 <p><b>定义。</b>对 $p\ge1$，</p>
@@ -640,17 +654,127 @@ L^p(\mathbb P)\ \subset\ L^q(\mathbb P).
 <p><b>「概率空间上 $L^p$ 随 $p$ 增大而变小」是概率论特有的结论，不是测度论的普遍现象。</b>这一点很多教材不强调，但它解释了为什么后面的大数定律、$L^2$ 收敛这些结论在概率里那么好用。</p>
 </div>
 
-<h2 id="p3">第三部分 · 板书里的两处要留意</h2>
+<h3 id="s26">§2.6　Minkowski：三角不等式是怎么被「自己除自己」证出来的<span class="tag b">手写 3·4</span></h3>
 
-<p>手写笔记有两处按字面读不成立，应该是笔误。抄的时候注意：</p>
+<p>§2.5 里我直接说了「$\|\cdot\|_p$ 是范数，靠的是 Minkowski 不等式」——这一节补上它。它是整套不等式里唯一一条<b>结论里出现「和」</b>的：前面几条都在估计乘积，只有它管加法。</p>
+
+<div class="thm">
+<p class="nm">Minkowski 不等式</p>
+<p>设 $r\ge1$，则对任意随机变量 $\xi,\eta$，</p>
+\[
+\|\xi+\eta\|_r\ \le\ \|\xi\|_r+\|\eta\|_r .
+\]
+<p>$r=1$ 时它就是绝对值的三角不等式；$r=2$ 时是「两条边之和 ≥ 第三边」的 $L^2$ 版本。</p>
+</div>
+
+<p><b>先看 $r=1$，因为它暴露了这条不等式的骨架。</b>逐点有</p>
+
+\[
+|\xi(\omega)+\eta(\omega)|\le|\xi(\omega)|+|\eta(\omega)| ,
+\]
+
+<p>两边取期望就完了，没有任何技巧。<b>所以 Minkowski 的本质是「逐点三角不等式 + 把乘积那部分交给 Hölder」</b>，$r\gt1$ 时的全部困难只有一个：取期望之后，右边会冒出 $\mathbb E|\xi+\eta|^r$，而它正是左边，不能当已知量用。</p>
+
+<p><b>关键的一步：把 $|\xi+\eta|^r$ 拆成「一次因子 × $r-1$ 次因子」。</b></p>
+
+\[
+|\xi+\eta|^r=|\xi+\eta|\cdot|\xi+\eta|^{r-1} .
+\]
+
+<p>为什么偏偏拆成 $r-1$ 次？因为 Hölder 要求两个因子分别落在共轭的 $L^r$ 与 $L^s$ 里。第一个因子可以再拆成 $|\xi|+|\eta|$，它属于 $L^r$；第二个因子的指数是 $r-1$，配上 $s=\frac{r}{r-1}$ 之后</p>
+
+\[
+(r-1)s=(r-1)\cdot\frac{r}{r-1}=r ,
+\]
+
+<p><b>正好回到 $r$ 次方</b>——Hölder 会把它「吃掉」，剩下的指数恰好是 $r$。这就是 $r-1$ 的来历，不是猜的。</p>
+
+<p><b>第一步：逐点三角不等式。</b></p>
+
+\[
+\|\xi+\eta\|_r^r=\mathbb E|\xi+\eta|^r
+=\mathbb E\big[|\xi+\eta|\cdot|\xi+\eta|^{r-1}\big]
+\le\mathbb E\big[(|\xi|+|\eta|)\,|\xi+\eta|^{r-1}\big]
+\]
+
+\[
+=\underbrace{\mathbb E\big[|\xi|\,|\xi+\eta|^{r-1}\big]}_{A}
++\underbrace{\mathbb E\big[|\eta|\,|\xi+\eta|^{r-1}\big]}_{B} .
+\]
+
+<p><b>第二步：对 $A$、$B$ 各用一次 Hölder</b>，指标取 $r$ 与 $s=\frac{r}{r-1}$（验证：$\frac1r+\frac1s=\frac1r+\frac{r-1}{r}=1$ ✓）：</p>
+
+\[
+A\le\|\xi\|_r\cdot\Big(\mathbb E\big[|\xi+\eta|^{(r-1)s}\big]\Big)^{1/s}
+=\|\xi\|_r\cdot\big(\mathbb E|\xi+\eta|^{r}\big)^{1/s}
+=\|\xi\|_r\cdot\|\xi+\eta\|_r^{\,r-1} ,
+\]
+
+<p>最后一步用了 $\frac{r}{s}=r-1$。同理 $B\le\|\eta\|_r\|\xi+\eta\|_r^{r-1}$。代回去：</p>
+
+\[
+\|\xi+\eta\|_r^r\ \le\ \big(\|\xi\|_r+\|\eta\|_r\big)\cdot\|\xi+\eta\|_r^{\,r-1} .
+\]
+
+<p><b>第三步：两边同时除以 $\|\xi+\eta\|_r^{r-1}$。</b></p>
+
+\[
+\|\xi+\eta\|_r\ \le\ \|\xi\|_r+\|\eta\|_r .\qquad\blacksquare
+\]
+
+<div class="box key">
+<p class="label">「自己除自己」这一步在干什么</p>
+<p>第二步算完，右边冒出来的是 $\|\xi+\eta\|_r^{r-1}$，<b>比左边少一次方</b>。这不是巧合：把 $|\xi+\eta|$ 拆成 $|\xi|+|\eta|$ 之后，$|\xi+\eta|$ 本身必然还以 $r-1$ 次方的形式留在右边；而 Hölder 又把指数凑回 $r$。于是左右只剩一个次数差，<b>一次方之差正好用除法消掉</b>。</p>
+<p>这类「两边同乘/同除一个自己」的收尾在分析里反复出现（Hölder 是「乘」，Minkowski 是「除」），值得当模板记住。</p>
+<p>技术上要交代一句：若 $\|\xi+\eta\|_r=0$ 结论显然；若 $=+\infty$ 则右边也 $=+\infty$，同样成立。所以除法只在 $0\lt\|\xi+\eta\|_r\lt\infty$ 时做，其余情形单独说——<b>这一步不讲清楚，证明在严格意义上是漏的</b>。</p>
+</div>
+
+<div class="box ok">
+<p class="label">$r=2$ 时不必动 Hölder</p>
+<p>直接展开：</p>
+\[
+\mathbb E(\xi+\eta)^2=\mathbb E\xi^2+2\mathbb E(\xi\eta)+\mathbb E\eta^2
+\le\|\xi\|_2^2+2\|\xi\|_2\|\eta\|_2+\|\eta\|_2^2
+=\big(\|\xi\|_2+\|\eta\|_2\big)^2 .
+\]
+<p>中间那步就是 Cauchy–Schwarz。所以<b>$r=2$ 的 Minkowski 是 C-S 的直接推论，只有一般 $r$ 才真需要 Hölder</b>。这也是为什么教材把 C-S 放在最前面：它是 $L^2$ 那一整套几何（长度、夹角、投影）的地基。</p>
+</div>
+
+<p><b>等号什么时候成立。</b>证明里有两处不等号，必须同时取等：</p>
+
+<p>① 逐点三角不等式 $|\xi+\eta|=|\xi|+|\eta|$，即 $\xi,\eta$ <b>同号</b>（在同一 $\omega$ 上不反号）；<br>
+② 两次 Hölder 都取等，即 $|\xi|^r$、$|\eta|^r$ 都与 $|\xi+\eta|^r$ 成比例。</p>
+
+<p>两条合起来：</p>
+
+\[
+\exists\,c\ge0:\quad \xi=c\,\eta\quad\text{a.s.}
+\]
+
+<p>（允许其中一个恒为 $0$。）手写笔记把 ② 写成一串 $a_1|\xi|^r+a_2|\xi+\eta|^r=0$、$b_1|\eta|^r+b_2|\xi+\eta|^r=0$，最后归结为 $C_1\xi-C_2\eta=0$ a.s.——<b>和上一节 Hölder 一样，那个「$=0$」是「成比例」的省略写法</b>，不是真的等于零。真按字面读，非负数之和为零只能推出两者都为零。</p>
+
+<div class="box warn">
+<p class="label">为什么 $0\lt p\lt1$ 时 Minkowski 会反过来</p>
+<p>此时 $t\mapsto t^p$ 是凹函数，$(x+y)^p\le x^p+y^p$，方向与三角不等式<b>相反</b>：</p>
+\[
+\|\xi+\eta\|_p\ \ge\ \|\xi\|_p+\|\eta\|_p .
+\]
+<p>取 $\xi=1_A$、$\eta=1_B$（$A,B$ 不交）就看得最清楚：左边 $=\mathbb P(A\cup B)^{1/p}=(\mathbb P A+\mathbb P B)^{1/p}$，右边 $=\mathbb P(A)^{1/p}+\mathbb P(B)^{1/p}$，$p\lt1$ 时前者严格更大。</p>
+<p>这正是 §2.5 里「$0\lt p\lt1$ 时 $\|\cdot\|_p$ 不是范数」缺的那一条。但 $d(\xi,\eta)=\mathbb E|\xi-\eta|^p$ 仍然是<b>距离</b>——它的三角不等式靠的正是同一个凹性 $(x+y)^p\le x^p+y^p$，所以还能谈完备性，只是不能叫 Banach 空间，只能叫 F 空间。</p>
+</div>
+
+<h2 id="p3">第三部分 · 手写笔记里要留意的三处</h2>
+
+<p>手写笔记有三处按字面读不成立，应该是笔误。抄的时候注意：</p>
 
 <table>
 <tr><th style="width:210px">板书原文</th><th style="width:200px">正确形式</th><th>说明</th></tr>
 <tr><td>几何分布 $\mathbb E\xi^2=\dfrac{pq+1}{p^2}$</td><td>$\dfrac{1+q}{p^2}$</td><td>由 $\frac{2q}{p^2}+\frac1p$ 化简，且 $p+q=1$。代 $p=\frac12$：正确值 $6$，原文给 $5$。</td></tr>
 <tr><td>$\mathbb E(|\xi|)\le\mathbb E(\xi^2)$</td><td>$\big(\mathbb E|\xi|\big)^2\le\mathbb E\xi^2$</td><td>Cauchy–Schwarz 取 $\eta\equiv1$。照字面读不成立：$\xi\equiv\frac12$ 时左边 $\frac12$、右边 $\frac14$。</td></tr>
+<tr><td>Hölder / Minkowski 的等号条件写成 $C_1|\xi|^r+C_2|\eta|^s=0$ a.s.</td><td>$C_1|\xi|^r=C_2|\eta|^s$ a.s.</td><td>非负数之和为零只能推出两者为零。原意是「两项<b>成比例</b>」，这正是 Young 不等式取等号（$a=b$）传下来的条件。详见 §2.4、§2.6。</td></tr>
 </table>
 
-<p>这两处都不影响后面的结论（一个是中间结果，一个只是推论），但<b>如果你照着抄去做题，会在验算时对不上</b>。检查办法很简单：代一个具体数字进去。</p>
+<p>这几处都不影响后面的结论（一个是中间结果，两个只是等号条件），但<b>如果你照着抄去做题，会在验算时对不上</b>。检查办法很简单：代一个具体数字进去。</p>
 
 <h2 id="pa">附录 · 这些工具后面在哪儿用</h2>
 
@@ -658,7 +782,8 @@ L^p(\mathbb P)\ \subset\ L^q(\mathbb P).
 <tr><th style="width:170px">工具</th><th>下一站</th></tr>
 <tr><td>Chebyshev 不等式</td><td>弱大数定律：$\mathbb P(|\bar\xi_n-\mu|\ge\varepsilon)\le\frac{\mathrm{Var}(\xi)}{n\varepsilon^2}\to0$。<b>它就是把「平均值的稳定性」变成一个概率界。</b></td></tr>
 <tr><td>Cauchy–Schwarz</td><td>$L^2$ 理论：相关系数、最小二乘、条件期望的投影性质。$\mathrm{Cov}(\xi,\eta)$ 的绝对值不超过两个标准差之积，就是它。</td></tr>
-<tr><td>Hölder</td><td>$L^p$ 空间的全部结构（三角不等式/Minkowski 也是它推出来的）；以及 $L^p$ 收敛之间的强弱关系。</td></tr>
+<tr><td>Hölder</td><td>$L^p$ 空间的全部结构；Minkowski 的证明（两次 Hölder）也靠它；以及 $L^p$ 收敛之间的强弱关系。</td></tr>
+<tr><td>Minkowski</td><td>把 $L^p$ 从「有长度的集合」变成「有距离的空间」——三角不等式成立才谈得上范数、完备性、Banach 空间。<b>下一章讲 $L^p$ 收敛与 $L^2$ 理论时会直接用到。</b></td></tr>
 <tr><td>指示变量法</td><td>一切「计数型」随机变量：二项、Poisson 分解、生日问题、 coupon collector。<b>只要能用「每个位置一个 0-1 变量」描述，就先这么写。</b></td></tr>
 </table>
 
@@ -672,6 +797,7 @@ L^p(\mathbb P)\ \subset\ L^q(\mathbb P).
 <div class="footnote">
 <p><strong>关于这份笔记</strong></p>
 <p>· 这是《概率论》第四章的<strong>第三份</strong>笔记。前两份：<a href="./概率论笔记-第四章期望.html">第四章期望（三层定义）</a>、<a href="./概率论笔记-第四章-收敛定理与方差.html">第四章（二）收敛定理与方差</a>。三份合起来覆盖讲义 §4.1–§4.4。</p>
+<p>· 本章到此结束。下一份：<a href="./概率论笔记-第五章-连续型随机变量.html">第五章（一）连续型随机变量：密度、分布函数、三个分布</a>。</p>
 <p>· 公式用离线 KaTeX 渲染，不依赖网络；配套资源在 <code>assets/katex/</code>。</p>
 <p>· 来源标注：<span class="tag b">手写 N</span> 表示课上手写笔记第 N 页；无标签的内容是为讲通「为什么」而补的推导、直觉与反例，<strong>不要当成老师讲过</strong>。</p>
 </div>
