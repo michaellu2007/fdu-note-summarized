@@ -654,7 +654,15 @@
       <p>用 $n=15$ 试一下差距：朴素分析算 $\lfloor 15/2\rfloor\times3=21$，实际只要 $11$（见下面证法二的表）。
       $n$ 越大差距越大 —— $n=2^{20}$ 时朴素分析给 $\frac n2\cdot20=10n$，实际约 $2n$，<strong>差 5 倍</strong>。</p>
 
-      <h4>证法一：按高度分组求和（讲义的写法）</h4>
+      <div class="note">
+        <strong>先说明一件事：下面这两个「写法」其实是同一个证明</strong>，只是入口不同 ——
+        两者都靠同一句话：<strong>「高度为 $h$ 的节点，下沉代价就是 $h$」</strong>。
+        <br>写法一<strong>直接从「按高度分组」出发</strong>，一步到位；写法二<strong>先从「每个节点」出发</strong>，再翻译成「按高度分组」。
+        真正的区别只在<strong>精度</strong>：写法一用 $O(h)$（把常数扔了），写法二用精确的 $h$（能算出具体数字）。
+        <br>所以不必纠结「用哪个」，考试写写法一（模板固定、好写好检查），理解靠写法二。
+      </div>
+
+      <h4>写法一：按高度分组，一步到位（讲义 / CLRS 的写法）</h4>
 
       <p><strong>先换个问法。</strong>与其「对每个节点问它要沉几层」，不如<strong>把节点按高度分组</strong>：
       高度相同的节点，下沉代价一样（都是 $O(h)$），所以只要知道「高度 $h$ 的节点有几个」，乘起来再加总就行。</p>
@@ -710,8 +718,9 @@
         <br>③ 求和：拆上取整 → 主项 $n\sum\frac{h}{2^h}=2n$ 主导，零头 $O(\lg^2 n)$ 吸收，得 $O(n)$。
       </div>
 
-      <h4>证法二：换个角度数「每个节点的下沉代价」</h4>
-      <p>一个节点在 BuildHeap 中被 Heapify 一次，下沉代价 = <strong>它自己的高度</strong>。所以总代价 = 所有节点高度之和：</p>
+      <h4>写法二：先算每个节点的精确代价，再按高度合并</h4>
+      <p>一个节点在 BuildHeap 中被 Heapify 一次，下沉代价<strong>恰好等于它自己的高度</strong>（不是 $O(h)$，是等号）。
+      所以总代价就是「所有节点的高度之和」：</p>
       $$\sum_{v}\text{height}(v)=\sum_{h\ge0}h\cdot(\text{高度为 }h\text{ 的节点数})\le\sum_{h\ge0}h\cdot\frac{n}{2^{h+1}}=O(n)$$
       <p>直观说法：<strong>一半的节点是叶子（高度 0，不干活），1/4 高度 1，1/8 高度 2……「人多的地方活少，活多的地方人少」，加权求和只有常数倍。</strong></p>
 
@@ -728,6 +737,35 @@
       </table>
       <p>总代价 $11$（$n=15$）。而如果按「每个内部节点都要沉 $\lg n=3$ 层」估，$\lfloor15/2\rfloor\times3=21$ —— 高估了将近一倍。
       <strong>省下来的就是那 8 个叶子白拿的 0 次、4 个节点只花 1 次。</strong></p>
+
+      <h4>写法二能算出精确值，这是它比写法一多出来的东西</h4>
+      <p>对<strong>完美二叉树</strong>（$n=2^{H+1}-1$，树高 $H$），总下沉次数可以精确算出来：</p>
+      $$\sum_{h=0}^{H}h\cdot2^{H-h}=2^{H+1}-H-2=n-H-1$$
+      <p>验证几组（这就是为什么说「真实代价是 $n$ 量级」，而不是 $2n$）：</p>
+      <table>
+        <thead><tr><th style="width:14%">树高 $H$</th><th style="width:16%">$n$</th><th style="width:22%">实际总下沉</th><th style="width:22%">$n-H-1$</th><th>$2n$（旧版的界）</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>3</td><td>1</td><td>1</td><td>6</td></tr>
+          <tr><td>2</td><td>7</td><td>4</td><td>4</td><td>14</td></tr>
+          <tr><td>3</td><td>15</td><td>11</td><td>11</td><td>30</td></tr>
+          <tr><td>4</td><td>31</td><td>26</td><td>26</td><td>62</td></tr>
+          <tr><td>7</td><td>255</td><td>247</td><td>247</td><td>510</td></tr>
+        </tbody>
+      </table>
+      <p>所以精确结论是：<strong>BuildHeap 的总下沉次数 $=n-\lfloor\lg n\rfloor-1\lt n$</strong>。
+      写法一只给 $O(n)$，写法二能告诉你「常数其实就是 1，甚至还差一点」—— 这就是两者的实际差别。</p>
+
+      <h4>两种写法对照</h4>
+      <table>
+        <thead><tr><th style="width:16%">对比项</th><th style="width:38%">写法一（按高度分组）</th><th>写法二（先算每个节点）</th></tr></thead>
+        <tbody>
+          <tr><td><strong>起点</strong></td><td>直接写 $\sum_h(\text{个数})\times O(h)$</td><td>先写 $\sum_v\text{height}(v)$，再改成按 $h$ 分组</td></tr>
+          <tr><td><strong>每项代价</strong></td><td>$O(h)$，常数被大 O 吃掉</td><td>精确的 $h$，一个不扔</td></tr>
+          <tr><td><strong>能得到</strong></td><td>只到 $O(n)$</td><td>能算出 $n-\lfloor\lg n\rfloor-1$</td></tr>
+          <tr><td><strong>多出来的一步</strong></td><td>—</td><td>「节点视角 → 高度视角」的翻译（$\sum_v=\sum_h$）</td></tr>
+          <tr><td><strong>适合</strong></td><td>考试作答：模板固定、好检查</td><td>理解：为什么常数是 1 而不是 2</td></tr>
+        </tbody>
+      </table>
 
       <div class="ok">
         <strong>这题的得分结构</strong>：① 指出 $O(n\lg n)$ 不紧、为什么；② 写出 $\lceil n/2^{h+1}\rceil$ 这个计数；
