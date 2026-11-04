@@ -3516,6 +3516,205 @@ $0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$。也就是说「<strong>大约�
 <p>$\epsilon$ 通常取 0.2，意思是「概率比最多变 ±20%」。</p>
 </div>
 
+<h4>把 clip 写成公式：两种等价写法 <span class="tag s">板书</span></h4>
+
+<p>板书把「为什么还需要 PPO」写成两条：</p>
+
+<ol>
+<li><strong>朴素策略梯度对步长极其敏感。</strong>学习率大一点，策略就崩；小一点，训不动。而且崩了没法回滚。</li>
+<li><strong>TRPO 解决了这件事，但代价是二阶方法。</strong>要算 Fisher 矩阵、解约束优化，工程上太重。</li>
+</ol>
+
+<p>PPO 要的是：<strong>TRPO 的效果 + 一阶方法的代价。</strong>做法是「直接把约束塞进目标函数里」——
+这也是板书那句 <em>directly inserts the constraint into</em> 的意思。</p>
+
+<p>先把 $\operatorname{clip}$ 本身定义清楚：</p>
+
+$$
+\operatorname{clip}(z,a,b)=
+\begin{cases}
+a, & z&lt;a\\[2pt]
+z, & a\le z\le b\\[2pt]
+b, & z&gt;b
+\end{cases}
+$$
+
+<p>就是把 $z$ 卡进 $[a,b]$：小于下界取下界，大于上界取上界，中间原样。取 $a=1-\epsilon$、$b=1+\epsilon$，
+得到的就是「裁剪后的概率比」。</p>
+
+<p>PPO 的目标函数有两种写法，<strong>完全等价</strong>，但看的角度不同。</p>
+
+<p><strong>写法一（分情况）：</strong>把「好动作」和「坏动作」分开处理。</p>
+
+$$
+\max_\theta\ \mathbb{E}_{s,a\sim\pi_{\theta_t}}\left[
+\begin{cases}
+\min\left(\dfrac{\pi_\theta}{\pi_{\theta_t}},\ 1+\epsilon\right)A^{\pi_{\theta_t}}, & A^{\pi_{\theta_t}}>0\\[10pt]
+\max\left(\dfrac{\pi_\theta}{\pi_{\theta_t}},\ 1-\epsilon\right)A^{\pi_{\theta_t}}, & A^{\pi_{\theta_t}}<0
+\end{cases}
+\right]
+$$
+
+<p>读法：$A>0$（这条动作好，想推高）→ <strong>只在上界截断</strong>，不让它涨过头；
+$A<0$（这条动作差，想压低）→ <strong>只在下界截断</strong>，不让它压过头。
+一边只用 $\min$、一边只用 $\max$，这就是「单向刹车」的公式版。</p>
+
+<p><strong>写法二（统一）：</strong>用一个 $\min$ 把两种情况合起来。</p>
+
+$$
+L^{\text{CLIP}}(\theta)=\mathbb{E}_t\Big[\min\big(\rho_t(\theta)\hat A_t,\ \operatorname{clip}(\rho_t(\theta),1-\epsilon,1+\epsilon)\,\hat A_t\big)\Big],
+\qquad
+\rho_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}
+$$
+
+<p>注意 $\rho$ 的分母是 $\pi_{\theta_{\text{old}}}$——<strong>采数据时那个策略</strong>，不是 $\pi_{\theta_t}$。
+同一个迭代里两者是同一个东西，但写成 $\theta_{\text{old}}$ 更准确：它是一批数据采完之后就冻住的快照。</p>
+
+<div class="box key">
+<span class="label">为什么写法二能代替写法一</span>
+<p>关键在 $\hat A$ 的符号。<strong>$\hat A>0$ 时 $\min$ 挑小，$\hat A<0$ 时 $\min$ 挑「更负」</strong>——
+乘上负数，大小关系会翻转。</p>
+<p>所以那一个 $\min$ 自动完成了「好动作卡上界、坏动作卡下界」的分工。这就是为什么很多实现只写一行，却仍然正确。</p>
+</div>
+
+<h4>六种情形逐一验算：什么时候更新，什么时候不更新 <span class="tag s">板书</span></h4>
+
+<p>把 $L^{\text{CLIP}}$ 在三种 $\hat A$ × 三段 $\rho$ 上全部展开，只有 <strong>9 格</strong>，值得一格一格对一遍：</p>
+
+<table>
+<thead><tr><th></th><th>$\rho&lt;1-\epsilon$</th><th>$1-\epsilon\le\rho\le1+\epsilon$</th><th>$\rho&gt;1+\epsilon$</th></tr></thead>
+<tbody>
+<tr><td><strong>$\hat A&gt;0$</strong><br>（好动作）</td>
+<td>$L=\rho\hat A$<br>正常梯度<br><strong>推高</strong></td>
+<td>$L=\rho\hat A$<br>正常梯度<br><strong>推高</strong></td>
+<td>$L=(1+\epsilon)\hat A$<br>$\nabla=0$<br><strong>不更新</strong>（已经推够了）</td></tr>
+<tr><td><strong>$\hat A&lt;0$</strong><br>（差动作）</td>
+<td>$L=(1-\epsilon)\hat A$<br>$\nabla=0$<br><strong>不更新</strong>（已经压够了）</td>
+<td>$L=\rho\hat A$<br>正常梯度<br><strong>压低</strong></td>
+<td>$L=\rho\hat A$<br>正常梯度<br><strong>压低</strong></td></tr>
+<tr><td><strong>$\hat A=0$</strong></td>
+<td>$L=0$</td>
+<td>$L=0$</td>
+<td>$L=0$<br><strong>不更新</strong></td></tr>
+</tbody>
+</table>
+
+<p>压成一张速查表就是板书右侧那张：</p>
+
+<table>
+<thead><tr><th></th><th>区域内 $(1-\epsilon,1+\epsilon)$</th><th>区域外</th></tr></thead>
+<tbody>
+<tr><td>$\hat A_t&gt;0$</td><td><strong>reinforce</strong>（加强）</td><td>No updates</td></tr>
+<tr><td>$\hat A_t&lt;0$</td><td><strong>suppress</strong>（抑制）</td><td>No updates</td></tr>
+<tr><td>$\hat A_t=0$</td><td>no update</td><td>——</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">易错 · 两种「不更新」的原因完全不同</span>
+<p>表里有两种 $\nabla=0$，别混：</p>
+<ul>
+<li><strong>「已经改够了」</strong>（$\hat A&gt;0$ 且 $\rho$ 冲过 $1+\epsilon$；或 $\hat A&lt;0$ 且 $\rho$ 掉到 $1-\epsilon$ 以下）——
+梯度被裁掉，是<strong>主动刹车</strong>；</li>
+<li><strong>「本来就不用改」</strong>（$\hat A=0$）——这一步既不好也不坏，<strong>没有信号</strong>。</li>
+</ul>
+<p>前者是 PPO 的设计，后者是数据本身没信息量。排查「loss 不降」时，先分清是哪一种。</p>
+</div>
+
+<div class="box read">
+<span class="label">为什么「区域外」只在一个方向上出现</span>
+<p>看表格的对称性：$\hat A&gt;0$ 时只有<strong>右边</strong>（$\rho$ 太大）被裁；$\hat A&lt;0$ 时只有<strong>左边</strong>（$\rho$ 太小）被裁。</p>
+<p>因为「推高好动作」和「压低差动作」是两个方向的需求，刹车自然只装在<strong>各自过头的那一侧</strong>。
+反方向（好动作的概率反而变小、差动作的概率反而变大）永远不裁——那是我们本来就希望它改的。</p>
+</div>
+
+<h4>一次 PPO 迭代，从头走到尾 <span class="tag s">板书</span></h4>
+
+<p>板书最后把这套东西写成了一个可以照着实现的循环，分五步。</p>
+
+<p><strong>第 0 步，冻一份旧策略。</strong></p>
+
+$$
+\theta_{\text{old}}\leftarrow\theta,\qquad \pi_{\text{old}}\leftarrow\pi_{\theta_{\text{old}}}
+$$
+
+<p>这份快照是 $\rho$ 的分母，也是「这批数据是谁采的」的凭证。整个迭代里它不动。</p>
+
+<p><strong>第 1 步，采一批数据。</strong>从 prompt 池抽 $B$ 条，每条用<em>旧策略</em>生成一条回答：</p>
+
+$$
+x_i\sim\mathcal{D}_{\text{PPO}},\qquad y_i\sim\pi_{\text{old}}(\cdot\mid x_i),\qquad i=1,\dots,B
+$$
+
+<p>同时把两个对数概率都记下来——<strong>这一步只算一次，后面反复用</strong>：</p>
+
+$$
+\ell^{\text{old}}_{i,t}=\log\pi_{\text{old}}(a_{i,t}\mid s_{i,t}),
+\qquad
+\ell^{\text{ref}}_{i,t}=\log\pi_{\text{ref}}(a_{i,t}\mid s_{i,t})
+$$
+
+<p><strong>第 2 步，把奖励摊到每个 token 上。</strong>奖励模型只给整条一个分，KL 惩罚却是逐 token 的：</p>
+
+$$
+r_{i,t}=-\beta\left(\ell^{\text{old}}_{i,t}-\ell^{\text{ref}}_{i,t}\right),
+\qquad
+r_{i,T}=-\beta\left(\ell^{\text{old}}_{i,T}-\ell^{\text{ref}}_{i,T}\right)+r^{\text{RM}}_\phi(x_i,y_i)
+$$
+
+<p>读法：<strong>每一步先扣一点「偏离参考模型的罚金」，最后一步再加上奖励模型的分数。</strong>
+$\ell^{\text{old}}-\ell^{\text{ref}}$ 就是逐 token 的 KL 增量（严格说是它的单样本估计），前面加负号就是惩罚。</p>
+
+<p><strong>第 3 步，算 return 与 advantage。</strong></p>
+
+$$
+G_{i,t}=\sum_{u=t}^{T}r_{i,u},
+\qquad
+\hat A_{i,t}=G_{i,t}-V_\psi(s_{i,t})
+$$
+
+<p><strong>第 4 步，用当前策略重算一遍概率，得到 $\rho$。</strong></p>
+
+$$
+\rho_{i,t}(\theta)
+=\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\text{old}}(a_{i,t}\mid s_{i,t})}
+=\exp\!\big(\ell_{i,t}(\theta)-\ell^{\text{old}}_{i,t}\big)
+$$
+
+<p>这一步是 PPO 能「<strong>一批数据反复更新几次</strong>」的全部原因：$\theta$ 变了 $\rho$ 就变，但分母始终是那个旧快照。
+右端的写法（指数形式）在实际代码里更常用——两个 log 概率直接相减再取 exp，数值上更稳。</p>
+
+<p><strong>第 5 步，拼出总损失。</strong></p>
+
+$$
+L^{\text{PPO}}=-L^{\text{CLIP}}+c_V L_V-c_H L_H
+$$
+
+<table>
+<thead><tr><th>项</th><th>是什么</th><th>为什么是这个符号</th></tr></thead>
+<tbody>
+<tr><td>$-L^{\text{CLIP}}$</td><td>裁剪后的策略目标</td><td>目标是<strong>最大化</strong>它，而优化器只会最小化，所以加负号</td></tr>
+<tr><td>$c_V L_V$</td><td>价值网络的回归损失 $\frac{1}{T}\sum_t\big(V_\psi(s_t)-G_t\big)^2$</td><td>本来就要<strong>最小化</strong>，正号</td></tr>
+<tr><td>$-c_H L_H$</td><td>熵 $L_H=\mathbb{E}\big[-\sum_a\pi\log\pi\big]$</td><td>希望熵<strong>变大</strong>（保持探索），所以加负号</td></tr>
+</tbody>
+</table>
+
+<p>$c_V$、$c_H$ 是两个小系数（常取 0.5 与 0.01）。三项一起反向传播，<strong>一次更新同时改策略头和价值头</strong>——
+它们共享主干，所以必须放在同一个 loss 里。</p>
+
+<div class="box warn">
+<span class="label">易错 · 熵项是「负号」，不是「惩罚」</span>
+<p>$-c_H L_H$ 看起来像惩罚，其实是<strong>奖励</strong>：熵越大这一项越小，所以优化器会主动把熵推高，保持探索。</p>
+<p>代价是熵太大会让模型「不敢下结论」。所以 $c_H$ 通常在训练后期退火，或者干脆设 0。</p>
+</div>
+
+<div class="box key">
+<span class="label">这一节和前面那张 $\psi_t$ 表怎么对上</span>
+<p>第 3 步算的 $\hat A_{i,t}=G_{i,t}-V_\psi(s_{i,t})$，正是 $\psi_t$ 表里 <strong>2★ 那一行</strong>（$G_t-b$ 且 $b=V$）。
+PPO 没有再往下用 $A^\pi$ 本身，因为它拿不到真正的期望——只能用一次采样减一个估计。</p>
+<p>这也解释了为什么 PPO 要单独训一个 $V_\psi$：没有它，表里后三行全都定义不了，$\hat A$ 就退化成 $G_t$（4★）。</p>
+</div>
+
 <h4>RLOO：GRPO 的兄弟 <span class="tag s">板书</span></h4>
 
 <p>板书在 GRPO 旁边还写了一个 <strong>RLOO</strong>（leave-one-out，留一法），思路和 GRPO 几乎一样，
@@ -4458,10 +4657,12 @@ $\beta$ 越大，同样的比值差就被判为越大的 margin，模型越<stro
 </ol>
 </div>
 
-<p class="small"><strong>另有一份老师单独发的手写讲义</strong>（<code>ppo.pdf</code>，7 页，从 MDP 一路推到 TRPO）。
-它的内容已按主题并入正文，不再单列：MDP 六元组 → §4.2；$Q$ 函数与 $V=\sum_a\pi Q$ → §4.5；
-轨迹写法、$\nabla\log p_\theta(\tau)$ 只剩策略项、因果性 → §4.6；$\psi_t$ 的六种取法（方差阶梯表）、
-自然梯度 → TRPO → PPO、RLOO → §4.9。</p>
+<p class="small"><strong>另有一份老师单独发的手写讲义</strong>（<code>ppo.pdf</code>，初版 7 页、更新版 13 页，
+从 MDP 一路推到 PPO 与 GRPO）。它的内容已按主题并入正文，不再单列：
+MDP 六元组与轨迹 → §4.2；$Q$ 函数与 $V=\sum_a\pi Q$ → §4.5；
+轨迹写法、$\nabla\log p_\theta(\tau)$ 只剩策略项、因果性 → §4.6；
+$\psi_t$ 的六种取法（方差阶梯表）、自然梯度 → TRPO → PPO、RLOO → §4.9；
+clip 的两种写法与九种情形、一次 PPO 迭代的五步流程 → §4.9。</p>
 
 <h3 id="apE">E · 参考文献</h3>
 
