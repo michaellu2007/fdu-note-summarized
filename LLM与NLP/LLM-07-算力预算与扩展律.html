@@ -192,6 +192,13 @@ h1,h2,h3,h4{scroll-margin-top:22px}
   body{padding-left:0!important}
 }
 
+.tag.b{background:var(--gold-bg);color:var(--gold)}
+.tag.d{background:var(--teal-bg);color:var(--teal)}
+.tag.g{background:var(--purple-bg);color:var(--purple)}
+.tag.w{background:var(--warn-bg);color:var(--warn)}
+.tag.o{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal)}
+.toc.toc2{margin-top:0}
+.toc2 ol,.toc2 ol ol{list-style:none;padding-left:18px}
 </style>
 </head>
 <body>
@@ -286,6 +293,725 @@ $N_{\text{opt}}\propto C^{\beta/(\alpha+\beta)}$。</li>
 
 <hr>
 
+<p class="sub">课堂补充版 · 依据 9 张课堂照片（P1–P9）与嘉宾文章补全 · 原有导语、来源说明与目录完整保留在上方</p>
+
+<p class="lede">这一讲其实有三条线，而仓库里原来的笔记只写了其中一条。<strong>老师课堂</strong>讲的是：
+自回归生成怎么逐 token 走、<strong>KV Cache</strong> 为什么能让长序列推理跑得动、<strong>LoRA</strong> 为什么能用极少的参数完成微调；
+<strong>板书</strong>把 Scaling laws 的曲面、变量定义与双对数直线写全；<strong>嘉宾</strong>则把「小规模实验凭什么能预测大规模训练」讲成一套科学方法论。
+本次按课堂顺序把前三块补成<strong>第零部分</strong>，并把嘉宾文章补进附录 A2；原来的第一、二部分（算力预算、分配与外推）完整保留。</p>
+
+<div class="box warn">
+<span class="label">关于本笔记的来源标注（本次补全后）</span>
+<p>原有部分整理自课程公开课件（<code>baojian.github.io/llm-26-fall/slides/lecture-07/</code>，32 页，每页带 <code>Note:</code> 讲者备注）。
+本次补全依据：<strong>9 张课堂照片</strong>（板书与投影幻灯片，编号 P1–P9）、嘉宾文章
+<a href="https://jiaxuanzou0714.github.io/blog/2026/pretrain-scaling-methodology-scientific-perspective/">《预训练与 scaling：一种通用方法论》</a>，
+以及 Lecture 06 已整理过的解码协议。标签含义：</p>
+<p><span class="tag s">课件</span> 幻灯片正文 · <span class="tag a">讲者备注</span> <code>Note:</code> 里的口头讲解 ·
+<span class="tag b">板书</span> 课堂黑板上确实写过 · <span class="tag g">嘉宾</span> 嘉宾文章的观点 ·
+<span class="tag n">补充</span> 只给结论处补的机制与工程细节 · <span class="tag d">推导</span> 一步一步的代数 ·
+<span class="tag w">易错</span> 常见坑与常被省略的假设 ·
+<span class="tag o">开源</span> GitHub 公开笔记 / 官方文档 / 原始实现的交叉核对。</p>
+<p>KV Cache 与 LoRA 在照片里只有提纲，§0.3–0.5 的推导是本笔记补的；
+这些推导已按 §0.8 与附录 G 逐条与开源实现核对，引用值均就地标明。</p>
+<p>照片按提供顺序编号 P1–P9，<strong>附录 F</strong> 给出「照片 → 内容 → 对应小节」对照表，可直接用来核对有没有漏讲。
+板书是提纲式的：公式写了条件没写、结论写了反例没写，补的是这些，不是另起一套框架。</p>
+<p><strong>原有警告仍然有效：</strong>第一、二部分里所有损失曲线都是课件<strong>作者编的合成数据</strong>
+（$L=1.5+0.8/\sqrt{N/10^8}+0.8/\sqrt{D/2\times10^9}$），不是任何真实模型的测量结果；
+课件的意图是让代数、拟合、外推失败三件事在没有 GPU 的条件下可复现。读图时不要当成某个模型家族的证据。</p>
+<p>本次新增的数值（softmax、top-p、KV Cache 显存、LoRA 参数、幂律表、词表倍数……）均独立复算过；
+附录 A2 中的 2.5%、0.2%、15.5T tokens 等是<strong>嘉宾文章引用的实测值</strong>，不是本笔记的复算值，已就地标明。</p>
+</div>
+
+<div class="box key">
+<span class="label">主线：四个「把有限资源花在哪」的问题</span>
+<ol>
+<li><strong>生成时，前缀会被反复用到。</strong>逐 token 解码每一步都要读全部历史，KV Cache 把不变的 K/V 存下来，
+把「重算前缀」变成「追加一行」——代价是把显存从常量变成随序列长度线性增长。</li>
+<li><strong>微调时，权重太大而任务太窄。</strong>LoRA 冻结 $W$，只训练一个低秩增量 $\Delta W=BA$，
+把优化器状态从每个矩阵几百 MiB 压到 1 MiB。</li>
+<li><strong>预训练时，参数与数据此消彼长。</strong>$C\approx6ND$ 是硬约束，$L(N,D)=E+A/N^\alpha+B/D^\beta$ 给出一个可求导的分配答案。</li>
+<li><strong>做实验时，小规模的结论能不能外推。</strong>先冻结预测再揭晓更大规模的运行，是这一讲真正的落点。</li>
+</ol>
+<p>第零部分处理前两问与扩展律板书，第一部分记账，第二部分检验预测，附录 A2 是嘉宾的科学视角。
+四问的共同点：<strong>先算清一个能手算的小例子，再谈名字和公式</strong>。</p>
+</div>
+
+
+<div class="toc toc2">
+<h3>补充内容目录（本次新增，原有目录见上方）</h3>
+<ol>
+<li>第零部分 · 课堂讲授：KV Cache、LoRA 与扩展律板书
+  <ol>
+    <li>§0.1 这节课在课程地图上的位置</li>
+    <li>§0.2 生成与解码：从 logits 到下一个 token</li>
+    <li>§0.3 KV Cache：为什么只缓存 K 和 V</li>
+    <li>§0.4 一笔显存账：KV Cache 有多大</li>
+    <li>§0.5 PEFT 与 LoRA：把「更新」压成两个瘦矩阵</li>
+    <li>§0.6 扩展律板书：变量、曲面与三条幂律</li>
+    <li>§0.7 三个主题怎么连起来</li>
+    <li>§0.8 与开源实现的交叉核对</li>
+  </ol>
+</li>
+<li>新增附录：<a href="#apA2">§A2 嘉宾文章</a> · <a href="#apF">§F 板书逐张对照</a> · <a href="#apG">§G 开源资料与出处</a></li>
+<li>原有附录的增补：§B 公式速查 +12 行 · §C 一页数字 +11 行 · §D 自测新增 8 题 · §E 参考文献 +6 条 · 脚注新增 4 段</li>
+</ol>
+</div>
+
+<h2 id="p0">第零部分 · 课堂讲授：KV Cache、LoRA 与扩展律板书</h2>
+
+<p><span class="tag b">板书</span> <span class="tag s">课件</span> <span class="tag n">补充</span>
+这一部分按课堂照片的顺序整理：先看清本讲在整个课程里的位置和「逐 token 生成」这件事（P1、P3），
+再依次补全三个主题——<strong>KV Cache</strong>、<strong>PEFT / LoRA</strong>、<strong>Scaling laws</strong>，
+最后与原有的第一、二部分接上。原笔记里这三块<strong>一个字都没有</strong>，不是删减，是当时只有课件、没有课堂照片。</p>
+
+<h3 id="s01">0.1 这节课在课程地图上的位置 <span class="tag s">课件</span> <span class="tag b">板书</span></h3>
+
+<p>投影的 <code>Outline</code>（P3）把本讲放在「预训练」这条线的中间，六条目录是：</p>
+<ol>
+<li>History of pre-training</li>
+<li>Autoregressive generation</li>
+<li>Transformers as pretrained LMs</li>
+<li>Pretrained Decoders (GPT series)</li>
+<li>Datasets, <strong>Scaling laws</strong>, KV Cache, LoRA　<span class="small">（课件里只有 <em>Scaling laws</em> 加粗）</span></li>
+<li>Pretrained Encoders (BERT series)</li>
+</ol>
+
+<p>黑板（P1 上半块）先复习了「Transformer-based LMs」的三种形态，这是后面所有讨论的前提：</p>
+
+<table>
+<thead><tr><th>形态</th><th>板书写法</th><th>注意力能看到什么</th><th>预训练目标</th><th>典型下游</th></tr></thead>
+<tbody>
+<tr><td>Decoder-only</td><td>GPT-1, 2, 3 (Decoder Only)</td><td>因果掩码：第 $t$ 位只看 $1\ldots t$</td><td>下一 token 的条件概率 $p(x_t\mid x_{&lt;t})$</td><td>生成、续写；也可做理解</td></tr>
+<tr><td>Encoder-only</td><td>BERT (Encoder Only)</td><td>双向：整句互相可见</td><td>掩码词预测（MLM）</td><td>分类、标注、检索表示</td></tr>
+<tr><td>Encoder–Decoder</td><td>T5 (Encoder, Decoder both)</td><td>编码器双向 + 解码器因果 + 交叉注意力</td><td>text-to-text 的片段还原</td><td>翻译、摘要、结构化转换</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 三种架构的分界线是 mask，不是「有没有 attention」</span>
+<p>三者用的是同一套 Q/K/V 与缩放点积注意力，区别只在<strong>谁能看见谁</strong>。
+把 decoder-only 理解成「去掉了编码器」没有错，但真正决定它能自回归生成的，是<strong>因果掩码</strong>：
+没有它，$k_j,v_j$ 会依赖未来的 token，下一节的 KV Cache 就直接失效。</p>
+</div>
+
+<p>同一块黑板的下半块写着今天要讲的三个编号：<strong>① KV cache　② Parameter-efficient Fine-Tuning (PEFT)　③ Scaling</strong>。
+本部分 §0.3–0.4、§0.5、§0.6 分别对应这三行。</p>
+
+<h3 id="s02">0.2 生成与解码：从 logits 到下一个 token <span class="tag b">板书</span> <span class="tag n">补充</span></h3>
+
+<p>黑板（P1）在「LMs generations」下面列了四种取下一个 token 的办法，旁边画了两个截断的柱状图：</p>
+
+<table>
+<thead><tr><th>办法</th><th>板书记号</th><th>保留集合</th><th>机制上的后果</th></tr></thead>
+<tbody>
+<tr><td>Greedy</td><td>$\arg\max$，repeat</td><td>$|V'|=1$</td><td>每步取最大；概率质量自强化，容易回到已生成的高概率片段，出现循环重复</td></tr>
+<tr><td>Beam Search</td><td>top-$k$（保留 $k$ 条序列）</td><td>$k$ 条候选<strong>序列</strong></td><td>保留多条全局路径，但打分偏爱短序列（对数似然累加），需要长度归一化</td></tr>
+<tr><td>Top-$k$</td><td>$k$，$|V'|=k$</td><td>概率最高的 $k$ 个 <strong>token</strong></td><td>$k$ 固定：分布尖锐时仍放进长尾噪声，分布平坦时又可能砍掉合理候选</td></tr>
+<tr><td>Top-$p$ / nucleus</td><td>$p$，$|V'|$</td><td>累计概率刚越过 $p$ 的最小集合</td><td>集合大小随上下文自适应；尖锐时只留一两个，平坦时留一大片</td></tr>
+</tbody>
+</table>
+
+<p><span class="tag w">易错</span> Beam Search 的 $k$ 是「几条候选序列」，$|V'|=k$ 的 $k$ 是「几个候选 token」，
+板书把它们并排写，但二者不是同一个量。</p>
+
+<h4>先算一遍：把三个 logit 改成别的数，分布会怎么变</h4>
+
+<p>假设某一步词表上只有三个候选，原始 logits 是 $z=(2,1,0)$。
+先什么都不做，$\exp(2,1,0)=(7.3891,2.7183,1)$，和为 $11.1073$，归一化得
+$(0.6652,0.2447,0.0900)$。现在把每个 logit <strong>除以 0.5</strong>（等价于放大两倍）：
+$(4,2,0)\to(54.598,7.389,1)$，和为 $62.9872$，归一化得 $(0.8668,0.1173,0.0159)$——
+第一名从 66.5% 涨到 86.7%。反过来除以 2：$(1,0.5,0)\to(2.7183,1.6487,1)$，和为 $5.3670$，
+得 $(0.5065,0.3072,0.1863)$，分布变平。</p>
+
+<table>
+<thead><tr><th>$\tau$</th><th>缩放后的 logits</th><th>$p_1$</th><th>$p_2$</th><th>$p_3$</th><th>读法</th></tr></thead>
+<tbody>
+<tr><td class="num">0.5</td><td>$(4,2,0)$</td><td class="num">0.8668</td><td class="num">0.1173</td><td class="num">0.0159</td><td>更尖锐</td></tr>
+<tr><td class="num">0.8</td><td>$(2.5,1.25,0)$</td><td class="num">0.7307</td><td class="num">0.2093</td><td class="num">0.0600</td><td>板书举的例子量级</td></tr>
+<tr><td class="num">1</td><td>$(2,1,0)$</td><td class="num">0.6652</td><td class="num">0.2447</td><td class="num">0.0900</td><td>原分布</td></tr>
+<tr><td class="num">2</td><td>$(1,0.5,0)$</td><td class="num">0.5065</td><td class="num">0.3072</td><td class="num">0.1863</td><td>更平坦</td></tr>
+</tbody>
+</table>
+
+<p>这个「先除一个数再过 softmax」的操作，板书叫 <strong>Step 1: rescale logits / Temperature $\tau$</strong>：</p>
+
+<p>$$p_i(\tau)=\frac{\exp(z_i/\tau)}{\sum_j \exp(z_j/\tau)},\qquad \tau&gt;0$$</p>
+
+<ul>
+<li>$\tau=1$：原式；板书上单独写了这一行。</li>
+<li>$\tau\in(0,1)$（板书举例 $0.8,\ 0.9$）：更尖锐，生成更保守；$\tau&gt;1$：更平坦，多样性更高。</li>
+<li>$\tau\to0^+$ 时退化为 $\arg\max$，也就是 greedy 那一栏。
+<span class="tag w">易错</span> $\tau=0$ 本身不能代公式（除以零），只能取极限。</li>
+</ul>
+
+<h4>再算一遍：Step 2 的 nucleus 到底截在哪里</h4>
+
+<p>温度调完得到按概率降序排列的 $(0.50,0.25,0.15,0.07,0.03)$。取 $p=0.8$，从大到小累加：</p>
+<p>$$0.50\ (&lt;0.8),\quad 0.50+0.25=0.75\ (&lt;0.8),\quad 0.75+0.15=0.90\ (\ge0.8)$$</p>
+<p>第三个 token 让累计概率<strong>刚好越过</strong>阈值，所以保留前三个、扔掉后两个；
+再把这三项除以 $0.90$ 重新归一化，得到 $(0.5556,0.2778,0.1667)$，最后按这个分布抽样。</p>
+
+<div class="diagram">
+<svg viewBox="0 0 680 200" role="img" aria-label="同一分布下 top-k 与 top-p 的截断对比">
+  <text x="12" y="20" font-size="13" fill="var(--ink2)">同一个分布：(0.50, 0.25, 0.15, 0.07, 0.03)</text>
+  <text x="60" y="42" font-size="13" font-weight="600" fill="var(--accent)">top-k, k = 2</text>
+  <text x="380" y="42" font-size="13" font-weight="600" fill="var(--ok)">top-p, p = 0.8</text>
+  <g fill="var(--accent)">
+    <rect x="60" y="66" width="36" height="110" rx="3"/><rect x="104" y="121" width="36" height="55" rx="3"/>
+  </g>
+  <g fill="var(--line)">
+    <rect x="148" y="143" width="36" height="33" rx="3"/><rect x="192" y="161" width="36" height="15" rx="3"/><rect x="236" y="169" width="36" height="7" rx="3"/>
+  </g>
+  <g fill="var(--ok)">
+    <rect x="380" y="66" width="36" height="110" rx="3"/><rect x="424" y="121" width="36" height="55" rx="3"/><rect x="468" y="143" width="36" height="33" rx="3"/>
+  </g>
+  <g fill="var(--line)">
+    <rect x="512" y="161" width="36" height="15" rx="3"/><rect x="556" y="169" width="36" height="7" rx="3"/>
+  </g>
+  <line x1="142" y1="58" x2="142" y2="180" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="506" y1="58" x2="506" y2="180" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="60" y="194" font-size="12" fill="var(--ink3)">保留 2 个（固定数量，与分布形状无关）</text>
+  <text x="380" y="194" font-size="12" fill="var(--ink3)">保留 3 个（累计 0.90 刚越过 0.8）</text>
+</svg>
+</div>
+<p class="small">图 0-1　同样五个候选，$k=2$ 与 $p=0.8$ 截出的集合不同。柱高按上例概率线性缩放；
+虚线是截断位置。Lecture 06 的解码沙盒可以亲手拖这两个滑块验证边界。</p>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 两步的次序不能换</span>
+<p>板书把 <em>Step 1 rescale logits</em> 写在 <em>Step 2 nucleus sample</em> 前面。
+先用 $\tau$ 改变概率、再按累计概率截断，与「先截断再调温度」得到的候选集合<strong>不是一回事</strong>：
+前者会让尖锐分布只留很少 token，后者先固定了集合大小。另外，截断后必须重新归一化，
+否则抽样分布的质量和不是 1。</p>
+</div>
+
+<p><span class="tag n">补充</span> 这一步与下一节的 KV Cache 是连着的：无论用哪种解码办法，
+模型每一步都只需要<strong>当前位置的一个 logits 向量</strong>，而为了算它，要把整个前缀再读一遍。
+生成 $n$ 个 token 就要读 $n$ 次前缀——这就是缓存的动机。</p>
+
+<h3 id="s03">0.3 KV Cache：为什么只缓存 K 和 V <span class="tag b">板书</span> <span class="tag d">推导</span> <span class="tag n">补充</span></h3>
+
+<p>板书只在提纲里写了「① KV cache」四个字，没写原理。补的部分从一个能手算的例子开始。</p>
+
+<h4>先算一遍：第三个 token 到底用了前两个的什么</h4>
+
+<p>只看<strong>一层、一个注意力头</strong>。记第 $j$ 个位置送进这一层的隐藏向量为 $h_j$，权重为 $W^Q,W^K,W^V,W^O$，
+每个位置都做三次投影：</p>
+
+<p>$$q_j=W^Q h_j,\qquad k_j=W^K h_j,\qquad v_j=W^V h_j$$</p>
+
+<p>生成到第 $t$ 步时，注意力只用当前位置的 $q_t$ 去问历史：</p>
+
+<p>$$o_t=\sum_{j=1}^{t} a_{tj}v_j,\qquad
+a_t=\mathrm{softmax}\left(\frac{q_t[k_1,\ldots,k_t]^{\top}}{\sqrt{d_k}}\right),\qquad
+y_t=W^O o_t$$</p>
+
+<p>现在把这部「电影」放到第 4 步：模型要重新算 $k_1$ 吗？<strong>不用。</strong>
+$k_1=W^K h_1$，其中 $W^K$ 是冻结的，$h_1$ 只由第 1 个 token 和<strong>因果掩码之前</strong>的信息决定
+（第 1 个位置看不到第 2、3、4 个位置）；第 4 步新来的 token 不会改变 $h_1$。
+所以第 2 步若算出 $k_1=0.5$、$v_1=-0.2$，第 4 步重算还是 $0.5$、$-0.2$——
+重算纯属浪费。$q_1,q_2,q_3$ 则相反：它们各自只在自己那一步被用过，之后再也不会被读，所以<strong>不必存</strong>。</p>
+
+<div class="box key">
+<span class="label">一句话原理</span>
+<p>因果掩码让「过去」对「未来」封闭：$k_j,v_j$ 是历史的<strong>只读摘要</strong>，$q_t$ 是当前步的<strong>一次性查询</strong>。
+于是每层每头维护两份矩阵 $K_{1:t}=[k_1,\ldots,k_t]$、$V_{1:t}=[v_1,\ldots,v_t]$：
+输入 prompt 时一次算好（<em>prefill</em>），以后每生成一个 token 只算它自己的 $q_t,k_t,v_t$，
+把新的一列追加进缓存（<em>decode</em>）。这就是名字里 K、V 的来历。</p>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 680 280" role="img" aria-label="KV Cache 逐步追加示意图">
+  <text x="12" y="20" font-size="13" fill="var(--ink2)">同一层、同一头：缓存随步数只追加一行，旧行永远不重算</text>
+  <g font-size="12" fill="var(--ink3)">
+    <text x="60" y="42">step 1</text><text x="270" y="42">step 2</text><text x="480" y="42">step 3</text>
+  </g>
+  <g fill="var(--gold)">
+    <rect x="60" y="52" width="150" height="22" rx="3"/><rect x="270" y="52" width="150" height="22" rx="3"/><rect x="480" y="52" width="150" height="22" rx="3"/>
+  </g>
+  <g font-size="11" fill="var(--bg)">
+    <text x="66" y="68">q₁ · 一次性</text><text x="276" y="68">q₂ · 一次性</text><text x="486" y="68">q₃ · 一次性</text>
+  </g>
+  <g font-size="12" fill="var(--ink2)"><text x="24" y="102">K</text><text x="24" y="192">V</text></g>
+  <g fill="var(--accent)" opacity="0.88">
+    <rect x="60" y="84" width="150" height="22" rx="3"/>
+    <rect x="270" y="84" width="150" height="22" rx="3"/><rect x="270" y="110" width="150" height="22" rx="3"/>
+    <rect x="480" y="84" width="150" height="22" rx="3"/><rect x="480" y="110" width="150" height="22" rx="3"/><rect x="480" y="136" width="150" height="22" rx="3"/>
+  </g>
+  <g fill="var(--ok)" opacity="0.88">
+    <rect x="60" y="174" width="150" height="22" rx="3"/>
+    <rect x="270" y="174" width="150" height="22" rx="3"/><rect x="270" y="200" width="150" height="22" rx="3"/>
+    <rect x="480" y="174" width="150" height="22" rx="3"/><rect x="480" y="200" width="150" height="22" rx="3"/><rect x="480" y="226" width="150" height="22" rx="3"/>
+  </g>
+  <g font-size="11" fill="var(--bg)">
+    <text x="66" y="100">k₁</text><text x="276" y="100">k₁</text><text x="276" y="126">k₂（新）</text>
+    <text x="486" y="100">k₁</text><text x="486" y="126">k₂</text><text x="486" y="152">k₃（新）</text>
+    <text x="66" y="190">v₁</text><text x="276" y="190">v₁</text><text x="276" y="216">v₂（新）</text>
+    <text x="486" y="190">v₁</text><text x="486" y="216">v₂</text><text x="486" y="242">v₃（新）</text>
+  </g>
+  <text x="12" y="270" font-size="11.5" fill="var(--ink3)">金 = 每步只用一次的 Q（从不入缓存）；蓝 = 可复用的 K；绿 = 可复用的 V。</text>
+</svg>
+</div>
+<p class="small">图 0-2　缓存的是「历史摘要」，不是「当前查询」。每一步新增一行，$q_t$ 与缓存里的所有 $k_j$ 打分后即可丢弃。</p>
+
+<h4>省掉了什么，没省掉什么</h4>
+
+<table>
+<thead><tr><th>每生成 $n$ 个 token</th><th>无缓存</th><th>有 KV 缓存</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td>Q/K/V 线性投影次数</td><td>$\sum_{t=1}^{n}t=\dfrac{n(n+1)}{2}$</td><td>$n$</td><td>第 $t$ 步不再重算前 $t-1$ 个位置的投影</td></tr>
+<tr><td>注意力打分（$q\cdot k$）次数</td><td>$\dfrac{n(n+1)}{2}$</td><td>$\dfrac{n(n+1)}{2}$</td><td>当前 $q_t$ 仍要和每个历史 $k_j$ 各打一次分</td></tr>
+<tr><td>数值例：$n=4096$</td><td>$8\,390\,656$ 次投影</td><td>$4096$ 次</td><td>约 $2048.5\times$ 的重复投影被消掉</td></tr>
+<tr><td>随序列增长的显存</td><td>常量（临时激活）</td><td>$O(BLn\,h_{\mathrm{kv}}d_{\mathrm{head}})$</td><td>省的算力换成了常驻显存，见 §0.4</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> KV Cache 没有把注意力从 $O(n^2)$ 变成 $O(n)$</span>
+<p>它省掉的是<strong>重复计算 K/V 投影</strong>（以及相应的激活存储），
+每步 $q_t$ 对 $t$ 个历史位置的打分依然是二次总量。真正被改变的是 decode 阶段的瓶颈：
+从「每步重算整个前缀」变成「每步把整块缓存从显存读一遍」，于是推理变得 <em>memory-bandwidth bound</em>。</p>
+</div>
+
+<table>
+<thead><tr><th>维度</th><th>好处</th><th>代价 / 条件</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td>计算量</td><td>前缀的 QKV 投影从 $O(n^2)$ 降到 $O(n)$</td><td>prefill 阶段仍要并行算完整个 prompt</td><td>prefill 是「一次写入」，decode 才是「每步追加」</td></tr>
+<tr><td>显存带宽</td><td>不再搬运旧 token 的隐藏状态</td><td>每步要读整块 K/V；序列越长越慢</td><td>算术强度低，速度取决于带宽而非峰值 FLOPs</td></tr>
+<tr><td>显存容量</td><td>—</td><td>随 $n,B,L$ 线性增长，长上下文可能超过权重</td><td>见 §0.4 的 2 GiB / 16 GiB 例子</td></tr>
+<tr><td>数值一致性</td><td>缓存前后 logits 应当逐位一致</td><td>position 重排、滑动窗口、训练期 dropout 都会破坏它</td><td>缓存成立的前提是「旧位置的表示不变」</td></tr>
+<tr><td>位置编码</td><td>RoPE 作用在 $q,k$ 上、只依赖位置，缓存后无需重算</td><td>绝对位置编码 + 窗口左移重排时要重编码 K</td><td>Lecture 06 §3.1 的「截断后位置从 0 重排」是<strong>本课协议</strong>，不是通用行为</td></tr>
+<tr><td>工程缓解</td><td>GQA / MQA 减少 KV 头数；分页管理减少碎片；KV 量化、前缀共享降低占用</td><td>减少头数会损失一点注意力表达能力</td><td>把公式里的 $h_{\mathrm{kv}}$ 变小，是最直接的一档</td></tr>
+</tbody>
+</table>
+
+<div class="box ok">
+<span class="label"><span class="tag o">开源</span> 核对 · KV Cache 原理（rasbt/LLMs-from-scratch）</span>
+<p><a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/03_kv-cache/README.md">教材配套笔记 <code>ch04/03_kv-cache/README.md</code></a>
+用「Time flies」→「Time flies fast」演示：前两个 token 的 K/V 与之前<strong>完全相同</strong>，
+与 §0.3 里 $k_1=0.5$ 在第 4 步仍是 0.5 是同一个机制。</p>
+<ul>
+<li>生成循环里，有缓存每步<strong>只喂新 token</strong> <code>model(next_idx)</code>，无缓存才喂整个 <code>idx[:, -ctx_len:]</code>——
+正是本笔记「投影 $\frac{n(n+1)}{2}\to n$」的代码形态。</li>
+<li>实现里还有两件本笔记原先没写的事：<code>current_pos</code> 累计位置（供因果掩码切片与位置嵌入用）、
+<strong>独立序列之间必须 <code>reset_kv_cache()</code></strong>，否则上一轮的 K/V 会串进下一轮。</li>
+<li>正确性检验：有 / 无缓存必须生成<strong>逐 token 完全相同</strong>的文本，作者提醒索引错误很容易让两者发散。
+这给 §0.3「缓存前后 logits 应当一致」一条可执行的检验办法。</li>
+<li><span class="tag o">开源</span><strong>引用值（非本笔记复算）：</strong>124M 模型、4-token prompt 生成 200 token，
+Mac Mini M4 CPU 上 <strong>27 → 144 tokens/s</strong>（约 5×），预分配优化版 <strong>166</strong>；
+作者同时注明，在 CUDA 上这个 tiny 模型的加速会被设备传输开销抵消。</li>
+</ul>
+<p><strong>一处口径差异要讲清：</strong>该笔记把「每个 K/V 只算一次」概括为 $O(n^2)\to O(n)$；
+本笔记把它拆成两行——<strong>投影</strong>确实降为 $O(n)$，但 $q_t\cdot k_j$ 的<strong>打分</strong>总量仍是 $\frac{n(n+1)}{2}$。
+两句话指的不是一个账，混在一起才会得出「缓存把注意力变成线性」的错话。</p>
+</div>
+
+<h3 id="s04">0.4 一笔显存账：KV Cache 有多大 <span class="tag d">推导</span> <span class="tag n">补充</span></h3>
+
+<p>把上面那张矩阵数一遍元素：$B$ 个序列、$L$ 层、每层序列长 $n$、$h_{\mathrm{kv}}$ 个 KV 头、
+每头维度 $d_{\mathrm{head}}$、每个数 $s$ 字节，再乘 2（K 和 V 各一份）：</p>
+
+<p>$$M_{\mathrm{KV}}=2\cdot B\cdot L\cdot n\cdot h_{\mathrm{kv}}\cdot d_{\mathrm{head}}\cdot s$$</p>
+
+<p>取一组常见数量级：$L=32$、$h_{\mathrm{kv}}=32$、$d_{\mathrm{head}}=128$、$n=4096$、$B=1$、FP16（$s=2$）：</p>
+
+<p>$$M_{\mathrm{KV}}=2\times1\times32\times4096\times32\times128\times2
+=2\,147\,483\,648\ \text{bytes}=2\ \text{GiB}$$</p>
+
+<table>
+<thead><tr><th>配置</th><th>$h_{\mathrm{kv}}$</th><th class="num">$M_{\mathrm{KV}}$（$n=4096$）</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>MHA（每头一份 K/V）</td><td class="num">32</td><td class="num">2 GiB</td><td>基线，等于 2048 MiB</td></tr>
+<tr><td>GQA（8 组共享）</td><td class="num">8</td><td class="num">512 MiB</td><td>$h_{\mathrm{kv}}$ 变 1/4，缓存也变 1/4</td></tr>
+<tr><td>MQA（全体共享一份）</td><td class="num">1</td><td class="num">64 MiB</td><td>$h_{\mathrm{kv}}$ 变 1/32</td></tr>
+<tr><td>MHA，$n=32768$</td><td class="num">32</td><td class="num">16 GiB</td><td>序列长 8 倍，缓存也 8 倍</td></tr>
+</tbody>
+</table>
+
+<p>对照一下量级：一个 7B 参数模型用 FP16 存权重约 $7\times10^9\times2=14$ GB。
+在 32k 上下文下，单序列的 KV Cache（16 GiB）已经<strong>比模型权重还大</strong>。
+这就是为什么长上下文服务反过来要削弱注意力头数、做分页与量化，而不是只加显卡算力。</p>
+
+<div class="box key">
+<span class="label">与 §1.5 的 $16N$ 字节不是同一笔账</span>
+<p>§1.5 的 $16N$ 是<strong>训练期持久状态</strong>（参数、梯度、Adam 的 $m,v$，各 4 字节），
+只随参数量走；KV Cache 是<strong>推理期临时状态</strong>，随序列长度、batch、层数走。
+两者出现在不同阶段，<strong>不能相加</strong>：7B 训练持久状态约 $16\times7\times10^9=112$ GB（十进制），
+而推理时是 14 GB 权重 + 随 $n$ 变化的缓存。</p>
+</div>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 算这笔账时最常见的四个漏项</span>
+<ul>
+<li>漏掉最前面的 2（K 与 V 两份），结果直接小一半；</li>
+<li>把 $d_{\mathrm{head}}$ 写成 hidden size，或反过来用错 $h_{\mathrm{kv}}$（GQA 下它不等于 query 头数）；</li>
+<li>漏乘 batch 或 beam 数——beam search 的 $k$ 条候选会各自占一份缓存；</li>
+<li>把「训练时 teacher forcing 的激活」当成 KV Cache：训练一次并行看完整个序列，根本没有逐步解码，因此不需要这份缓存。</li>
+</ul>
+</div>
+
+<div class="box ok">
+<span class="label"><span class="tag o">开源</span> 核对 · $M_{\mathrm{KV}}$ 的适用条件（transformers / vLLM / rasbt）</span>
+<p><a href="https://github.com/huggingface/transformers/blob/main/docs/source/en/kv_cache.md">transformers 的 <code>docs/source/en/kv_cache.md</code></a>
+把缓存分成了好几类，正好把 §0.4 的公式补上条件：</p>
+<ul>
+<li><code>DynamicCache</code> 默认随生成动态增长；<code>StaticCache</code> 按最大长度<strong>预分配</strong>，
+才能配合 <code>torch.compile</code> 等 JIT 优化——这就是 rasbt 优化版把反复 <code>torch.cat</code> 换成静态张量后
+144 → 166 tokens/s 的原因，也说明 §0.4 显存公式里的 $n$ 是<strong>已用长度</strong>还是<strong>预留长度</strong>，取决于实现。</li>
+<li><strong>要加的限定：</strong>§0.4 的线性增长只对<strong>全注意力层</strong>成立。
+滑动窗口 / chunked attention 层（Mistral、Gemma2、Llama4 等）的缓存到窗口大小就停止增长；
+<code>QuantizedCache</code>（int2 / int4 / fp8）与 offloading 是另两条省显存路径，
+但 HF 明确提醒：上下文短、显存够时，量化<strong>反而可能伤延迟</strong>。</li>
+<li><strong>prefix caching</strong>：把公共 prompt 的 KV 预先填进缓存，多个不同回答复用；
+encoder–decoder 模型还要额外缓存 cross-attention 的 K/V（本笔记只讲了 decoder-only）。</li>
+<li><a href="https://github.com/vllm-project/vllm/blob/main/docs/design/paged_attention.md">vLLM 的 paged KV cache 设计文档</a>：
+按固定 <code>BLOCK_SIZE</code> 分块、块可不连续，decode kernel 是<strong>单 query</strong>（每序列一步只有一个 $q$）——
+工程上正好印证 §0.3「$q_t$ 一次性、不入缓存」。</li>
+</ul>
+</div>
+
+<h3 id="s05">0.5 PEFT 与 LoRA：把「更新」压成两个瘦矩阵 <span class="tag s">课件</span> <span class="tag b">板书</span> <span class="tag d">推导</span></h3>
+
+<p>板书第二行是 <em>Parameter-efficient Fine-Tuning (PEFT)</em>，投影页（P2）标题是
+<em>Parameter Efficient Fine Tuning · LoRA</em>，正文三句：</p>
+
+<div class="box gold">
+<p><em>Transformers have many dense matrix multiply layers</em> — Like $W^Q,W^K,W^V,W^O$ layers in attention.<br>
+<em>Instead of updating these layers during finetuning:</em> Freeze these layers;<br>
+<em>Update a low-rank approximation with fewer parameters.</em></p>
+</div>
+
+<h4>先算一遍：一个矩阵要训多少个数</h4>
+
+<p>注意力里一个方阵 $W\in\mathbb{R}^{4096\times4096}$ 有 $4096^2=16\,777\,216$ 个参数。
+按 §1.5 的「16 字节每参数」（参数、梯度、Adam 的 $m,v$ 各 4 字节），
+光这一个矩阵的训练状态就是 $16\,777\,216\times16=268\,435\,456$ 字节 = <strong>256 MiB</strong>。</p>
+
+<p>换个做法：不去动 $W$，只学两个瘦矩阵
+$A\in\mathbb{R}^{8\times4096}$、$B\in\mathbb{R}^{4096\times8}$，让它们的乘积当作「更新量」。
+参数数变成 $8\times4096+4096\times8=65\,536$，
+占原来的 $65\,536/16\,777\,216=0.00390625$，即 <strong>0.3906%</strong>；
+训练状态 $65\,536\times16=1\,048\,576$ 字节 = <strong>1 MiB</strong>。
+从 256 MiB 到 1 MiB，这就是「parameter-efficient」这四个字的全部算术。</p>
+
+<p>把刚才的做法写成式子（$x\in\mathbb{R}^{d_{\mathrm{in}}}$，$h\in\mathbb{R}^{d_{\mathrm{out}}}$）：</p>
+
+<p>$$h=Wx+\Delta W x=Wx+\frac{\alpha}{r}\,BAx,\qquad
+B\in\mathbb{R}^{d_{\mathrm{out}}\times r},\ A\in\mathbb{R}^{r\times d_{\mathrm{in}}},\ \mathrm{rank}(\Delta W)\le r$$</p>
+
+<ul>
+<li>$W$ <strong>冻结</strong>，只有 $A,B$ 接收梯度；$r\ll\min(d_{\mathrm{in}},d_{\mathrm{out}})$，上面例子里 $r=8$。</li>
+<li>$\alpha/r$ 是缩放系数：换 $r$ 时保持更新量级大致不变，不必每次重调学习率。</li>
+<li><strong>初始化</strong>：$B=0$、$A$ 取小随机数，于是训练第 0 步 $\Delta W=0$，
+输出与原始预训练模型<strong>逐位相同</strong>——微调不会一上来就把基座弄坏。</li>
+<li>推理时可以把 $W'=W+\frac{\alpha}{r}BA$ 预先合并成一个矩阵，
+于是<strong>没有额外层、没有额外延迟</strong>；只有在需要热切换多个适配器、或同一 batch 混用不同任务时，
+才保留两条分支。</li>
+</ul>
+
+<p><span class="tag n">补充</span> 为什么这么少的参数够用？因为「让一个已经会语言的模型改做某类任务」所需的权重改动，
+通常集中在很低维的方向上，不需要满秩地重写整个矩阵。
+把这件事命名一下：这个维度叫<strong>内在秩（intrinsic rank）</strong>，
+这套方法就是 <strong>LoRA（Low-Rank Adaptation）</strong>，属于 <strong>PEFT</strong> 家族。
+术语放最后说，是因为先看清 16 777 216 → 65 536 这笔账，名字本身没有信息量。</p>
+
+<table>
+<thead><tr><th>维度</th><th>LoRA 的表现</th><th>机制（不是现象）</th></tr></thead>
+<tbody>
+<tr><td>训练显存 / 存储</td><td>只存 $A,B$ 及其优化器状态；一个基座可配许多几十 MB 的适配器</td><td>冻结 $W$ 后，参数、梯度、$m,v$ 四份数组都不再为 $W$ 分配</td></tr>
+<tr><td>训练计算</td><td>省下 $W$ 的权重梯度与优化器更新，<strong>不省</strong>前向与输入梯度</td><td>反向仍要把梯度传过 $W$ 回到 $x$；只是 $\partial L/\partial W$ 不必算</td></tr>
+<tr><td>推理延迟</td><td>合并后零额外开销；不合并时多一次 $BAx$ 的矩阵乘法</td><td>矩阵加法可预先吸收进权重，但多适配器服务不能吸收</td></tr>
+<tr><td>灾难性遗忘</td><td>明显缓解</td><td>$W$ 从未被改动，预训练表示本身不动；代价是表达能力被 $\mathrm{rank}\le r$ 限制</td></tr>
+<tr><td>能力上限</td><td>适合格式、风格、领域适配；不适合灌入大量新知识</td><td>低秩增量只能重写少数方向，知识主要还得靠预训练权重或继续预训练</td></tr>
+<tr><td>超参</td><td>$r$、$\alpha$、以及作用在哪些矩阵（常见只加 $W^Q,W^V$ 或四个都加）</td><td>$r\uparrow$ 逼近全量微调但参数优势变小；加的矩阵越多，表达能力越强、参数也线性增加</td></tr>
+<tr><td>与量化叠加</td><td>QLoRA 把基座压到 4 bit，适配器仍用高精度</td><td>两者作用在不同对象上，可叠加；量化误差不进入 $A,B$ 的梯度</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 四个特别容易答错的点</span>
+<ul>
+<li><strong>LoRA 不减少前向 FLOPs。</strong>该走的 $Wx$ 一步没少，还多了 $BAx$；省的是<strong>训练状态</strong>与权重梯度。</li>
+<li><strong>$B=0$ 不等于梯度全为零。</strong>$\partial L/\partial B=(\partial L/\partial h)(Ax)^{\top}$ 一般非零，
+第一步就把 $B$ 推离 0；$\partial L/\partial A$ 此刻为 0，但下一步 $B\neq0$ 后 $A$ 也会动。</li>
+<li><strong>忘记 $\alpha/r$。</strong>直接换 $r$ 会改变 $\Delta W$ 的量级，等价于悄悄改了学习率。</li>
+<li><strong>把「0.39%」当成压缩率或速度比。</strong>它是<em>可训练参数</em>之比，
+与推理速度、训练总 FLOPs 都不是一回事。</li>
+</ul>
+</div>
+
+<p><span class="tag n">补充</span> 这一节和 §1.5 的 $16N$ 字节是同一笔账的两个角度：
+全量微调要为全部 $N$ 个参数维护训练状态，LoRA 把「需要维护状态的参数」压到极小一部分。
+Lecture 08 的板书也点过名——「训练整个 $\theta$ 太贵 → LoRA」；
+反过来，本节也解释了为什么后训练阶段常把 LoRA 当成默认选项。</p>
+
+<div class="box ok">
+<span class="label"><span class="tag o">开源</span> 核对 · LoRA 的公式、初始化与合并（microsoft/LoRA / HF PEFT / self-llm）</span>
+<p>把 <a href="https://github.com/microsoft/LoRA/blob/main/loralib/layers.py">原始实现 <code>loralib/layers.py</code></a>、
+<a href="https://github.com/huggingface/peft/blob/main/docs/source/package_reference/lora.md">PEFT 的 LoRA 文档</a>
+和 <a href="https://github.com/datawhalechina/self-llm/blob/master/models/ChatGLM/06-ChatGLM3-6B-Lora%E5%BE%AE%E8%B0%83.md">中文实战笔记</a>
+逐行对过，§0.5 的公式与数值都成立，另有四条值得补进来：</p>
+<ul>
+<li>源码里 <code>self.scaling = self.lora_alpha / self.r</code>；$A$ 用 <code>kaiming_uniform_</code>、$B$ 用 <code>zeros_</code>。
+PEFT 把这个初始化叫 <em>identity transform</em>（恒等变换），即「第 0 步输出与基座逐位相同」；
+它还提醒 <code>init_lora_weights=False</code> 只该在调试时用，因为会破坏这条性质。</li>
+<li><a href="https://github.com/microsoft/LoRA/blob/main/README.md">原始 README</a> 写明：
+<code>model.eval()</code> 会触发 $W\leftarrow W+BA\cdot\frac{\alpha}{r}$ 的合并，<code>model.train()</code> 再撤销——
+<strong>合并本身可逆</strong>。但 PEFT 的 <code>merge_and_unload()</code> 不是就地操作、且会丢掉适配器权重；
+要可逆得用 <code>merge_adapter()/unmerge_adapter()</code>。这给 §0.5「推理零额外延迟」补了边界。</li>
+<li>再算一个缩放：self-llm 的 ChatGLM3 教程用 <code>r=8, lora_alpha=32</code>，缩放 $=32/8=\mathbf{4}$（本笔记复算）。
+固定 $\alpha$ 把 $r$ 翻倍，缩放就减半，这正是「换 $r$ 不必重调学习率」的机制。
+PEFT 的 rsLoRA 变体把缩放改成 $\alpha/\sqrt{r}$ 以稳住更大的 $r$，此时 $\alpha/r$ 的解释不再适用。</li>
+<li>板书把 $W^Q,W^K,W^V,W^O$ 写成四个矩阵，但真实模型常把 QKV 合成一个 <code>nn.Linear</code>：
+原始 README 为此提供 <code>MergedLinear</code>，中文教程里 ChatGLM3 写的是 <code>target_modules=["query_key_value"]</code>。
+PEFT 默认只作用于 query / value，QLoRA 用 <code>target_modules="all-linear"</code> 覆盖所有线性层。</li>
+<li><span class="tag o">开源</span><strong>引用结论：</strong>原始 README 报告 GLUE 上 LoRA 与全量微调
+「comparable or superior」（RoBERTa / DeBERTa 系列），是 §0.5「低秩够用」的经验证据，非本笔记复算。</li>
+</ul>
+</div>
+
+<h3 id="s06">0.6 扩展律板书：变量、曲面与三条幂律 <span class="tag b">板书</span> <span class="tag d">推导</span> <span class="tag n">补充</span></h3>
+
+<p>板书第三行只写了「Scaling」。照片 P4–P9 把它展开成了五个字母的定义、一个联合曲面、一组双对数直线和 Kaplan 2020 的三张图。
+这些式子与原有 §1.8、§1.9、§2.1 是<strong>同一套公式</strong>；这里补的是课件里没写出来的
+<strong>符号定义、读图方法、单变量拟合式与适用条件</strong>，求导过程不重复，直接引用 §2.1。</p>
+
+<h4>0.6.1 五个字母到底指什么（P5、P6）</h4>
+
+<table>
+<thead><tr><th>板书</th><th>原文</th><th>含义与容易含糊的地方</th></tr></thead>
+<tbody>
+<tr><td>$L$</td><td>Loss (PPL)</td><td>固定评估语料上的平均 token 损失（nats/token）；PPL 是它的指数，见下</td></tr>
+<tr><td>$N$</td><td>model size (emb.)</td><td>模型参数量；板书只在 <em>emb.</em> 下划线，按 P8 的 <em>non-embedding</em> 口径理解为<strong>不含词表嵌入参数</strong></td></tr>
+<tr><td>$D$</td><td># of token been trained</td><td>训练过程中处理过的 token 总数，不是语料的去重大小</td></tr>
+<tr><td>$C$</td><td>training compute (Flops)</td><td>训练算力，§1.3 给出 $C\approx6ND$</td></tr>
+<tr><td>$L_{\mathrm{val}}$</td><td>见下式</td><td>在<strong>固定</strong>验证文本上的平均负对数似然</td></tr>
+</tbody>
+</table>
+
+<p>$$L_{\mathrm{val}}=-\frac{1}{M}\sum_{t=1}^{M}\log p_\theta(x_t\mid x_{&lt;t})$$</p>
+
+<p>板书把 $L$ 标成 PPL（perplexity）是在说两者一一对应：$\mathrm{PPL}=e^{L}$。
+手算一遍：$L=3.0\Rightarrow20.0855$，$L=2.5\Rightarrow12.1825$，$L=2.0\Rightarrow7.3891$。
+指数关系意味着 loss 降 0.5 不是「好一点」，而是困惑度降到约六成——这也解释了为什么 §1.9 要把
+<strong>总损失</strong>和<strong>超出损失</strong>分开谈。</p>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> P4 最后两行不是随口一提</span>
+<p>板书在核心结果下方写：<em>Evaluation text is fixed. Tokenizer, context length.</em>
+评估文本、分词器、上下文长度三者必须固定，否则 $L_{\mathrm{val}}$ 的<strong>分母和单位都变了</strong>，
+不同 $(N,D)$ 的损失根本不在同一把尺子上。这与 §2.7 的「可比测量四条契约」是同一条要求；
+0.6.5 会给出 tokenizer 为什么尤其不能动的定量理由。</p>
+</div>
+
+<h4>0.6.2 核心结果（P4）：一个曲面，一个约束，两个指数</h4>
+
+<div class="box gold">
+<p><em>Scaling laws (GPT-3) 定律 · Core results</em><br>
+$L(N,D)=E+A\cdot N^{-\alpha}+B\cdot D^{-\beta},\qquad C\approx kND$<br>
+$N^{*}\propto C^{\frac{\beta}{\alpha+\beta}},\qquad D^{*}\propto C^{\frac{\alpha}{\alpha+\beta}}$<br>
+<em>Given the fixed budget $C$, choose $(N,D)$, so that $L_{\mathrm{val}}$ minimized.</em></p>
+</div>
+
+<ul>
+<li>$k\approx6$，就是 §1.3 从三次矩阵乘法算出来的那个「六倍」。</li>
+<li>$E$ 是不可约损失；$A,B,\alpha,\beta&gt;0$，且是<strong>指定区间内的经验拟合量</strong>，不是物理常数（§1.8 已强调）。</li>
+<li>固定 $C$ 时 $N$ 与 $D$ 此消彼长：把参数翻倍，就得把 token 砍一半。求最小值得到板书的两个指数，
+<strong>完整三步求导在 §2.1</strong>，结论是「两项的边际收益相等」：$\alpha AN^{-\alpha}=\beta BD^{-\beta}$。</li>
+</ul>
+
+<div class="box key">
+<span class="label">自洽性检验：两个指数之和恒为 1</span>
+<p>$\frac{\beta}{\alpha+\beta}+\frac{\alpha}{\alpha+\beta}=1$，所以 $N^{*}D^{*}\propto C^{1}$。
+代回约束 $C\approx kND$ 后两边量纲一致——这说明两个指数<strong>不是各自独立拟合出来的</strong>，
+而是同一个约束下的一对。取 $\alpha=\beta=0.5$ 手算：算力翻 4 倍，
+$N^{*}\propto C^{1/2}$、$D^{*}\propto C^{1/2}$ 各翻 2 倍，$ND$ 正好翻 4 倍，
+与 §1.9 的「超出损失乘 $4^{-0.25}=0.7071$」接得上。</p>
+</div>
+
+<h4>0.6.3 单变量幂律与双对数直线（P7、P9）</h4>
+
+<p>板书把两个变量的曲面先简化成一个变量（$x$ 可以是 $N$、$D$ 或 $C$）：</p>
+
+<p>$$L(x)=E+A\,x^{-\alpha},\quad A&gt;0,\ \alpha&gt;0$$</p>
+
+<p>第一步先把 $E$ 减掉，板书在下面标了 <em>loss gap</em>；第二步<strong>只对 gap 取对数</strong>：</p>
+
+<p>$$L(x)-E=A\,x^{-\alpha}\quad\Longrightarrow\quad
+\log\bigl(L(x)-E\bigr)=\log A-\alpha\log x$$</p>
+
+<p>于是双对数图上是一条直线，斜率就是 $-\alpha$。板书在图上画了两条：
+$\alpha=\tfrac12$（陡）和 $\alpha=0.1$（平），横轴刻度 $1,4,16,64$，并特意标了 <em>$x:4\to16$</em>。</p>
+
+<table>
+<thead><tr><th class="num">$x$</th><th class="num">gap, $\alpha=\tfrac12$</th><th class="num">$L$</th><th class="num">gap, $\alpha=0.1$</th><th class="num">$L$</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td class="num">1.0000</td><td class="num">2.5000</td><td class="num">1.0000</td><td class="num">2.5000</td></tr>
+<tr><td class="num">4</td><td class="num">0.5000</td><td class="num">2.0000</td><td class="num">0.8706</td><td class="num">2.3706</td></tr>
+<tr><td class="num">16</td><td class="num">0.2500</td><td class="num">1.7500</td><td class="num">0.7579</td><td class="num">2.2579</td></tr>
+<tr><td class="num">64</td><td class="num">0.1250</td><td class="num">1.6250</td><td class="num">0.6598</td><td class="num">2.1598</td></tr>
+</tbody>
+</table>
+
+<p class="small">表 0-1　取 $E=1.5,\ A=1$ 的合成数值（仅用于把公式落到数字上，不是任何模型的实测）。
+$x$ 从 4 到 16 是 4 倍：gap 乘 $4^{-\alpha}$。$\alpha=\tfrac12$ 时 $4^{-1/2}=0.5$，gap 从 0.5000 减半到 0.2500；
+$\alpha=0.1$ 时 $4^{-0.1}=0.8706$，只降约 <strong>12.94%</strong>（0.8706 → 0.7579）。
+$\alpha$ 越小，再堆资源能换来的下降越微薄——这就是「被瓶颈卡住」在图上长什么样。</p>
+
+<div class="chart">
+<svg viewBox="0 0 680 300" role="img" aria-label="双对数坐标下的两条幂律直线">
+  <text x="12" y="22" font-size="13" fill="var(--ink2)">log(L − E) 对 log x：斜率 = −α</text>
+  <g stroke="var(--line)" stroke-width="1" stroke-dasharray="4 5">
+    <line x1="70" y1="52.4" x2="610" y2="52.4"/><line x1="70" y1="114.1" x2="610" y2="114.1"/>
+    <line x1="70" y1="175.9" x2="610" y2="175.9"/><line x1="70" y1="237.6" x2="610" y2="237.6"/>
+  </g>
+  <g stroke="var(--ink3)" stroke-width="1.4" fill="none">
+    <path d="M70 40 L70 250 L620 250"/>
+  </g>
+  <g font-size="12" fill="var(--ink3)">
+    <text x="34" y="57">1</text><text x="28" y="119">1/2</text><text x="28" y="181">1/4</text><text x="28" y="243">1/8</text>
+    <text x="66" y="268">1</text><text x="238" y="268">4</text><text x="410" y="268">16</text><text x="584" y="268">64</text>
+    <text x="600" y="284">log x</text><text x="12" y="36">log(L−E)</text>
+  </g>
+  <g stroke="var(--warn)" stroke-width="1.3" stroke-dasharray="4 4">
+    <line x1="243.3" y1="50" x2="243.3" y2="250"/><line x1="416.7" y1="50" x2="416.7" y2="250"/>
+  </g>
+  <text x="286" y="44" font-size="12" fill="var(--warn)">x: 4 → 16（4×）</text>
+  <polyline points="70.0,52.4 156.7,83.2 243.3,114.1 330.0,145.0 416.7,175.9 503.3,206.8 590.0,237.6"
+    fill="none" stroke="var(--accent)" stroke-width="2.6"/>
+  <polyline points="70.0,52.4 156.7,58.5 243.3,64.7 330.0,70.9 416.7,77.1 503.3,83.2 590.0,89.4"
+    fill="none" stroke="var(--ok)" stroke-width="2.6"/>
+  <g font-size="12.5">
+    <line x1="430" y1="60" x2="458" y2="60" stroke="var(--accent)" stroke-width="2.6"/>
+    <text x="464" y="64" fill="var(--ink2)">α = 1/2</text>
+    <line x1="430" y1="80" x2="458" y2="80" stroke="var(--ok)" stroke-width="2.6"/>
+    <text x="464" y="84" fill="var(--ink2)">α = 0.1</text>
+  </g>
+</svg>
+</div>
+<p class="small">图 0-3　按板书（P7/P9）重绘的双对数图：采样点由脚本按 $E=1.5,A=1$ 算好后写成静态 polyline。
+纵轴是 $\log(L-E)$ 而不是 $\log L$，这正是板书反复强调 <em>loss gap</em> 的原因。</p>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 三个读图陷阱</span>
+<ul>
+<li>直接画 $\log L$ 不是直线，<strong>必须先减掉 $E$</strong>；但 $E$ 未知时又不能拿 $\log(L-E)$ 做普通线性回归，
+这正是 §1.9 讲者备注里说的「下界未知会让拟合变难」。</li>
+<li>板书把对数写成带步长的形式（$\log x/\Delta$），换成任何底都只改截距，<strong>斜率 $-\alpha$ 不变</strong>。</li>
+<li>$\alpha$ 是<em>区间内</em>的斜率；把直线无限延长到区间外，就是 §2.10 那个故意失败的预测。</li>
+</ul>
+</div>
+
+<h4>0.6.4 Kaplan 2020 的三张图（P8）：三条单变量幂律</h4>
+
+<p>投影页标题 <em>Scaling laws · Kaplan et al. 2020</em>，三张图分别固定另外两个因素，只看一个：</p>
+
+<table>
+<thead><tr><th>子图</th><th>横轴</th><th>图上给的拟合式</th><th>指数</th></tr></thead>
+<tbody>
+<tr><td>Compute</td><td>PF-days, non-embedding</td><td>$L=(C_{\min}/2.3\times10^{8})^{-0.050}$</td><td class="num">0.050</td></tr>
+<tr><td>Dataset Size</td><td>tokens</td><td>$L=(D/5.4\times10^{13})^{-0.095}$</td><td class="num">0.095</td></tr>
+<tr><td>Parameters</td><td>non-embedding</td><td>$L=(N/8.8\times10^{13})^{-0.076}$</td><td class="num">0.076</td></tr>
+</tbody>
+</table>
+
+<p>图注（Figure 1）的两句关键话：<em>Language modeling performance improves smoothly as we increase the model size,
+dataset size, and amount of compute used for training. For optimal performance all three factors must be scaled up in tandem.</em>
+以及 <em>Empirical performance has a power-law relationship with each individual factor when not bottlenecked by the other two.</em>
+换句话说：<strong>三者必须同步放大；只有在另外两个不成为瓶颈时，单个因子才呈现干净的幂律</strong>。
+这正是 §1.7 等算力剖面呈 U 形、§2.4 强调「实验必须分离变量」的图像来源。</p>
+
+<p>注意横轴写的 <em>non-embedding</em> 与 P5 板书在 <em>emb.</em> 下面划线是同一件事：
+参数量 $N$ 不含词表嵌入矩阵，否则大模型会被一张与「规模」无关的表带偏，
+也会和 §1.3 里 $C\approx6ND$ 的记账对不上。</p>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 别把三条单变量指数直接代进 §2.1 的 $\alpha,\beta$</span>
+<p>若把 $0.076$ 当成 $\alpha$、$0.095$ 当成 $\beta$，会得到
+$\frac{\beta}{\alpha+\beta}=\frac{0.095}{0.171}=0.5556$、$\frac{\alpha}{\alpha+\beta}=0.4444$，
+与 §1.10 表里 Kaplan 的经验分配 $0.73/0.27$ 对不上（两组数都独立复算过）。<strong>原因不是算错，是混了来源</strong>：
+这三条幂律是在「另两个因子不瓶颈」的<strong>不同实验条件</strong>下分别拟合的单变量关系，
+并不是在同一个联合曲面 $L(N,D)=E+A/N^\alpha+B/D^\beta$ 上估出的参数；
+Kaplan 的 0.73 来自算力前沿上的经验拟合（还受 batch、训练步数与早停约定影响），
+Chinchilla 才用联合曲面重估出接近 $0.49/0.51$ 的分配。</p>
+<p>另一个坑：这三式都<strong>没有不可约项 $E$</strong>，形式上 $N\to\infty$ 时 $L\to0$。
+它们只是区间内的经验拟合，不能外推到无穷；Lecture 08 §1.1 的勘误说的就是这件事。</p>
+</div>
+
+<h4>0.6.5 词表随数据变大，所以 tokenizer 必须固定（P6 右侧）</h4>
+
+<p>P6 在变量定义的右边补了一张小图（频率随 rank 下降的直线，即 Zipf 型分布）和两行式子：</p>
+
+<p>$$|V|\simeq D^{\beta}\qquad\Longrightarrow\qquad \log|V|\approx\beta\log|D|$$</p>
+
+<p>板书在括号里给了 $\beta$ 的两个数量级：$0.4$ 与 $0.7$。先算一遍这个幂律有多凶：
+语料规模 $D$ 翻 <strong>1000 倍</strong>时，词表大小 $|V|$ 分别乘
+$1000^{0.4}=15.8489$、$1000^{0.5}=31.6228$、$1000^{0.7}=125.8925$。
+这就是 Herdan–Heaps 型的词表增长：新词按幂律不断出现，词表大小从来不是常数。</p>
+
+<p><strong>机制上的后果：</strong>如果两次训练用了不同的语料规模与不同的分词器，
+softmax 的归一化项变了、一个「token」代表的信息量也变了，$L_{\mathrm{val}}$ 就不在同一把尺子上。
+所以 P4 才专门写 <em>Evaluation text is fixed. Tokenizer, context length.</em>，
+§2.7 才把「同一分词器、同一评估集、同一上下文长度」列进可比测量的四条契约。
+跨分词器实在要比较时，得换成 bits/byte（§附录 B 有换算式）。</p>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 两个 $\beta$ 不是同一个量</span>
+<p>板书 0.6.5 的 $\beta$ 管<strong>词表随数据的增长速度</strong>（0.4–0.7），
+§1.8 曲面里的 $\beta$ 管<strong>损失随 token 数下降的速度</strong>（玩具值 0.5、Kaplan 0.095）。
+同一个希腊字母，两个完全不同的机制，抄公式时别串线。</p>
+</div>
+
+<h3 id="s07">0.7 三个主题怎么连起来 <span class="tag n">补充</span></h3>
+
+<p>把本部分的三个编号放回一条时间线上，其实是<strong>同一笔资源账在三个阶段的不同写法</strong>：</p>
+
+<table>
+<thead><tr><th>阶段</th><th>账本</th><th>本讲的结论</th><th>接到哪里</th></tr></thead>
+<tbody>
+<tr><td>预训练</td><td>$C\approx6ND$，持久状态 $16N$ 字节</td><td>$N$ 与 $D$ 在固定预算下此消彼长，最优分配由 $\alpha,\beta$ 决定</td><td>§1.3、§1.8、§2.1</td></tr>
+<tr><td>微调</td><td>可训练参数 $\times16$ 字节</td><td>冻结 $W$、只训 $\Delta W=BA$，把一个矩阵的状态从 256 MiB 压到 1 MiB</td><td>§0.5、Lecture 08 的 SFT</td></tr>
+<tr><td>推理</td><td>$M_{\mathrm{KV}}=2BLn\,h_{\mathrm{kv}}d_{\mathrm{head}}s$</td><td>省掉重复的前缀投影，代价是随上下文线性增长的显存与带宽</td><td>§0.3–0.4、Lecture 06 的解码协议</td></tr>
+<tr><td>做实验</td><td>拟合点 + 一个预留点</td><td>先冻结预测，再揭晓更大规模运行；直线漂亮不等于敢外推</td><td>§2.8–§2.11、附录 A2</td></tr>
+</tbody>
+</table>
+
+<p>所以这三块并不是三个孤立技巧：KV Cache 让「生成得出来」，LoRA 让「改得起」，
+Scaling laws 回答「训练预算该买参数还是买数据」，而嘉宾的方法论回答
+「凭什么相信小实验算出来的预算分配」。下面两部分就进入原笔记的算力预算与外推。</p>
+<h3 id="s08">0.8 与开源实现的交叉核对：一致、要加条件、仍属补充 <span class="tag o">开源</span> <span class="tag n">补充</span></h3>
+
+<p>课堂照片里 KV Cache 只有一行提纲、LoRA 只有一页幻灯片，§0.3–0.5 的推导都是本笔记补的。
+为了不「自己补、自己信」，本次按 GitHub 上的公开教材笔记、官方文档与原始实现逐条核对；
+结论是<strong>主要公式没有被推翻，但有三处需要加条件、两处需要澄清口径</strong>。完整链接见附录 G。</p>
+
+<table>
+<thead><tr><th>核对项</th><th>开源资料怎么说</th><th>本笔记的处理</th></tr></thead>
+<tbody>
+<tr><td>只缓存 K/V、Q 用完即弃</td><td>rasbt 的「Time flies」例子：旧 token 的 K/V 完全相同；vLLM 的 decode kernel 是单 query</td><td>§0.3 结论一致，补上工程出处</td></tr>
+<tr><td>缓存省掉什么</td><td>rasbt 把「K/V 只算一次」概括为 $O(n^2)\to O(n)$</td><td>§0.3 拆成「投影降为 $O(n)$」与「打分仍是 $\frac{n(n+1)}{2}$」两行，避免口径混淆</td></tr>
+<tr><td>训练期不用缓存</td><td>rasbt 明确 <em>can't be used during training</em>；HF 的 Cache 只用于推理 <code>generate</code> / <code>forward</code></td><td>§0.4 易错第四条一致</td></tr>
+<tr><td>显存随 $n$ 线性增长</td><td>滑动窗口 / chunked attention 层到窗口大小后不再增长；另有量化、offload、分页</td><td>§0.4 公式加限定「<strong>全注意力层</strong>」，并补工程路径</td></tr>
+<tr><td>缓存一定更快</td><td>CPU 上 27 → 144 tokens/s，但 CUDA 小模型加速被设备传输开销抵消</td><td>§0.3 补引用实测值，讲清这是「省算力换带宽」而非无条件提速</td></tr>
+<tr><td>$\alpha/r$、$B=0$、可合并</td><td>microsoft/LoRA 源码与 PEFT 文档逐行一致；self-llm 给出 $r=8,\alpha=32\Rightarrow4$</td><td>§0.5 公式与数值一致，补合并的可逆边界与 rsLoRA 例外</td></tr>
+<tr><td>四个投影矩阵</td><td>真实实现常把 QKV 合成一个 Linear（<code>MergedLinear</code> / <code>query_key_value</code>）</td><td>§0.1 保留板书原样，§0.5 补实现差异与 <code>target_modules</code></td></tr>
+<tr><td>「低秩够用」的依据</td><td>原始 README 报告 GLUE 上与全量微调相当或更优；中文教程多为配置、不推原理</td><td>§0.5 保留机制解释，另标经验证据来源</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label"><span class="tag w">易错</span> 核对之后的两点自我限定</span>
+<p><strong>① 推导仍是推导。</strong>中文开源笔记（如 <code>datawhalechina/self-llm</code>）多为分模型的
+<code>LoraConfig</code> 实战配置，原理推导主要来自教材笔记（rasbt）、官方文档（HF / vLLM）与原始实现（microsoft/LoRA）。
+所以 §0.3–0.5 仍标注 <span class="tag d">推导</span> <span class="tag n">补充</span>，不冒充课堂内容。</p>
+<p><strong>② 引用值不是复算值。</strong>27 / 144 / 166 tokens/s、GLUE 结论、rsLoRA 的 $\alpha/\sqrt r$ 都是资料作者给出的实测或结论；
+本节唯一由本笔记复算的新数字是 $32/8=4$。</p>
+</div>
+
+
+
+
+<hr>
 <h2 id="p1">第一部分 · 算力预算</h2>
 
 <p>第一节课（13:45–14:15）。三件事：把训练记成一个四元组、把 FLOPs 算对、把内存算对。
@@ -1140,6 +1866,77 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 也是教师认定的讲座基础。<strong>不要把本讲的玩具例子和课堂阈值归到讲者名下。</strong></p>
 </div>
 
+<h3 id="apA2">A2 · 嘉宾文章：预训练与 scaling 作为一种通用方法论 <span class="tag g">嘉宾</span></h3>
+
+<p>Jiaxuan Zou，《预训练与 scaling：一种通用方法论》，2026-09-07 发表、2026-11-03 更新 ·
+<a href="https://jiaxuanzou0714.github.io/blog/2026/pretrain-scaling-methodology-scientific-perspective/">原文</a>。
+附录 A 记录的是课件给的讲前阅读与讨论提示；这里补的是这篇<strong>讲 scaling 的文章本身</strong>的观点，
+凡是数字都是文章引用的实测/报告值（已就地标明），不是本笔记复算。</p>
+
+<div class="box key">
+<span class="label">一句话主张</span>
+<p>数据里包含世界知识（事物如何运作、事件如何联系、人会如何行动），预训练把其中一部分<strong>压缩进权重</strong>；
+参数与数据增加、训练得当时，模型能存下更多知识。于是「预训练 + scaling」不只是语言模型的技巧，
+而是一种可以带到世界模型、具身智能等领域的<strong>通用方法论</strong>：框架要足够通用，还要 scalable。</p>
+</div>
+
+<h4>奥卡姆剃刀与 Scaling Ladder</h4>
+<p>任何改进——attention、MoE、优化器、整个架构——都应该过 <strong>Scaling Ladder</strong> 这一关：
+在<strong>相同训练 FLOPs</strong> 下比性能，或比达到相同性能所需的 FLOPs，再逐级把比较扩展到更大规模；
+相对充分调优的 baseline，收益应随规模增大<strong>保持下来</strong>，而不是越来越小。
+文章因此对 nanoGPT / nanochat 一类 speedrun 的夸张宣传保持谨慎：在固定设置上反复调优，
+可能只是在过拟合一个 benchmark 与一套训练配置（2026-11-03 补充点名了 Dust 的 speedrun 热潮）。
+这与 Sutton 的 <em>The Bitter Lesson</em>、Karpathy 的 <em>Software 2.0</em> 是同一条思路：
+能持续从更多计算中获益的通用方法，长期更可能胜出。</p>
+
+<h4>两个里程碑：训练时计算 ≠ 测试时计算</h4>
+<table>
+<thead><tr><th></th><th>train-time scaling</th><th>test-time scaling</th></tr></thead>
+<tbody>
+<tr><td>里程碑</td><td>2020 年 Kaplan 等的语言模型 scaling laws</td><td>2024 年 o1</td></tr>
+<tr><td>加的是什么</td><td>训练参数 / 数据 / 算力，得到一个可复用的更强模型</td><td>回答前的思考、搜索、交互计算，把眼前任务做得更好</td></tr>
+<tr><td>衡量方式</td><td>loss 沿可预测曲线下降，可估计更大规模训练</td><td>固定模型下，pass@1 等随推理计算提升</td></tr>
+</tbody>
+</table>
+<p>文章强调两者要<strong>分开衡量</strong>：一个改的是权重，一个改的是这次推理；
+文中的 EdgeBench 例子里，智能体的权重保持不变，新经验只积累在上下文、日志与改过的文件里。</p>
+
+<h4>效率与稳定性：两个最该盯着的问题</h4>
+<ul>
+<li><strong>效率</strong> = 每投入一份计算换来多少进步。用更少 FLOPs 达到同一 loss，在 loss–compute 图上表现为曲线<strong>左移</strong>；
+「用更少 token」是另一种效率，但每 token 的计算开销可能不同；硬件利用率还会影响真实时间与能耗。</li>
+<li><strong>稳定性</strong> = 长时间训练里模型是否持续在学。要观察 loss spike，以及激活、梯度、权重、attention logits 的异常增长。
+文章举 Kimi K2：用 MuonClip 里的 QK-Clip 控制 attention logits 增长，完成了 <strong>15.5T tokens</strong> 预训练且没有 loss spike
+（<span class="tag g">嘉宾</span>文章引用的报告值）。看到梯度范数增大，先查有没有伴随 spike 或学习变慢，再决定要不要干预。</li>
+</ul>
+
+<h4>把 scaling 做成可预测的科学（与本讲落点重合）</h4>
+<p>文章用开普勒时代的天文学作类比：认真观测 → 建立数学规律 → 用新观测检验预测。
+Scaling laws 的价值不在于拟合出一条漂亮曲线，而在于<strong>预测超出拟合范围的训练结果</strong>，
+并据此选配方、判断训练是否符合预期。Marin 的做法是先用小模型的 Scaling Ladder 预测大规模训练的 loss 与训练动态，再对照实际。</p>
+
+<div class="box warn">
+<span class="label">Delphi 的例子：一次真实的「预测失败 → 找原因 → 再验证」</span>
+<p><span class="tag g">嘉宾</span>文章引用的数值：第一套配方在小规模上拟合得很好，到 $10^{22}$ FLOPs 时实际 loss 比预测高 <strong>2.5%</strong>，
+到 $10^{23}$ FLOPs 训练<strong>直接发散</strong>；团队改了优化器与学习率调度后，下一次 $10^{23}$ FLOPs 训练顺利完成，
+最终 loss 与预测偏差约在 <strong>0.2% 以内</strong>。这些是文章引用的实测值，不是本笔记复算；
+它们对应的是本讲 §2.10 那个<strong>合成</strong>的「故意失败」练习在真实训练里的样子。</p>
+</div>
+
+<table>
+<thead><tr><th>文章观点</th><th>本讲对应</th></tr></thead>
+<tbody>
+<tr><td>相同 FLOPs 下比较、收益要随规模保持</td><td>§2.4 分离变量、§2.7 四条契约</td></tr>
+<tr><td>训练协议会改变拟合结果（warmup、优化器、调度）</td><td>§1.11、§2.6</td></tr>
+<tr><td>先预测，到更大规模检验，不一致就找原因</td><td>§2.8 冻结预测、§2.10 先预测再揭晓、§2.11 诊断失败</td></tr>
+<tr><td>train-time 与 test-time 计算分开衡量</td><td>§1.7 等算力剖面、§2.13 更低 loss 不等于更有用</td></tr>
+<tr><td>预训练质量体现在「学新任务有多省力」</td><td>§2.13；也呼应 §0.5 的 LoRA 与 Lecture 08 的 SFT</td></tr>
+</tbody>
+</table>
+
+<p class="small">文章还讨论了上下文学习（权重不变、靠示例引导）与微调（更新权重）的区别、
+GEN-1.5 与 Dyna-2（一百万小时第一视角视频）等跨领域证据，以及「成本付一次、知识多次复用」的经济性。
+这些是方法论背景，不影响本讲任何公式，故不展开。</p>
 <h3 id="apB">B · 公式速查</h3>
 
 <table>
@@ -1156,6 +1953,18 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 <tr><td>玩具系数</td><td>$E=1.5,\ K=1.6,\ \gamma=0.25$</td><td>由 $\alpha=\beta=0.5$、$A=B=0.8$ 导出</td></tr>
 <tr><td>四倍算力</td><td>$4^{-0.25}\approx0.7071$</td><td>只对<strong>超出损失</strong>成立</td></tr>
 <tr><td>跨分词器比较</td><td>$\text{bits/byte}=\dfrac{L\cdot n_{\text{tok}}}{n_{\text{byte}}\ln2}$</td><td>nats/token 换分词器就换单位</td></tr>
+<tr><td>温度解码</td><td>$p_i(\tau)=\dfrac{\exp(z_i/\tau)}{\sum_j\exp(z_j/\tau)}$</td><td>$\tau\to0^+$ 退化为 greedy；$\tau=0$ 不能直接代</td></tr>
+<tr><td>KV 投影</td><td>$q_t=W^Qh_t,\ k_t=W^Kh_t,\ v_t=W^Vh_t$</td><td>因果掩码下只有 $k_j,v_j$ 可复用，$q_{&lt;t}$ 用完即弃</td></tr>
+<tr><td>KV Cache 显存</td><td>$M_{\mathrm{KV}}=2BLn\,h_{\mathrm{kv}}d_{\mathrm{head}}s$</td><td>2 = K/V 两份；$s$ 是每元素字节；只发生在自回归推理</td></tr>
+<tr><td>重复投影次数</td><td>$\sum_{t=1}^{n}t=\dfrac{n(n+1)}{2}\to n$</td><td>省投影，<strong>不省</strong> $q_t\cdot k_j$ 的打分</td></tr>
+<tr><td>LoRA 前向</td><td>$h=Wx+\dfrac{\alpha}{r}BAx$</td><td>$\mathrm{rank}(\Delta W)\le r$；推理可合并成 $W'$</td></tr>
+<tr><td>LoRA 参数</td><td>$r(d_{\mathrm{in}}+d_{\mathrm{out}})$ 对 $d_{\mathrm{in}}d_{\mathrm{out}}$</td><td>$4096^2,\ r=8$：$65\,536$ 个，0.3906%</td></tr>
+<tr><td>验证损失</td><td>$L_{\mathrm{val}}=-\dfrac{1}{M}\sum_t\log p_\theta(x_t\mid x_{&lt;t})$</td><td>评估文本 / 分词器 / 上下文长度必须固定</td></tr>
+<tr><td>困惑度</td><td>$\mathrm{PPL}=e^{L}$</td><td>$L=2.5\Rightarrow12.1825$；换分词器要换 bits/byte</td></tr>
+<tr><td>单变量幂律</td><td>$\log(L-E)=\log A-\alpha\log x$</td><td>双对数斜率 $-\alpha$；$x$ 翻 4 倍，gap 乘 $4^{-\alpha}$</td></tr>
+<tr><td>词表增长</td><td>$|V|\simeq D^{\beta},\ \log|V|\approx\beta\log|D|$</td><td>这里的 $\beta$ 不是损失曲面里的 $\beta$</td></tr>
+<tr><td>LoRA 缩放</td><td>$\dfrac{\alpha}{r}$（rsLoRA：$\dfrac{\alpha}{\sqrt r}$）</td><td>$r=8,\alpha=32\Rightarrow4$；$W^Q,W^K,W^V$ 在实现里可能合并成一个 Linear</td></tr>
+<tr><td>KV 预分配</td><td>$M_{\mathrm{KV}}=2BLn_{\max}h_{\mathrm{kv}}d_{\mathrm{head}}s$</td><td>静态 cache 按 $n_{\max}$ 预留；滑动窗口层有上界，不是无限线性增长</td></tr>
 </tbody>
 </table>
 
@@ -1173,6 +1982,17 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 <dt>Chinchilla 对照</dt><dd>Gopher 5.04e23 vs Chinchilla 5.88e23 FLOPs（$6ND$ 近似）</dd>
 <dt>指数</dt><dd>Kaplan 0.73 / 0.27；Hoffmann 0.49 / 0.51</dd>
 <dt>E04</dt><dd>$2\times2\times2=8$ 拟合 + $2\times2=4$ 验证 = 12 次</dd>
+<dt>温度</dt><dd>$z=(2,1,0)$：$\tau=0.5\to(0.8668,0.1173,0.0159)$；$\tau=1\to(0.6652,0.2447,0.0900)$；$\tau=2\to(0.5065,0.3072,0.1863)$</dd>
+<dt>top-p</dt><dd>$p=0.8$，$(0.50,0.25,0.15,0.07,0.03)$ → 累计 0.90 → 保留 3 个 → 重归一化 $(0.5556,0.2778,0.1667)$</dd>
+<dt>KV 投影</dt><dd>$n=4096$：$8\,390\,656$ 次 → $4096$ 次（约 $2048.5\times$）</dd>
+<dt>KV 显存</dt><dd>$L=32,h_{\mathrm{kv}}=32,d=128,n=4096$,FP16 → 2 GiB；GQA-8 → 512 MiB；MQA → 64 MiB；$n=32768$ → 16 GiB</dd>
+<dt>LoRA</dt><dd>$4096^2=16\,777\,216$（256 MiB 状态）→ $r=8$ 时 $65\,536$（1 MiB），0.3906%</dd>
+<dt>PPL</dt><dd>$e^{3.0}=20.0855$、$e^{2.5}=12.1825$、$e^{2.0}=7.3891$</dd>
+<dt>幂律 gap</dt><dd>$4^{-0.5}=0.5$；$4^{-0.1}=0.8706$（只降 12.94%）；$E=1.5,A=1,x=64$ 时 $L=1.6250$ / $2.1598$</dd>
+<dt>Kaplan 指数</dt><dd>单变量 0.050 / 0.095 / 0.076；误代入联合公式得 0.5556 / 0.4444，与经验 0.73 / 0.27 不同</dd>
+<dt>词表</dt><dd>$D$ 翻 1000 倍：$1000^{0.4}=15.8489$、$1000^{0.5}=31.6228$、$1000^{0.7}=125.8925$</dd>
+<dt>LoRA 缩放</dt><dd>self-llm 的配置 $r=8,\ \alpha=32\Rightarrow\alpha/r=4$（本笔记复算）</dd>
+<dt>开源引用值</dt><dd>rasbt：124M 模型 / 200 token，CPU 27 → 144 tokens/s，预分配优化版 166（资料作者实测，非本笔记复算）</dd>
 </dl>
 
 <h3 id="apD">D · 自测十题</h3>
@@ -1227,6 +2047,58 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 <details><summary>答案</summary><div class="body"><p>数据受限（重复数据收益衰减）、推理需求大（小模型多训练更划算，最优比例远高于 20）、MoE（总参数与激活参数不同）。</p></div></details>
 </div>
 
+<h4>本次补全新增的自测题（8 题；原有「自测十题」完整保留在上）</h4>
+<div class="quiz">
+<p class="q">KV Cache 为什么只存 K、V，不把 Q 也存起来？</p>
+<details><summary>答案</summary><div class="body"><p>因果掩码下 $k_j=W^Kh_j,\ v_j=W^Vh_j$ 只依赖位置 $j$ 之前的输入，后到的 token 不会改变它们，
+所以是历史的只读摘要；而 $q_t$ 只在第 $t$ 步被用来和历史打分，用完即弃，旧 $q_{&lt;t}$ 永远不会被再读一次。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">有了 KV Cache，生成 $n$ 个 token 的注意力打分次数变少了吗？$n=4096$ 时呢？</p>
+<details><summary>答案</summary><div class="body"><p>没有变：$q_t$ 仍要与 $t$ 个历史 $k_j$ 各打一次分，总量仍是 $\frac{n(n+1)}{2}$。
+变少的是 Q/K/V 投影：从 $\frac{n(n+1)}{2}$ 次降到 $n$ 次，$n=4096$ 时是 $8\,390\,656\to4096$，约 $2048.5\times$。
+所以缓存没有把注意力的二次项消掉，只是把 decode 变成了带宽瓶颈。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">$L=32,\ h_{\mathrm{kv}}=32,\ d_{\mathrm{head}}=128,\ n=4096$，FP16 单序列，KV Cache 多大？GQA 用 8 个 KV 头呢？</p>
+<details><summary>答案</summary><div class="body"><p>$M=2\times1\times32\times4096\times32\times128\times2=2\,147\,483\,648$ B = 2 GiB。
+GQA 把 $h_{\mathrm{kv}}$ 变成 8，缓存按同一比例降到 512 MiB；MQA（1 个头）是 64 MiB。
+注意最前面的 2 是 K 与 V 两份，且这笔账属于<strong>推理期</strong>，不能和 §1.5 训练期的 $16N$ 相加。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">一个 $4096\times4096$ 的矩阵用 $r=8$ 的 LoRA，要训多少参数？$B=0$ 初始化会不会让训练卡住？</p>
+<details><summary>答案</summary><div class="body"><p>$r(d_{\mathrm{in}}+d_{\mathrm{out}})=8\times8192=65\,536$，是全量 $16\,777\,216$ 的 0.3906%，训练状态 1 MiB（全量 256 MiB）。
+不会卡住：$\partial L/\partial B=(\partial L/\partial h)(Ax)^{\top}$ 一般非零，第一步就把 $B$ 推离 0；
+只有 $\partial L/\partial A$ 初始为 0，等 $B\neq0$ 后 $A$ 也开始更新。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">双对数图上，$\alpha=\tfrac12$ 与 $\alpha=0.1$ 在 $x:4\to16$ 时各发生什么？为什么必须先减 $E$？</p>
+<details><summary>答案</summary><div class="body"><p>gap 乘 $4^{-\alpha}$：$\alpha=\tfrac12$ 时 $0.5\to0.25$（减半）；$\alpha=0.1$ 时 $0.8706\to0.7579$（只降 12.94%）。
+必须对 <strong>loss gap</strong> 取对数才有 $\log(L-E)=\log A-\alpha\log x$ 这条直线，直接画 $\log L$ 不是直线；
+而 $E$ 未知时又不能直接对 $\log(L-E)$ 做普通线性回归。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">Kaplan 三张单变量图里的 0.076 / 0.095，能直接当 $L(N,D)$ 曲面的 $\alpha,\beta$ 吗？比较不同 $(N,D)$ 时还要固定什么？</p>
+<details><summary>答案</summary><div class="body"><p>不能：三式是「另两个因子不瓶颈」的不同条件下分别拟合的，不是同一联合曲面上估出的参数。
+硬代会算出 $0.5556/0.4444$，与 §1.10 表的 $0.73/0.27$ 不一致；而且三式都没有 $E$，不能外推到无穷。
+比较时必须固定评估文本、分词器与上下文长度（P4 板书末两行、§2.7 四条契约），
+否则 $L_{\mathrm{val}}$ 的分母与单位都变了——词表还会随 $D$ 按 $|V|\simeq D^{\beta}$ 增长。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q">开源实现里，为什么生成两条独立序列之间要 <code>reset_kv_cache()</code>？怎么验证缓存没写错？</p>
+<details><summary>答案</summary><div class="body"><p>缓存里存的是上一条序列所有位置的 K/V；不清空，下一轮生成会把它们当成
+自己的历史，注意力掩码与 <code>current_pos</code> 也全错位。rasbt 的实现用 <code>reset_kv_cache()</code>
+清缓冲区并把位置计数归零；验证办法是让同一模型在<strong>有 / 无缓存</strong>两种模式下生成，
+逐 token 比对文本必须完全相同——索引错误很容易让两者发散。</p></div></details>
+</div>
+<div class="quiz">
+<p class="q"><code>LoraConfig(r=8, lora_alpha=32)</code> 的缩放是多少？为什么板书上的 $W^Q,W^K,W^V$ 在真实模型里可能只对应一个模块名？</p>
+<details><summary>答案</summary><div class="body"><p>缩放 $=\alpha/r=32/8=4$。固定 $\alpha$ 把 $r$ 翻倍，缩放减半，这就是换 $r$ 不必重调学习率的机制
+（rsLoRA 例外，它用 $\alpha/\sqrt r$）。板书为讲解把 Q/K/V 画成三个矩阵，但实现常把三者合并成一个
+<code>nn.Linear</code>：ChatGLM3 的教程写 <code>target_modules=["query_key_value"]</code>，
+microsoft/LoRA 也为此提供 <code>MergedLinear</code>。所以 <code>target_modules</code> 要按<strong>具体模型的模块名</strong>写，
+不能照抄板书符号。</p></div></details>
+</div>
 <h3 id="apE">E · 参考文献</h3>
 
 <ul>
@@ -1244,8 +2116,88 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 <a href="https://arxiv.org/abs/2305.16264">arXiv:2305.16264</a></li>
 <li>可选：Sardana et al., <em>Beyond Chinchilla-Optimal</em>（推理感知的分配）·
 <a href="https://arxiv.org/abs/2401.00448">arXiv:2401.00448</a></li>
+<li>Hu et al. (2021), <em>LoRA: Low-Rank Adaptation of Large Language Models</em> ·
+<a href="https://arxiv.org/abs/2106.09685">arXiv:2106.09685</a>（§0.5 的低秩增量、$\alpha/r$ 与初始化）</li>
+<li>Shazeer (2019), <em>Fast Transformer Decoding: One Write-Head is All You Need</em>（MQA）·
+<a href="https://arxiv.org/abs/1911.02150">arXiv:1911.02150</a>；
+Ainslie et al. (2023), <em>GQA</em> · <a href="https://arxiv.org/abs/2305.13245">arXiv:2305.13245</a>（§0.4 的 $h_{\mathrm{kv}}$）</li>
+<li>Jiaxuan Zou (2026), <em>预训练与 scaling：一种通用方法论</em> ·
+<a href="https://jiaxuanzou0714.github.io/blog/2026/pretrain-scaling-methodology-scientific-perspective/">文章</a>（附录 A2）</li>
+<li>课堂照片 P1–P9（板书与投影，2026-10-21）· 附录 F 有逐张对照表</li>
+<li>补充阅读：Herdan–Heaps 词表增长定律（§0.6.5 的 $|V|\simeq D^{\beta}$）；
+Kaplan et al. (2020) Figure 1 原文见 §0.6.4</li>
+<li>本次交叉核对的开源教材笔记 / 官方文档 / 原始实现，逐条链接见<strong>附录 G</strong>；其中
+<a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/03_kv-cache/README.md">rasbt/LLMs-from-scratch · KV Cache 笔记</a>与
+<a href="https://github.com/microsoft/LoRA">microsoft/LoRA</a> 是 §0.3–0.5 的主要对照来源。</li>
 </ul>
 
+<h3 id="apF">F · 板书逐张对照（P1–P9）</h3>
+
+<p>照片按提供顺序编号。<strong>用这张表核对有没有漏讲</strong>：第二列是照片上确实出现的内容，
+第三列是笔记里展开它的小节；「补充 / 推导」意味着板书只有提纲或结论，推导是本笔记补的。</p>
+
+<table>
+<thead><tr><th>照片</th><th>上面的内容</th><th>对应小节</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><strong>P1</strong><br><code>e090…jpg</code></td><td>上板左：① Transformer-based LMs（GPT-1,2,3 Decoder Only / BERT Encoder Only / T5 Encoder, Decoder both）；② LMs generations（Greedy、Beam Search、Top-$k$ 且 $|V'|=k$、Top-$p$ nucleus sample，$|V'|$，两幅截断柱状图）。<br>上板右：{ Step 1 rescale logits / Temperature $\tau$ / $p_i(\tau)=\exp(z_i/\tau)/\sum_j\exp(z_j/\tau)$ / $T=1$ / $\tau\in(0,1)$ 举例 0.8、0.9 / $\tau\ge1$ / Step 2 nucleus sample ($p'$) }。<br>下板：① KV cache　② Parameter-efficient Fine-Tuning (PEFT)　③ Scaling</td><td>§0.1、§0.2、§0.3 开头</td><td>两块黑板同拍；本讲三个主题的目录</td></tr>
+<tr><td><strong>P2</strong><br><code>f86f…jpg</code></td><td>投影页 <em>Parameter Efficient Fine Tuning · LoRA</em>：Transformers have many dense matrix multiply layers；Like $W^Q,W^K,W^V,W^O$ layers in attention<br>Instead of updating these layers during finetuning — Freeze these layers / Update a low-rank approximation with fewer parameters</td><td>§0.5</td><td>唯一一页 LoRA 课件；低秩分解与推导是补的</td></tr>
+<tr><td><strong>P3</strong><br><code>ab21…jpg</code></td><td>投影 <em>Outline</em> 六条：History of pre-training / Autoregressive generation / Transformers as pretrained LMs / Pretrained Decoders (GPT series) / Datasets, <strong>Scaling laws</strong>, KV Cache, LoRA / Pretrained Encoders (BERT series)</td><td>§0.1</td><td>仅 <em>Scaling laws</em> 加粗</td></tr>
+<tr><td><strong>P4</strong><br><code>9f68…jpg</code></td><td><em>Scaling laws (GPT-3) 定律 · Core results</em>：$L(N,D)=E+A\cdot N^{-\alpha}+B D^{-\beta}$；$C\approx kND$；$N^{*}\propto C^{\beta/(\alpha+\beta)}$、$D^{*}\propto C^{\alpha/(\alpha+\beta)}$；Given the fixed budget $C$, choose $(N,D)$ so that $L_{\mathrm{val}}$ minimized。<br>Evaluation text is fixed. Tokenizer, context length.</td><td>§0.6.2、§1.8、§2.1、§2.7</td><td>求导过程在 §2.1，本节只补条件与自洽检验</td></tr>
+<tr><td><strong>P5</strong><br><code>ffa9…jpg</code></td><td>$L$: Loss (PPL)；$N$: model size (emb.)；$D$: # of token been trained；$C$: training compute (Flops)；$L_{\mathrm{val}}=-\frac{1}{M}\sum_{t=1}^{M}\log p_\theta(x_t\mid x_{&lt;t})$</td><td>§0.6.1</td><td>与 P6 是同一块板，P6 多了右侧内容</td></tr>
+<tr><td><strong>P6</strong><br><code>9366…jpg</code></td><td>P5 全部内容 + 右侧：频率–rank 下降直线小图；$|V|\simeq(D)^{\beta}$；括号里 $\beta$ 的示例 0.4、0.7；$\log|V|\approx\beta\log|D|$</td><td>§0.6.1、§0.6.5</td><td>词表增长与「tokenizer 必须固定」的定量理由</td></tr>
+<tr><td><strong>P7</strong><br><code>574e…jpg</code></td><td>$L(x)=E+A\cdot x^{-\alpha},\ A&gt;0,\alpha&gt;0$；$(L(x)-E)=Ax^{-\alpha}$（下注 <em>loss gap</em>）；$\log(L(x)-E)=\log A-\alpha\log x$；双对数图 $\log y$–$\log x$，刻度 1/4/16/64，两条线 $\alpha=\tfrac12$ 与 $\alpha=0.1$，标 $x=4\to16$<br>右上有 $L(x)$ 趋近 $E$ 的小曲线</td><td>§0.6.3</td><td>与 P9 同一块板，此张右下被讲师挡住一部分</td></tr>
+<tr><td><strong>P8</strong><br><code>7dee…jpg</code></td><td>投影 <em>Scaling laws · Kaplan et al. 2020</em>：Figure 1 三张图（Compute / Dataset Size / Parameters）与拟合式 $L=(C_{\min}/2.3\cdot10^8)^{-0.050}$、$L=(D/5.4\cdot10^{13})^{-0.095}$、$L=(N/8.8\cdot10^{13})^{-0.076}$<br>图注「all three factors must be scaled up in tandem … when not bottlenecked by the other two」</td><td>§0.6.4、§1.7、§2.4</td><td>课堂引用的原始论文图</td></tr>
+<tr><td><strong>P9</strong><br><code>aa02…jpg</code></td><td>与 P7 相同的黑板，视角更完整：$L(x)$、loss gap、双对数式、两条斜率、刻度与 $x:4\to16$ 都清晰可见</td><td>§0.6.3、图 0-3</td><td>用来校核 P7 中被遮挡的刻度与标注</td></tr>
+</tbody>
+</table>
+
+<div class="box ok">
+<span class="label">核对提示</span>
+<p>P5/P6 是同一块板的两次拍摄，P7/P9 也是，因此 9 张照片对应 <strong>7 个不同的板书/投影状态</strong>，不算漏讲。
+课堂照片里<strong>没有</strong> KV Cache 与 LoRA 的推导板书，只有 P1 的一行提纲和 P2 的一页幻灯片——
+§0.3–0.5 的公式、数值与优缺点表全部是 <span class="tag d">推导</span> <span class="tag n">补充</span>，已按来源标注体系标明，并另在 §0.8 / 附录 G <span class="tag o">开源</span> 与开源实现交叉核对过。</p>
+</div>
+
+
+<h3 id="apG">G · 开源资料与出处（本次交叉核对）</h3>
+
+<p>以下是 GitHub 上公开可读的教材笔记、官方文档与原始实现，链接指向具体文件；核对结论与限定条件见 §0.8。
+课堂材料与这些资料<strong>互相独立</strong>：前者给提纲，后者给实现与工程边界。</p>
+
+<table>
+<thead><tr><th>来源</th><th>具体文件</th><th>用来核对什么</th><th>对应小节</th></tr></thead>
+<tbody>
+<tr><td><strong>rasbt/LLMs-from-scratch</strong><br>教材配套开源笔记</td><td><a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/03_kv-cache/README.md">ch04/03_kv-cache/README.md</a>、
+<a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/03_kv-cache/gpt_with_kv_cache.py">gpt_with_kv_cache.py</a>、
+<a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/03_kv-cache/gpt_with_kv_cache_optimized.py">gpt_with_kv_cache_optimized.py</a></td>
+<td>「Time flies」例子、只喂新 token、<code>current_pos</code>、<code>reset_kv_cache()</code>、有/无缓存输出逐 token 一致、
+27 / 144 / 166 tokens/s、预分配与滑动窗口截断、训练期不可用</td><td>§0.3、§0.4</td></tr>
+<tr><td><strong>huggingface/transformers</strong><br>官方文档</td><td><a href="https://github.com/huggingface/transformers/blob/main/docs/source/en/kv_cache.md">docs/source/en/kv_cache.md</a></td>
+<td><code>DynamicCache</code> / <code>StaticCache</code> / <code>QuantizedCache</code> / offloading、
+prefix caching、滑动窗口层的缓存上界、<code>EncoderDecoderCache</code>、短上下文量化可能伤延迟</td><td>§0.4</td></tr>
+<tr><td><strong>vllm-project/vllm</strong><br>设计文档</td><td><a href="https://github.com/vllm-project/vllm/blob/main/docs/design/paged_attention.md">docs/design/paged_attention.md</a></td>
+<td>paged KV cache 的固定 <code>BLOCK_SIZE</code> 分块、decode 阶段的单 query kernel</td><td>§0.3、§0.4</td></tr>
+<tr><td><strong>microsoft/LoRA</strong><br>原始实现</td><td><a href="https://github.com/microsoft/LoRA/blob/main/README.md">README.md</a>、
+<a href="https://github.com/microsoft/LoRA/blob/main/loralib/layers.py">loralib/layers.py</a></td>
+<td><code>scaling = lora_alpha / r</code>、A 的 Kaiming 初始化与 B 全零、<code>eval()</code> 合并 / <code>train()</code> 撤销、
+<code>MergedLinear</code>、GLUE 上与全量微调相当或更优</td><td>§0.5</td></tr>
+<tr><td><strong>huggingface/peft</strong><br>官方文档</td><td><a href="https://github.com/huggingface/peft/blob/main/docs/source/package_reference/lora.md">docs/source/package_reference/lora.md</a></td>
+<td><code>init_lora_weights</code> 与恒等变换、<code>target_modules</code> 默认 query/value、QLoRA 的 <code>all-linear</code>、
+rsLoRA 的 $\alpha/\sqrt r$、<code>merge_and_unload()</code> 与可逆合并</td><td>§0.5</td></tr>
+<tr><td><strong>datawhalechina/self-llm</strong><br>中文实战笔记</td><td><a href="https://github.com/datawhalechina/self-llm/blob/master/models/ChatGLM/06-ChatGLM3-6B-Lora%E5%BE%AE%E8%B0%83.md">ChatGLM3-6B Lora 微调.md</a>
+（仓库内另有 100+ 个分模型 LoRA 教程）</td>
+<td><code>LoraConfig</code> 的 <code>r</code> / <code>lora_alpha</code> / <code>target_modules</code>、
+$r=8,\alpha=32\Rightarrow$ 缩放 4、<code>query_key_value</code> 合并层；说明中文笔记偏配置实战、不推原理</td><td>§0.5、§0.8</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">核对结论一句话</span>
+<p>§0.3–0.5 的主干公式（只缓存 K/V、投影与打分两笔账、$M_{\mathrm{KV}}$ 公式、$\Delta W=\frac{\alpha}{r}BA$、
+$B=0$ 恒等初始化、合并后零额外延迟）<strong>都能在这些开源实现里逐行找到对应</strong>；
+需要修正的只是三处<strong>适用条件</strong>（全注意力层才线性增长、合并可逆但有 API 边界、$O(n)$ 是投影不是打分）
+和两处<strong>工程细节</strong>（序列间重置缓存、QKV 常合并成一个 Linear）。</p>
+</div>
 <div class="footnote">
 <p><strong>关于图。</strong>图 1（三次矩阵乘法）、图 5（warmup 占比）、图 6（冻结再揭晓）为依据课件内容重绘的静态 SVG；
 图 2–3（等算力剖面）由课件给出的生成公式实时计算，图 4、7、8 依据课件 <code>assets/*.json</code> 重绘。
@@ -1255,6 +2207,21 @@ Jiaxuan Zou · 西安交通大学 · ByteDance Seed 预训练研究实习</p>
 <p><strong>关于「合成」。</strong>本讲所有损失曲线都是<strong>作者编的</strong>，不是真实模型的测量结果。
 课件的意图是让代数、拟合、外推失败三件事在没有 GPU 的条件下可复现，<strong>不是</strong>提供某个模型家族的证据。</p>
 <p>课程内容版权归<strong>复旦大学</strong>及授课教师所有，本笔记仅收录自己整理的笔记与补充推导。</p>
+<p><strong>关于本次新增的图。</strong>图 0-1（top-$k$ 与 top-$p$ 截断）、图 0-2（KV Cache 逐步追加）
+是依据课堂板书与照片重绘的静态 SVG；图 0-3（双对数幂律）按板书 P7/P9 重绘，
+采样点由脚本按 $E=1.5,A=1$ 算好后写成静态 <code>polyline</code>，不依赖前端脚本。
+颜色一律走 CSS 变量，深浅色自动适配；原有 8 张图与预算移动演示保持不变。</p>
+<p><strong>关于本次新增的数值。</strong>$\tau$ 的 softmax、top-$p$ 重归一化、$n(n+1)/2$ 与 2048.5×、
+2 GiB / 512 MiB / 64 MiB / 16 GiB、$16\,777\,216\to65\,536$ 与 0.3906%、$e^{L}$、$4^{-0.1}=0.8706$、
+0.5556/0.4444、$1000^{\beta}$ 等均按公式<strong>独立复算</strong>过一遍，
+是用于把公式落到数字上的<strong>合成示例</strong>，不是任何真实模型的实测。
+附录 A2 中的 2.5%、0.2%、15.5T tokens、一百万小时等，是嘉宾文章引用的报告值，已就地标明。</p>
+<p><strong>关于照片。</strong>P1–P9 按提供顺序编号，附录 F 逐张对照；
+P5/P6、P7/P9 各为同一块板的两次拍摄。照片只记录提纲与结论处，补的是条件、推导与反例。</p>
+<p><strong>关于开源交叉核对。</strong>§0.8 与附录 G 的引用值（rasbt 的 27 / 144 / 166 tokens/s、
+microsoft/LoRA 的 GLUE 结论、rsLoRA 的 $\alpha/\sqrt r$、PEFT / transformers 的 API 行为）
+来自公开仓库的笔记或文档，<strong>不是本笔记复算或实测</strong>，已就地标明来源；
+本次唯一新增的复算数字是 $32/8=4$。原有 8 张图、预算移动演示与两部分的合成数据性质均未改动。</p>
 </div>
 
 <script>
