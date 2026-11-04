@@ -313,7 +313,7 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
     <li><a href="#s46">4.6 REINFORCE：log-derivative trick</a></li>
     <li><a href="#s47">4.7 三步算法与实践细节</a></li>
     <li><a href="#s48">4.8 KL 约束与闭式解</a></li>
-    <li><a href="#s49">4.9 PPO 与 GRPO：baseline 从哪来</a></li>
+    <li><a href="#s49">4.9 PPO 与 GRPO：从 ψ_t 到 clip</a></li>
     <li><a href="#s410">4.10 DPO：把奖励模型隐式化</a></li>
     <li><a href="#s411">4.11 可验证奖励：ground truth 回来的时候</a></li>
   </ol>
@@ -2358,6 +2358,41 @@ $$
 </tbody>
 </table>
 
+<h4>把循环写成一个六元组 <span class="tag s">板书</span></h4>
+
+<p>板书把它写成标准的马尔可夫决策过程（MDP）：</p>
+
+$$
+M=\big(\mathcal{S},\ \mathcal{A},\ P,\ r,\ d_0,\ \gamma\big)
+$$
+
+<p>六个字母，少一个都定义不了「什么是好策略」。逐个落到 LLM 上：</p>
+
+<table>
+<thead><tr><th>符号</th><th>名字</th><th>在 LLM 里是什么</th></tr></thead>
+<tbody>
+<tr><td>$\mathcal{S}$</td><td>状态集</td><td>所有可能的前缀 $(x, y_{&lt;t})$。它<strong>随生成不断变长</strong></td></tr>
+<tr><td>$\mathcal{A}$</td><td>动作集</td><td>词表，$|\mathcal{A}|=|V|\approx10^{5}$</td></tr>
+<tr><td>$P(s'\mid s,a)$</td><td>转移概率</td><td><strong>确定性</strong>：把 $a$ 拼到 $s$ 末尾。$P(s'\mid s,a)=1$ 当且仅当 $s'=(s,a)$</td></tr>
+<tr><td>$r(s,a,s')$</td><td>奖励</td><td>通常<strong>只在最后一步</strong>给一次（奖励模型的分数），中间全是 0</td></tr>
+<tr><td>$d_0$</td><td>初始状态分布</td><td>prompt 的分布——就是训练集里那些 $x$</td></tr>
+<tr><td>$\gamma$</td><td>折扣因子</td><td>$\gamma\in[0,1]$。LLM 里常取 $1$（一条回答最多几千 token，不需要给晚到的奖励打折）</td></tr>
+</tbody>
+</table>
+
+<p><strong>马尔可夫性</strong>：给定 $s_t$，未来与更早的历史无关。LLM 天然满足——前缀里已经有全部信息，
+而且 transformer 每次都把整条前缀重新算一遍，不存在「隐藏状态」。</p>
+
+<p>把这六个字母滚一遍，得到一条<strong>轨迹</strong>（trajectory）：</p>
+
+$$
+\tau=(s_0,a_0,r_0,\ s_1,a_1,r_1,\ \dots,\ a_{T-1},r_{T-1},s_T)
+$$
+
+<p>在 LLM 里 $\tau$ 就是「一个 prompt + 一条完整回答 + 最后的那个分数」。板书在旁边注了一句
+<em>τ sequence defines rewards</em>——<strong>奖励定义在整条轨迹上，不是定义在某一步上</strong>。
+这句话是后面所有麻烦的源头：一个数，要摊到几百个 token 头上。</p>
+
 <div class="box key">
 <span class="label">补充 · 这个环境是「假」的，而这件事决定了后面所有细节</span>
 <p>真正的 RL（下棋、机器人）里，环境是<strong>外部的、随机的、部分可观测的</strong>。语言模型不是：</p>
@@ -2530,6 +2565,15 @@ $$
 
 <p>板书注：<em>total future reward from the current step</em>。注意它从 $t$ 加到 $T$，包含当前这一步拿到的奖励。</p>
 
+<p>它有一个<strong>递推形式</strong>，后面所有「bootstrapping」都从这儿来：</p>
+
+$$
+G_t=r_t+\sum_{u=t+1}^{T-1}\gamma^{u-t}r_u=r_t+\gamma\underbrace{\sum_{u=t+1}^{T-1}\gamma^{u-(t+1)}r_u}_{=\,G_{t+1}}
+$$
+
+<p>也就是 $G_t=r_t+\gamma G_{t+1}$。<strong>把「未来的一切」折成「这一步 + 下一步的估值」</strong>——
+这个折叠是 TD 误差、$V$ 的回归目标、GAE 里那个 $\lambda$ 全部的前提。没有它，就只能采到底才知道回报。</p>
+
 <h4>Value function：Return 的期望</h4>
 
 $$
@@ -2669,6 +2713,57 @@ $$
 它学到的是模式：开头就答非所问 → 低分；出现了具体步骤和数字 → 高分。
 <strong>没有魔法，就是一个回归器。</strong></p>
 
+<h4>Q 函数：先做这个动作，值多少 <span class="tag s">板书</span></h4>
+
+$$
+Q^\pi(s_t,a_t)=\mathbb{E}_\pi\big[G_t\mid s_t,a_t\big]
+$$
+
+<p>和 $V$ 只差一个字：<strong>$V$ 是「站在 $s_t$，之后按策略走」的期望；$Q$ 是「站在 $s_t$，先强制做 $a_t$，之后才按策略走」。</strong>
+板书把两个并排写，就是因为这个「先」字决定了它们的全部差别。</p>
+
+<p>两者由一条恒等式连起来：</p>
+
+$$
+V^\pi(s)=\sum_{a}\pi(a\mid s)\,Q^\pi(s,a)
+$$
+
+<p>读法：<strong>「按策略走」= 先按 $\pi$ 随机挑一个动作，再按 $Q$ 走下去，然后对所有可能的动作加权平均。</strong>
+这条式子只用到「$\pi$ 是一个分布」这一件事，没有任何额外假设。</p>
+
+<p>于是 advantage 有了第二种写法，也是更「干净」的那种：</p>
+
+$$
+A^\pi(s,a)=Q^\pi(s,a)-V^\pi(s)
+$$
+
+<table>
+<thead><tr><th>量</th><th>回答的问题</th><th>期望对什么取</th></tr></thead>
+<tbody>
+<tr><td>$V^\pi(s)$</td><td>站在这儿、之后按策略走，平均能得多少分？</td><td>所有后续动作</td></tr>
+<tr><td>$Q^\pi(s,a)$</td><td>站在这儿、先做 $a$、之后按策略走，平均能得多少分？</td><td>$a$ 之后的那些动作</td></tr>
+<tr><td>$A^\pi(s,a)$</td><td>做 $a$ 比「平均而言」好多少？</td><td>——（是一个差，不再取期望）</td></tr>
+</tbody>
+</table>
+
+<p>$A$ 比 $G_t-V_\psi(s_t)$ 更干净在哪：$G_t$ 是<strong>一次采样</strong>（带噪声），$Q$ 是它的<strong>期望</strong>。
+实际训练里我们只有采样，所以只能拿前者去估后者——这就是 §4.9 那张方差阶梯表要处理的事。</p>
+
+<div class="box key">
+<span class="label">补充 · 在 LLM 里，$Q$ 和 $V$ 只差一个位置</span>
+<p>因为转移是确定性的（$s_{t+1}=(s_t,a_t)$），而且中间步骤的 $r_t=0$：</p>
+
+$$
+Q^\pi(s_t,a_t)=\mathbb{E}\big[G_t\mid s_t,a_t\big]
+=\mathbb{E}\big[G_{t+1}\mid s_{t+1}\big]=V^\pi(s_{t+1})
+$$
+
+<p>于是 $A(s_t,a_t)=V(s_{t+1})-V(s_t)$——<strong>advantage 就是「下一步的估值减这一步的估值」</strong>。
+写成带奖励的形式，就是 TD 误差 $r_t+\gamma V(s_{t+1})-V(s_t)$。</p>
+<p>这条等式解释了一件常被误解的事：<strong>在 LLM 里 advantage 的位置差异几乎全部来自 $V$ 的估计</strong>，
+因为 $G_t$ 处处相同（本节最后会讲）。$V$ 估得准，$A$ 就有意义；$V$ 乱估，$A$ 就是噪声。</p>
+</div>
+
 <h4>Advantage：比平均好多少</h4>
 
 $$
@@ -2750,6 +2845,95 @@ $$
 <p>还有一个容易忘的前提：这个梯度是<strong>关于当前策略的</strong>。一旦 $\theta$ 更新，旧样本就不再服从 $P_\theta$，
 估计就有偏了。所以朴素 REINFORCE 必须 on-policy——每更新一次就要重新采样。PPO 用重要性采样把这一点放宽了一些，但没取消。</p>
 </div>
+
+<h4>换成轨迹的写法：为什么梯度里只剩策略项 <span class="tag s">板书</span></h4>
+
+<p>上面那版推导是在「一步决策」上做的。真正的 LLM 是几百步，所以要换成轨迹的语言：</p>
+
+$$
+J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\big[R(\tau)\big]=\int p_\theta(\tau)\,R(\tau)\,d\tau,
+\qquad
+R(\tau)=\sum_{t=0}^{T-1}\gamma^t r_t
+$$
+
+<p>关键是 $p_\theta(\tau)$ 长什么样。一条轨迹 = 一个初始状态 + 每一步的动作 + 每一次转移，所以</p>
+
+$$
+p_\theta(\tau)=d_0(s_0)\prod_{t=0}^{T-1}\pi_\theta(a_t\mid s_t)\,P(s_{t+1}\mid s_t,a_t)
+$$
+
+<p>取对数，连乘变连加：</p>
+
+$$
+\log p_\theta(\tau)=\underbrace{\log d_0(s_0)}_{\text{不含 }\theta}
++\sum_{t=0}^{T-1}\log\pi_\theta(a_t\mid s_t)
++\underbrace{\sum_{t=0}^{T-1}\log P(s_{t+1}\mid s_t,a_t)}_{\text{不含 }\theta}
+$$
+
+<p>再对 $\theta$ 求梯度——<strong>两头那两项直接变成 0</strong>：</p>
+
+$$
+\nabla_\theta\log p_\theta(\tau)
+=0+\sum_{t=0}^{T-1}\nabla_\theta\log\pi_\theta(a_t\mid s_t)+0
+$$
+
+<div class="box key">
+<span class="label">这一步最容易被跳过，但它决定了一切</span>
+<p>为什么初始分布和转移概率会消失？因为它们<strong>不含 $\theta$</strong>。$d_0$ 是数据分布，$P$ 是环境
+（在 LLM 里就是「把 token 拼上去」），两者都与模型参数无关。</p>
+<p>所以「对 $\theta$ 求梯度」这件事<strong>只作用在策略上</strong>。这就是为什么策略梯度里永远只有 $\nabla\log\pi_\theta$，
+从来不会出现 $\nabla P$ 或 $\nabla d_0$——<strong>我们改不了环境，只能改自己在环境里的选择。</strong></p>
+</div>
+
+<p>于是梯度变成「整条轨迹的回报 × 每一步的 log 概率梯度」：</p>
+
+$$
+\nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\left[\sum_{t=0}^{T-1}R(\tau)\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\right]
+$$
+
+<p>但这还是<strong>整条一个权重</strong>。还能再砍一刀，靠的是因果性。</p>
+
+<h4>因果性：过去的奖励不该算在这一步头上 <span class="tag s">板书</span></h4>
+
+<p>记 $h_t:=\nabla_\theta\log\pi_\theta(a_t\mid s_t)$。它在给定历史 $H_t=(s_0,a_0,\dots,s_t)$ 时的条件期望是</p>
+
+$$
+\mathbb{E}\big[h_t\mid H_t\big]
+=\sum_a\pi_\theta(a\mid s_t)\,\nabla_\theta\log\pi_\theta(a\mid s_t)
+=\sum_a\nabla_\theta\pi_\theta(a\mid s_t)
+=\nabla_\theta\underbrace{\sum_a\pi_\theta(a\mid s_t)}_{=\,1}
+=\nabla_\theta 1=0
+$$
+
+<p><strong>这一步的梯度，平均下来是 0。</strong>（§4.9 讲 baseline 时用的是同一个事实。）</p>
+
+<p>所以对任何<strong>只依赖 $t$ 之前历史</strong>的量 $c(H_t)$，都有 $\mathbb{E}[c(H_t)h_t]=0$。而 $u&lt;t$ 的奖励 $r_u$ 恰好满足这一点——
+第 $u$ 步拿到的奖励，在第 $t$ 步之前就已经定了。于是</p>
+
+$$
+\mathbb{E}\big[\gamma^{u-t}r_u\,h_t\big]=0\qquad(u&lt;t)
+$$
+
+<p><strong>过去那些项全被消掉了。</strong>求和从 $u=0$ 收到 $u=t$，剩下的正好是 return：</p>
+
+$$
+\boxed{\;
+\nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\left[\sum_{t=0}^{T-1}\gamma^{t}\,G_t\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\right],
+\qquad G_t=\sum_{u=t}^{T-1}\gamma^{u-t}r_u
+\;}
+$$
+
+<div class="box read">
+<span class="label">这三步各买到了什么</span>
+<p><strong>第一步（log trick）</strong>把「对分布求导」变成「对采样求期望」——买到<em>可计算</em>。</p>
+<p><strong>第二步（砍掉 $d_0$ 与 $P$）</strong>把「整条轨迹的联合概率」缩小到「每一步的策略概率」——买到<em>只优化自己能控制的部分</em>。</p>
+<p><strong>第三步（因果性）</strong>把「整条一个权重 $R(\tau)$」换成「每个位置一个权重 $G_t$」——买到<em>逐 token 的信号</em>。</p>
+<p>三步走完，才得到能写进代码的那一行。剩下唯一还能选的就是：<strong>$G_t$ 这个权重，要不要换成别的东西？</strong>
+这就是 §4.9 那张阶梯表要回答的问题。</p>
+</div>
+
+<p class="small">实现细节：$\gamma=1$ 时 $\gamma^t$ 就是 1，很多实现直接省掉，写成
+$\nabla_\theta J=\mathbb{E}\big[\sum_t G_t\nabla_\theta\log\pi_\theta\big]$。</p>
 
 <h4>和 SFT 的梯度对照</h4>
 
@@ -2968,7 +3152,7 @@ $$
 给定 $\pi^\star$ 就能写出 $r$，给定 $r$ 就能写出 $\pi^\star$。所以「学一个奖励模型」和「直接学策略」在信息上是等价的——
 这就是 DPO 的出发点。</p>
 
-<h3 id="s49">4.9 PPO 与 GRPO：baseline 从哪来 <span class="tag n">补充</span></h3>
+<h3 id="s49">4.9 PPO 与 GRPO：从 $\psi_t$ 到 clip <span class="tag s">板书</span></h3>
 
 <p>回到 §4.6 的梯度。它有一个致命的实践问题：方差太大。所有后续算法都在回答同一个问题——
 <strong>用什么当 $b$，使得 $\mathbb{E}_{a\sim\pi}\big[(r-b)\nabla_\theta\log\pi\big]$ 与
@@ -3079,6 +3263,130 @@ $$
 <p>注意 GRPO 那一行的优势公式，就是板书 §4.7 里那条 $(r-\mu)/\sigma$ 的逐样本版本。
 换句话说：<strong>GRPO = 把「组内归一化」直接当成 advantage，省掉 value 网络</strong>。
 这也是为什么它对奖励模型的形态特别友好——RM 给的本来就是整条序列一个分，逐 token 的 $V_\psi$ 在这里性价比不高。</p>
+
+<div class="box read">
+<span class="label">先认清楚：一个 RLHF 系统里有三个模型，只有一个在动</span>
+
+<table>
+<thead><tr><th>角色</th><th>参数</th><th>在 RL 中</th><th>提供什么</th></tr></thead>
+<tbody>
+<tr><td>策略（actor）</td><td>$\theta$</td><td><strong>训练</strong>：$\theta^t\to\theta^{t+1}$</td><td>采样回答、算 $\log\pi_\theta$</td></tr>
+<tr><td>参考模型</td><td>$\theta_{\text{SFT}}$，即 $\pi_{\text{ref}}$</td><td><strong>冻结</strong></td><td>算 KL，防止跑太远</td></tr>
+<tr><td>奖励模型</td><td>$\theta_{\text{RM}}$，即 $r_\phi$</td><td><strong>冻结</strong></td><td>给整条回答打分</td></tr>
+</tbody>
+</table>
+
+<p>板书把这三个 $\theta$ 并排写在「显式参数」下面，就是为了提醒：<strong>RL 阶段只在动第一个</strong>。
+后两个是前两个阶段（SFT、RM）的产物，进了 RL 就再也不更新。</p>
+<p>数据流是：$s_t\to$ 策略 $\to a_t\to$ 奖励模型给 $r$、参考模型给 KL $\to$ 合成
+$\hat r=r-\beta\,\mathrm{KL}\to$ 用 $\hat r$ 算优势 $\hat A$。</p>
+</div>
+
+<h4>把所有选法排成一张表：$\psi_t$ 的六种取法 <span class="tag s">板书</span></h4>
+
+<p>把 §4.6 那条梯度里的权重单独拎出来，记成 $\psi_t$：</p>
+
+$$
+\nabla_\theta J(\theta)=\mathbb{E}_{\tau\sim p_\theta}\left[\sum_t\psi_t\,\nabla_\theta\log\pi_\theta(a_t\mid s_t)\right]
+$$
+
+<p><strong>$\psi_t$ 决定「这个 token 的梯度被放大多少倍」。</strong>换一个 $\psi_t$ 就换一个算法——
+板书把六种选法排成一张表，并在旁边标了<strong>方差等级</strong>（★ 越多，方差越大）：</p>
+
+<table>
+<thead><tr><th>$\psi_t$ 取什么</th><th class="num">方差</th><th class="num">偏差</th><th>它在说什么</th></tr></thead>
+<tbody>
+<tr><td>$R(\tau)=\sum_t\gamma^t r_t$</td><td class="num">5★ 最高</td><td class="num">无偏</td><td>整条轨迹一个分，<strong>每个 token 权重相同</strong></td></tr>
+<tr><td>$G_t=\sum_{u=t}\gamma^{u-t}r_u$</td><td class="num">4★</td><td class="num">无偏</td><td>只算 $t$ 之后的奖励（因果性砍掉了过去的）</td></tr>
+<tr><td>$Q^\pi(s_t,a_t)$</td><td class="num">3★</td><td class="num">无偏</td><td>显式考虑「先做了这个动作」</td></tr>
+<tr><td>$G_t-b(s_t)$</td><td class="num">2★</td><td class="num">无偏</td><td>减掉 baseline，<strong>只留相对好坏</strong></td></tr>
+<tr><td>$r_t+\gamma V(s_{t+1})-V(s_t)$</td><td class="num">2.5★</td><td class="num"><strong>有偏</strong></td><td>TD 误差：只信一步，其余靠 $V$ 猜</td></tr>
+<tr><td>$A^\pi(s_t,a_t)=Q^\pi-V^\pi$</td><td class="num"><strong>1★ 最低</strong></td><td class="num">无偏</td><td>理论最优的那个权重</td></tr>
+</tbody>
+</table>
+
+<p>这张表的顺序<strong>不是随便排的</strong>，它是一条「把无关信息一点点扣掉」的链：</p>
+
+<ul>
+<li><strong>5★ → 4★：</strong>扣掉 $t$ 之前的奖励。它们和这一步无关（§4.6 那步 $\mathbb{E}[\gamma^{u-t}r_u h_t]=0$），留着只是噪声。</li>
+<li><strong>4★ → 2★：</strong>再扣掉「这道题本来该得几分」。这就是 baseline，也就是本节标题。</li>
+<li><strong>2★ → 1★：</strong>$G_t-b$ 里的 $b$ 若取成 $V(s_t)$，得到 $G_t-V(s_t)$，它的<strong>期望</strong>是 $Q-V=A$，
+但<strong>单次采样仍然抖</strong>；直接用 $A$ 本身（两个期望相减）方差最低。</li>
+<li><strong>2.5★ 是另一条路：</strong>不采到底，只走一步就靠 $V$ 补——方差比 $G_t$ 小得多，但因为用了「猜」出来的 $V$，
+<strong>变成有偏</strong>。这就是 TD 误差，也是 GAE 在 $\lambda=0$ 时的样子。</li>
+</ul>
+
+<div class="box key">
+<span class="label">一句话记住这张表</span>
+<p><strong>越往下，越少依赖「这一次采样」，越多依赖「$V$ 的估计」。</strong>采样是准的但吵，$V$ 是安静的但可能错。
+$\psi_t$ 的选择，本质上是<strong>在这两者之间选一个配比</strong>。</p>
+<p>这也解释了为什么 PPO 一定要额外训一个 value 网络：只有 $V$ 存在，表里后两行才有定义。</p>
+</div>
+
+<div class="box gold">
+<span class="label">易错 · 有偏的估计也能用</span>
+<p>表里 2.5★ 那行<strong>有偏</strong>（$V$ 不准时，$r_t+\gamma V(s_{t+1})-V(s_t)$ 的期望不等于 $A$）。
+初学者常以为「有偏 = 不能用」，其实不然：只要 $V$ 训得够准，偏差就很小，而方差收益很大。
+这就是 GAE 里 $\lambda$ 那个旋钮在做的事——<strong>用一点偏差换大量方差</strong>。</p>
+</div>
+
+<h4>clip 是从哪来的：自然梯度 → TRPO → PPO <span class="tag s">板书</span></h4>
+
+<p>上面所有讨论都假设「梯度指哪就往哪走一步」。但<strong>步长多大</strong>从来没管过。
+板书在最后写了一段「Reg policy gradient」，讲的正是这件事——<strong>PPO 为什么要 clip，clip 之前有什么</strong>。</p>
+
+<p><strong>问题：</strong>朴素更新 $\theta_{t+1}\leftarrow\theta_t+\alpha\nabla_\theta J(\theta_t)$ 里，$\alpha$ 是一个固定的数。
+但在策略空间里，「参数走多远」和「策略变多少」<strong>不是一回事</strong>——有些方向上参数动一点点，概率分布就翻天了。
+一步迈大了，策略直接崩，而且<strong>崩了之后采出来的数据全是废的</strong>（on-policy，没法回滚）。</p>
+
+<p><strong>自然梯度的做法</strong>：把「别走太远」写成约束，而且用 <strong>KL 距离</strong>量「远」，不用参数空间的欧氏距离。</p>
+
+$$
+\max_{\theta_{t+1}}\ J(\theta_t)+(\theta_{t+1}-\theta_t)^{\top}\nabla_\theta J(\theta_t)
+\qquad\text{s.t.}\qquad
+\mathbb{E}_{s\sim\pi_{\theta_t}}\Big[D_{\mathrm{KL}}\big(\pi_{\theta_{t+1}}(\cdot\mid s)\,\|\,\pi_{\theta_t}(\cdot\mid s)\big)\Big]\le\epsilon
+$$
+
+<p>读法：<strong>在「策略变化不超过 $\epsilon$」的前提下，尽量让目标变大。</strong>目标那一项是 $J$ 的一阶展开——
+因为约束已经限制了步长，一阶近似就够用了。</p>
+
+<p><strong>TRPO</strong>（Trust Region Policy Optimization）把它整理成可以直接优化的形式：</p>
+
+$$
+\max_\theta\ L(\theta,\theta_t)\quad\text{s.t.}\quad D_{\mathrm{KL}}\big(\pi_\theta\,\|\,\pi_{\theta_t}\big)\le\epsilon,
+\qquad
+L(\theta,\theta_t)=\mathbb{E}_{s,a\sim\pi_{\theta_t}}\left[\frac{\pi_\theta(a\mid s)}{\pi_{\theta_t}(a\mid s)}\,A(s,a)\right]
+$$
+
+<div class="box key">
+<span class="label">$\rho$ 就是从这里来的</span>
+<p>$L(\theta,\theta_t)$ 里那个比值 $\dfrac{\pi_\theta(a\mid s)}{\pi_{\theta_t}(a\mid s)}$，就是后面 clip 里的 $\rho$。</p>
+<p>它为什么必须存在：TRPO 用的是<strong>旧策略采的数据</strong>（$\pi_{\theta_t}$ 采的），却要评估<strong>新策略</strong>的期望。
+两者不是一个分布，所以要乘一个<strong>重要性采样</strong>的纠正权重。$\rho=1$ 表示新旧一样，$\rho=1.5$ 表示新策略给这个动作的概率是旧的 1.5 倍。</p>
+<p>顺便解释了为什么 $\rho$ 不能太大：重要性采样的方差随 $\rho$ 爆炸，$\rho$ 偏离 1 太远，估计就完全不可信了。</p>
+</div>
+
+<p><strong>PPO</strong> 嫌 TRPO 太麻烦：那个约束优化要算 Fisher 矩阵、要解二次规划，是二阶方法，工程上很重。
+于是它把「硬约束」换成「软惩罚」——用 clip 把 $\rho$ 卡在 $[1-\epsilon,1+\epsilon]$ 里，
+变成一个普通的、能一阶优化的目标：</p>
+
+$$
+\mathcal{L}^{\text{CLIP}}(\theta)=\mathbb{E}\Big[\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)\Big]
+$$
+
+<p>三者关系一句话说完：</p>
+
+<table>
+<thead><tr><th>算法</th><th>怎么限制「别走太远」</th><th>优化难度</th></tr></thead>
+<tbody>
+<tr><td>朴素策略梯度</td><td><strong>不限制</strong>，靠调学习率</td><td>一阶，简单但容易崩</td></tr>
+<tr><td>自然梯度 / TRPO</td><td>KL 距离的<strong>硬约束</strong> $\le\epsilon$</td><td>二阶（Fisher 矩阵 + 共轭梯度）</td></tr>
+<tr><td><strong>PPO</strong></td><td>把 $\rho$ 裁到 $[1-\epsilon,1+\epsilon]$，<strong>超了就梯度归零</strong></td><td>一阶，只要反向传播</td></tr>
+</tbody>
+</table>
+
+<p>所以：<strong>TRPO 是「解一个带约束的优化」，PPO 是「把它改写成不带约束、能一阶优化的形式」。</strong>
+clip 不是拍脑袋的技巧，它是 KL 约束的一阶近似——这就是为什么 $\epsilon$ 常取 0.2（对应「概率比最多变 ±20%」）。</p>
 
 <div class="box read">
 <span class="label">GAE 和 clip 怎么读</span>
@@ -3207,6 +3515,40 @@ $0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$。也就是说「<strong>大约�
 
 <p>$\epsilon$ 通常取 0.2，意思是「概率比最多变 ±20%」。</p>
 </div>
+
+<h4>RLOO：GRPO 的兄弟 <span class="tag s">板书</span></h4>
+
+<p>板书在 GRPO 旁边还写了一个 <strong>RLOO</strong>（leave-one-out，留一法），思路和 GRPO 几乎一样，
+差别只有一个分母。</p>
+
+<p>做法：同一个 prompt 采 $K$ 条回答，给第 $k$ 条当 baseline 的，是<strong>其余 $K-1$ 条的平均分</strong>：</p>
+
+$$
+b(s,a_k)=\frac{1}{K-1}\sum_{i\ne k}R(s,a_i),
+\qquad
+\hat A(s,a_k)=R(s,a_k)-b(s,a_k)
+$$
+
+<p>为什么叫「留一」：算第 $k$ 条的 baseline 时<strong>把第 $k$ 条自己排除掉</strong>。
+这样 $b$ 与这一条无关，满足「$b$ 只能依赖状态、不能依赖动作」这个条件（本节开头的易错框）。</p>
+
+<table>
+<thead><tr><th></th><th>RLOO</th><th>GRPO</th></tr></thead>
+<tbody>
+<tr><td>baseline 取什么</td><td>其余 $K-1$ 条的均值</td><td>全组 $K$ 条的均值</td></tr>
+<tr><td>要不要除标准差</td><td><strong>不除</strong></td><td><strong>除</strong> $\sigma$</td></tr>
+<tr><td>第 $k$ 条自己算进 baseline 吗</td><td>不算（留一）</td><td>算（组均值）</td></tr>
+</tbody>
+</table>
+
+<p>两个差别都值得说：</p>
+
+<ul>
+<li><strong>留一 vs 全组：</strong>全组均值里含自己，严格说 $b$ 依赖了动作 $a_k$，会引入一点偏差。$K$ 越大这点偏差越小，
+所以实践中两者效果接近；$K$ 很小时 RLOO 更严谨。</li>
+<li><strong>除不除 $\sigma$：</strong>除了之后，不同 prompt 的梯度尺度被拉平（难题和简单题一样狠）；
+但也会放大「本来就没差别」的组——$\sigma$ 很小时，除以一个极小的数，噪声被放大（题 C1 第 3 问就是这种情形）。</li>
+</ul>
 
 <div class="box gold">
 <span class="label">易错 · 「通用 RL 算法」不等于「随便换个算法都行」</span>
@@ -4115,6 +4457,11 @@ $\beta$ 越大，同样的比值差就被判为越大的 margin，模型越<stro
 绝对分数跨题不可比，这是 RL 那一部分所有推导的出发点。</li>
 </ol>
 </div>
+
+<p class="small"><strong>另有一份老师单独发的手写讲义</strong>（<code>ppo.pdf</code>，7 页，从 MDP 一路推到 TRPO）。
+它的内容已按主题并入正文，不再单列：MDP 六元组 → §4.2；$Q$ 函数与 $V=\sum_a\pi Q$ → §4.5；
+轨迹写法、$\nabla\log p_\theta(\tau)$ 只剩策略项、因果性 → §4.6；$\psi_t$ 的六种取法（方差阶梯表）、
+自然梯度 → TRPO → PPO、RLOO → §4.9。</p>
 
 <h3 id="apE">E · 参考文献</h3>
 
