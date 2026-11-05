@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作业代码索引 · 题目、代码与运行结果图（公式版）</title>
+<link rel="stylesheet" href="../assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8;-webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 14px}
+h1{font-size:30px;line-height:1.35;font-weight:600;margin:0 0 18px;letter-spacing:-.01em}
+.lede{font-size:15px;color:var(--ink2);margin:0 0 8px}
+h2{font-size:21px;font-weight:600;margin:56px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:600;margin:34px 0 12px}
+p{margin:12px 0}
+ul,ol{margin:12px 0;padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;
+  background:var(--bg2);padding:1px 5px;border-radius:4px}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;overflow-x:auto;line-height:1.65}
+pre code{background:none;padding:0;font-size:13px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+blockquote{margin:20px 0;padding:12px 18px;border-left:3px solid var(--gold);
+  background:var(--gold-bg);border-radius:0 10px 10px 0;color:var(--ink)}
+blockquote p{margin:6px 0}
+.tag{display:inline-block;font-size:11.5px;font-weight:500;line-height:1.6;
+  padding:1px 8px;margin-left:10px;border-radius:20px;vertical-align:2px;
+  color:var(--ok);background:var(--ok-bg);white-space:nowrap}
+.tag.a{color:var(--warn);background:var(--warn-bg)}
+.toc{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:28px 0 8px}
+.toc .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--ink2);margin:0}
+.toc ol{margin:8px 0 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px;color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13px}
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px}
+.math-block{margin:20px 0}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.5px;color:var(--ink3);margin-top:6px}
+</style>
+</head>
+<body><div class="wrap">
+<p class="eyebrow">FDU · 数值算法与案例分析 Ⅰ · 2026 秋</p>
+<h1>作业代码索引 · 题目、代码与运行结果图</h1>
+<p class="lede">公式完整版：所有数学式子由随仓库提交的 KaTeX 本地渲染，断网可用、目录可跳转。
+只看图与结论的速览版见 <a href="./README.md">README.md</a>。</p>
+<div class="box key"><p class="label">这一份解决什么</p>
+<p>GitHub 的 Markdown 对 <code>$...$</code> 有严格边界要求（前面必须是 ASCII 空白或标点），
+紧贴中文时公式会退化成美元符号原文；块公式写成一行还会被降级成行内，把行距撑歪。
+这一页是独立 HTML，不经过 Markdown 解析：行内公式仍写 <code>$...$</code>，
+块公式改写为 <code>&#92;[...&#92;]</code> display 定界符，全部交给本地 KaTeX 渲染。</p></div>
+<div class="box warn"><p class="label">来源三态（读之前先分清）</p>
+<p><strong>题目原文</strong>来自老师每周的 PDF（<code>2026-MM-DD/homework-*.pdf</code>）；
+<strong>代码</strong>是我本人写的作业脚本；<strong>图</strong>由本机 MATLAB R2025a 无头模式实跑导出。
+标了「含补做图」的两节，作业原脚本只打印数值、不画 figure，那几张图由我另写的
+<code>visualize/</code> 脚本生成，<strong>不是作业代码的输出</strong>。
+各节「题目在问什么」「这张图在说什么」是我写的解读，不是老师给的标准答案。</p></div>
+<nav class="toc" aria-label="目录"><div class="label">目录</div><ol><li><a href="#目录怎么读">目录怎么读</a><ol><li><a href="#两份需要说明的特殊情况">两份需要说明的特殊情况</a></li><li><a href="#复现这些图">复现这些图</a></li></ol></li><li><a href="#八周总览">八周总览</a></li><li><a href="#2026-09-08">2026-09-08</a><ol><li><a href="#p5--gaussian-elimination-计时曲线">P5 · Gaussian elimination 计时曲线</a></li></ol></li><li><a href="#2026-09-15--09-29前三周">2026-09-15 ~ 09-29（前三周）</a></li><li><a href="#2026-10-13">2026-10-13</a><ol><li><a href="#p2--krylov-子空间的正交基以及正交性损失">P2 · Krylov 子空间的正交基，以及正交性损失</a></li><li><a href="#p5--10001000-正矩阵的谱半径">P5 · 1000×1000 正矩阵的谱半径</a></li></ol></li><li><a href="#2026-10-20">2026-10-20</a><ol><li><a href="#p2--pascal-矩阵的最小特征值invit-vs-rqi">P2 · Pascal 矩阵的最小特征值：INVIT vs RQI</a></li><li><a href="#p3--wilkinson-矩阵的子空间迭代5-列-vs-6-列">P3 · Wilkinson 矩阵的子空间迭代：5 列 vs 6 列</a></li><li><a href="#p5--hessenberg-约化householder-vs-mgs-arnoldi">P5 · Hessenberg 约化：Householder vs MGS-Arnoldi</a></li></ol></li><li><a href="#2026-10-27">2026-10-27</a><ol><li><a href="#p1--上三角阵的全体特征向量-vs-eig">P1 · 上三角阵的全体特征向量 vs eig</a></li><li><a href="#p4--秩一修正的--与特征值">P4 · 秩一修正的 $f(\lambda)$ 与特征值</a></li><li><a href="#p5--jacobi-diagonalization">P5 · Jacobi diagonalization</a></li></ol></li><li><a href="#2026-11-03">2026-11-03</a><ol><li><a href="#p4--非平凡-jordan-块的特征值前向误差">P4 · 非平凡 Jordan 块的特征值前向误差</a></li></ol></li><li><a href="#交叉索引图--课堂笔记">交叉索引：图 ↔ 课堂笔记</a></li></ol></nav>
+<p>把每周作业题、我自己写的 MATLAB 代码、以及代码跑出来的图放在一起对照。<strong>每一道题先看「在问什么」，再看图说了什么结论</strong>——图不是装饰，是用来把题目里那句「What do you observe?」变成能看见的东西。</p>
+<ul>
+<li>覆盖 2026-09-08 ~ 2026-11-03 共 <strong>8 周作业</strong>、<strong>11 份作业 MATLAB 代码 + 2 份补做可视化脚本</strong>、<strong>19 张运行结果图</strong>。</li>
+<li>前 4 周以证明/手算题为主，代码写在 C++ 里或没有代码，所以没有图；有图的从 10-13 开始。</li>
+<li>图全部由本机 <strong>MATLAB R2025a</strong> 无头模式实际运行作业脚本导出，没有手绘、没有示意假图。</li>
+</ul>
+<hr />
+<h2 id="目录怎么读">目录怎么读</h2>
+<pre><code>作业代码/
+├── README.md                      ← 本文件
+├── 2026-10-20/                    ← 一周一个目录
+│   ├── homework-20261020.pdf      ← 老师出的题目原文
+│   ├── P2_Pascal_INVIT_RQI.m      ← 题号前缀 + 内容描述
+│   └── ...
+├── figures/2026-10-20/            ← 这一周跑出来的图
+│   └── 20261020_P2_Pascal_INVIT_RQI_fig1.png
+└── visualize/                     ← 两道「原脚本只打印数字」的题，补做的可视化脚本
+    ├── VIS_P1_eigenvector_visualization.m
+    └── VIS_P4_Jordan_forward_error.m
+</code></pre>
+<p>文件名的 <code>P&lt;n&gt;_</code> 前缀对应题目 PDF 里的第 n 题。<strong>没有代码的题不编造代码</strong>，在每周末尾列出并说明为什么没有。</p>
+<blockquote>
+<p>⚠️ <code>Homework &amp; Exam/数值算法 01–13</code> 是往届学长的作业解答，PDF 里带姓名学号，<strong>不是我的成果，不入库</strong>，只作参考。
+题目 PDF 的版权归复旦大学及授课教师所有，这里仅为个人复习存档。</p>
+</blockquote>
+<h3 id="两份需要说明的特殊情况">两份需要说明的特殊情况<span class="tag a">含补做图</span></h3>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>10.20数值作业/RQgenerateuppertriangular.m</code> 名实不符（内容其实是 Hessenberg 约化的正交性检查）</td>
+<td>按内容重命名为 <code>2026-10-20/P5_Hessenberg_orthogonality_early.m</code>，作为 P5 的<strong>早期版本</strong>保留，与正式版并列</td>
+</tr>
+<tr>
+<td><code>11.3数值作业/</code> 是空目录，11-03 的 P4 代码散在 MATLAB 根目录</td>
+<td>收进 <code>2026-11-03/P4_Jordan_eigenvalue_error.m</code></td>
+</tr>
+<tr>
+<td><code>10.13数值作业/Arnoldi.m</code> 把函数定义写在脚本段<strong>之前</strong></td>
+<td>原样入库（MATLAB 会报错）。重绘时把第 1–43 行的局部函数挪到文件末尾即可；本仓库的图就是用调整顺序后的临时副本跑的，<strong>代码内容未改</strong></td>
+</tr>
+<tr>
+<td>10-27 P1 与 11-03 P4 的作业脚本只 <code>disp</code> 数字、不画 figure</td>
+<td>不改动作业代码，另写 <code>visualize/</code> 下两份脚本补图，下面会标明哪些图是补做的</td>
+</tr>
+</tbody>
+</table>
+<h3 id="复现这些图">复现这些图<span class="tag">作业代码实跑</span></h3>
+<pre><code class="language-matlab">% 普通作业脚本：进入对应周目录直接运行，figure 会显示出来
+cd('2026-10-20'); P2_Pascal_INVIT_RQI
+
+% 补做的两份可视化：直接运行即可，PNG 自动写进 ../figures/&lt;周&gt;/
+cd('visualize'); VIS_P1_eigenvector_visualization
+cd('visualize'); VIS_P4_Jordan_forward_error
+</code></pre>
+<p>批量导出用的是 <code>matlab -batch</code> + <code>set(0,'DefaultFigureVisible','off')</code> + <code>print(h,'-dpng','-r130')</code>，中文标签在本机默认字体下正常。<strong>随机矩阵都设了种子</strong>（作业脚本自带的 <code>rng</code> 保留），不同机器重跑数值量级一致、末位会有差别。</p>
+<hr />
+<h2 id="八周总览">八周总览</h2>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>题目 PDF</th>
+<th>有代码的题</th>
+<th>图</th>
+<th>一眼看懂的结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#2026-09-08">09-08</a></td>
+<td><a href="./2026-09-08/homework-20260908.pdf">PDF</a></td>
+<td>P5</td>
+<td>1</td>
+<td>Gaussian elimination 的计时在 log–log 上斜率 2.58，接近理论的 $O(n^3)$</td>
+</tr>
+<tr>
+<td><a href="#2026-09-15--09-29前三周">09-15</a></td>
+<td><a href="./2026-09-15/homework-20260915.pdf">PDF</a></td>
+<td>—</td>
+<td>0</td>
+<td>浮点误差分析周，代码是 C++，未入库</td>
+</tr>
+<tr>
+<td><a href="#2026-09-15--09-29前三周">09-22</a></td>
+<td><a href="./2026-09-22/homework-20260922.pdf">PDF</a></td>
+<td>—</td>
+<td>0</td>
+<td>三对角 GE 精度，代码是 C++，未入库</td>
+</tr>
+<tr>
+<td><a href="#2026-09-15--09-29前三周">09-29</a></td>
+<td><a href="./2026-09-29/homework-20260929.pdf">PDF</a></td>
+<td>—</td>
+<td>0</td>
+<td>P4 六种 QR 正交性比较（题目要求画图），当时没留代码</td>
+</tr>
+<tr>
+<td><a href="#2026-10-13">10-13</a></td>
+<td><a href="./2026-10-13/homework-20261013.pdf">PDF</a></td>
+<td>P2, P5</td>
+<td>2</td>
+<td>Arnoldi 的正交性随 $k$ 丢到 $10^{-6}$；正矩阵幂法一步就收敛</td>
+</tr>
+<tr>
+<td><a href="#2026-10-20">10-20</a></td>
+<td><a href="./2026-10-20/homework-20261020.pdf">PDF</a></td>
+<td>P2, P3, P5×2</td>
+<td>6</td>
+<td>RQI 比 INVIT 快；子空间迭代「多取一列」才不卡住；MGS-Arnoldi 在退化矩阵上彻底不正交</td>
+</tr>
+<tr>
+<td><a href="#2026-10-27">10-27</a></td>
+<td><a href="./2026-10-27/homework-20261027.pdf">PDF</a></td>
+<td>P1, P4, P5</td>
+<td>7</td>
+<td>回代分母就是特征值之差；$f(\lambda)$ 的根与特征值一一交错；Jacobi 的收敛史</td>
+</tr>
+<tr>
+<td><a href="#2026-11-03">11-03</a></td>
+<td><a href="./2026-11-03/homework-20261103.pdf">PDF</a></td>
+<td>P4</td>
+<td>3</td>
+<td>Jordan 块把 $10^{-16}$ 的舍入放大成 $10^{-4}$ 的特征值误差</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2026-09-08">2026-09-08</h2>
+<p>题目 PDF：<a href="./2026-09-08/homework-20260908.pdf">homework-20260908.pdf</a>（P1–P5 必做，P6–P7 选做）</p>
+<h3 id="p5--gaussian-elimination-计时曲线">P5 · Gaussian elimination 计时曲线<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：自己写一个不选主元的 Gaussian elimination 解线性方程组，矩阵规模 $n$ 从大到小各异，量一下每个 $n$ 花多少秒，然后在双对数坐标上画出来——本质是让你用实验验证「运算量 $\sim n^3$」这句话。</p>
+<p><strong>代码</strong>：<a href="./2026-09-08/P5_GE_timing_loglog.m"><code>P5_GE_timing_loglog.m</code></a>　<strong>做法</strong>：对标准正态随机矩阵做 LU（无 pivoting），<code>tic/toc</code> 计时，$n=100\sim 2400$。</p>
+<figure><img loading="lazy" src="./figures/2026-09-08/20260908_P5_GE_timing_fig1.png" alt="GE 计时的双对数曲线" /><figcaption>图 1 · GE 计时的双对数曲线</figcaption></figure>
+<p><strong>这张图在说什么</strong>：横轴 $n$、纵轴耗时都是对数刻度，蓝点连成的直线斜率拟合得 <strong>2.577</strong>，红色虚线是参考斜率。理论上 GE 的浮点运算量是 $\tfrac23 n^3$，斜率该是 3；实测偏小，因为 $n$ 还小、BLAS 的矩阵乘法和内存访问常数项没进入渐近区，另外计时包含了矩阵生成开销。跑到 $n=2400$ 用了 <strong>67.2 秒</strong>，已经是 $n=100$ 时的约 4700 倍。</p>
+<p><strong>其余题</strong>：P1 解上三角方程组的两种实现、P2 原地求 $L^{-1}$（只访问下三角、$O(1)$ 辅助空间）、P3 证明带状矩阵的 $L,U$ 保持半带宽 $b$、P4 手算一个特殊矩阵的精确 LU —— 都是推导/实现题，未留代码。</p>
+<hr />
+<h2 id="2026-09-15--09-29前三周">2026-09-15 ~ 09-29（前三周）</h2>
+<p>这三周<strong>没有入库的代码，也没有图</strong>，如实说明：</p>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>题目 PDF</th>
+<th>情况</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>09-15</td>
+<td><a href="./2026-09-15/homework-20260915.pdf">PDF</a></td>
+<td>P2「单精度算调和级数，观察到什么」有 C++ 程序 <code>floatestimateharmonicseries.cpp</code>（在工作区根目录，按约定未入库）。这周题目是浮点格式、相对误差、cancellation、$fl(Ax)=(A+E)x$ 的界，以推导为主</td>
+</tr>
+<tr>
+<td>09-22</td>
+<td><a href="./2026-09-22/homework-20260922.pdf">PDF</a></td>
+<td>P5「三对角方程组有/无 pivoting 的精度比较」有 C++ 程序 <code>GAUSSaccuracy.cpp</code>（未入库）。P3 growth factor 上界、P4 Householder 反射存在条件都是证明题</td>
+</tr>
+<tr>
+<td>09-29</td>
+<td><a href="./2026-09-29/homework-20260929.pdf">PDF</a></td>
+<td><strong>P4 明确要求画图</strong>：六种 QR（Cholesky-QR / Householder / CGS / MGS / CGS2 / MGS2）用 <code>imagesc</code> 比较 $\|Q^*Q-I\|$ 的逐元素正交性损失和 $\|A-QR\|_F$。当时没留代码，这是 10-20 P5 那份 Hessenberg 代码里 <code>imagesc</code> 图的「前身」，可以对照看。P5 拟合 $\{(n,\ln n)\}$ 的直线同样无代码</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>三周的共同主题是<strong>误差从哪来</strong>：09-15 是表示与舍入，09-22 是条件数与 growth factor，09-29 是正交性损失。后面 10-13 的 Arnoldi 图、10-20 的 Hessenberg 图，其实是在同一个问题上继续往深里走。</p>
+</blockquote>
+<hr />
+<h2 id="2026-10-13">2026-10-13</h2>
+<p>题目 PDF：<a href="./2026-10-13/homework-20261013.pdf">homework-20261013.pdf</a></p>
+<h3 id="p2--krylov-子空间的正交基以及正交性损失">P2 · Krylov 子空间的正交基，以及正交性损失<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：给矩阵 $A$ 和向量 $r$，把 $\{r, Ar, A^2r,\dots\}$ 张成的空间找一组标准正交基出来（就是 Arnoldi 过程），实现它，并<strong>把「这组基慢慢变得不正交」这件事画出来</strong>。</p>
+<p><strong>代码</strong>：<a href="./2026-10-13/P2_Arnoldi_orthogonality.m"><code>P2_Arnoldi_orthogonality.m</code></a>　<strong>做法</strong>：$200\times200$ 复随机矩阵、$k=100$；红线是单次 MGS 的 Arnoldi，绿线是每步重正交化两遍的版本；纵轴画前 $j$ 列的 $\|Q_j^*Q_j-I\|_F$。</p>
+<figure><img loading="lazy" src="./figures/2026-10-13/20261013_P2_Arnoldi_orthogonality_fig1.png" alt="Arnoldi 过程中的正交性损失" /><figcaption>图 2 · Arnoldi 过程中的正交性损失</figcaption></figure>
+<p><strong>这张图在说什么</strong>：两条曲线都随 $k$ 单调上升——不修正（红）到 $\sim10^{-6}$，重正交化（绿）到 $\sim10^{-7}$，只低了约一个数量级。<strong>这就是题目要的 observation</strong>：长递推里 MGS 一步步把舍入误差累积进 $Q$，$k$ 越大越不正交。</p>
+<blockquote>
+<p>⚠️ 有两处要照实说：① 代码图例写「重正交化修正 (误差极小)」，但图上绿线同样升到 $10^{-7}$，并没保持机器精度——说明这里的重正交化只做了一次 MGS 的补正交，不足以完全压住损失；② 题目要求「visualize the loss of orthogonality」，图做到了，但没有和 CGS 或完全重正交化（CGS2/MGS2）对照。想看那层对比可以接 09-29 P4。</p>
+</blockquote>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记 §4.3–§4.5</a>（Arnoldi 正交化的板书逐行、为什么 $Aq_j$ 只落在前 $j+1$ 个方向）；<a href="../补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记 §2.4.3</a>（Krylov → 换酉基）。</p>
+<h3 id="p5--10001000-正矩阵的谱半径">P5 · 1000×1000 正矩阵的谱半径<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：造一个元素全为正的 $1000$ 阶随机矩阵，用幂法求谱半径 $\rho(A)$，把收敛过程画出来。</p>
+<p><strong>代码</strong>：<a href="./2026-10-13/P5_power_iteration_rho.m"><code>P5_power_iteration_rho.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-13/20261013_P5_power_iteration_fig1.png" alt="幂法收敛历史" /><figcaption>图 3 · 幂法收敛历史</figcaption></figure>
+<p><strong>这张图在说什么</strong>：蓝线是每步的 Rayleigh 商/特征值估计，红色虚线是 $\rho(A)=500.3459$。图看起来几乎就是一条水平线——<strong>第 2 步就已经贴上真值</strong>，100 步后差 $5.68\times10^{-13}$。原因是随机正矩阵由 Perron–Frobenius 定理保证主特征值唯一为正，且 $|\lambda_2/\lambda_1|$ 极小（次大模被 $n$ 个随机正项平均掉了），幂法的收敛率就是这个比值。纵轴范围只有 $500.29\sim500.35$，是把收敛史放大到能看清的尺度。</p>
+<p><strong>其余题</strong>：P1 证明 $AXA=A$ 与 $(AX)^*=AX$；<strong>P3 讨论「模最大特征值有 $k$ 重时幂法会怎样」、P4 讨论 $A=\begin{bmatrix}\lambda&1\\0&-\lambda\end{bmatrix}$ 上幂法会怎样</strong> —— 这两题是纯讨论题，没有代码，但 <a href="../补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记 §1.4</a> 的两个附注正是为回应它们写的（前者破坏「$\lambda_1$ 半简单」、后者破坏 $|\lambda_1|>|\lambda_2|$）。P6–P9 的 QRCP / GLS / GTH 未做。</p>
+<hr />
+<h2 id="2026-10-20">2026-10-20</h2>
+<p>题目 PDF：<a href="./2026-10-20/homework-20261020.pdf">homework-20261020.pdf</a></p>
+<h3 id="p2--pascal-矩阵的最小特征值invit-vs-rqi">P2 · Pascal 矩阵的最小特征值：INVIT vs RQI<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：$10\times10$ 的 Pascal 矩阵 $P_{10}$，用反幂法（INVIT）和 Rayleigh 商迭代（RQI）各求一次最小特征值，把两条收敛曲线放一起比。</p>
+<p><strong>代码</strong>：<a href="./2026-10-20/P2_Pascal_INVIT_RQI.m"><code>P2_Pascal_INVIT_RQI.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P2_Pascal_INVIT_RQI_fig1.png" alt="INVIT 与 RQI 收敛历史" /><figcaption>图 4 · INVIT 与 RQI 收敛历史</figcaption></figure>
+<p><strong>这张图在说什么</strong>：纵轴是残差 $\|Av-\lambda v\|$（对数刻度，$10^0$ 到 $10^{-16}$），横轴迭代次数。橙色的 RQI 约 <strong>5 步</strong>就砸到机器精度平台，蓝色的 INVIT 要 <strong>8 步</strong>左右——这就是三次收敛 vs 线性收敛的差别。两者最后都停在 $10^{-15}$ 附近不再下降，因为最小特征值只有 $1.5513\times10^{-5}$（INVIT 得 <code>1.551328375389123e-05</code>，RQI 得 <code>1.551328374622169e-05</code>），$P_{10}$ 极度病态，残差到底也压不下去。</p>
+<p><strong>关联笔记</strong>：<a href="../补课笔记-幂法反幂法与第3章引言.html">10.13 补课笔记 §2.6 RQI</a>（三次收敛的两块拼图、分量→夹角的桥接）。</p>
+<h3 id="p3--wilkinson-矩阵的子空间迭代5-列-vs-6-列">P3 · Wilkinson 矩阵的子空间迭代：5 列 vs 6 列<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：$21\times21$ 的 Wilkinson 矩阵 $W_{10}$ 求最大的 5 个特征值。分别用 5 列和 6 列的初始子空间跑子空间迭代，问你「观察到什么」——这是全周最值得画的一题。</p>
+<p><strong>代码</strong>：<a href="./2026-10-20/P3_Wilkinson_subspace_iteration.m"><code>P3_Wilkinson_subspace_iteration.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P3_subspace_iteration_fig1.png" alt="子空间迭代 5 列与 6 列的收敛对比" /><figcaption>图 5 · 子空间迭代 5 列与 6 列的收敛对比</figcaption></figure>
+<p><strong>这张图在说什么</strong>：蓝线（5 列）降到 $10^{-8}$ 就<strong>平了</strong>，100 次迭代也不再动；橙线（6 列）一路降到 $10^{-15}$。人话解释：$W_{10}$ 的第 5、6 个特征值模几乎相等，取 $p=5$ 时收敛率是 $|\lambda_6/\lambda_5|\approx1$，等于没有收敛；<strong>多取一列</strong>让分母换成 $\lambda_7$，收敛立刻恢复。这正是课上「多取一列」那条实用建议的来源。</p>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记 §3.4</a> 有这段的完整推导（$X_0=VC$ 推出 $\rho=|\lambda_{p+1}/\lambda_p|$，并专门讲了 $W_{10}$ 卡在 $10^{-8}$ 平台）。</p>
+<h3 id="p5--hessenberg-约化householder-vs-mgs-arnoldi">P5 · Hessenberg 约化：Householder vs MGS-Arnoldi<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：用 (a) Householder 反射 (b) 基于 MGS 的 Arnoldi 过程，各实现一遍 $A=QHQ^*$，然后检查 $\|Q^*AQ-H\|_F$ 和 $\|Q^*Q-I\|_F$ 两个精度指标，问你观察到什么。</p>
+<p><strong>正式版代码</strong>：<a href="./2026-10-20/P5_Hessenberg_Householder_vs_Arnoldi.m"><code>P5_Hessenberg_Householder_vs_Arnoldi.m</code></a>
+<strong>早期版代码</strong>（原名 <code>RQgenerateuppertriangular.m</code>）：<a href="./2026-10-20/P5_Hessenberg_orthogonality_early.m"><code>P5_Hessenberg_orthogonality_early.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P5_Hessenberg_fig1.png" alt="四种情形下的 |Q*Q-I| 逐元素色图" /><figcaption>图 6 · 四种情形下的 |Q*Q-I| 逐元素色图</figcaption></figure>
+<p><strong>第一张图在说什么</strong>：四幅 <code>imagesc</code> 画的是 $|Q^*Q-I|$ 的<strong>逐元素</strong>绝对值（色标 $10^{-15}$ 到 $10^1$），上排随机矩阵、下排 $A=\mathrm{triu}(\mathbf 1,1)$（全 1 严格上三角）。标题里的 Frobenius 范数：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>随机 <code>randn</code> 矩阵</th>
+<th><code>triu(ones(n),1)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Householder</td>
+<td>$6.12\times10^{-15}$</td>
+<td><strong>$0.00$</strong>（精确正交）</td>
+</tr>
+<tr>
+<td>Arnoldi (MGS)</td>
+<td>$9.86\times10^{-15}$</td>
+<td><strong>$1.34$</strong>（完全不正交）</td>
+</tr>
+</tbody>
+</table>
+<p>随机矩阵上两者都好；换成退化的上三角阵，MGS-Arnoldi 的 Krylov 序列几步就塌到同一个方向，$Q$ 的列几乎平行，色图右下/右上出现大片黄绿色的非零带。Householder 是乘一串正交变换，不受输入矩阵影响。</p>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P5_Hessenberg_fig2.png" alt="正交性损失随矩阵维度变化" /><figcaption>图 7 · 正交性损失随矩阵维度变化</figcaption></figure>
+<p><strong>第二张图在说什么</strong>：把 $n=10\sim100$ 扫一遍，纵轴 $\|Q^*Q-I\|_F$（对数）。三条实线（随机矩阵两种、上三角 Householder）稳定在 $10^{-14}\sim10^{-13}$；紫色虚线 <code>triu: Arnoldi</code> 从 $10^{-12}$ 一路冲到 $\sim10^{1}$ 后在 $n\ge50$ 饱和——<strong>维度越大越糟，而且不是缓慢变差，是量级上的崩塌</strong>。</p>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P5_early_fig1.png" alt="早期版的逐元素正交性色图" /><figcaption>图 8 · 早期版的逐元素正交性色图</figcaption></figure>
+<figure><img loading="lazy" src="./figures/2026-10-20/20261020_P5_early_fig2.png" alt="早期版的范数随维度变化" /><figcaption>图 9 · 早期版的范数随维度变化</figcaption></figure>
+<p><strong>早期版两张图</strong>：灰度色图里 Householder 是 $1.15\times10^{-14}$、Arnoldi(MGS) 是 $3.79\times10^{-14}$，后者左下角已有明显的亮色扇形（误差集中在<strong>后生成的列之间</strong>，正是 MGS 逐步累积的样子）；$n=10\sim200$ 的扫描里，Householder 平滑地从 $10^{-15}$ 爬到 $3\times10^{-14}$，Arnoldi 则在 $10^{-14}\sim10^{-12}$ 之间震荡。</p>
+<blockquote>
+<p>⚠️ <strong>这份实现相对题目要求缺了一块</strong>：题目要同时检查 $\|Q^*AQ-H\|_F$ 和 $\|Q^*Q-I\|_F$，但上面六张图画的<strong>全是后者</strong>，代码里也没有算 $Q^*AQ-H$。正交性这一半的结论是可信的，另一半指标还没有验证。</p>
+</blockquote>
+<p><strong>其余题</strong>：P1 证明 Rayleigh 商的误差是 $O(\epsilon^2)$（对应 <a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记 §2.2 的角度刻画</a>）、P4 证明带位移 QR 迭代的多项式恒等式（<a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">§7.2</a>）——都是证明题。P6 选做的 plain QR 算法未做。</p>
+<hr />
+<h2 id="2026-10-27">2026-10-27</h2>
+<p>题目 PDF：<a href="./2026-10-27/homework-20261027.pdf">homework-20261027.pdf</a></p>
+<h3 id="p1--上三角阵的全体特征向量-vs-eig">P1 · 上三角阵的全体特征向量 vs <code>eig</code><span class="tag a">含补做图</span></h3>
+<p><strong>题目在问什么</strong>：对角元互不相同的上三角阵，自己写程序把<strong>所有</strong>特征向量算出来，再和数学库（MATLAB <code>eig</code>）的结果比一比。</p>
+<p><strong>作业代码</strong>：<a href="./2026-10-27/P1_upper_triangular_eigenvectors.m"><code>P1_upper_triangular_eigenvectors.m</code></a>　<strong>做法</strong>：$n=50$，对每个 $\lambda=A_{ii}$ 从 $v_i=1$ 出发向上回代</p>
+<div class="math-block">\[v_k=-\frac{\sum_{j=k+1}^{i}A_{kj}v_j}{A_{kk}-\lambda}\]</div>
+<p>再归一化。原脚本只 <code>disp</code> 三个数：特征值误差 $0$、特征向量最大残差 $2.15\times10^{-14}$、与 <code>eig</code> 的绝对值差 $3.40\times10^{-16}$，<strong>不画图</strong>。</p>
+<p><strong>补做的可视化脚本</strong>：<a href="./visualize/VIS_P1_eigenvector_visualization.m"><code>VIS_P1_eigenvector_visualization.m</code></a>（沿用同一个回代公式，下面两张图由它生成）</p>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P1_eigenvector_residual_fig1.png" alt="回代法与 eig 的残差、夹角" /><figcaption>图 10 · 回代法与 eig 的残差、夹角</figcaption></figure>
+<p><strong>补做图 1 在说什么</strong>：上图是 50 个特征向量逐个的<strong>相对残差</strong>，蓝（回代法）和红（<code>eig</code>）都贴在 $10^{-16}$ 附近、几乎重合——所以「比一比」的答案是：对角元离得开时，回代法和库函数一样准。下图是两者的夹角，绝大多数列严格为 0 度，个别列约 $1.2\times10^{-6}$ 度（差一个符号不算差，比较时取了绝对值）。</p>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P1_eigenvector_residual_fig2.png" alt="特征值间隔缩小时回代法的变化" /><figcaption>图 11 · 特征值间隔缩小时回代法的变化</figcaption></figure>
+<p><strong>补做图 2 在说什么</strong>（这张才是这题的关键）：把相邻对角元的间隔 $\delta$ 从 $1$ 缩到 $10^{-10}$（$n=12$），右轴红线是<strong>归一化之前</strong> $\|v\|$ 的放大倍数，从 $1$ 一路涨到 $10^{100}$ 以上。原因就写在回代公式里：分母 $A_{kk}-\lambda$ 是<strong>两个特征值之差</strong>，间隔每小一个数量级，误差被放大一大截。左轴蓝线是归一化后的残差，看上去还在 $10^{-16}$ 附近甚至更小——<strong>归一化把中间量的爆炸掩盖了</strong>，这正是只看残差会漏掉的陷阱。</p>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261027-特征向量的计算.html">10.27 课堂笔记 §2.3–§2.4</a>，板书里那句「<strong>回代分母 = 两个特征值之差</strong>」就是这张图的注脚；§2.6 特征向量条件数 $1/|y^{\mathsf T}x|$ 继续解释为什么特征值挤成簇时宁可要不变子空间。</p>
+<h3 id="p4--秩一修正的--与特征值">P4 · 秩一修正的 $f(\lambda)$ 与特征值<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：造 $A=\mathrm{diag}\{d_i\}+zz^{\mathsf T}$，把</p>
+<div class="math-block">\[f(\lambda)=1-\sum_{i=1}^{n}\frac{z_i^2}{\lambda-d_i}\]</div>
+<p>画出来，把 $A$ 的特征值标在图上，验证它们正好落在 $f$ 的零点上。</p>
+<p><strong>代码</strong>：<a href="./2026-10-27/P4_rank1_eigenvalue_plot.m"><code>P4_rank1_eigenvalue_plot.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P4_rank1_f_fig1.png" alt="f(lambda) 曲线、渐近线与特征值" /><figcaption>图 12 · f(lambda) 曲线、渐近线与特征值</figcaption></figure>
+<p><strong>这张图在说什么</strong>：蓝色曲线是 $f(\lambda)$，$6$ 条竖直虚线是 $\lambda=d_i$ 处的<strong>极点</strong>（分母为零，曲线在这里炸到 $\pm\infty$），品红水平虚线是 $f=1$ 的水平渐近线，黑色水平线是 $f=0$。<strong>6 个红点（$A$ 的特征值）全部落在 $f(\lambda)=0$ 上</strong>，而且每两个相邻极点之间恰好一个——这就是秩一修正的<strong>交错（interlacing）性质</strong>，也是 D&amp;C 分治算法解特征值方程的图形依据。</p>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261027-特征向量的计算.html">10.27 课堂笔记 §5.2</a>（行列式引理三层 → $f(\lambda)=0$）。P3 的证明题（$(\lambda I-D)^{-1}z$ 是 $D+\rho zz^*$ 的特征向量）就是这张图背后的代数。</p>
+<h3 id="p5--jacobi-diagonalization">P5 · Jacobi diagonalization<span class="tag">作业代码实跑</span></h3>
+<p><strong>题目在问什么</strong>：实现对称阵的 Jacobi 对角化，比一比不同规模的耗时，画一条收敛史，并观察<strong>逐分量</strong>的收敛；还鼓励试一次「故意选错旋转」的版本。</p>
+<p><strong>代码</strong>：<a href="./2026-10-27/P5_Jacobi_diagonalization.m"><code>P5_Jacobi_diagonalization.m</code></a></p>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P5_Jacobi_fig1.png" alt="Jacobi 耗时随规模变化" /><figcaption>图 13 · Jacobi 耗时随规模变化</figcaption></figure>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P5_Jacobi_fig2.png" alt="Jacobi 与 MATLAB eig 的耗时对比" /><figcaption>图 14 · Jacobi 与 MATLAB eig 的耗时对比</figcaption></figure>
+<p><strong>前两张图在说什么</strong>：左图 $n=10\to120$ 耗时从接近 0 涨到 <strong>2.6 秒</strong>，明显是三次以上的增长；右图双对数下和 MATLAB 内置 <code>eig</code>（D&amp;C）对比，红色自写 Jacobi 在 $10^{-2}\sim10^{0}$ 秒，蓝色内置 <code>eig</code> 在 $10^{-3}\sim10^{-2}$ 秒，<strong>慢 1~2 个数量级</strong>——算法对，工程实现和 LAPACK 差得远。</p>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P5_Jacobi_fig3.png" alt="整体收敛史" /><figcaption>图 15 · 整体收敛史</figcaption></figure>
+<figure><img loading="lazy" src="./figures/2026-10-27/20261027_P5_Jacobi_fig4.png" alt="逐分量收敛观察" /><figcaption>图 16 · 逐分量收敛观察</figcaption></figure>
+<p><strong>后两张图在说什么</strong>：纵轴都是非对角部分的范数（对数刻度），横轴是旋转次数。</p>
+<ul>
+<li><strong>红色（cyclic + 选最大元）</strong>：$\mathrm{off}(A)$ 从 $1$ 平稳降到 $10^{-8}$（约 500 次旋转），逐分量最大非对角元降到 $10^{-15}$；</li>
+<li><strong>黑色（经典 Jacobi）</strong>：前 60 次降得很快，到 $10^{-7}$ 就停了（脚本提前终止）；</li>
+<li><strong>蓝色（故意选错旋转，wrong max）</strong>：两条曲线<strong>几乎水平</strong>，完全不收敛。</li>
+</ul>
+<p>所以「选对旋转」不是优化，是算法能不能收敛的前提。右图红色曲线的<strong>锯齿状</strong>下降就是逐分量收敛的样子：每消掉一个最大非对角元，$\max_{i\ne j}|a_{ij}|$ 掉一截，但下一步又会把别处的值抬起来一点。</p>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261027-特征向量的计算.html">10.27 课堂笔记 §4.1–§4.4</a>（一次旋转的 $t=c/s$、$\mathrm{off}(A)$ 与一步收敛率 $\frac{n^2-n-2}{n^2-n}$、经典 $O(n^4)$ vs 循环 $O(n^3)$）。</p>
+<p><strong>其余题</strong>：P2 Hermitian 阵三对角化（证明次对角元可取非负实数）、P3 秩一修正特征向量的三条证明、P6 cyclic reduction、P7–P9 选做 —— 均无代码。P3 的结论与上面 P4 的图是同一件事的两面。</p>
+<hr />
+<h2 id="2026-11-03">2026-11-03</h2>
+<p>题目 PDF：<a href="./2026-11-03/homework-20261103.pdf">homework-20261103.pdf</a></p>
+<h3 id="p4--非平凡-jordan-块的特征值前向误差">P4 · 非平凡 Jordan 块的特征值前向误差<span class="tag a">含补做图</span></h3>
+<p><strong>题目在问什么</strong>：用 $A=XJX^{-1}$ 造一个<strong>含有非平凡 Jordan 块的满矩阵</strong>（$J$ 不是对角阵），再算它的特征值，观察「算出来的特征值离真值有多远」。$A$ 看起来是个普普通通的满矩阵，但它是不可对角化的——这正是陷阱。</p>
+<p><strong>作业代码</strong>：<a href="./2026-11-03/P4_Jordan_eigenvalue_error.m"><code>P4_Jordan_eigenvalue_error.m</code></a>　<strong>做法</strong>：$X$ 随机（$\operatorname{cond}(X)\approx110$），$J$ 含一个 3 重 $\lambda=2$ 与一个 2 重 $\lambda=5$ 的 Jordan 块，另拿真对角的 $J$ 做对照。原脚本打印表格：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>$\lambda=2$（三重）</th>
+<th>$\lambda=5$（二重）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>非平凡 Jordan 块</td>
+<td>$2.4891\times10^{-5}$</td>
+<td>$3.6960\times10^{-7}$</td>
+</tr>
+<tr>
+<td>真对角阵（可对角化）</td>
+<td>$\sim10^{-14}$</td>
+<td>$\sim10^{-14}$</td>
+</tr>
+</tbody>
+</table>
+<p><strong>补做的可视化脚本</strong>：<a href="./visualize/VIS_P4_Jordan_forward_error.m"><code>VIS_P4_Jordan_forward_error.m</code></a>（下面三张图由它生成）</p>
+<figure><img loading="lazy" src="./figures/2026-11-03/20261103_P4_Jordan_forward_error_fig1.png" alt="不同重数 Jordan 块的 delta^(1/m) 误差" /><figcaption>图 17 · 不同重数 Jordan 块的 delta^(1/m) 误差</figcaption></figure>
+<p><strong>补做图 1 在说什么</strong>（把这题的道理一次讲清）：给 $m$ 重 Jordan 块 $J_m(2)$ 的左下角加一个扰动 $\delta$，特征值会分裂成 $2+\delta^{1/m}\omega$，所以前向误差正比于 $\delta^{1/m}$。双对数图上就是<strong>斜率 $1/m$ 的直线</strong>：$m=1$ 斜率 1，$m=2$ 斜率 1/2，$m=4$ 斜率 1/4……重数越高，直线越平，误差越大。取 $\delta=10^{-14}$、$m=4$，误差就是 $3.16\times10^{-4}$。<strong>双精度舍入本身就有 $\delta\approx10^{-16}$，四重块的特征值误差天生在 $10^{-4}$ 量级</strong>，跟原脚本跑出的 $2.49\times10^{-5}$ 完全对得上。</p>
+<figure><img loading="lazy" src="./figures/2026-11-03/20261103_P4_Jordan_forward_error_fig2.png" alt="Jordan 块与可对角化矩阵的误差对照" /><figcaption>图 18 · Jordan 块与可对角化矩阵的误差对照</figcaption></figure>
+<p><strong>补做图 2 在说什么</strong>：同样的 $XJX^{-1}$ 构造流程，只把 $J$ 从 Jordan 块换成真对角阵，五个特征值的前向误差就从 $1.14\times10^{-5}$ 掉到 $3.55\times10^{-15}$——<strong>差 9 个数量级</strong>。可对角化时特征值的条件数由 $X$ 决定（这里 $\operatorname{cond}(X)\approx110$，很温和）；有 Jordan 块时条件数实际上是无穷的，误差由 $\delta^{1/m}$ 主导，跟 $X$ 病不病态关系不大。</p>
+<figure><img loading="lazy" src="./figures/2026-11-03/20261103_P4_Jordan_forward_error_fig3.png" alt="cond(X) 对误差的影响" /><figcaption>图 19 · cond(X) 对误差的影响</figcaption></figure>
+<p><strong>补做图 3 在说什么</strong>：把 $\operatorname{cond}(X)$ 从 $1$ 扫到 $10^{10}$，误差从 $10^{-6}$ 单调涨到 $O(1)$。构造 $A=XJ/X$ 这一步本身要解线性方程组、要做矩阵乘法，$X$ 越病态，这些运算引入的舍入越大，等于给 $\delta$ 加码。所以真实场景里两个因素叠加：<strong>Jordan 块决定指数 $1/m$、$X$ 的条件数决定扰动 $\delta$ 有多大</strong>。</p>
+<p><strong>其余题</strong>：P1 证明存在特征值使 $|\lambda-\hat\lambda|\le\|r\|_2$、P2 证明 $|\sigma_i(Y^*AX)-\sigma_i(A)|\le\epsilon\,\sigma_i(A)$、P3 构造把 $[x,y]$ 两列正交化的旋转矩阵 —— 都是证明/构造题；P5 复现 <em>From Random Polygon to Ellipse</em> 的实验（论文 PDF 在工作区）未做；P6–P8 选做未做。</p>
+<hr />
+<h2 id="交叉索引图--课堂笔记">交叉索引：图 ↔ 课堂笔记</h2>
+<table>
+<thead>
+<tr>
+<th>图中看到的现象</th>
+<th>笔记里的推导</th>
+<th>相关作业</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arnoldi 正交性随 $k$ 丢失</td>
+<td><a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 §4.3–§4.5</a></td>
+<td>10-13 P2、09-29 P4</td>
+</tr>
+<tr>
+<td>幂法一步收敛 / 讨论题的重根情形</td>
+<td><a href="../补课笔记-幂法反幂法与第3章引言.html">10.13 补课 §1.4</a></td>
+<td>10-13 P3/P4/P5</td>
+</tr>
+<tr>
+<td>子空间迭代卡在 $10^{-8}$</td>
+<td><a href="../课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 §3.4</a></td>
+<td>10-20 P3</td>
+</tr>
+<tr>
+<td>RQI 三次收敛</td>
+<td><a href="../补课笔记-幂法反幂法与第3章引言.html">10.13 补课 §2.6</a></td>
+<td>10-20 P2</td>
+</tr>
+<tr>
+<td>回代分母 = 特征值之差</td>
+<td><a href="../课堂笔记-20261027-特征向量的计算.html">10.27 §2.3–§2.6</a></td>
+<td>10-27 P1</td>
+</tr>
+<tr>
+<td>$f(\lambda)=0$ 与特征值交错</td>
+<td><a href="../课堂笔记-20261027-特征向量的计算.html">10.27 §5.2</a></td>
+<td>10-27 P3/P4</td>
+</tr>
+<tr>
+<td>$\mathrm{off}(A)$ 下降、错旋转不收敛</td>
+<td><a href="../课堂笔记-20261027-特征向量的计算.html">10.27 §4.1–§4.4</a></td>
+<td>10-27 P5</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>上面的 <code>.html</code> 链接在 github.com 上点开只会看到源码，看渲染版请走 <a href="https://michaellu2007.github.io/fdu-note-summarized/">GitHub Pages</a>；或克隆仓库后直接双击打开（KaTeX 已随仓库提交，离线可用）。</p>
+</blockquote>
+<hr />
+<p>课程内容与题目 PDF 版权归复旦大学及授课教师所有；代码与图为我本人所作，仅供个人复习存档。</p>
+<hr>
+<p class="footnote">题目 PDF 与课程内容版权归复旦大学及授课教师所有；代码、补做的可视化脚本与结果图为我本人所作。
+本页共 204 个公式，KaTeX 0.16.11 及全部 20 个字体文件随仓库提交于 <code>../assets/katex/</code>，完全离线可用。
+在 github.com 上点开本文件只会看到源码，看渲染版请走
+<a href="https://michaellu2007.github.io/fdu-note-summarized/数值算法与案例分析/作业代码/作业代码索引.html">GitHub Pages</a>，
+或克隆仓库后直接双击打开。</p>
+</div>
+<script src="../assets/katex/katex.min.js"></script>
+<script src="../assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'\\[',right:'\\]',display:true},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body></html>
