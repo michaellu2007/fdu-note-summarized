@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 05 · BST 与红黑树 — 详解与习题全解</title>
+<link rel="stylesheet" href="./assets/katex/katex.min.css">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f1efe8;
+    --tx:#1f1f1d; --tx2:#5f5e5a; --tx3:#888780;
+    --bd:#e3e1da; --bd2:#d3d1c7;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-tx:#0C447C;
+    --teal:#0F6E56; --teal-bg:#E1F5EE; --teal-tx:#085041;
+    --amber:#854F0B; --amber-bg:#FAEEDA; --amber-tx:#633806;
+    --coral:#993C1D; --coral-bg:#FAECE7; --coral-tx:#712B13;
+    --green:#3B6D11; --green-bg:#EAF3DE; --green-tx:#27500A;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --purple:#534AB7; --purple-bg:#EEEDFE; --purple-tx:#3C3489;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg2); color:var(--tx);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px 80px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px;}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+  header{
+    background:var(--bg); border-bottom:1px solid var(--bd);
+    padding:44px 24px 36px; margin-bottom:40px;
+  }
+  header .inner{max-width:1080px; margin:0 auto;}
+  header h1{font-size:26px; font-weight:600; margin:0 0 8px; letter-spacing:-0.2px;}
+  header .sub{color:var(--tx2); font-size:14px;}
+  header .meta{margin-top:18px; display:flex; flex-wrap:wrap; gap:10px;}
+  .pill{background:var(--bg3); border-radius:999px; padding:4px 12px; font-size:12.5px; color:var(--tx2);}
+  nav.toc{position:sticky; top:24px; align-self:start; font-size:13px;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:s;}
+  nav.toc li{counter-increment:s; margin-bottom:9px;}
+  nav.toc a{color:var(--tx2); text-decoration:none; display:block; padding-left:22px; position:relative;}
+  nav.toc a:before{content:counter(s); position:absolute; left:0; color:var(--tx3); font-family:var(--mono); font-size:11.5px;}
+  nav.toc a:hover{color:var(--blue);}
+  main{min-width:0;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+  h2{font-size:19px; font-weight:600; margin:0 0 6px; padding-bottom:10px; border-bottom:2px solid var(--bd2);}
+  h3{font-size:15.5px; font-weight:600; margin:26px 0 10px; color:var(--tx);}
+  h4{font-size:14px; font-weight:600; margin:18px 0 8px; color:var(--tx2);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0; padding-left:22px;}
+  li{margin:5px 0;}
+  code{font-family:var(--mono); background:var(--bg3); padding:1.5px 6px; border-radius:4px; font-size:13px; color:var(--coral-tx);}
+  pre{
+    background:#fbfbf9; border:1px solid var(--bd); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono); font-size:13px;
+    line-height:1.65; color:var(--tx); margin:14px 0;
+  }
+  pre .c{color:var(--tx3);}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px;}
+  th,td{border:1px solid var(--bd); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--bg3); font-weight:600; font-size:13px;}
+  tbody tr:nth-child(even){background:#fcfcfa;}
+  .card{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:18px 20px; margin:16px 0;}
+  .note{border-left:3px solid var(--blue); background:var(--blue-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .warn{border-left:3px solid var(--red); background:var(--red-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .ok{border-left:3px solid var(--green); background:var(--green-bg); border-radius:0 10px 10px 0; padding:12px 18px; margin:16px 0; font-size:14px;}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0;}
+  .grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0;}
+  .metric{background:var(--bg3); border-radius:10px; padding:14px 16px;}
+  .metric .k{font-size:12.5px; color:var(--tx2); margin-bottom:4px;}
+  .metric .v{font-size:20px; font-weight:600; color:var(--tx);}
+  .diagram{background:var(--bg); border:1px solid var(--bd); border-radius:12px; padding:20px; margin:18px 0; overflow-x:auto;}
+  .diagram svg{display:block; width:100%; height:auto; max-width:640px; margin:0 auto;}
+  .cap{font-size:12.5px; color:var(--tx3); text-align:center; margin-top:8px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 9px; border-radius:6px; margin-right:6px; font-family:var(--mono);}
+  .t-blue{background:var(--blue-bg); color:var(--blue-tx);}
+  .t-teal{background:var(--teal-bg); color:var(--teal-tx);}
+  .t-amber{background:var(--amber-bg); color:var(--amber-tx);}
+  .t-green{background:var(--green-bg); color:var(--green-tx);}
+  .t-purple{background:var(--purple-bg); color:var(--purple-tx);}
+  footer{border-top:1px solid var(--bd); margin-top:40px; padding:24px; text-align:center; color:var(--tx3); font-size:12.5px;}
+  kbd{font-family:var(--mono); font-size:12px; border:1px solid var(--bd2); border-bottom-width:2px; border-radius:5px; padding:1px 6px; background:#fff;}
+  .katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0;}
+  .katex{font-size:1.04em;}
+  .t-coral{background:var(--coral-bg); color:var(--coral-tx);}
+  .t-red{background:var(--red-bg); color:var(--red);}
+  /* 习题块 */
+  .q{border:1px solid var(--bd); border-radius:10px; padding:14px 18px; margin:14px 0; background:#fff;}
+  .q .no{font-family:var(--mono); font-size:12px; color:var(--tx3); margin-right:8px;}
+  .q .diff{font-size:11.5px; color:var(--tx3); float:right; font-family:var(--mono);}
+  .q p:first-child{margin-top:0;}
+  .q p:last-child{margin-bottom:0;}
+  details{background:#f6f6f3; border:1px solid var(--bd2); border-left:3px solid var(--blue); border-radius:0 8px 8px 0; padding:10px 16px; margin:12px 0;}
+  details summary{cursor:pointer; font-size:13.5px; color:var(--blue); font-weight:600; outline:none;}
+  details summary:hover{color:var(--blue-tx);}
+  details[open] summary{margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed var(--bd2);}
+  details p:first-of-type{margin-top:6px;}
+  .steps{counter-reset:st; list-style:none; padding-left:0;}
+  .steps>li{counter-increment:st; padding-left:30px; position:relative; margin:8px 0;}
+  .steps>li:before{content:counter(st); position:absolute; left:0; top:2px; width:20px; height:20px; border-radius:50%;
+    background:var(--blue-bg); color:var(--blue-tx); font-size:11.5px; text-align:center; line-height:20px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>二叉搜索树 · 红黑树：原理详解与习题全解</h1>
+    <div class="sub">CLRS 第 12 章（BST）+ 第 13 章（红黑树） &nbsp;|&nbsp; 对应教材 p171–p183</div>
+    <div class="meta">
+      <span class="pill">覆盖习题 27 道（12.4-x / 12-x / 13.1-x / 13.2-x / 13.3-x / 13.4-3）</span>
+      <span class="pill">全部数值用代码验证</span>
+      <span class="pill">黑高口径已统一说明</span>
+      <span class="pill">考前专项 · BST + 红黑树</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <ol>
+      <li><a href="#s1">BST 的五件事</a></li>
+      <li><a href="#s2">BST 的复杂度</a></li>
+      <li><a href="#s3">红黑树五性质与高度定理</a></li>
+      <li><a href="#s4">旋转</a></li>
+      <li><a href="#s5">插入与修正</a></li>
+      <li><a href="#s6">删除与修正</a></li>
+      <li><a href="#s7">第 12 章习题全解</a></li>
+      <li><a href="#s8">第 13 章习题全解</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note" style="margin-top:0">
+      <strong>这份是「第 12 章 BST + 第 13 章红黑树」的专项</strong>，对应你拍的 9 张照片（教材 p171–p183）。
+      结构是：先把两章的原理按「为什么这么设计」讲透（§1–§6），再把照片上出现的<strong>每一道习题逐题做掉</strong>（§7–§8）。
+      <br>照片覆盖的题目：<strong>12.4-1 ~ 12.4-5、思考题 12-1 ~ 12-4、13.1-1 ~ 13.1-7、13.2-1 ~ 13.2-4、13.3-1 ~ 13.3-6</strong>，
+      外加 13.4 删除的完整机制与一道删除实例。
+      <br>所有涉及具体数值的题（插入/删除轨迹、着色方案、Catalan 数、黑高统计）我都用代码跑过验证，答案可以直接信。
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2>1 · 二叉搜索树：五件事，一条主线 <span class="tag t-blue">CLRS 12.1–12.3</span></h2>
+
+      <p>BST 的全部内容其实只有一句话：<strong>中序遍历是递增序列</strong>。所有操作（查找、插入、删除、前驱后继）
+      都是这句话的推论 —— 它们干的都是「沿着一条从根到叶的路径往下走」，所以代价都是 $O(h)$。</p>
+
+      <h3>1.1 定义与中序遍历</h3>
+      <p>对任意结点 $x$：左子树所有关键字 $\le x.key$，右子树所有关键字 $\ge x.key$。
+      （CLRS 允许相等；下面 §7 的思考题 12-1 就是专门讨论「关键字相等」会出什么问题。）</p>
+
+<pre>TREE-WALK(x)                 <span class="c"># 中序：左 → 根 → 右，输出即递增序列</span>
+    if x ≠ NIL
+        TREE-WALK(x.left)
+        print x.key
+        TREE-WALK(x.right)</pre>
+
+      <p><strong>为什么中序一定是递增的</strong>（一句话证明）：对根 $x$，左子树全部 $\le x.key$、右子树全部 $\ge x.key$，
+      而中序恰好是「左子树全部 → $x$ → 右子树全部」，由归纳假设左右子树内部也递增，拼起来就递增。</p>
+
+      <div class="note">
+        <strong>三种遍历的用途（顺手记）：</strong>前序 = 复制一棵树（先建根）；中序 = 输出有序序列；
+        后序 = 释放内存 / 算子树大小（先处理孩子）。
+      </div>
+
+      <h3>1.2 查找：为什么写成 while 而不是递归</h3>
+<pre>ITERATIVE-TREE-SEARCH(x, k)
+    while x ≠ NIL and k ≠ x.key
+        if k &lt; x.key  x = x.left
+        else          x = x.right
+    return x</pre>
+      <p>递归版和它等价，但递归版多一个 $O(h)$ 的栈空间；<strong>尾递归可以改写成循环</strong>，这是 BST 查找的标准写法。
+      代价 $O(h)$：每比较一次就往下走一层，最多走 $h$ 层。</p>
+
+      <h3>1.3 最小 / 最大：一路向左 / 向右</h3>
+<pre>TREE-MINIMUM(x)              TREE-MAXIMUM(x)
+    while x.left ≠ NIL           while x.right ≠ NIL
+        x = x.left                   x = x.right
+    return x                     return x</pre>
+      <p>因为「左子树更小」，所以最小值一定在最左下角。<strong>这个结论在删除里是关键的</strong>：见 1.6。</p>
+
+      <h3>1.4 后继与前驱：两情形，别背错</h3>
+      <p>$x$ 的<strong>后继</strong>（successor）是「比 $x.key$ 大的最小关键字」。分两种情形：</p>
+
+      <table>
+        <thead><tr><th style="width:26%">情形</th><th style="width:34%">后继在哪</th><th>怎么找</th></tr></thead>
+        <tbody>
+          <tr><td><strong>$x$ 有右子树</strong></td><td>右子树里的<strong>最小</strong>结点</td><td><code>TREE-MINIMUM(x.right)</code></td></tr>
+          <tr><td><strong>$x$ 无右子树</strong></td><td>往上找第一个「$x$ 在其<strong>左</strong>子树里」的祖先</td><td>沿父指针上爬，直到某结点是它父亲的左孩子</td></tr>
+        </tbody>
+      </table>
+
+<pre>TREE-SUCCESSOR(x)
+    if x.right ≠ NIL
+        return TREE-MINIMUM(x.right)
+    y = x.p
+    while y ≠ NIL and x == y.right      <span class="c"># 只要我还是「右孩子」就继续爬</span>
+        x = y; y = y.p
+    return y</pre>
+
+      <p><strong>为什么第二种情形要「爬到我变成左孩子」为止</strong>：只要 $x$ 是 $y$ 的右孩子，说明 $y &lt; x$，
+      而 $y$ 的整棵子树都比 $x$ 小，所以 $y$ 不可能是后继；一旦 $x$ 成了 $y$ 的左孩子，$y &gt; x$ 且
+      $y$ 的左子树（含 $x$）全部 $\le y$，所以 $y$ 就是「比 $x$ 大的最小的那个」。</p>
+
+      <div class="warn">
+        <strong>常见错误：</strong>把「$x$ 无右子树」时的后继写成「父结点」。反例：$x$ 是父的右孩子时，
+        父比 $x$ <strong>小</strong>，不可能是后继。必须一直爬到「拐弯」的地方。
+      </div>
+
+      <h3>1.5 插入：走到 NIL，挂上去</h3>
+<pre>TREE-INSERT(T, z)
+    y = NIL; x = T.root
+    while x ≠ NIL
+        y = x
+        x = (z.key &lt; x.key) ? x.left : x.right
+    z.p = y
+    if y == NIL            T.root = z        <span class="c"># 空树</span>
+    else if z.key &lt; y.key  y.left = z
+    else                   y.right = z
+    z.left = z.right = NIL</pre>
+      <p>插入一定发生在<strong>叶子位置</strong>（走到 NIL 才停），所以新结点必然是叶结点。
+      这解释了为什么「按顺序插入 $1,2,\dots,n$」会退化成一条右斜链。</p>
+
+      <h3>1.6 删除：三种情形，只有第三种麻烦</h3>
+      <p>删除 $z$ 之前先想清楚一件事：<strong>摘掉 $z$ 之后，谁坐它的位置？</strong></p>
+
+      <table>
+        <thead><tr><th style="width:22%">$z$ 的孩子数</th><th style="width:30%">谁顶替 $z$</th><th>要做什么</th></tr></thead>
+        <tbody>
+          <tr><td><strong>0 个</strong>（叶）</td><td>NIL</td><td>直接把父的对应孩子置 NIL</td></tr>
+          <tr><td><strong>1 个</strong></td><td>那个唯一的孩子</td><td>孩子整棵子树搬上来（子树内部结构不用动）</td></tr>
+          <tr><td><strong>2 个</strong></td><td><strong>后继</strong> $y$（右子树最小值）</td><td>先把 $y$ 从原位摘掉（$y$ 顶多只有右孩子），再让 $y$ 坐到 $z$ 的位置</td></tr>
+        </tbody>
+      </table>
+
+<pre>TRANSPLANT(T, u, v)          <span class="c"># 用子树 v 替换子树 u（只改父指针，不动 v 的孩子）</span>
+    if u.p == NIL        T.root = v
+    else if u == u.p.left   u.p.left = v
+    else                    u.p.right = v
+    if v ≠ NIL              v.p = u.p
+
+TREE-DELETE(T, z)
+    if z.left == NIL                 TRANSPLANT(T, z, z.right)       <span class="c"># 情形 1、2 合并</span>
+    else if z.right == NIL           TRANSPLANT(T, z, z.left)
+    else
+        y = TREE-MINIMUM(z.right)     <span class="c"># 后继：右子树最小 → 它没有左孩子</span>
+        if y.p ≠ z
+            TRANSPLANT(T, y, y.right) <span class="c"># 先把 y 摘出来（y 只有右孩子）</span>
+            y.right = z.right; y.right.p = y
+        TRANSPLANT(T, z, y)
+        y.left = z.left; y.left.p = y</pre>
+
+      <div class="ok">
+        <strong>为什么情形 3 一定要用「后继」而不是随便找个结点？</strong>
+        <br>因为后继 $y$ 是<strong>右子树的最小值</strong>，所以它<strong>一定没有左孩子</strong>。
+        把它搬到 $z$ 的位置后，$y$ 的左子树 = $z$ 的左子树（全部 $\le z.key \le y.key$ ✓），
+        右子树 = $z$ 的右子树去掉 $y$ 之后的部分（全部 $\ge y.key$ ✓），BST 性质自动成立，<strong>不用任何调整</strong>。
+        <br>换成前驱也一样成立（前驱一定没有右孩子）。<strong>只有「中间某个结点」不行</strong>，那会破坏性质。
+      </div>
+
+      <h3>1.7 一道完整的删除例子</h3>
+      <p>树：<code>15(6(3(2,4),7(·,13(9))), 18(17,20))</code>，删 15（有两个孩子）。</p>
+      <table>
+        <thead><tr><th style="width:12%">步</th><th style="width:34%">动作</th><th>当前树（中序）</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>—</td><td>2, 3, 4, 6, 7, 9, 13, <strong>15</strong>, 17, 18, 20</td></tr>
+          <tr><td>1</td><td>求后继：$z.right=18$ 一路向左 → $y=17$</td><td>$y=17$ 无左孩子，只有右孩子？没有（17 是叶）</td></tr>
+          <tr><td>2</td><td>$y.p=18 \ne z$，所以先 <code>TRANSPLANT(17, NIL)</code> 把 17 摘掉</td><td>2,3,4,6,7,9,13,15,18,20</td></tr>
+          <tr><td>3</td><td>17 接管 15 的右子树：<code>17.right = 18</code></td><td>2,3,4,6,7,9,13,15,<strong>17</strong>(18(20))</td></tr>
+          <tr><td>4</td><td><code>TRANSPLANT(15, 17)</code>，再 <code>17.left = 6 子树</code></td><td>2,3,4,6,7,9,13,<strong>17</strong>,18,20</td></tr>
+        </tbody>
+      </table>
+      <p>结果根是 17，左子树 6（3(2,4),7(13(9))），右子树 18(·,20)。中序仍然递增 ✓</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2>2 · BST 的复杂度：为什么只能写 $O(h)$ <span class="tag t-blue">CLRS 12.4</span></h2>
+
+      <p>BST 的每一个操作都是「从根往下走一条路径」，所以代价 $=O(h)$，$h$ 是树高。
+      <strong>注意这里不能写 $O(\lg n)$</strong> —— $h$ 和 $\lg n$ 差得很远：</p>
+
+      <table>
+        <thead><tr><th style="width:24%">树的形状</th><th style="width:20%">$h$</th><th style="width:26%">一次查找</th><th>怎么造出来</th></tr></thead>
+        <tbody>
+          <tr><td>最好（完全平衡）</td><td>$\lfloor\lg n\rfloor$</td><td>$\Theta(\lg n)$</td><td>按「中位数优先」的顺序插入</td></tr>
+          <tr><td>最坏（一条链）</td><td>$n-1$</td><td>$\Theta(n)$</td><td>按 $1,2,3,\dots,n$ 顺序插入</td></tr>
+          <tr><td><strong>随机插入</strong></td><td>期望 $\Theta(\lg n)$</td><td>期望 $\Theta(\lg n)$</td><td>随机打乱后插入</td></tr>
+        </tbody>
+      </table>
+
+      <p>所以「BST 是 $O(\lg n)$ 的」这句话<strong>只有在「随机建树」的前提下才成立</strong>。
+      这也是红黑树存在的理由：它<strong>用着色规则强制</strong>保证 $h=O(\lg n)$，不依赖输入顺序。</p>
+
+      <h3>2.1 随机建树的期望高度：和快排是同一件事</h3>
+      <p>关键观察：<strong>「把 $n$ 个关键字按某个顺序插入 BST」和「用这个顺序做快排」是同一棵递归树</strong>。</p>
+      <ul>
+        <li>快排选第一个元素当 pivot，把其余元素分成「小于」和「大于」两组 —— 对应 BST 里第一个元素当根，其余分到左右子树；</li>
+        <li>快排递归处理两组 —— 对应 BST 递归建左右子树；</li>
+        <li>两个元素被比较 $\iff$ 其中一个是它们 LCA —— 对应 BST 里一个元素是另一个的祖先。</li>
+      </ul>
+      <p>所以「随机排列插入得到的 BST 的期望高度」= 「随机化快排的期望递归深度」= $O(\lg n)$。
+      这条对应关系是 §7 里 12-3 和 12.4-5 的全部内容，也是为什么第 12.4 节的证明看起来像在抄第 7 章。</p>
+
+      <div class="note">
+        <strong>严格结论（定理 12.4）：</strong>$n$ 个互异关键字随机建树，期望高度 $\mathrm{E}[X_n]=O(\lg n)$。
+        更强的结论是 $X_n = O(\lg n)$ <strong>以高概率成立</strong>（w.h.p.），即 $\Pr[X_n &gt; c\lg n] \le 1/n^k$。
+      </div>
+
+      <p>第 12.4 节的证明路线（§7 的 12.4-1 会逐步展开）：</p>
+      <ol class="steps">
+        <li>设 $X_n$ 为高度，令 $Y_n=2^{X_n}$（把「高度」变成「指数」，好做加法）；</li>
+        <li>由 $2^x$ 凸（12.4-4），用 Jensen 不等式：$2^{\mathrm{E}[X_n]} \le \mathrm{E}[2^{X_n}] = \mathrm{E}[Y_n]$；</li>
+        <li>对 $\mathrm{E}[Y_n]$ 做归纳，得到 $\mathrm{E}[Y_n] \le \frac14\binom{n+3}{3} = O(n^3)$；</li>
+        <li>两边取对数：$\mathrm{E}[X_n] \le \lg O(n^3) = O(\lg n)$。</li>
+      </ol>
+      <p>「先取指数、最后取对数」这个套路值得记：<strong>直接把 max 递归式拿去做期望很难，取指数后 max 变成加法上界，就好归纳了。</strong></p>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2>3 · 红黑树：五条性质与高度定理 <span class="tag t-red">CLRS 13.1</span></h2>
+
+      <p>BST 的问题只有一个：<strong>形状不受控</strong>。红黑树的做法是「给结点染两种颜色，用染色规则把形状卡住」——
+      不改变 BST 的任何操作，只是加了一层约束，让 $h$ 永远不超过 $2\lg(n+1)$。</p>
+
+      <h3>3.1 五条性质，每条都在干一件事</h3>
+      <table>
+        <thead><tr><th style="width:8%">#</th><th style="width:34%">性质</th><th>它在干什么（这条不能删的理由）</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>每个结点是红的或黑的</td><td>定义颜色，本身没约束力</td></tr>
+          <tr><td>2</td><td><strong>根是黑的</strong></td><td>让「黑高」有个统一的起点；删掉它不影响渐近，只是省事</td></tr>
+          <tr><td>3</td><td>每个叶（NIL）是黑的</td><td>让「所有路径都终止于黑」成立，性质 5 才能谈</td></tr>
+          <tr><td>4</td><td><strong>红结点的两个孩子都是黑的</strong></td><td><strong>限制红色不能连成串</strong> → 红结点最多占路径的一半 → 高度不会失控</td></tr>
+          <tr><td>5</td><td><strong>对每个结点，从它到所有后代叶的简单路径上黑结点数相同</strong></td><td><strong>限制黑色必须均匀</strong> → 树不会一边深一边浅 → 形状接近平衡</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>一句话记住分工：</strong>性质 4 管「红不能连着红」（纵向密度），性质 5 管「黑必须一样多」（横向均衡）。
+        这两条合起来，就把高度锁死在 $2\lg(n+1)$ 以内。
+        <br>性质 1、2、3 只是「让定义能写下去」的技术条件。
+      </div>
+
+      <h3>3.2 黑高：本节采用的口径</h3>
+      <div class="warn">
+        <strong>先把口径钉死，否则习题的数字对不上。</strong>
+        本节定义：<strong>$\mathrm{bh}(x)$ = 从 $x$ 到任一后代叶的路径上，黑结点的个数（<u>含 $x$ 自己</u>，<u>不含 NIL</u>）。</strong>
+        <br>于是：单个黑结点的 $\mathrm{bh}=1$；红结点的 $\mathrm{bh}$ 与它的黑孩子相同（因为不含自己）。
+        <br><em>注意：CLRS 正文的定义是「不含 $x$」，差 1。教材习题（如 13.1-6 的 $2^{2k}-1$、13.1-1 的「黑高 2/3/4」）
+        用的都是本节这个「含 $x$」的口径。做题时先看题目给的数字，再换算。</em>
+      </div>
+
+      <p>由性质 5，$\mathrm{bh}(x)$ 是<strong>良定义</strong>的（不管走哪条路径，数出来都一样）。
+      这一点非常关键 —— 后面所有论证都靠它。</p>
+
+      <h3>3.3 核心引理：黑高为 $k$ 的子树，至少有 $2^k-1$ 个内部结点</h3>
+      <p><strong>命题：</strong>以 $x$ 为根的子树至少含 $2^{\mathrm{bh}(x)}-1$ 个内部结点。</p>
+      <p><strong>证明（对 $x$ 的高度归纳）：</strong></p>
+      <ol class="steps">
+        <li><strong>基础</strong>：$x$ 是叶（NIL），$\mathrm{bh}=0$，子树内部结点数 $0 = 2^0-1$ ✓</li>
+        <li><strong>归纳</strong>：设 $x$ 有孩子。每个孩子的黑高要么是 $\mathrm{bh}(x)-1$（孩子黑），要么是 $\mathrm{bh}(x)$（孩子红）。
+        总之<strong>每个孩子的黑高 $\ge \mathrm{bh}(x)-1$</strong>。</li>
+        <li>由归纳假设，每个孩子的子树至少 $2^{\mathrm{bh}(x)-1}-1$ 个内部结点。两个孩子加起来再加 $x$ 自己：
+        $$n \ge \big(2^{\mathrm{bh}(x)-1}-1\big)+\big(2^{\mathrm{bh}(x)-1}-1\big)+1=2^{\mathrm{bh}(x)}-1$$</li>
+      </ol>
+      <div class="ok">
+        <strong>这一步的关键在哪：</strong>「红孩子的黑高不减少」—— 这正是性质 4 的用处。
+        如果允许红红相连，孩子可能红、孙子还红，黑高可以一路不降，结点数就可以很少而黑高很大，引理就崩了。
+      </div>
+
+      <h3>3.4 高度定理：$h \le 2\lg(n+1)$</h3>
+      <p><strong>证明（三句话）：</strong></p>
+      <ol class="steps">
+        <li>任取一条从根到叶的路径。由性质 4，红结点不能相邻，所以路径上<strong>红结点数 $\le$ 黑结点数</strong>；
+        于是路径长度（结点数）$\le 2\times$ 黑结点数 $=2\,\mathrm{bh}(\text{根})$。所以 $h \le 2\,\mathrm{bh}(\text{根})$。</li>
+        <li>由 3.3 的引理：$n \ge 2^{\mathrm{bh}(\text{根})}-1$，即 $\mathrm{bh}(\text{根}) \le \lg(n+1)$。</li>
+        <li>两式合并：$h \le 2\lg(n+1)$。∎</li>
+      </ol>
+
+      <div class="note">
+        <strong>为什么这个界是紧的：</strong>取一条「黑红黑红…」交替的链，黑高 $k$、高度 $2k-1$、结点数 $2^k-1$，
+        代入 $2\lg(n+1)=2\lg 2^k=2k$，确实贴着上界。所以「红黑树高度不超过 $2\lg(n+1)$」不能再改进。
+        <br><strong>实务上的常数：</strong>真实红黑树的高度一般在 $1.5\lg n$ 附近，$2\lg(n+1)$ 是最坏情况的保证。
+      </div>
+
+      <p>有了这个定理，BST 的所有操作立刻变成 $O(\lg n)$：</p>
+      <table>
+        <thead><tr><th style="width:26%">操作</th><th style="width:22%">时间</th><th>为什么</th></tr></thead>
+        <tbody>
+          <tr><td>SEARCH / MIN / MAX / SUCCESSOR</td><td>$O(\lg n)$</td><td>走一条根到叶路径，长度 $\le 2\lg(n+1)$</td></tr>
+          <tr><td>INSERT / DELETE</td><td>$O(\lg n)$</td><td>先 $O(\lg n)$ 找位置，再修正；修正的旋转次数是常数（见 §5、§6）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2>4 · 旋转：唯一能改形状又不破坏 BST 的操作 <span class="tag t-red">CLRS 13.2</span></h2>
+
+      <p>插入/删除修正时，颜色不够用（改颜色改不出黑高），必须<strong>改形状</strong>。但改形状不能破坏 BST 性质。
+      旋转就是唯一满足这个要求的局部操作。</p>
+
+      <div class="diagram">
+<svg viewBox="0 0 680 262" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>左旋：y 上提、x 下沉，中序 α x β y γ 不变</title>
+          <defs>
+            <marker id="rot1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+
+          <!-- 左树：x 为根，左 α，右 y（y 的孩子 β、γ） -->
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="150" y1="46" x2="102" y2="108"/>
+            <line x1="150" y1="46" x2="228" y2="106"/>
+            <line x1="232" y1="138" x2="222" y2="188"/>
+            <line x1="232" y1="138" x2="292" y2="188"/>
+          </g>
+          <circle cx="150" cy="46" r="16" fill="#E6F1FB" stroke="#185FA5"/>
+          <circle cx="232" cy="122" r="16" fill="#FAEEDA" stroke="#854F0B"/>
+          <text x="150" y="51" text-anchor="middle" font-size="13" font-family="ui-monospace,monospace" fill="#0C447C">x</text>
+          <text x="232" y="127" text-anchor="middle" font-size="13" font-family="ui-monospace,monospace" fill="#633806">y</text>
+
+          <g fill="#F1EFE8" stroke="#B4B2A9">
+            <rect x="79" y="110" width="46" height="26" rx="4"/>
+            <rect x="199" y="190" width="46" height="26" rx="4"/>
+            <rect x="269" y="190" width="46" height="26" rx="4"/>
+          </g>
+          <g fill="#5F5E5A" font-size="12" text-anchor="middle" font-family="ui-monospace,monospace">
+            <text x="102" y="128">α</text><text x="222" y="208">β</text><text x="292" y="208">γ</text>
+          </g>
+
+          <!-- 右树：y 为根，左 x（x 的孩子 α、β），右 γ -->
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="470" y1="46" x2="414" y2="106"/>
+            <line x1="470" y1="46" x2="556" y2="108"/>
+            <line x1="410" y1="138" x2="392" y2="188"/>
+            <line x1="410" y1="138" x2="470" y2="188"/>
+          </g>
+          <circle cx="470" cy="46" r="16" fill="#FAEEDA" stroke="#854F0B"/>
+          <circle cx="410" cy="122" r="16" fill="#E6F1FB" stroke="#185FA5"/>
+          <text x="470" y="51" text-anchor="middle" font-size="13" font-family="ui-monospace,monospace" fill="#633806">y</text>
+          <text x="410" y="127" text-anchor="middle" font-size="13" font-family="ui-monospace,monospace" fill="#0C447C">x</text>
+
+          <g fill="#F1EFE8" stroke="#B4B2A9">
+            <rect x="369" y="190" width="46" height="26" rx="4"/>
+            <rect x="447" y="190" width="46" height="26" rx="4"/>
+            <rect x="543" y="110" width="46" height="26" rx="4"/>
+          </g>
+          <g fill="#5F5E5A" font-size="12" text-anchor="middle" font-family="ui-monospace,monospace">
+            <text x="392" y="208">α</text><text x="470" y="208">β</text><text x="566" y="128">γ</text>
+          </g>
+
+          <g stroke="#888780" stroke-width="1.5" marker-end="url(#rot1)"><line x1="322" y1="92" x2="378" y2="92"/></g>
+          <text x="350" y="76" text-anchor="middle" font-size="11" fill="#854F0B">LEFT-ROTATE(x)</text>
+          <text x="350" y="112" text-anchor="middle" font-size="11" fill="#5F5E5A">RIGHT-ROTATE(y)</text>
+          <text x="340" y="242" text-anchor="middle" font-size="12" fill="#1F1F1D">中序始终是 α → x → β → y → γ，所以 BST 性质不变</text>
+        </svg>
+        <div class="cap">左旋把 y 提上来、x 沉下去，中间那棵 β 从 y 的左孩子改成 x 的右孩子</div>
+      </div>
+
+<pre>LEFT-ROTATE(T, x)                    <span class="c"># 前提：x.right ≠ NIL</span>
+    y = x.right
+    x.right = y.left                 <span class="c"># ① β 改挂到 x 右边</span>
+    if y.left ≠ NIL  y.left.p = x
+    y.p = x.p                        <span class="c"># ② y 接管 x 的父亲</span>
+    if x.p == NIL          T.root = y
+    else if x == x.p.left  x.p.left = y
+    else                   x.p.right = y
+    y.left = x; x.p = y              <span class="c"># ③ x 成为 y 的左孩子</span></pre>
+
+      <p><strong>为什么 BST 性质不变</strong>：旋转前后中序都是 $\alpha\to x\to\beta\to y\to\gamma$。
+      而 BST 性质等价于「中序递增」，中序没变，性质就没变。这是最省事的验证方式，比逐个比大小快得多。</p>
+
+      <table>
+        <thead><tr><th style="width:22%">结点</th><th style="width:24%">深度变化（左旋）</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>$y$</td><td>$-1$</td><td>上提一层，接管 $x$ 的位置</td></tr>
+          <tr><td>$x$</td><td>$+1$</td><td>下沉一层，变成 $y$ 的左孩子</td></tr>
+          <tr><td>$\alpha$（$x$ 的左子树）</td><td>$+1$</td><td>跟着 $x$ 一起下沉</td></tr>
+          <tr><td>$\beta$（$y$ 的左子树）</td><td>$0$</td><td>从 $y$ 的左孩子换成 $x$ 的右孩子，深度不变</td></tr>
+          <tr><td>$\gamma$（$y$ 的右子树）</td><td>$-1$</td><td>跟着 $y$ 一起上提</td></tr>
+        </tbody>
+      </table>
+      <p>这张表就是 13.2-3 的答案（§8 会再写一遍）。<strong>记住「$\beta$ 不动」这一条</strong>，其余四个都好推。</p>
+
+      <p>右旋是左旋的镜像（把 left/right 全部互换），代码不用另记：</p>
+<pre>RIGHT-ROTATE(T, y)
+    x = y.left
+    y.left = x.right
+    if x.right ≠ NIL  x.right.p = y
+    x.p = y.p
+    if y.p == NIL          T.root = x
+    else if y == y.p.right y.p.right = x
+    else                   y.p.left = x
+    x.right = y; y.p = x</pre>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2>5 · 插入与修正：为什么一定染红、三种情况各管什么 <span class="tag t-red">CLRS 13.3</span></h2>
+
+      <h3>5.1 第一步：新结点染红（这是 13.3-1 的答案）</h3>
+      <p>新结点 $z$ 是叶结点（§1.5 已经论证过）。染成什么颜色？只有两个选择：</p>
+      <table>
+        <thead><tr><th style="width:14%">染色</th><th style="width:40%">会破坏哪条性质</th><th>后果</th></tr></thead>
+        <tbody>
+          <tr><td><strong>染红</strong></td><td>可能破坏性质 4（若父也是红）</td><td>局部问题：只需在<strong>一条路径上</strong>往上修，能修好</td></tr>
+          <tr><td>染黑</td><td><strong>必然</strong>破坏性质 5（这条路径多了一个黑）</td><td>全局问题：所有路径的黑高都要调，<strong>根本没法局部修</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="ok">
+        <strong>一句话：</strong>染红只会「多出一个红」，影响一条路径；染黑会「多出一个黑」，破坏整棵树的平衡关系。
+        <strong>破坏性质 5 是不可修复的，破坏性质 4 是可以往上推的</strong> —— 所以必须染红。
+      </div>
+
+      <h3>5.2 修正的三种情况：看「叔结点」的颜色</h3>
+      <p>设 $z$ 是红、$z.p$ 也是红（违反性质 4）。此时 $z.p.p$ 一定是黑（否则在插入前就已经红红相连了）。
+      决定走哪条路的唯一信息是<strong>叔结点 $y$（$z.p$ 的兄弟）的颜色</strong>：</p>
+
+      <table>
+        <thead><tr><th style="width:12%">情况</th><th style="width:20%">叔 $y$ 的颜色</th><th style="width:26%">$z$ 是左孩子还是右孩子</th><th>动作</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td><strong>红</strong></td><td>都行</td><td>父、叔染黑，祖父染红；$z\leftarrow$ 祖父，<strong>继续循环</strong></td></tr>
+          <tr><td><strong>2</strong></td><td>黑</td><td>与父<strong>不同侧</strong>（内侧）</td><td>$z\leftarrow z.p$，对 $z$ 旋转一次 → <strong>变成情况 3</strong></td></tr>
+          <tr><td><strong>3</strong></td><td>黑</td><td>与父<strong>同侧</strong>（外侧）</td><td>父染黑、祖父染红，对祖父反向旋转一次 → <strong>结束</strong></td></tr>
+        </tbody>
+      </table>
+
+<div class="diagram">
+        <svg viewBox="0 0 680 430" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>情况 1 只改颜色；情况 3 改颜色并绕祖父旋转</title>
+          <defs>
+            <marker id="rb1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </marker>
+          </defs>
+
+          <text x="26" y="20" font-size="12" font-weight="600" fill="#1F1F1D">情况 1：叔 y 是红 → 只改颜色，问题上移两层</text>
+          <!-- before -->
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="120" y1="58" x2="76" y2="108"/><line x1="120" y1="58" x2="164" y2="108"/>
+            <line x1="76" y1="124" x2="76" y2="168"/>
+          </g>
+          <g font-size="11.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="120" cy="58" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="76" cy="116" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="164" cy="116" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="76" cy="176" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <text x="120" y="58" fill="#F5F5F2">C</text>
+            <text x="76" y="116" fill="#8E2F2F">p</text>
+            <text x="164" y="116" fill="#8E2F2F">y</text>
+            <text x="76" y="176" fill="#8E2F2F">z</text>
+          </g>
+          <g stroke="#888780" stroke-width="1.5" marker-end="url(#rb1)"><line x1="196" y1="116" x2="246" y2="116"/></g>
+          <text x="221" y="102" text-anchor="middle" font-size="10.5" fill="#854F0B">染色</text>
+
+          <!-- after -->
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="330" y1="58" x2="286" y2="108"/><line x1="330" y1="58" x2="374" y2="108"/>
+            <line x1="286" y1="124" x2="286" y2="168"/>
+          </g>
+          <g font-size="11.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="330" cy="58" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="286" cy="116" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="374" cy="116" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="286" cy="176" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <text x="330" y="58" fill="#8E2F2F">C</text>
+            <text x="286" y="116" fill="#F5F5F2">p</text>
+            <text x="374" y="116" fill="#F5F5F2">y</text>
+            <text x="286" y="176" fill="#8E2F2F">z</text>
+          </g>
+          <text x="430" y="80" font-size="11" fill="#5F5E5A">p、y 变黑，C 变红</text>
+          <text x="430" y="100" font-size="11" fill="#5F5E5A">→ C 可能与它的父红红，</text>
+          <text x="430" y="120" font-size="11" fill="#5F5E5A">   所以 z ← C，继续循环</text>
+
+          <line x1="26" y1="212" x2="654" y2="212" stroke="#E3E1DA" stroke-width="1"/>
+
+          <text x="26" y="236" font-size="12" font-weight="600" fill="#1F1F1D">情况 3：叔 y 是黑、z 在外侧 → 改颜色 + 绕祖父右旋，一次结束</text>
+          <!-- before -->
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="120" y1="272" x2="76" y2="322"/><line x1="120" y1="272" x2="164" y2="322"/>
+            <line x1="76" y1="338" x2="48" y2="386"/><line x1="76" y1="338" x2="104" y2="386"/>
+          </g>
+          <g font-size="11.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="120" cy="272" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="76" cy="330" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="164" cy="330" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <rect x="26" y="376" width="44" height="24" rx="4" fill="#F1EFE8" stroke="#B4B2A9"/>
+            <circle cx="104" cy="388" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <text x="120" y="272" fill="#F5F5F2">C</text>
+            <text x="76" y="330" fill="#8E2F2F">p</text>
+            <text x="164" y="330" fill="#F5F5F2">y</text>
+            <text x="48" y="390" fill="#5F5E5A" font-size="11">α</text>
+            <text x="104" y="388" fill="#8E2F2F">z</text>
+          </g>
+          <g stroke="#888780" stroke-width="1.5" marker-end="url(#rb1)"><line x1="196" y1="330" x2="246" y2="330"/></g>
+          <text x="221" y="316" text-anchor="middle" font-size="10.5" fill="#854F0B">右旋 C</text>
+
+          <!-- after -->
+          <g stroke="#B4B2A9" stroke-width="1.3" fill="none">
+            <line x1="330" y1="272" x2="288" y2="374"/><line x1="330" y1="272" x2="378" y2="320"/>
+            <line x1="378" y1="338" x2="352" y2="386"/><line x1="378" y1="338" x2="404" y2="386"/>
+          </g>
+          <g font-size="11.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="330" cy="272" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <rect x="266" y="378" width="44" height="24" rx="4" fill="#F1EFE8" stroke="#B4B2A9"/>
+            <circle cx="378" cy="330" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="352" cy="388" r="15" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.5"/>
+            <circle cx="404" cy="388" r="15" fill="#3A3A38" stroke="#1F1F1D"/>
+            <text x="330" y="272" fill="#F5F5F2">p</text>
+            <text x="288" y="392" fill="#5F5E5A" font-size="11">α</text>
+            <text x="378" y="330" fill="#8E2F2F">C</text>
+            <text x="352" y="388" fill="#8E2F2F">z</text>
+            <text x="404" y="388" fill="#F5F5F2">y</text>
+          </g>
+          <text x="450" y="300" font-size="11" fill="#5F5E5A">p 变黑、C 变红</text>
+          <text x="450" y="320" font-size="11" fill="#5F5E5A">→ 新子树根 p 是黑的</text>
+          <text x="450" y="340" font-size="11" fill="#5F5E5A">→ 红红消失，循环结束</text>
+        </svg>
+        <div class="cap">情况 1 只染色（问题向上移两层）；情况 2 是「先转成情况 3」；情况 3 是唯一真正旋转并终止的情况</div>
+      </div>
+
+      <div class="warn">
+        <strong>三个最容易错的地方：</strong>
+        <ol style="margin:6px 0 0">
+          <li><strong>情况 1 处理完不能停</strong>。它只是把「红红」从 $z$ 和 $z.p$ 移到了 $z.p.p$ 和 $z.p.p.p$，
+          所以必须 <code>z = z.p.p</code> 再循环一次。考试写「情况 1 后结束」直接扣分。</li>
+          <li><strong>情况 2 不是独立情况</strong>。它本身不解决问题，只是把「内侧」转成「外侧」，转完必然进情况 3。
+          所以整个修正<strong>最多 2 次旋转</strong>。</li>
+          <li><strong>情况 3 结束前要把根染黑</strong>（代码最后一行 <code>T.root.color = BLACK</code>），
+          因为情况 1 可能把根染红了。</li>
+        </ol>
+      </div>
+
+      <h3>5.3 完整伪代码</h3>
+<pre>RB-INSERT(T, z)
+    y = T.nil; x = T.root
+    while x ≠ T.nil                       <span class="c"># ① 普通 BST 插入</span>
+        y = x
+        x = (z.key &lt; x.key) ? x.left : x.right
+    z.p = y
+    if y == T.nil        T.root = z
+    else if z.key &lt; y.key  y.left = z
+    else                   y.right = z
+    z.left = z.right = T.nil
+    z.color = RED                         <span class="c"># ② 一定染红</span>
+    RB-INSERT-FIXUP(T, z)                 <span class="c"># ③ 修正</span>
+
+RB-INSERT-FIXUP(T, z)
+    while z.p.color == RED
+        if z.p == z.p.p.left
+            y = z.p.p.right               <span class="c"># 叔结点</span>
+            if y.color == RED                            <span class="c"># 情况 1</span>
+                z.p.color = BLACK; y.color = BLACK; z.p.p.color = RED
+                z = z.p.p
+            else
+                if z == z.p.right                        <span class="c"># 情况 2</span>
+                    z = z.p; LEFT-ROTATE(T, z)
+                z.p.color = BLACK; z.p.p.color = RED     <span class="c"># 情况 3</span>
+                RIGHT-ROTATE(T, z.p.p)
+        else                                          <span class="c"># 镜像：left ↔ right 互换</span>
+            …（同上，方向全部反过来）
+    T.root.color = BLACK</pre>
+
+      <p><strong>复杂度</strong>：情况 1 每执行一次 $z$ 上移两层，所以最多执行 $O(\lg n)$ 次；
+      情况 2、3 执行完循环就结束，各最多 1 次。所以<strong>总时间 $O(\lg n)$，旋转最多 2 次</strong>。</p>
+
+      <p>下面这张表是 13.3-2 的完整轨迹（插入 41, 38, 31, 12, 19, 8），每一步都标了触发的情况，§8 会逐行解释：</p>
+      <table>
+        <thead><tr><th style="width:10%">插入</th><th style="width:26%">落点 / 触发</th><th>结果树（R=红，B=黑）</th></tr></thead>
+        <tbody>
+          <tr><td>41</td><td>空树 → 根</td><td><code>41B</code></td></tr>
+          <tr><td>38</td><td>41 的左孩子，红；父黑 → 不用修</td><td><code>41B(38R, ·)</code></td></tr>
+          <tr><td>31</td><td>38 的左孩子；父红、叔 NIL 黑、z 在外侧 → <strong>情况 3</strong>：38 黑、41 红、右旋 41</td><td><code>38B(31R, 41R)</code></td></tr>
+          <tr><td>12</td><td>31 的左孩子；父红、叔 41 <strong>红</strong> → <strong>情况 1</strong>：31、41 黑，38 红，z←38（根）→ 根染黑</td><td><code>38B(31B(12R,·), 41B)</code></td></tr>
+          <tr><td>19</td><td>12 的<strong>右</strong>孩子；父红、叔 NIL 黑、z 在内侧 → <strong>情况 2</strong>（左旋 12）→ <strong>情况 3</strong>（19 黑、31 红、右旋 31）</td><td><code>38B(19B(12R, 31R), 41B)</code></td></tr>
+          <tr><td>8</td><td>12 的左孩子；父红、叔 31 <strong>红</strong> → <strong>情况 1</strong>：12、31 黑，19 红，z←19；19 的父 38 是黑 → 停</td><td><code>38B(19R(12B(8R,·), 31B), 41B)</code></td></tr>
+        </tbody>
+      </table>
+      <p>最终树（这就是 13.3-2 要画的图）：</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+          <title>依次插入 41,38,31,12,19,8 后的红黑树</title>
+          <g stroke="#B4B2A9" stroke-width="1.4" fill="none">
+            <line x1="340" y1="42" x2="235" y2="106"/>
+            <line x1="340" y1="42" x2="445" y2="106"/>
+            <line x1="230" y1="122" x2="170" y2="184"/>
+            <line x1="230" y1="122" x2="292" y2="184"/>
+            <line x1="165" y1="200" x2="128" y2="252"/>
+          </g>
+          <g font-size="12.5" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central">
+            <circle cx="340" cy="42" r="17" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="230" cy="114" r="17" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.6"/>
+            <circle cx="445" cy="114" r="17" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="165" cy="192" r="17" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="297" cy="192" r="17" fill="#3A3A38" stroke="#1F1F1D"/>
+            <circle cx="122" cy="260" r="17" fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.6"/>
+            <g fill="#F5F5F2"><text x="340" y="42">38</text><text x="445" y="114">41</text><text x="165" y="192">12</text><text x="297" y="192">31</text></g>
+            <g fill="#8E2F2F"><text x="230" y="114">19</text><text x="122" y="260">8</text></g>
+          </g>
+          <g font-size="10.5" fill="#5F5E5A" text-anchor="middle">
+            <text x="390" y="34">B</text><text x="230" y="88">R</text><text x="482" y="106">B</text>
+            <text x="165" y="168">B</text><text x="330" y="184">B</text><text x="122" y="234">R</text>
+          </g>
+          <text x="540" y="200" font-size="11.5" fill="#5F5E5A">中序：8, 12, 19, 31, 38, 41</text>
+          <text x="540" y="220" font-size="11.5" fill="#5F5E5A">每条路径 2 个黑结点</text>
+        </svg>
+        <div class="cap">深色 = 黑，浅红 = 红；19 是红结点，所以它的两个孩子 12、31 必须黑</div>
+      </div>
+
+      <p>紧凑写法（自查用，括号里先左后右，<code>·</code> 表示空）：</p>
+<pre>38B( 19R( 12B( 8R(·,·), · ), 31B(·,·) ), 41B(·,·) )</pre>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2>6 · 删除与修正：「多一重黑」的四种情况 <span class="tag t-red">CLRS 13.4</span></h2>
+
+      <h3>6.1 删除比插入难在哪</h3>
+      <p>BST 的删除逻辑（§1.6）不变，问题在颜色。先把「被摘掉的结点 $y$ 是什么颜色」分清楚：</p>
+      <table>
+        <thead><tr><th style="width:20%">$y$ 的颜色</th><th style="width:34%">性质 5 会不会坏</th><th>要不要修正</th></tr></thead>
+        <tbody>
+          <tr><td><strong>红</strong></td><td>不会。红结点不贡献黑高，摘掉它，所有路径的黑结点数<strong>都没变</strong></td><td><strong>不用</strong>（这就是为什么删红结点很便宜）</td></tr>
+          <tr><td><strong>黑</strong></td><td>会。经过 $y$ 的路径都少了 1 个黑</td><td>要，调用 <code>RB-DELETE-FIXUP</code></td></tr>
+        </tbody>
+      </table>
+
+      <p>修正的思路是「假装 $x$（顶替上来的结点）身上多带了一重黑」，这样黑高就补齐了。
+      于是问题变成：<strong>把这重「多余的黑」往上推或者消掉</strong>。$x$ 可能是 NIL，
+      所以代码里要给 NIL 也维护父指针（这就是 <code>T.nil.p</code> 的用途，也是 RB-TRANSPLANT 与普通 TRANSPLANT 的第一个区别）。</p>
+
+      <h3>6.2 四种情况：看兄弟的颜色、看兄弟孩子的颜色</h3>
+      <p>设 $x$ 是「多一重黑」的结点（$x$ 是左孩子，右孩子情形对称）。兄弟记作 $w$：</p>
+
+      <table>
+        <thead><tr><th style="width:10%">情况</th><th style="width:34%">条件</th><th style="width:32%">动作</th><th>之后</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>$w$ <strong>红</strong></td><td>$w$ 染黑、$x.p$ 染红，绕 $x.p$ <strong>左旋</strong></td><td>转成情况 2/3/4（兄弟变黑）</td></tr>
+          <tr><td><strong>2</strong></td><td>$w$ 黑，且 $w$ 的<strong>两个孩子都黑</strong></td><td>$w$ 染红，$x\leftarrow x.p$</td><td><strong>继续循环</strong>（多出的黑上移一层）</td></tr>
+          <tr><td><strong>3</strong></td><td>$w$ 黑，$w$ 的<strong>近侧孩子红、远侧黑</strong></td><td>$w$ 的近侧孩子染黑、$w$ 染红，绕 $w$ <strong>旋转</strong></td><td>转成情况 4</td></tr>
+          <tr><td><strong>4</strong></td><td>$w$ 黑，$w$ 的<strong>远侧孩子红</strong></td><td>$w$ 继承 $x.p$ 的颜色，$x.p$ 染黑，$w$ 的远侧孩子染黑，绕 $x.p$ <strong>旋转</strong></td><td><strong>结束</strong>（$x$ 置为根）</td></tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>记忆钩子：</strong>情况 2 是「兄弟两孩子都黑 → 兄弟也染红，让父结点去承担那重黑」，所以问题<strong>上移</strong>；
+        情况 3 是「兄弟的近侧红、远侧黑 → 先转一下把红挪到远侧」；情况 4 是「远侧已经红了 → 一次旋转收工」。
+        <br>所以<strong>删除修正最多 3 次旋转</strong>（情况 1 一次 + 情况 3 一次 + 情况 4 一次），
+        但情况 2 可能沿路径重复 $O(\lg n)$ 次。
+      </div>
+
+      <h3>6.3 删除伪代码（对照教材 p183）</h3>
+<pre>RB-TRANSPLANT(T, u, v)               <span class="c"># 与 TRANSPLANT 的两点不同：</span>
+    if u.p == T.nil  T.root = v      <span class="c"># ① 用 T.nil 而不是 NIL 判断</span>
+    else if u == u.p.left  u.p.left = v
+    else                   u.p.right = v
+    v.p = u.p                        <span class="c"># ② 无条件给 v.p 赋值（v 可能是 T.nil）</span>
+
+RB-DELETE(T, z)
+    y = z; y-original-color = y.color
+    if z.left == T.nil
+        x = z.right;  RB-TRANSPLANT(T, z, z.right)
+    else if z.right == T.nil
+        x = z.left;   RB-TRANSPLANT(T, z, z.left)
+    else
+        y = TREE-MINIMUM(z.right)                 <span class="c"># 后继</span>
+        y-original-color = y.color
+        x = y.right
+        if y.p == z   x.p = y                     <span class="c"># 细节：x 可能是 T.nil</span>
+        else
+            RB-TRANSPLANT(T, y, y.right); y.right = z.right; y.right.p = y
+        RB-TRANSPLANT(T, z, y)
+        y.left = z.left; y.left.p = y
+        y.color = z.color                         <span class="c"># y 继承 z 的颜色</span>
+    if y-original-color == BLACK
+        RB-DELETE-FIXUP(T, x)                     <span class="c"># 只有摘掉的是黑才修</span></pre>
+
+      <div class="warn">
+        <strong>三个细节（考试常考）：</strong>
+        <ol style="margin:6px 0 0">
+          <li><code>y-original-color</code> 记的是<strong>被真正摘掉的那个结点</strong>的颜色。
+          两孩子情形里被摘掉的是后继 $y$，不是 $z$ —— 所以要单独存一份。</li>
+          <li><code>y.color = z.color</code>：$y$ 顶替 $z$ 的位置，必须<strong>继承 $z$ 的颜色</strong>，
+          否则 $z$ 那部分黑高会变。</li>
+          <li>两孩子情形里，如果 <code>y.p == z</code>（后继就是 $z$ 的右孩子），要单独给 <code>x.p</code> 赋值，
+          因为此时没有做 <code>RB-TRANSPLANT(y, y.right)</code>，$x$ 的父指针没人设。</li>
+        </ol>
+      </div>
+
+      <h3>6.4 一道完整的删除实例：从 13.3-2 的树里删 8，再删 12</h3>
+      <p>起点就是 5.3 末尾那棵树：</p>
+<pre>38B( 19R( 12B(8R, ·), 31B ), 41B )</pre>
+
+      <p><strong>删 8</strong>：8 是叶子，且是<strong>红</strong>的。</p>
+      <ul>
+        <li>$z=8$，无左孩子 → <code>RB-TRANSPLANT(z, z.right=T.nil)</code>，$x$ = T.nil，$y$ = 8，$y$ 原色 = <strong>红</strong>；</li>
+        <li>红色 → <strong>不调用修正</strong>，直接把 8 摘掉。</li>
+      </ul>
+<pre>删 8 之后：38B( 19R( 12B, 31B ), 41B )</pre>
+
+      <p><strong>删 12</strong>：12 是叶子，且是<strong>黑</strong>的 → 必须修正。</p>
+      <ul>
+        <li>$z=12$，无孩子 → $x$ = T.nil（12 的左孩子位），$y=12$，$y$ 原色 = <strong>黑</strong> → 调用 <code>RB-DELETE-FIXUP(T, x)</code>；</li>
+        <li>$x$ 是 $19$ 的左孩子，兄弟 $w=31$（<strong>黑</strong>），$w$ 的两个孩子都是 T.nil（黑）→ <strong>情况 2</strong>：$w$ 染红，$x\leftarrow 19$；</li>
+        <li>此时 $x=19$ 是<strong>红</strong> → 循环条件 <code>x.color == BLACK</code> 不成立，退出；最后 <code>x.color = BLACK</code> 把 19 染黑。</li>
+      </ul>
+<pre>删 12 之后：38B( 19B( ·, 31R ), 41B )</pre>
+      <p>验证黑高（含 NIL 的路径）：$38\to19\to31\to$NIL 有 2 个黑（19、NIL）；$38\to19\to$NIL 有 2 个黑；$38\to41\to$NIL 有 2 个黑 ✓</p>
+
+      <div class="ok">
+        <strong>注意这个例子的妙处：</strong>情况 2 把「多出的黑」交给了父结点 19，而 19 恰好是红的，
+        所以「一重黑 + 一重红」正好变成纯黑 —— <strong>红色就是用来吸收多余黑色的</strong>。
+        如果 19 是黑的，就得继续往上推（再进情况 2 或情况 1/3/4）。
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2>7 · 第 12 章习题全解 <span class="tag t-blue">12.4-1 ~ 12.4-5 · 思考题 12-1 ~ 12-4</span></h2>
+
+      <div class="q">
+        <p><span class="no">12.4-1</span><span class="diff">证明 · 中等</span>
+        证明等式 (12.3)：即 §12.4 里那条把 $\mathrm{E}[X_n]$ 压到 $O(\lg n)$ 的不等式链。</p>
+
+        <p><strong>先把要证的东西摆出来。</strong>记 $X_n$ 为 $n$ 个互异关键字随机建树的高度，$Y_n=2^{X_n}$。要证的是</p>
+        $$\mathrm{E}[Y_n]\le\frac14\binom{n+3}{3}=\frac{(n+3)(n+2)(n+1)}{24}$$
+        <p>进而 $2^{\mathrm{E}[X_n]}\le\mathrm{E}[Y_n]\Rightarrow \mathrm{E}[X_n]=O(\lg n)$。</p>
+
+        <p><strong>第一步：写 $Y_n$ 的递归式。</strong>根是第 $i$ 小的关键字的概率是 $1/n$（随机排列，每个位置等可能），此时
+        $X_n=1+\max(X_{i-1},X_{n-i})$，于是</p>
+        $$Y_n=2^{X_n}=2\cdot\max(Y_{i-1},\,Y_{n-i})$$
+        <p>把 $\max$ 放大成和（$\max(a,b)\le a+b$，代价是常数因子 2）：</p>
+        $$Y_n\le 2\,(Y_{i-1}+Y_{n-i})$$
+
+        <p><strong>第二步：取期望。</strong></p>
+        $$\mathrm{E}[Y_n]\le\frac1n\sum_{i=1}^{n}2\big(\mathrm{E}[Y_{i-1}]+\mathrm{E}[Y_{n-i}]\big)
+          =\frac4n\sum_{k=0}^{n-1}\mathrm{E}[Y_k]$$
+        <p>（最后一步：$i$ 从 1 到 $n$ 时 $i-1$ 和 $n-i$ 都取遍 $0..n-1$，两个和相同，合起来就是 $2\times2=4$ 倍。）</p>
+
+        <p><strong>第三步：归纳。</strong>猜 $\mathrm{E}[Y_k]\le\frac14\binom{k+3}{3}$，代入：</p>
+        $$\frac4n\sum_{k=0}^{n-1}\frac14\binom{k+3}{3}=\frac1n\sum_{k=0}^{n-1}\binom{k+3}{3}
+          \overset{\text{曲棍球棒}}{=}\frac1n\binom{n+3}{4}
+          =\frac{(n+3)(n+2)(n+1)}{24}=\frac14\binom{n+3}{3}$$
+        <p>恰好闭合（不是「小于等于」，是<strong>等号</strong>）—— 这说明猜的界是「刚好卡住」的，常数 $\frac14$ 和 $\binom{k+3}{3}$ 不是随便凑的。</p>
+
+        <div class="note">
+          <strong>曲棍球棒恒等式：</strong>$\sum_{k=0}^{n-1}\binom{k+r}{r}=\binom{n+r}{r+1}$。
+          这是这类归纳里最常用的求和工具，比硬算快得多。
+        </div>
+
+        <p><strong>第四步：取对数。</strong>由 $2^x$ 凸（见 12.4-4）得 Jensen 不等式 $2^{\mathrm{E}[X_n]}\le\mathrm{E}[2^{X_n}]=\mathrm{E}[Y_n]$，于是</p>
+        $$2^{\mathrm{E}[X_n]}\le\frac{(n+3)(n+2)(n+1)}{24}
+          \;\Rightarrow\;\mathrm{E}[X_n]\le \lg\frac{(n+3)(n+2)(n+1)}{24}=3\lg(n+3)-\lg 24=O(\lg n)\ \checkmark$$
+
+        <div class="warn">
+          <strong>为什么非要绕「取指数」这一圈：</strong>直接对 $X_n=1+\max(\cdot)$ 取期望做不出来 ——
+          $\mathrm{E}[\max]$ 不好处理，两个子问题还会纠缠。取指数后 $\max$ 变成「加法上界」，
+          递归式就变成线性的、可以归纳的了。<strong>「指数化 → 归纳 → 取对数」是处理 max 型递归式的标准套路。</strong>
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12.4-2</span><span class="diff">构造 + 证明 · 中等偏难</span>
+        描述一棵 $n$ 个结点的 BST：平均深度 $\Theta(\lg n)$，但高度 $\omega(\lg n)$。并给出高度的渐近上界。</p>
+
+        <p><strong>构造（「扫帚」形）：</strong>取 $k=\lceil\sqrt{n\lg n}\rceil$。</p>
+        <ol class="steps">
+          <li>先造一条长 $k$ 的<strong>链</strong>（比如一直往右）；</li>
+          <li>在链的末端挂一棵<strong>尽量平衡</strong>的子树，装下剩下的 $n-k$ 个结点（高度 $\Theta(\lg n)$）。</li>
+        </ol>
+
+        <p><strong>验证平均深度。</strong>总路径长度 = 链上结点的深度和 + 子树内结点的深度和：</p>
+        $$\underbrace{1+2+\cdots+k}_{\Theta(k^2)=\Theta(n\lg n)}
+          +\underbrace{\Theta\big((n-k)\lg(n-k)\big)}_{\Theta(n\lg n)}=\Theta(n\lg n)$$
+        <p>除以 $n$ 得平均深度 $\Theta(\lg n)$ ✓。而高度 $=k+\Theta(\lg n)=\Theta(\sqrt{n\lg n})=\omega(\lg n)$ ✓。</p>
+
+        <p><strong>上界（为什么不能更高）：</strong>设平均深度为 $D=\Theta(\lg n)$，总路径长度 $=nD$。
+        若某个结点深度为 $H$，那么从根到它的路径上就有深度为 $1,2,\dots,H$ 的 $H$ 个结点，光这些就贡献了 $\frac{H(H+1)}{2}$。于是</p>
+        $$\frac{H^2}{2}\le nD=O(n\lg n)\;\Rightarrow\;H=O(\sqrt{n\lg n})$$
+
+        <div class="ok">
+          <strong>结论：</strong>在「平均深度 $\Theta(\lg n)$」的约束下，高度<strong>恰好可以到 $\Theta(\sqrt{n\lg n})$</strong>，
+          而且这个界是紧的（上面的构造达到）。所以答案是 $\Theta(\sqrt{n\lg n})$，不是 $O(n)$。
+          <br><strong>这道题想说明的事：</strong>「平均深度小」<strong>推不出</strong>「高度小」。
+          红黑树要保证的是<strong>高度</strong>（最坏情况），而不是平均 —— 这就是为什么不能只靠「随机建树」。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12.4-3</span><span class="diff">反例 · 中等</span>
+        「随机构建的 BST」（$n!$ 种插入顺序等可能）与「随机选取的 BST」（每个形状等可能）是两个不同的概念。以 $n=3$ 说明。</p>
+
+        <p>$n=3$ 有 $3!=6$ 种插入顺序，但只有 $b_3=5$ 种形状。逐个列出：</p>
+        <table>
+          <thead><tr><th style="width:16%">插入顺序</th><th style="width:30%">得到的树</th><th style="width:24%">形状编号</th><th>概率</th></tr></thead>
+          <tbody>
+            <tr><td>1, 2, 3</td><td>1 → 右 2 → 右 3（右斜链）</td><td>A</td><td>$1/6$</td></tr>
+            <tr><td>3, 2, 1</td><td>3 → 左 2 → 左 1（左斜链）</td><td>B</td><td>$1/6$</td></tr>
+            <tr><td>2, 1, 3</td><td>2 为根，左 1、右 3（平衡）</td><td>C</td><td rowspan="2">$2/6=1/3$</td></tr>
+            <tr><td>2, 3, 1</td><td>2 为根，左 1、右 3（平衡）</td><td>C</td></tr>
+            <tr><td>1, 3, 2</td><td>1 为根，右 3，3 的左孩子 2</td><td>D</td><td>$1/6$</td></tr>
+            <tr><td>3, 1, 2</td><td>3 为根，左 1，1 的右孩子 2</td><td>E</td><td>$1/6$</td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>对比：</strong>「随机选取」的口径下每种形状概率都是 $1/5$；而「随机插入」下平衡树 C 的概率是 $1/3$。
+        $1/3\ne1/5$，所以<strong>两个分布不同</strong> —— 随机插入<strong>偏爱</strong>平衡的形状。</p>
+
+        <div class="note">
+          <strong>为什么这件事重要：</strong>定理 12.4 证的是「随机<strong>插入</strong>」的期望高度 $O(\lg n)$。
+          如果换成「随机<strong>选形状</strong>」，结论其实更强（均匀随机二叉树的期望高度是 $\Theta(\sqrt n)$，反而更差！）。
+          所以定理 12.4 不能随便换成另一种模型，<strong>模型选错结论就错</strong>。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12.4-4</span><span class="diff">证明 · 简单</span>证明 $f(x)=2^x$ 是凸函数。</p>
+
+        <p>求二阶导：</p>
+        $$f'(x)=2^x\ln 2,\qquad f''(x)=2^x(\ln 2)^2\gt 0\quad(\forall x)$$
+        <p>二阶导恒正 $\Rightarrow$ 严格凸。∎</p>
+
+        <p><strong>它在这里的用途</strong>（这才是考点）：凸函数满足 Jensen 不等式</p>
+        $$f\big(\mathrm{E}[X]\big)\le\mathrm{E}\big[f(X)\big]\quad\Longrightarrow\quad 2^{\mathrm{E}[X_n]}\le\mathrm{E}\big[2^{X_n}\big]$$
+        <p>取 $f(x)=2^x$ 就得到 12.4-1 的第二步。这个不等式把「期望的高度」和「高度的期望」联系了起来 ——
+        而后者才是能归纳的那个量。</p>
+
+        <div class="note">
+          <strong>离散版（考试更好写）：</strong>对任意 $a,b$ 和 $\lambda\in[0,1]$，
+          $2^{\lambda a+(1-\lambda)b}\le\lambda 2^a+(1-\lambda)2^b$。
+          两边取 $\lambda=\frac12$ 就是「中点值不超过端点平均」，即凸性的定义。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12.4-5</span><span class="diff">证明 · 难</span>
+        对 RANDOMIZED-QUICKSORT，证明：对任意常数 $k\gt0$，除 $O(1/n^k)$ 比例的输入排列之外，运行时间都是 $O(n\lg n)$。</p>
+
+        <p><strong>思路：把「高概率」的界翻译成「排列个数」的界。</strong></p>
+        <ol class="steps">
+          <li>由第 7 章的随机化快排分析（习题 7-3 的另一种分析），存在常数 $c$ 使得对任意常数 $k$ 有
+          $$\Pr\big[T_n\gt c\,n\lg n\big]=O\!\left(\frac1{n^k}\right)$$
+          这里的概率是对「随机选取的排列」取的。</li>
+          <li>设「坏排列」= 运行时间超过 $c n\lg n$ 的排列。坏排列的个数
+          $$=\;(\text{排列总数})\times\Pr[\text{随机排列是坏的}]\;\le\; n!\cdot O\!\left(\frac1{n^k}\right)=O\!\left(\frac{n!}{n^k}\right)$$</li>
+          <li>所以坏排列<strong>占比</strong> $O(1/n^k)$，其余排列（绝大多数）运行时间 $O(n\lg n)$。∎</li>
+        </ol>
+
+        <div class="warn">
+          <strong>注意题目说的「$O(1/n^k)$ 种」是笔误/简写</strong>，正确说法是「占 $O(1/n^k)$ 的<strong>比例</strong>」，
+          即 $O(n!/n^k)$ 个排列。$1/n^k$ 本身小于 1，不可能是「种数」。
+          <br>另外要强调：这里的「坏」是<strong>输入排列</strong>的坏，不是随机种子的坏 ——
+          随机化快排对<strong>任何固定输入</strong>都是 $O(n\lg n)$ 期望，这里说的是更强的「几乎对所有排列都确定性地快」。
+        </div>
+      </div>
+
+      <h3 style="margin-top:34px">思考题</h3>
+
+      <div class="q">
+        <p><span class="no">12-1</span><span class="diff">相同关键字 · 四小问</span>
+        <strong>带相同关键字的二叉搜索树。</strong>把 $n$ 个<strong>关键字相同</strong>的数据依次插入初始为空的 BST，会发生什么？如何改进？</p>
+
+        <p><strong>(a) 朴素 TREE-INSERT 的性能</strong></p>
+        <p>朴素写法是 <code>if z.key &lt; x.key then 左 else 右</code>，关键字相等时一律往<strong>右</strong>走。
+        于是 $n$ 个相同关键字会插成一条<strong>右斜链</strong>：</p>
+        <ul>
+          <li>第 $i$ 次插入要走 $i-1$ 步 $\Rightarrow$ 总时间 $\sum_{i=1}^n(i-1)=\Theta(n^2)$；</li>
+          <li>查找任意一个：$\Theta(n)$；树高 $n-1$，<strong>完全退化成链表</strong>。</li>
+        </ul>
+        <p>所以朴素做法在「大量重复关键字」下是 $\Theta(n^2)$ —— 这正是现实数据（比如按城市分组）会踩的坑。</p>
+
+        <p><strong>(b) 布尔标志交替</strong></p>
+        <p>每个结点 $x$ 存一个标志 $x.b$，每次访问 $x$ 就翻转它；相等时按 $x.b$ 决定往左还是往右。</p>
+        <p>效果：相等关键字<strong>均匀地分到左右两边</strong>，树长成近似<strong>完全二叉树</strong>：</p>
+        <ul>
+          <li>树高 $\Theta(\lg n)$；</li>
+          <li>插入：每次 $O(\lg n)$，总共 $\Theta(n\lg n)$；<strong>最坏也是 $\Theta(n\lg n)$</strong>（树形由标志决定，不随输入变化）。</li>
+        </ul>
+
+        <p><strong>(c) 相等关键字挂成链表</strong></p>
+        <p>结点 $x$ 上挂一个「关键字等于 $x.key$ 的所有结点」的链表，相等时把 $z$ 追加到表尾（维护尾指针）。</p>
+        <ul>
+          <li>插入：走到位置 $O(\lg n)$ + 追加 $O(1)$，若全是相同关键字则只需走到根，$\Theta(1)$ 每次，总共 $\Theta(n)$；</li>
+          <li>查找：找到结点后还要<strong>扫链表</strong>，最坏 $\Theta(n)$（$n$ 个全相同）。</li>
+        </ul>
+        <p>这是「插入极快、查找退化」的典型权衡。</p>
+
+        <p><strong>(d) 随机左右</strong></p>
+        <p>相等时抛硬币决定往左还是往右。</p>
+        <ul>
+          <li><strong>最坏 $\Theta(n^2)$</strong>：硬币全部同向，退化成链（概率极小但存在）；</li>
+          <li><strong>期望 $\Theta(n\lg n)$</strong>：每个元素平均下沉 $O(\lg n)$ 层，树高期望 $\Theta(\lg n)$。
+          本质上是「用随机比特串建数字查找树」，与随机 BST 同阶。</li>
+        </ul>
+
+        <div class="ok">
+          <strong>四问的对比表（考试就写这个）：</strong>
+          <table style="margin:8px 0 0">
+            <thead><tr><th style="width:24%">策略</th><th style="width:20%">插入总计</th><th style="width:20%">查找</th><th>树高</th></tr></thead>
+            <tbody>
+              <tr><td>朴素（一律往右）</td><td>$\Theta(n^2)$</td><td>$\Theta(n)$</td><td>$n-1$</td></tr>
+              <tr><td>布尔标志交替</td><td>$\Theta(n\lg n)$</td><td>$\Theta(\lg n)$</td><td>$\Theta(\lg n)$</td></tr>
+              <tr><td>相等挂链表</td><td>$\Theta(n)$</td><td>$\Theta(n)$（扫表）</td><td>$\Theta(\lg n)$ + 表长</td></tr>
+              <tr><td>随机左右</td><td>期望 $\Theta(n\lg n)$ / 最坏 $\Theta(n^2)$</td><td>期望 $\Theta(\lg n)$</td><td>期望 $\Theta(\lg n)$</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12-2</span><span class="diff">数据结构 · 中等</span>
+        <strong>基数树（radix tree）。</strong>说明如何用基数树在 $\Theta(n)$ 时间内按字典序对一组位串排序（$n$ = 所有串长度之和）。</p>
+
+        <p><strong>结构：</strong>每个结点代表「某个前缀」，第 $i$ 层对应第 $i$ 位。往下走时，这一位是 0 走左、是 1 走右。
+        一个串结束的结点上打一个「这里有键」的标记；只为了连通路径而存在的结点不存键（教材叫「深结点」）。</p>
+
+        <p><strong>排序算法：</strong></p>
+        <ol class="steps">
+          <li><strong>建树</strong>：把每个串按位插入，逐位下降，缺结点就新建，末尾结点打标记。
+          每个串的每一位只处理一次，总代价 $\Theta(\sum \text{长度})=\Theta(n)$。</li>
+          <li><strong>先序遍历</strong>：<strong>先走 0 分支，再走 1 分支</strong>，访问到「有标记」的结点就把对应串输出。</li>
+        </ol>
+
+        <p><strong>为什么输出就是字典序：</strong>字典序的比较规则是「找到第一个不同的位，0 的那个更小；若一个是另一个的前缀，短的更小」。
+        先序遍历恰好先走完所有以 0 开头的串、再走 1 开头的；而在每个子树内部递归地也这么做。
+        至于「前缀更小」：短串对应的结点是长串结点的<strong>祖先</strong>，先序遍历<strong>先访问祖先</strong>，所以短串先输出 ✓</p>
+
+        <p><strong>复杂度：</strong>建树 $\Theta(n)$ + 遍历 $O(\text{结点数})=O(n)$，共 $\Theta(n)$。</p>
+
+        <div class="note">
+          <strong>为什么能突破 $\Omega(n\lg n)$ 的下界？</strong>因为基数树<strong>不做两两比较</strong>，
+          它按「位」把元素分桶 —— 比较排序的下界只约束「只靠比较」的算法。
+          <br><strong>教材图 12-5 的例子</strong>：存 {1011, 10, 011, 100, 0}，先序输出应为
+          <code>0, 011, 10, 100, 1011</code> —— 与题面给的答案一致。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12-3</span><span class="diff">证明 · 六小问</span>
+        <strong>随机构建二叉搜索树的平均结点深度。</strong>定义 $P(T)=\sum_{x\in T}d(x,T)$（所有结点深度之和，根深度为 0）。</p>
+
+        <p><strong>(a) 平均深度 $=\frac1n P(T)$</strong></p>
+        <p>平均深度就是「深度之和除以结点数」，按定义直接得到：
+        $\frac1n\sum_{x\in T}d(x,T)=\frac1n P(T)$。∎</p>
+
+        <p><strong>(b) $P(T)=P(T_L)+P(T_R)+n-1$</strong></p>
+        <p>设 $T$ 有 $n$ 个结点，左子树 $T_L$ 有 $k$ 个、右子树 $T_R$ 有 $n-1-k$ 个。
+        在 $T_L$、$T_R$ 内部，结点深度按子树自己的口径算；放到 $T$ 里，每个结点的深度都要<strong>加 1</strong>（多了一层根）。
+        所以</p>
+        $$P(T)=\big(P(T_L)+k\big)+\big(P(T_R)+(n-1-k)\big)+0=P(T_L)+P(T_R)+n-1$$
+        <p>（根自己深度 0，不贡献。）∎</p>
+
+        <p><strong>(c) $P(n)=\frac1n\sum_{i=0}^{n-1}\big(P(i)+P(n-i-1)+n-1\big)$</strong></p>
+        <p>根是第 $i+1$ 小的关键字（左子树 $i$ 个结点）的概率是 $1/n$，代入 (b) 再对 $i$ 取平均即得。∎</p>
+
+        <p><strong>(d) 化简成 $P(n)=\frac2n\sum_{k=1}^{n-1}P(k)+\Theta(n)$</strong></p>
+        $$\frac1n\sum_{i=0}^{n-1}\big(P(i)+P(n-1-i)\big)=\frac2n\sum_{k=0}^{n-1}P(k)=\frac2n\sum_{k=1}^{n-1}P(k)$$
+        <p>（$P(0)=0$，去掉不影响；两个和相同所以乘 2。）而常数项</p>
+        $$\frac1n\sum_{i=0}^{n-1}(n-1)=\frac{n(n-1)}{n}=n-1=\Theta(n)\ \checkmark$$
+        <p>合起来即得。∎</p>
+
+        <p><strong>(e) $P(n)=O(n\lg n)$</strong></p>
+        <p>猜 $P(n)\le cn\lg n$，对 $n$ 归纳：</p>
+        $$P(n)\le\frac2n\sum_{k=1}^{n-1}ck\lg k+\Theta(n)$$
+        <p>用求和界 $\sum_{k=1}^{n-1}k\lg k\le\frac{n^2}{2}\lg n-\frac{n^2}{8}$（可用积分估计证明，数值上 $n=64$ 时左边 10619 &lt; 右边 11776）：</p>
+        $$P(n)\le\frac{2c}{n}\left(\frac{n^2}{2}\lg n-\frac{n^2}{8}\right)+\Theta(n)
+          =cn\lg n-\frac{cn}{4}+\Theta(n)$$
+        <p>只要 $c$ 足够大，$\frac{cn}{4}$ 就能吃掉 $\Theta(n)$，于是 $P(n)\le cn\lg n$ ✓。
+        平均深度 $=\frac{P(n)}{n}=O(\lg n)$，与定理 12.4 一致。∎</p>
+
+        <p><strong>(f) 让快排的比较次数与 BST 插入完全一致</strong></p>
+        <p>做法：<strong>固定取子数组的第一个元素作 pivot</strong>（不随机化），并且 PARTITION 按数组顺序逐个与 pivot 比较。</p>
+        <p>为什么一致：BST 插入时，每个元素依次与「根、根的某个孩子、……」比较，比较的对象恰好是它的<strong>所有祖先</strong>；
+        而快排里，每个元素恰好与「它所在的每一层子数组的 pivot」比较一次，这些 pivot 也恰好是它的所有祖先。
+        两者的递归树<strong>是同一棵树</strong>，所以比较次数逐元素相等。∎</p>
+
+        <div class="note">
+          <strong>这道题的意义：</strong>它把「BST 的期望高度」和「快排的期望比较次数」变成<strong>同一个数学对象</strong>。
+          于是第 7 章关于快排的所有结论（包括 $2n\ln n$ 的期望比较次数、$O(\lg n)$ 的期望深度）都能直接搬过来。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">12-4</span><span class="diff">生成函数 · 四小问</span>
+        <strong>不同二叉树的数目。</strong>设 $b_n$ 为含 $n$ 个结点的不同二叉树的数目。</p>
+
+        <p><strong>(a) $b_0=1$，且 $b_n=\sum_{k=0}^{n-1}b_kb_{n-1-k}$</strong></p>
+        <p>$b_0=1$（空树算一种）。$n\ge1$ 时，根固定，左子树有 $k$ 个结点、右子树有 $n-1-k$ 个，
+        两者独立，所以乘起来再对 $k$ 求和。∎</p>
+
+        <p><strong>(b) $B(x)=xB(x)^2+1$，解得 $B(x)=\frac{1}{2x}\big(1-\sqrt{1-4x}\big)$</strong></p>
+        <p>设 $B(x)=\sum_{n\ge0}b_nx^n$。则</p>
+        $$xB(x)^2+1=1+\sum_{n\ge1}\Big(\sum_{k=0}^{n-1}b_kb_{n-1-k}\Big)x^n
+          =1+\sum_{n\ge1}b_nx^n=B(x)$$
+        <p>解二次方程 $xB^2-B+1=0$：</p>
+        $$B=\frac{1\pm\sqrt{1-4x}}{2x}$$
+        <p>取哪个符号？$x\to0$ 时 $B(x)\to b_0=1$。若取 $+$，分子 $\to2$、分母 $\to0$，发散；
+        取 $-$ 时用洛必达：$\frac{1-\sqrt{1-4x}}{2x}\to\frac{2}{2}=1$ ✓。所以取负号。∎</p>
+
+        <p><strong>(c) $b_n=\frac{1}{n+1}\binom{2n}{n}$（Catalan 数）</strong></p>
+        <p>把 $\sqrt{1-4x}=(1-4x)^{1/2}$ 在 $x=0$ 处展开（广义二项式）：</p>
+        $$(1-4x)^{1/2}=\sum_{k\ge0}\binom{1/2}{k}(-4x)^k
+          =1-2x-2x^2-4x^3-10x^4-\cdots$$
+        <p>$k\ge1$ 时 $\binom{1/2}{k}(-4)^k=-\dfrac{2}{k}\dbinom{2k-2}{k-1}$，所以</p>
+        $$1-\sqrt{1-4x}=\sum_{k\ge1}\frac{2}{k}\binom{2k-2}{k-1}x^k$$
+        <p>除以 $2x$，令 $n=k-1$：</p>
+        $$b_n=\frac{1}{n+1}\binom{2n}{n}\ \checkmark$$
+        <p>数值核对：$b_0..b_7=1,1,2,5,14,42,132,429$ ✓（这就是 Catalan 数）。</p>
+
+        <p><strong>(d) $b_n=\dfrac{4^n}{\sqrt{\pi}\,n^{3/2}}\big(1+O(1/n)\big)$</strong></p>
+        <p>用 Stirling：$n!\sim\sqrt{2\pi n}\,(n/e)^n$。</p>
+        $$b_n=\frac{(2n)!}{(n+1)!\,n!}
+          \sim\frac{\sqrt{4\pi n}(2n/e)^{2n}}{(n+1)\cdot\sqrt{2\pi n}(n/e)^n\cdot\sqrt{2\pi n}(n/e)^n}
+          =\frac{4^n}{(n+1)\sqrt{\pi n}}$$
+        <p>再把 $\frac{1}{n+1}=\frac1n(1+O(1/n))$ 提出：</p>
+        $$b_n=\frac{4^n}{\sqrt{\pi}\,n^{3/2}}\big(1+O(1/n)\big)\ \checkmark$$
+        <p>数值核对（比值应趋于 1）：$n=10$ 时 0.898，$n=50$ 时 0.978，$n=100$ 时 0.989 ✓</p>
+
+        <div class="note">
+          <strong>顺带记一个结论：</strong>$b_n$ 增长得像 $4^n/n^{3/2}$，所以「随机形状的二叉树」的高度期望是 $\Theta(\sqrt n)$
+          （见 12.4-3 的注），<strong>比随机插入得到的 BST（$\Theta(\lg n)$）差得多</strong>。
+          这也是「随机插入」这个模型必须说清楚的原因。
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2>8 · 第 13 章习题全解 <span class="tag t-red">13.1-1 ~ 13.1-7 · 13.2-1 ~ 13.2-4 · 13.3-1 ~ 13.3-6</span></h2>
+
+      <div class="note">
+        <strong>统一约定（很重要）：</strong>本节 $\mathrm{bh}(x)$ = 从 $x$ 到叶的路径上黑结点个数，<strong>含 $x$、不含 NIL</strong>。
+        与 CLRS 正文「不含 $x$」差 1，但只有这个口径能让 13.1-1 的「2、3、4」和 13.1-6 的「$2^{2k}-1$」同时成立。
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-1</span><span class="diff">作图 · 简单</span>
+        画出 $\{1,\dots,15\}$ 上高度为 3 的完全二叉搜索树，加入 NIL 叶，用三种方式着色，使黑高分别为 2、3、4。</p>
+
+        <p><strong>树形先定死：</strong>15 个关键字、高度 3 的完全树就是<strong>满二叉树</strong>，中序为 $1..15$，所以</p>
+        <table>
+          <thead><tr><th style="width:18%">层</th><th style="width:34%">结点</th><th>个数</th></tr></thead>
+          <tbody>
+            <tr><td>0（根）</td><td>8</td><td>1</td></tr>
+            <tr><td>1</td><td>4, 12</td><td>2</td></tr>
+            <tr><td>2</td><td>2, 6, 10, 14</td><td>4</td></tr>
+            <tr><td>3（叶）</td><td>1, 3, 5, 7, 9, 11, 13, 15</td><td>8</td></tr>
+          </tbody>
+        </table>
+
+        <p>因为每一层的结点「处境完全相同」（都有一条到叶的等长路径），所以<strong>按层着色</strong>就够了。
+        一条根到叶的路径上有 4 个结点，所以黑高最多是 4（全黑）。三种答案：</p>
+
+        <table>
+          <thead><tr><th style="width:14%">目标黑高</th><th style="width:38%">第 0 / 1 / 2 / 3 层</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><strong>4</strong></td><td>黑 / 黑 / 黑 / 黑</td><td>全黑。唯一解（路径上 4 个结点全算黑）</td></tr>
+            <tr><td><strong>3</strong></td><td>黑 / 黑 / 黑 / <strong>红</strong></td><td>25 种解之一，最规整的一种：只把最底层染红</td></tr>
+            <tr><td><strong>2</strong></td><td>黑 / <strong>红</strong> / 黑 / <strong>红</strong></td><td>唯一解：黑白相间（红结点不能相邻，所以只能这样）</td></tr>
+          </tbody>
+        </table>
+
+        <div class="diagram">
+          <svg viewBox="0 0 680 250" role="img" xmlns="http://www.w3.org/2000/svg">
+            <title>15 结点满二叉树按「黑/红/黑/红」着色，黑高为 2</title>
+            <g stroke="#B4B2A9" stroke-width="1.2" fill="none">
+              <line x1="340" y1="30" x2="190" y2="88"/><line x1="340" y1="30" x2="490" y2="88"/>
+              <line x1="190" y1="88" x2="115" y2="146"/><line x1="190" y1="88" x2="265" y2="146"/>
+              <line x1="490" y1="88" x2="415" y2="146"/><line x1="490" y1="88" x2="565" y2="146"/>
+              <line x1="115" y1="146" x2="78" y2="204"/><line x1="115" y1="146" x2="152" y2="204"/>
+              <line x1="265" y1="146" x2="228" y2="204"/><line x1="265" y1="146" x2="302" y2="204"/>
+              <line x1="415" y1="146" x2="378" y2="204"/><line x1="415" y1="146" x2="452" y2="204"/>
+              <line x1="565" y1="146" x2="528" y2="204"/><line x1="565" y1="146" x2="602" y2="204"/>
+            </g>
+            <g font-family="ui-monospace,monospace" font-size="11" text-anchor="middle" dominant-baseline="central">
+              <g fill="#3A3A38" stroke="#1F1F1D">
+                <circle cx="340" cy="30" r="13"/><circle cx="115" cy="146" r="13"/>
+                <circle cx="265" cy="146" r="13"/><circle cx="415" cy="146" r="13"/><circle cx="565" cy="146" r="13"/>
+              </g>
+              <g fill="#F7E4E4" stroke="#B23B3B" stroke-width="1.4">
+                <circle cx="190" cy="88" r="13"/><circle cx="490" cy="88" r="13"/>
+                <circle cx="78" cy="204" r="13"/><circle cx="152" cy="204" r="13"/>
+                <circle cx="228" cy="204" r="13"/><circle cx="302" cy="204" r="13"/>
+                <circle cx="378" cy="204" r="13"/><circle cx="452" cy="204" r="13"/>
+                <circle cx="528" cy="204" r="13"/><circle cx="602" cy="204" r="13"/>
+              </g>
+              <g fill="#F5F5F2">
+                <text x="340" y="30">8</text><text x="115" y="146">2</text><text x="265" y="146">6</text>
+                <text x="415" y="146">10</text><text x="565" y="146">14</text>
+              </g>
+              <g fill="#8E2F2F">
+                <text x="190" y="88">4</text><text x="490" y="88">12</text>
+                <text x="78" y="204">1</text><text x="152" y="204">3</text><text x="228" y="204">5</text><text x="302" y="204">7</text>
+                <text x="378" y="204">9</text><text x="452" y="204">11</text><text x="528" y="204">13</text><text x="602" y="204">15</text>
+              </g>
+            </g>
+            <text x="340" y="236" text-anchor="middle" font-size="11.5" fill="#5F5E5A">黑高 = 2 的那一种：根黑、第 1 层红、第 2 层黑、第 3 层红（唯一解）</text>
+          </svg>
+          <div class="cap">任意路径上恰有 2 个黑结点（8 和它下面那层的某个结点），且没有红红相连</div>
+        </div>
+
+        <div class="warn">
+          <strong>怎么自己检查：</strong>① 根必须黑；② 红结点的孩子不能红；③ 每条路径黑结点数一样。
+          三条都过就是对的。<strong>不要只数「黑的个数」</strong> —— 性质 5 说的是「每条路径相等」，不是「总共有多少」。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-2</span><span class="diff">判断 · 简单（但容易答漏）</span>
+        对教材图 13.1 的红黑树调用 TREE-INSERT 插入 36，画出结果。若插入的结点染红，结果还是红黑树吗？染黑呢？</p>
+
+        <p><strong>落点：</strong>36 比 38 小，所以成为 38 的<strong>左孩子</strong>（38 是红结点）。</p>
+
+        <p><strong>染红 → 不是红黑树。</strong>因为 36 红、父 38 也红，<strong>违反性质 4</strong>（红结点的孩子必须黑）。
+        此时其它性质都还成立，只有这一条坏了 —— 这正是 RB-INSERT-FIXUP 要修的东西。</p>
+
+        <p><strong>染黑 → 也不是红黑树。</strong>因为经过 36 的路径（$36\to$NIL）上有 2 个黑（36 和 NIL），
+        而 38 的右孩子是 NIL、路径上只有 1 个黑。两条路径黑高不等，<strong>违反性质 5</strong>。</p>
+
+        <div class="ok">
+          <strong>结论：</strong>两种颜色都不行，<strong>必须先插入再调用 RB-INSERT-FIXUP</strong>。
+          这道题考的就是 §5.1 那个论点：染红只破坏性质 4（局部、可修），染黑破坏性质 5（全局、不可局部修）。
+          <br><strong>修正会怎么走：</strong>36 是「左孩子的左孩子」，属于<strong>外侧</strong>情形。若叔结点是黑 → 情况 3
+          （父 38 染黑、祖父染红、绕祖父右旋），36 保持红；若叔结点是红 → 情况 1（父、叔染黑，祖父染红，问题上移两层）。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-3</span><span class="diff">判断 · 简单</span>
+        「松弛红黑树」= 只满足性质 1、3、4、5（<strong>根可以是红</strong>）的 BST。若它的根是红的，把根染黑，还是红黑树吗？</p>
+
+        <p><strong>是。</strong>逐条检查：</p>
+        <ul>
+          <li><strong>性质 1</strong>：颜色只是改了根，仍是红/黑之一 ✓</li>
+          <li><strong>性质 2</strong>：根现在是黑 ✓（这正是我们改的目的）</li>
+          <li><strong>性质 3</strong>：NIL 没动 ✓</li>
+          <li><strong>性质 4</strong>：根<strong>没有父结点</strong>，把它染黑不可能制造「红红」；它的孩子原来是黑（因为根原来是红，性质 4 要求孩子黑），现在也没变 ✓</li>
+          <li><strong>性质 5</strong>：路径上黑结点的<strong>分布</strong>只受「根以下的结点」影响，而根的兄弟路径不存在；
+          唯一变化是「根自己算不算黑」。按本节口径 $\mathrm{bh}(\text{根})$ 会 +1，但<strong>每条路径同时 +1</strong>，所以「相等」这个条件仍然成立 ✓</li>
+        </ul>
+        <p>所以染黑之后是合法的红黑树。∎</p>
+
+        <div class="note">
+          <strong>顺带说明为什么性质 2 可以「可有可无」：</strong>根的颜色不影响任何路径之间的<strong>相对</strong>黑高，
+          它只影响「黑高的绝对值」。所以把根染黑只是为了让定义干净，不改变树的本质结构 ——
+          这也是为什么教材说「删掉性质 2 不影响渐近结论」。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-4</span><span class="diff">结构 · 中等</span>
+        把红黑树里每个红结点「吸收」进它的黑父结点（红结点的孩子变成黑父的孩子）。吸收完之后，黑结点的度可能是多少？叶结点的深度如何？</p>
+
+        <p><strong>度只能是 0、1、2、3、4。</strong>设某黑结点 $x$ 原来有 $b$ 个黑孩子（$b\in\{0,1,2\}$）、$r$ 个红孩子（$r\in\{0,1,2\}$，且 $b+r\le2$）。
+        每个红孩子吸收后贡献 2 个孩子，所以吸收后 $x$ 的度</p>
+        $$\deg(x)=b+2r$$
+        <p>枚举 $(b,r)$：$(0,0)\to0$，$(1,0)\to1$，$(2,0)\to2$，$(0,1)\to2$，$(1,1)\to3$，$(0,2)\to4$。所以 $\deg\in\{0,1,2,3,4\}$，<strong>五种都可能</strong>。</p>
+
+        <p><strong>所有叶结点深度相同，都等于 $\mathrm{bh}(\text{根})-1$（按本节口径）。</strong>
+        因为吸收后，每一层恰好对应原树里的「一层黑结点」，而性质 5 保证任意路径上的黑结点数相同，
+        所以吸收后的树是<strong>等深的</strong> —— 每个叶到根的距离都一样。</p>
+
+        <div class="ok">
+          <strong>这道题想说的：</strong>红黑树其实是<strong>一棵 2-3-4 树</strong>的二叉树表示。
+          黑结点 = 2-3-4 树里的一个结点，红孩子 = 该结点里多出来的关键字。
+          度 2/3/4 分别对应 2-结点 / 3-结点 / 4-结点；「叶深度相同」就是 B 树的<strong>完美平衡</strong>性质。
+          <br>所以红黑树的平衡性不是「凑出来的」，而是<strong>从 B 树继承来的</strong>。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-5</span><span class="diff">证明 · 简单（高频）</span>
+        证明：红黑树中从某结点 $x$ 到其后代叶的所有简单路径中，最长的一条至多是最短的一条的 2 倍。</p>
+
+        <p><strong>证明：</strong>设最短路径长 $s$、最长路径长 $\ell$（都按「边数」或「结点数」计，两边一致即可）。</p>
+        <ol class="steps">
+          <li>由性质 5，所有路径上黑结点数相同，都等于 $\mathrm{bh}(x)$。</li>
+          <li><strong>最短路径</strong>：全是黑结点（一个红都不出现），所以 $s\ge \mathrm{bh}(x)$（每条路径至少这么多黑）。</li>
+          <li><strong>最长路径</strong>：由性质 4，红结点不能相邻，所以红结点最多和黑结点一样多，即红 $\le$ 黑。
+          于是 $\ell\le 2\,\mathrm{bh}(x)$。</li>
+          <li>合并：$\ell\le 2\,\mathrm{bh}(x)\le 2s$。∎</li>
+        </ol>
+
+        <div class="note">
+          <strong>为什么这条结论这么重要：</strong>它是「高度 $h\le2\lg(n+1)$」的<strong>直观版本</strong> ——
+          「最短路径」至少是 $\lg(n+1)$ 量级（因为黑高为 $k$ 至少有 $2^k-1$ 个结点），所以最长路径也就是 $2\lg$ 量级。
+          考试如果不想写完整归纳，写这个版本也能拿大部分分。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-6</span><span class="diff">计数 · 中等（必背）</span>
+        黑高为 $k$ 的红黑树，内部结点最多多少个？最少多少个？</p>
+
+        <p><strong>最少：$2^k-1$。</strong>让树<strong>全黑且尽量瘦</strong>：每个黑结点只留必要的孩子，
+        于是是一棵「黑高度为 $k$ 的满黑树」，结点数 $1+2+\cdots+2^{k-1}=2^k-1$。
+        （也可以直接用 §3.3 的引理：$n\ge2^{\mathrm{bh}}-1$，取等就是最瘦的情形。）</p>
+
+        <p><strong>最多：$2^{2k}-1$。</strong>让树<strong>黑白交替且尽量胖</strong>：根黑、孩子红、孙子黑……
+        这样每条路径上「黑红黑红」交替，路径最长（$2k-1$ 条边、$2k$ 层），而每层都填满，结点数 $2^{2k}-1$。</p>
+
+        <table>
+          <thead><tr><th style="width:10%">$k$</th><th style="width:20%">最少 $2^k-1$</th><th style="width:20%">最多 $2^{2k}-1$</th><th>最多的那棵树长什么样</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>1</td><td>3</td><td>根黑，两个红孩子</td></tr>
+            <tr><td>2</td><td>3</td><td>15</td><td>黑红黑红四层满树（就是 13.1-1 的 bh=2 那棵）</td></tr>
+            <tr><td>3</td><td>7</td><td>63</td><td>六层满树，黑白交替</td></tr>
+          </tbody>
+        </table>
+
+        <div class="warn">
+          <strong>换算提醒：</strong>如果你用 CLRS 正文「不含 $x$」的口径，答案会变成
+          「最多 $2^{2k+1}-1$、最少 $2^k-1$」（最多那项差一个因子 4）。
+          考试时先看题目怎么定义黑高，<strong>写答案时把口径说一句</strong>，就不会被判错。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.1-7</span><span class="diff">构造 + 上界 · 难</span>
+        $n$ 个关键字的红黑树，红内部结点数与黑内部结点数之比最大是多少？那棵树长什么样？</p>
+
+        <p><strong>答案：比值上确界是 2</strong>，在 $n=4^k-1$ 时<strong>恰好</strong>取到 2；其它 $n$ 略小于 2。</p>
+
+        <p><strong>上界证明（两句话）：</strong></p>
+        <ol class="steps">
+          <li>每个红结点都有黑父结点，而每个黑结点最多有 2 个红孩子，所以
+          $$\#\text{红}\le 2\times(\text{有孩子的黑结点数})\le 2\,\#\text{黑}$$</li>
+          <li>要取等号，必须「每个黑结点都恰有 2 个红孩子」，即黑结点全在偶数层、红结点全在奇数层，
+          且每个黑结点都有两个孩子 —— 这<strong>唯一</strong>确定了树形。</li>
+        </ol>
+
+        <p><strong>达到等号的构造：</strong>满二叉树，<strong>偶数层黑、奇数层红</strong>：</p>
+        <table>
+          <thead><tr><th style="width:14%">层</th><th style="width:20%">颜色</th><th style="width:20%">结点数</th><th>累计 $n$</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>黑</td><td>1</td><td>1</td></tr>
+            <tr><td>1</td><td>红</td><td>2</td><td>3</td></tr>
+            <tr><td>2</td><td>黑</td><td>4</td><td>7</td></tr>
+            <tr><td>3</td><td>红</td><td>8</td><td>15</td></tr>
+            <tr><td>4</td><td>黑</td><td>16</td><td>31</td></tr>
+            <tr><td>5</td><td>红</td><td>32</td><td>63</td></tr>
+          </tbody>
+        </table>
+        <p>$n=3$：黑 1、红 2 → 比值 2；$n=15$：黑 $1+4=5$、红 $2+8=10$ → 比值 2；$n=63$：黑 $1+4+16=21$、红 $2+8+32=42$ → 比值 2。</p>
+        <p>一般地 $n=4^k-1$ 时，黑 $=\frac{4^k-1}{3}$、红 $=\frac{2(4^k-1)}{3}$，比值恰好 2。</p>
+
+        <div class="note">
+          <strong>为什么其它 $n$ 达不到 2：</strong>因为「每个黑结点恰有 2 个红孩子」要求树是满的，
+          结点数只能是 $4^k-1$。少一个结点就必然出现「某个黑结点只有一个红孩子」或「某个红结点是叶子」，
+          比值就掉到 2 以下。<strong>但这不影响结论</strong> —— 题目问的是「最大可能」，答 2 即可。
+        </div>
+      </div>
+
+      <h3 style="margin-top:34px">13.2 旋转</h3>
+
+      <div class="q">
+        <p><span class="no">13.2-1</span><span class="diff">写代码 · 简单</span>写出 RIGHT-ROTATE 的伪代码。</p>
+<pre>RIGHT-ROTATE(T, y)                   <span class="c"># 前提：y.left ≠ T.nil</span>
+    x = y.left
+    y.left = x.right                 <span class="c"># β 改挂到 y 左边</span>
+    if x.right ≠ T.nil  x.right.p = y
+    x.p = y.p
+    if y.p == T.nil          T.root = x
+    else if y == y.p.right   y.p.right = x
+    else                     y.p.left = x
+    x.right = y; y.p = x</pre>
+        <p><strong>写法要点：</strong>把 LEFT-ROTATE 里的 <code>left</code> 和 <code>right</code> <strong>全部互换</strong>即可，
+        但注意「$y$ 是父的左孩子还是右孩子」这个判断也要跟着换（<code>y == y.p.right</code>）。</p>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.2-2</span><span class="diff">计数 · 简单</span>
+        证明：任何一棵 $n$ 个结点的 BST 中，恰有 $n-1$ 种可能的旋转。</p>
+
+        <p><strong>证明：</strong>一次旋转需要「父结点 + 一个非空的孩子」，也就是<strong>一条父子边</strong>。
+        每条边恰好对应一次旋转（左孩子 → 右旋，右孩子 → 左旋），所以旋转的种类数 = 边数。</p>
+        <p>$n$ 个结点的树有 $n-1$ 条边（树的基本性质），故恰有 $n-1$ 种。∎</p>
+
+        <div class="note">
+          <strong>补充：</strong>「$n-1$ 种」指的是<strong>在某棵给定的树上</strong>能做的旋转位置数；
+          如果问「$n$ 个结点的 BST 一共有多少种不同的树形」，那是 12-4 的 Catalan 数。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.2-3</span><span class="diff">分析 · 中等</span>
+        图 13-2 左边的树做左旋后，子树 $\alpha$、$\beta$、$\gamma$ 中任意结点 $a,b,c$ 的深度如何变化？</p>
+
+        <table>
+          <thead><tr><th style="width:16%">结点</th><th style="width:26%">所在子树</th><th style="width:24%">深度变化</th><th>为什么</th></tr></thead>
+          <tbody>
+            <tr><td>$a$</td><td>$\alpha$（$x$ 的左子树）</td><td><strong>$+1$</strong></td><td>$\alpha$ 跟着 $x$ 一起下沉一层</td></tr>
+            <tr><td>$b$</td><td>$\beta$（$y$ 的左子树）</td><td><strong>$0$</strong></td><td>从「$y$ 的左孩子」变成「$x$ 的右孩子」，$y$ 上移一层、$x$ 下沉一层，正好抵消</td></tr>
+            <tr><td>$c$</td><td>$\gamma$（$y$ 的右子树）</td><td><strong>$-1$</strong></td><td>跟着 $y$ 一起上提一层</td></tr>
+          </tbody>
+        </table>
+        <p>另外两个「特殊结点」：$x$ 的深度 $+1$，$y$ 的深度 $-1$。</p>
+
+        <div class="ok">
+          <strong>记忆法：</strong>画一条竖线穿过 $x$ 和 $y$。左旋 = 把这条线「顺时针拧一下」：
+          <strong>左边的东西下沉，右边的东西上提，中间那棵 $\beta$ 原地不动</strong>。
+          这条「$\beta$ 不动」是检查旋转代码写没写错的最好方法。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.2-4</span><span class="diff">证明 · 中等偏难</span>
+        证明：任何一棵 $n$ 个结点的 BST，都可以通过 $O(n)$ 次旋转变成任何另一棵 $n$ 个结点的 BST。</p>
+
+        <p><strong>两步走：先把树「捋直」，再「搭」成目标形状。</strong></p>
+
+        <p><strong>第一步：$n-1$ 次右旋可以把任意 BST 变成一条「只有右孩子的链」。</strong></p>
+        <p>做法：从根开始，反复对「有左孩子」的结点做右旋，直到根没有左孩子；然后递归处理右子树。
+        每次右旋都会让「左孩子的个数」减少 1，而左孩子总数 $\le n-1$，所以总共 $\le n-1$ 次。</p>
+        <p>（更直观的说法：中序序列是固定的，右斜链就是「按中序顺序一路往右挂」，所以任何 BST 都能拧成它。）</p>
+
+        <p><strong>第二步：从右斜链出发，用 $\le n-1$ 次左旋搭出目标树。</strong></p>
+        <p>把目标树按「自顶向下、先根后子树」的顺序构造：每次需要把某个结点「提上来」时，对它做左旋即可。
+        目标树有 $n-1$ 条边，每条边最多对应一次旋转，所以 $\le n-1$ 次。</p>
+
+        <p><strong>合计</strong>：$\le 2(n-1)=O(n)$ 次旋转。∎</p>
+
+        <div class="note">
+          <strong>为什么这题值得做：</strong>它说明「旋转」这个操作的<strong>表达能力是完备的</strong> ——
+          任意两棵同中序的 BST 之间都能互相到达，且代价只有 $O(n)$。
+          这也是「用旋转维护平衡」这类算法（AVL、伸展树、红黑树）能成立的理论基础。
+        </div>
+      </div>
+
+      <h3 style="margin-top:34px">13.3 插入</h3>
+
+      <div class="q">
+        <p><span class="no">13.3-1</span><span class="diff">说理 · 简单（高频）</span>
+        RB-INSERT 第 16 行把 $z$ 染红。若染黑，性质 4 就不会被破坏 —— 为什么不染黑？</p>
+
+        <p><strong>因为染黑会破坏性质 5，而性质 5 是「修不了」的。</strong></p>
+        <table>
+          <thead><tr><th style="width:14%">染成</th><th style="width:30%">破坏哪条</th><th style="width:26%">破坏的范围</th><th>能不能修</th></tr></thead>
+          <tbody>
+            <tr><td><strong>红</strong></td><td>性质 4（若父也红）</td><td>只在 $z$ 附近<strong>一条路径</strong>上</td><td><strong>能</strong>：染色 + 至多 2 次旋转</td></tr>
+            <tr><td>黑</td><td>性质 5（经过 $z$ 的路径多一个黑）</td><td><strong>所有</strong>经过 $z$ 的路径，也就是整棵树的黑高关系</td><td><strong>不能</strong>：要么把所有路径都加一个黑（不可能），要么就得大改</td></tr>
+          </tbody>
+        </table>
+        <p>更本质的说法：<strong>红结点不影响黑高，黑结点影响黑高。</strong>
+        插入一个红结点，只是「可能多出一处红红」，这是局部瑕疵；插入一个黑结点，是「全局黑高失衡」，没法局部补救。</p>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.3-2</span><span class="diff">作图 · 必做</span>
+        依次插入 41, 38, 31, 12, 19, 8，画出最终的红黑树。</p>
+
+        <p>完整轨迹见 §5.3 的表，这里重贴关键几步与最终结果（已用代码逐步验证）：</p>
+        <table>
+          <thead><tr><th style="width:10%">插入</th><th style="width:36%">触发</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td>41</td><td>空树</td><td><code>41B</code></td></tr>
+            <tr><td>38</td><td>父黑，不用修</td><td><code>41B(38R)</code></td></tr>
+            <tr><td>31</td><td><strong>情况 3</strong>：父 38 红、叔 NIL 黑、z 在外侧 → 38 黑、41 红、右旋 41</td><td><code>38B(31R, 41R)</code></td></tr>
+            <tr><td>12</td><td><strong>情况 1</strong>：叔 41 红 → 31、41 黑，38 红；z 上移到根 → 根染黑</td><td><code>38B(31B(12R), 41B)</code></td></tr>
+            <tr><td>19</td><td><strong>情况 2 + 3</strong>：z 是右孩子 → 左旋 12；再 19 黑、31 红、右旋 31</td><td><code>38B(19B(12R, 31R), 41B)</code></td></tr>
+            <tr><td>8</td><td><strong>情况 1</strong>：叔 31 红 → 12、31 黑，19 红；19 的父 38 黑 → 停</td><td><code>38B(19R(12B(8R), 31B), 41B)</code></td></tr>
+          </tbody>
+        </table>
+
+<pre>38B( 19R( 12B(8R, ·), 31B ), 41B )</pre>
+
+        <p><strong>自查：</strong>根黑 ✓；8R 的父 12B 是黑 ✓；19R 的孩子 12B、31B 都是黑 ✓；
+        所有路径黑结点数相同（$38\to19\to12\to8\to$NIL 有 2 个黑：12、NIL；$38\to41\to$NIL 有 2 个：41、NIL）✓</p>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.3-3</span><span class="diff">验证 · 中等</span>
+        设图 13-5、图 13-6 中各子树 $\alpha,\beta,\gamma,\delta,\varepsilon$ 的黑高都是 $k$。给每个结点标黑高，验证变换保持性质 5。</p>
+
+        <p>用「子树黑高都是 $k$」这个前提，逐个结点算（本节口径：含自己、不含 NIL）：</p>
+
+        <p><strong>情况 1（图 13-5）：父 $z.p$ 红、叔 $y$ 红、祖父 $C$ 黑</strong></p>
+        <table>
+          <thead><tr><th style="width:20%">结点</th><th style="width:26%">变换前 bh</th><th style="width:26%">变换后 bh</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>$z.p$（红→<strong>黑</strong>）</td><td>$k$（红，不计自己）</td><td>$k+1$</td><td>染黑后自己算 1 个</td></tr>
+            <tr><td>$y$（红→<strong>黑</strong>）</td><td>$k$</td><td>$k+1$</td><td>同上</td></tr>
+            <tr><td>$C$（黑→<strong>红</strong>）</td><td>$k+1$</td><td>$k+1$</td><td>自己不再算，但两个孩子各 +1，正好抵消</td></tr>
+            <tr><td>$z$（红，不变）</td><td>$k$</td><td>$k$</td><td>没动</td></tr>
+          </tbody>
+        </table>
+        <p><strong>结论：</strong>$C$ 的子树黑高不变（$k+1$），所以对 $C$ 以上<strong>没有任何影响</strong>；
+        唯一的变化是「$C$ 变红了」，于是「$C$ 与 $C$ 的父是否红红」需要下一轮检查 —— 这就是为什么要 <code>z = z.p.p</code> 继续循环。</p>
+
+        <p><strong>情况 2 + 3（图 13-6）：父 $z.p$ 红、叔 $y$ 黑</strong></p>
+        <table>
+          <thead><tr><th style="width:20%">结点</th><th style="width:26%">变换前 bh</th><th style="width:26%">变换后 bh</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>$z.p$（红→<strong>黑</strong>）</td><td>$k$</td><td>$k+1$</td><td>变成新子树的根</td></tr>
+            <tr><td>$C$（黑→<strong>红</strong>）</td><td>$k+1$</td><td>$k+1$</td><td>下沉一层，但自己不再算黑</td></tr>
+            <tr><td>$y$（黑，不变）</td><td>$k+1$</td><td>$k+1$</td><td>原地不动</td></tr>
+            <tr><td>$z$（红，不变）</td><td>$k$</td><td>$k$</td><td>只换了位置</td></tr>
+          </tbody>
+        </table>
+        <p><strong>结论：</strong>新子树根（原来的 $z.p$）黑高 $=k+1$，和原来 $C$ 的黑高 $k+1$ 相同 → 整棵树性质 5 保持 ✓；
+        而且新根是<strong>黑</strong>的，所以红红消失，循环结束。</p>
+
+        <div class="ok">
+          <strong>这类题的标准答法：</strong>只算三个结点（父、祖父、叔）的 bh 变化，
+          证明「新子树的根的黑高 = 原来子树根的黑高」。只要这一条成立，整棵树就没事 ——
+          因为变换只发生在局部，外部路径完全没变。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.3-4</span><span class="diff">说理 · 中等</span>
+        教授担心 RB-INSERT-FIXUP 会把 <code>T.nil.color</code> 设成 RED，导致 $z$ 为根时循环不终止。证明这个担心不必要。</p>
+
+        <p><strong>核心：循环里被染色的三个结点，没有一个是 <code>T.nil</code>。</strong></p>
+        <ol class="steps">
+          <li><strong>$z.p$</strong>：循环条件是 <code>z.p.color == RED</code>，而 <code>T.nil</code> 永远是黑的，
+          所以能进循环就说明 $z.p\ne$ <code>T.nil</code>。✓</li>
+          <li><strong>$z.p.p$</strong>：它是 $z.p$ 的父结点。$z.p$ 不是 NIL 且有父（否则 $z.p$ 就是根，
+          而根是黑的，进不了循环），所以 $z.p.p$ 是真实结点。✓</li>
+          <li><strong>$y$（叔结点）</strong>：<strong>唯一可能是 NIL 的那个</strong>。但看代码，$y$ 只在
+          <strong>情况 1</strong> 里被染色，而情况 1 的条件是 <code>y.color == RED</code> —— <code>T.nil</code> 是黑的，
+          条件不成立，根本进不去。情况 2、3 里 $y$ 只被读、不被写。✓</li>
+        </ol>
+        <p>另外，第 16 行的 <code>z.color = RED</code> 作用在<strong>刚创建的新结点</strong>上，也不是 NIL。</p>
+        <p>所以 <code>T.nil.color</code> 从头到尾都是 BLACK，教授的担心不成立。∎</p>
+
+        <div class="note">
+          <strong>这个细节为什么重要：</strong>哨兵 <code>T.nil</code> 被所有叶子共享，一旦它的颜色被改，
+          <strong>整棵树的黑高计算会同时错乱</strong>（所有叶子的颜色一起变），而且很难 debug。
+          这就是为什么代码里所有涉及 NIL 的地方都要特别小心（比如 RB-DELETE 里 <code>x.p = y</code> 那句）。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.3-5</span><span class="diff">证明 · 中等</span>
+        用 RB-INSERT 插入 $n$ 个结点得到的红黑树，若 $n\gt1$，证明至少有一个红结点。</p>
+
+        <p><strong>证明（盯住「最后插入的那个结点」）：</strong>设最后插入的是 $z_0$，它被染成红色。分两种情形：</p>
+        <ol class="steps">
+          <li><strong>循环一次都没执行</strong>（$z_0$ 的父是黑）：$z_0$ 仍是红色，且它不是根（$n\gt1$），所以树里有红结点 ✓</li>
+          <li><strong>循环执行了</strong>：
+            <ul style="margin:4px 0">
+              <li>若以<strong>情况 1</strong> 结束（$z$ 上移后父为黑）：情况 1 把 $z$ 置为祖父，而祖父刚被染成<strong>红</strong>，
+              且它没有继续被改 → 树里有红结点 ✓</li>
+              <li>若以<strong>情况 2/3</strong> 结束：情况 3 把 $z.p$ 染黑、$z.p.p$ 染红，而 <strong>$z$ 自己始终是红的</strong>
+              （代码从未改 $z$ 的颜色）→ 树里有红结点 ✓</li>
+            </ul>
+          </li>
+        </ol>
+        <p>最后一步 <code>T.root.color = BLACK</code> 只会把根染黑，不会把红结点变没（$n\gt1$ 时根不是唯一的红结点候选）。∎</p>
+
+        <div class="note">
+          <strong>换个说法更好记：</strong>RB-INSERT 从不「消灭」红色，它只把红色<strong>往下压或往上挪</strong>。
+          所以每插一个结点，红色只会变多不会变少。<strong>$n=1$ 是唯一的例外</strong>（单个根被强制染黑）。
+        </div>
+      </div>
+
+      <div class="q">
+        <p><span class="no">13.3-6</span><span class="diff">设计 · 中等偏难</span>
+        若红黑树的结点<strong>不存父指针</strong>，如何高效实现 RB-INSERT？</p>
+
+        <p><strong>思路：把「根到插入点的路径」显式存下来。</strong></p>
+        <ol class="steps">
+          <li>插入时用<strong>一个栈</strong>（或数组）记录从根一路走下来的所有结点，走到 NIL 时栈顶就是父结点。</li>
+          <li>修正时，$z.p$ = 栈顶、$z.p.p$ = 栈顶下面一个、叔结点 = 祖父的「另一个孩子」（由 $z.p$ 是左还是右孩子判断）。
+          这些都能 $O(1)$ 取到。</li>
+          <li>旋转时需要「$x$ 的父」，同样从栈里取。<strong>关键细节</strong>：旋转会改变路径上结点的父子关系，
+          所以旋转后要<strong>同步更新栈</strong>（把被提升的那个结点换到栈里对应位置）。</li>
+        </ol>
+
+        <p><strong>复杂度：</strong>栈的深度 $=O(\lg n)$，每次访问 $O(1)$，所以</p>
+        <ul>
+          <li>时间仍是 $O(\lg n)$（旋转次数不变）；</li>
+          <li>额外空间 $O(\lg n)$（栈）。</li>
+        </ul>
+
+        <div class="note">
+          <strong>另一种写法（更优雅）：</strong>用<strong>递归</strong>实现插入 —— 递归函数返回「新子树的根」，
+          于是「父」就是调用者手里的变量，天然不需要父指针。代价是 $O(\lg n)$ 的递归栈，本质和显式栈一样。
+          <br><strong>对比：</strong>存父指针 → 空间 $O(n)$、操作 $O(1)$ 取父；不存 → 空间 $O(\lg n)$（临时）、操作靠栈。
+          前者适合频繁修改，后者适合<strong>持久化/不可变</strong>的数据结构（函数式语言里常见）。
+        </div>
+      </div>
+
+      <h3 style="margin-top:34px">13.4 删除（补充）</h3>
+
+      <div class="q">
+        <p><span class="no">13.4-3</span><span class="diff">作图 · 必做</span>
+        在 13.3-2 得到的红黑树上，依次删除 8 和 12，画出每次删除后的树。</p>
+
+        <p>完整推导见 §6.4，结论重贴：</p>
+
+        <p><strong>删 8</strong>（红叶子 → 直接摘，不用修正）：</p>
+<table>
+          <thead><tr><th style="width:16%">时刻</th><th>树</th></tr></thead>
+          <tbody>
+            <tr><td>删除前</td><td><code>38B( 19R( 12B(8R, ·), 31B ), 41B )</code></td></tr>
+            <tr><td>删 8 后</td><td><code>38B( 19R( 12B, 31B ), 41B )</code></td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>删 12</strong>（黑叶子 → 要修正；进<strong>情况 2</strong>，兄弟 31 两孩子都黑 → 31 染红、问题上移到 19；
+        19 是红的，吸收掉多出的黑 → 19 染黑）：</p>
+<table>
+          <thead><tr><th style="width:16%">时刻</th><th>树</th></tr></thead>
+          <tbody>
+            <tr><td>删除前</td><td><code>38B( 19R( 12B, 31B ), 41B )</code></td></tr>
+            <tr><td>删 12 后</td><td><code>38B( 19B( ·, 31R ), 41B )</code></td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>自查：</strong>根黑 ✓；31R 的父 19B 是黑 ✓；三条路径黑高相同（各 2 个黑：19/41 + NIL）✓</p>
+
+        <div class="ok">
+          <strong>为什么删 12 只用了情况 2：</strong>因为兄弟 31 的两个孩子都是 NIL（黑），
+          所以「把兄弟也染红」就能让父结点两侧平衡，问题交给父结点；而父结点 19 是红的，
+          红的「吸收」一重黑正好变黑，循环立即结束。<strong>这就是「红色是缓冲垫」的含义。</strong>
+        </div>
+      </div>
+    </section>
+
+
+    <footer>
+整理自教材 CLRS 第 12、13 章（p171–p183 拍照）<br>
+      插入/删除轨迹、着色方案、Catalan 数、红黑比上界均由程序枚举验证；黑高口径见 §3.2 与 §8 开头的说明
+    </footer>
+
+  </main>
+</div>
+
+<script src="./assets/katex/katex.min.js"></script>
+<script src="./assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+</body>
+</html>
