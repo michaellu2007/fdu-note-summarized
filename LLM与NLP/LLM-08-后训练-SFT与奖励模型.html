@@ -329,6 +329,7 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
     <li><a href="#apH">H · 模拟卷 B：奖励模型</a></li>
     <li><a href="#apI">I · 模拟卷 C：RL 与 DPO</a></li>
     <li><a href="#apJ">J · 计算题库：二十道快问快答</a></li>
+    <li><a href="#apK">K · 题型分析与真题风格预测卷</a></li>
     <li><a href="#apE">E · 参考文献</a></li>
   </ol>
 </li>
@@ -4663,6 +4664,287 @@ MDP 六元组与轨迹 → §4.2；$Q$ 函数与 $V=\sum_a\pi Q$ → §4.5；
 轨迹写法、$\nabla\log p_\theta(\tau)$ 只剩策略项、因果性 → §4.6；
 $\psi_t$ 的六种取法（方差阶梯表）、自然梯度 → TRPO → PPO、RLOO → §4.9；
 clip 的两种写法与九种情形、一次 PPO 迭代的五步流程 → §4.9。</p>
+
+<h3 id="apK">K · 从上一份真题推断下一次（题型分析 + 预测卷） <span class="tag n">补充</span></h3>
+
+<p>先看一份真实的往届卷（Quiz 3，take-home，100 分，3 大题 30/30/40）。
+它和这一讲的知识点不同，但<strong>出题套路是同一套</strong>——而且这套套路对「后训练公式很长」这件事，
+给出了一个相当让人安心的答案。</p>
+
+<h4>K.1 上一份卷子到底在考什么</h4>
+
+<table>
+<thead><tr><th>题 / 分值</th><th>小问</th><th>实际动作</th></tr></thead>
+<tbody>
+<tr><td><strong>1 · 30 分</strong><br>Self-attention</td><td>(a) 15 分</td><td>给 4 个位置的 dot product（用 $\ln 2,\ln 3$ 这种形式给）、4 个 value 向量、$d_k=4$、causal $j\le3$；算 scaled + masked 权重和加权输出</td></tr>
+<tr><td></td><td>(b) 15 分</td><td>给 $B,T,d,H$；写 $Q,K,V$、attention-weight、拼接输出的<strong>形状</strong>；再问「$H$ 从 8 变 16、$d$ 不变，投影参数量会翻倍吗？Explain」</td></tr>
+<tr><td><strong>2 · 30 分</strong><br>Embeddings &amp; 参数量</td><td>(a) 10 分</td><td>「同一个 token ID 出现在 $t&lt;j$，必须有 $x_t=x_j$ 吗？」「位置编码全置零后，两处隐状态必须相同吗？」<strong>两问都要 Explain</strong></td></tr>
+<tr><td></td><td>(b) 20 分</td><td>按文字描述<strong>自己拼出</strong>总参数表达式，代入 $V=4096,S=256,d=128,L=6$；再问「输出不共享 + 位置改正弦编码，数量怎么变」</td></tr>
+<tr><td><strong>3 · 40 分</strong><br>Pretraining loss &amp; generation</td><td>(a) 10 分</td><td>两条不等长序列、right-padding，给正确 token 概率（$1/2,1/4$ 这种）；列有效目标、算所有有效位置上的平均 CE；再问「<strong>等于两条序列各自平均再取平均吗？Explain</strong>」</td></tr>
+<tr><td></td><td>(b) 15 分</td><td>3×2 的概率表，枚举 greedy 和 beam width 2 的结果；再问「beam 找到全局最优了吗？Justify」</td></tr>
+<tr><td></td><td>(c) 15 分</td><td>logits $(\ln4,\ln2,0,0)$，温度 $\tau=1$ 与 $0.5$ 各做一次 top-$p=0.7$；再问「<strong>为什么保留集会变、贪心选择却不变？Explain</strong>」</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">四条规律，比知识点本身更重要</span>
+<ol>
+<li><strong>100 分里没有一分是「默写长公式」。</strong>最长的式子是第 2(b) 那个参数加总，而且是<strong>当场按文字描述拼出来</strong>的，不是背出来的。</li>
+<li><strong>所有数字都被做成能手算。</strong>logits 用 $\ln2,\ln4$ 给（这样 $e^{z}$ 就是 2 和 4），概率用 $1/2,1/4$，规模用 $2$ 的幂。卷子允许计算器，但出题人明显不希望你按它。</li>
+<li><strong>接近一半的分在 <code>Explain / Justify</code> 上</strong>，而且问法高度固定：「Is this equal to …?」「Does X double?」「Must …?」「Does A change while B stays the same?」——全都是<strong>改一个条件、问结论变不变的变式题</strong>。这是最容易失分的地方，因为它不考算，考「这个式子的哪一部分会动」。</li>
+<li><strong>参数量计算是唯一跨讲复用的固定题型</strong>（20 分）。上一次考 embedding / FFN / LayerNorm，下一次几乎必然考 lm_head / 标量头 / LoRA。</li>
+</ol>
+</div>
+
+<h4>K.2 「公式好长」这件事，其实不用怕</h4>
+
+<p>你担心的是 §4 那些带求和、带期望、带指数的式子。但按上一份卷子的规矩，<strong>它们会被砍成三项以内</strong>。
+因为 take-home 卷明确要求「Show key steps」，出题人必须让每一步能手写、能验算。真实会出现的形态是：</p>
+
+<table>
+<thead><tr><th>笔记里的长公式</th><th>考场上会变成</th><th>你要会的是什么</th></tr></thead>
+<tbody>
+<tr><td>GAE $\hat A_t=\sum_l(\gamma\lambda)^l\delta_{t+l}$</td><td>取 $\gamma=1,\lambda=1,T=3$，直接给三个 $\delta$，只让「加起来」</td><td>$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$ 这一步怎么算，以及 $\lambda=1$ 时中间项抵消</td></tr>
+<tr><td>策略梯度 $\mathbb{E}\big[\sum_t\psi_t\nabla\log\pi_\theta\big]$</td><td>只给 3 个 token，让你<strong>写出三个权重</strong>，不求梯度本身</td><td>$\psi_t$ 的六种取法（§4.9 阶梯表）、哪几行有偏</td></tr>
+<tr><td>PPO 一次迭代五步</td><td>给 $(\rho,\hat A)$ 的具体数值，只让你填 3×3 情形表的<strong>一格</strong>，或判断 $\nabla=0$ 否</td><td>$\min$ 在 $\hat A$ 正负时各挑谁；两种「不更新」的区别</td></tr>
+<tr><td>DPO 损失</td><td>给两个 log 比值（小数）+ $\beta$，只算 $\Delta\to\sigma\to-\log$ 三步</td><td>$\beta$ 是乘在括号外的；$\Delta=0$ 时 loss $=\ln2$</td></tr>
+<tr><td>KL 约束闭式解</td><td>只问「$Z(x)$ 依赖 $x$ 还是 $y$？为什么在 $\Delta$ 里会消失」</td><td>同一个 prompt 下两条回答共享 $Z(x)$</td></tr>
+</tbody>
+</table>
+
+<div class="box warn">
+<span class="label">一句话</span>
+<p><strong>背长公式收益极低，练「三步小算 + 反事实解释」收益极高。</strong>
+附录 F 的数值表和附录 J 的 20 道快问快答，就是为这个准备的；下面这套预测卷按 30/30/40 的原格式出，
+每个小问都刻意用了和真题同款的问法。</p>
+</div>
+
+<h4>K.3 预测卷（30 / 30 / 40，共 100 分）</h4>
+
+<div class="exam">
+<div class="head"><span class="no">题 1</span><span class="ttl">SFT 的 loss mask 与参数量</span><span class="pt">30 分</span></div>
+<p class="stem">A decoder-only Transformer：词表 $V=4096$，最大上下文 $S=256$，宽度 $d=128$，$L=6$ 个 block。
+查表 $E\in\mathbb{R}^{V\times d}$、$P\in\mathbb{R}^{S\times d}$。每个 block 有 4 个合并的 $d\times d$ 矩阵（Q/K/V/输出）、
+两层 FFN $d\to4d\to d$、两个 LayerNorm（各学一个长度 $d$ 的 scale 和一个 shift）。无偏置、块间不共享参数。
+最后有一个与 $E$ <strong>不共享</strong>的 lm_head $d\times|V|$。</p>
+<ol class="asks">
+<li><strong>[15]</strong> 两条 SFT 样本的 prompt 长度都是 2，回答长度分别为 3 和 2，right-pad 到长度 5 组 batch。
+模型在回答段各位置上给「正确下一个 token」的概率依次为 $(\tfrac12,\tfrac14,\tfrac14)$ 和 $(\tfrac12,\tfrac14)$。
+prompt 与 padding 都不计损失。列出有效目标位置，计算<strong>所有有效位置上</strong>的平均交叉熵（自然对数，精确表达式即可）。
+<strong>这等于「两条样本各自平均、再取平均」吗？Explain。</strong></li>
+<li><strong>[15]</strong> 推导该模型的总唯一参数量，并代入上面的数值（精确算式即可）。
+若把 lm_head 换成无偏置的 $d\to1$ 标量头（即奖励模型），参数量变成多少？
+再在<strong>每个 block 的 4 个注意力矩阵</strong>上各加一个秩 $r=8$ 的 LoRA，<strong>可训练</strong>参数是多少？
+奖励模型的<strong>总</strong>参数量会因此改变吗？Explain。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 有效目标只有回答段：$3+2=5$ 个位置。逐位置损失（$-\ln p$）：</p>
+
+$$
+\underbrace{\ln2,\ \ln4,\ \ln4}_{\text{样本 1}},\quad
+\underbrace{\ln2,\ \ln4}_{\text{样本 2}}
+$$
+
+<p>用 $\ln4=2\ln2$：总和 $=(\ln2+2\ln2+2\ln2)+(\ln2+2\ln2)=8\ln2$。</p>
+
+$$
+\mathcal{L}=\frac{8\ln2}{5}=1.6\ln2\approx\mathbf{1.109}
+$$
+
+<p>两条序列各自的平均：</p>
+
+$$
+\mathcal{L}_1=\frac{5\ln2}{3}\approx1.667\ln2,
+\qquad
+\mathcal{L}_2=\frac{3\ln2}{2}=1.5\ln2
+$$
+
+<p>「平均的平均」$=\tfrac12(\tfrac53+\tfrac32)\ln2=\tfrac{19}{12}\ln2\approx1.583\ln2$，<strong>不等于</strong> $1.6\ln2$。</p>
+<p><strong>Explain：</strong>两条样本的有效 token 数不同（3 vs 2），直接平均两个均值等于给它们各 $1/2$ 的权重，
+而正确的做法是<strong>按 token 数加权</strong>：$\dfrac{3\mathcal{L}_1+2\mathcal{L}_2}{5}=\dfrac{5\ln2+3\ln2}{5}=1.6\ln2$。
+只有当两条序列等长时两者才相等。<strong>这正是上一份卷 3(a) 那个陷阱，只是把 padding mask 换成了 loss mask。</strong></p>
+
+<p><strong>(2)</strong> 逐项：</p>
+
+<table>
+<thead><tr><th>部件</th><th>表达式</th><th class="num">代入值</th></tr></thead>
+<tbody>
+<tr><td>词嵌入 $E$</td><td>$Vd$</td><td class="num">$4096\times128=524288$</td></tr>
+<tr><td>位置表 $P$</td><td>$Sd$</td><td class="num">$256\times128=32768$</td></tr>
+<tr><td>单个 block</td><td>$4d^2+(d\cdot4d+4d\cdot d)+2(2d)=12d^2+4d$</td><td class="num">$12\times16384+512=197120$</td></tr>
+<tr><td>$L$ 个 block</td><td>$L(12d^2+4d)$</td><td class="num">$6\times197120=1182720$</td></tr>
+<tr><td>lm_head</td><td>$dV$</td><td class="num">$524288$</td></tr>
+</tbody>
+</table>
+
+$$
+N_{\text{SFT}}=Vd+Sd+L(12d^2+4d)+dV=524288+32768+1182720+524288=\mathbf{2\,264\,064}
+$$
+
+<p>换成标量头：去掉 $dV=524288$、加上 $d=128$，</p>
+
+$$
+N_{\text{RM}}=2\,264\,064-524\,288+128=\mathbf{1\,739\,904}
+$$
+
+<p>注意<strong>不是少 $|V|$ 倍</strong>：少的只是输出头这一块，主干一点没动。</p>
+
+<p>LoRA：每个 $d\times d$ 矩阵的 $\Delta W=BA$ 有 $r(d+d)=8\times256=2048$ 个参数；
+共 $4L=24$ 个矩阵：</p>
+
+$$
+N_{\text{trainable}}=24\times2048=\mathbf{49\,152}\quad(\text{占 RM 的 }2.8\%)
+$$
+
+<p><strong>Explain：</strong>LoRA <strong>不减少总参数量，只减少可训练参数量</strong>——它新增了 49 152 个参数，
+总数变成 $1\,739\,904+49\,152=1\,789\,056$，但冻结主干后梯度只流进这 $49\,152$ 个。
+这也是「训练整个 $\theta$ 很贵」那三条板书问题的答案（§2.8）。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 2</span><span class="ttl">奖励模型：Bradley–Terry 与标注协议</span><span class="pt">30 分</span></div>
+<p class="stem">打分函数 $r=h^\top w+b$，两条回答的分数差 $\Delta=r(y_w)-r(y_l)$，损失 $\mathcal{L}=-\log\sigma(\Delta)$。</p>
+<ol class="asks">
+<li><strong>[10]</strong> 某个 prompt 下 $r(y_w)=\ln3$、$r(y_l)=0$。求 $\Delta$、$p=\sigma(\Delta)$、$\mathcal{L}$（精确值）。</li>
+<li><strong>[10]</strong> 若两条分数<strong>同时加上同一个常数 $c$</strong>，$\mathcal{L}$ 会变吗？Explain。
+若人类标签写反了（其实 $y_l$ 更好），$\mathcal{L}$ 变成多少？
+打分头的偏置 $b$ 会收到非零梯度吗？Explain。</li>
+<li><strong>[10]</strong> 每个 prompt 采 $k=4$ 条回答。标注协议「选最优」与「全排序」各产出多少条 pair？
+若 $k$ 翻倍到 8，pair 数也翻倍吗？Explain。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $\Delta=\ln3-0=\ln3\approx1.0986$。</p>
+
+$$
+p=\sigma(\ln3)=\frac{1}{1+e^{-\ln3}}=\frac{1}{1+\tfrac13}=\mathbf{\tfrac34=0.75}
+$$
+
+$$
+\mathcal{L}=-\ln\tfrac34=\ln\tfrac43\approx\mathbf{0.2877}
+$$
+
+<p class="small">出题人给 $\ln3$ 就是为了这一步：$e^{-\ln3}=1/3$，不需要计算器。这和真题给 $(\ln4,\ln2,0,0)$ 是同一个心思。</p>
+
+<p><strong>(2)</strong> <strong>不变。</strong>$\Delta'=(r_w+c)-(r_l+c)=\Delta$，只对分数差敏感，与绝对水平无关。
+这也说明 BT 模型里分数只能<strong>相对</strong>解释，「3 分」本身没有意义。</p>
+<p>标签反了，模型要给「其实更好的 $y_l$」高概率，即用 $1-p=\tfrac14$：</p>
+
+$$
+\mathcal{L}'=-\ln(1-p)=-\ln\tfrac14=\ln4\approx\mathbf{1.3863}
+$$
+
+<p>从 $0.2877$ 涨到 $1.3863$，涨了约 4.8 倍。</p>
+<p><strong>$b$ 的梯度恒为 0。</strong>因为 $\Delta=(h_w^\top w+b)-(h_l^\top w+b)=w^\top(h_w-h_l)$，
+$b$ 被直接减掉，损失里根本没有它。所以 $b$ 是<strong>不可辨识参数</strong>——只有当你想用绝对分数设阈值时才有意义（§3.2）。</p>
+
+<p><strong>(3)</strong></p>
+
+<table>
+<thead><tr><th>协议</th><th>$k=4$</th><th>$k=8$</th><th>倍数</th></tr></thead>
+<tbody>
+<tr><td>选最优：$k-1$</td><td class="num">3</td><td class="num">7</td><td class="num">$2.33\times$</td></tr>
+<tr><td>全排序：$\tfrac{k(k-1)}{2}$</td><td class="num">6</td><td class="num">28</td><td class="num">$4.67\times$</td></tr>
+</tbody>
+</table>
+
+<p><strong>都不翻倍。</strong>选最优是<strong>线性</strong>的 $k-1$，全排序是<strong>二次</strong>的 $k(k-1)/2$；
+$k$ 翻倍时后者接近 4 倍。Explain 时要点出式子，光说「不一样」不给分。</p>
+<p>还有一个隐性坑（写上去是加分项）：选最优拆出的 $k-1$ 个 pair <strong>全都包含同一条冠军</strong>，
+彼此高度相关，有效样本量远小于 $k-1$；全排序拆出的 pair 相关性低一些，但也并不独立。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 3</span><span class="ttl">RL：优势、裁剪与 DPO</span><span class="pt">40 分</span></div>
+<ol class="asks">
+<li><strong>[15]</strong> GRPO：同一个 prompt 采 3 条，奖励为 $(0.2,\,0.5,\,0.9)$。求 $\mu$、$\sigma$（总体标准差）与三条的 $\hat A_i$。
+<strong>这等于直接用奖励当梯度权重吗？Explain。</strong>若三条奖励全是 $1.0$，$\hat A$ 和梯度分别是什么？Explain。</li>
+<li><strong>[15]</strong> PPO 取 $\epsilon=0.2$，$L^{\text{CLIP}}=\min\big(\rho\hat A,\ \operatorname{clip}(\rho,0.8,1.2)\hat A\big)$。
+对 $(\rho,\hat A)=(0.7,+2),(1.5,+2),(0.7,-2),(1.5,-2),(1.0,0)$ 五组，各求 $L^{\text{CLIP}}$ 并判断 $\nabla_\theta L$ 是否为 0。
+<strong>clip 会禁止区间外的所有更新吗？Justify。</strong></li>
+<li><strong>[10]</strong> DPO：$\beta=0.1$，两个 log 比值分别为 $+0.5$（$y_w$）与 $-0.5$（$y_l$）。求 $\Delta$、$p=\sigma(\Delta)$、$\mathcal{L}$。
+若 $\beta$ 翻倍到 $0.2$，$\mathcal{L}$ 会减半吗？Explain。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $\mu=\dfrac{0.2+0.5+0.9}{3}=\dfrac{1.6}{3}=0.5333$；偏差 $(-0.3333,-0.0333,0.3667)$，
+平方和 $0.2467$，方差 $0.0822$，$\sigma=0.2867$。</p>
+
+$$
+\hat A=\left(\frac{-0.3333}{0.2867},\ \frac{-0.0333}{0.2867},\ \frac{0.3667}{0.2867}\right)
+=\mathbf{(-1.162,\ -0.116,\ +1.279)}
+$$
+
+<p><strong>不等于。</strong>用原始奖励 $(0.2,0.5,0.9)$ 时三个权重全为正——三条回答的概率<strong>都被推高</strong>，只是幅度不同。
+减掉 $\mu$ 之后有一条变负，差的回答被<strong>主动压低</strong>，正负分离才形成真正的对比。
+再除以 $\sigma$ 只是把尺度拉平，<strong>不改变符号和排序</strong>。</p>
+<p>三条全是 $1.0$：$\mu=1$、$\sigma=0$ → 直接除零（实现里要加 $\epsilon$）；即使加了，$r_i-\mu=0$，
+所以 $\hat A=(0,0,0)$，$\nabla_\theta J=\sum_i\hat A_i\nabla\log\pi_\theta=\mathbf{0}$。</p>
+<p><strong>Explain：</strong>GRPO 的信号<strong>完全来自组内的相对好坏</strong>。一组里没有好坏之分，就没有学习信号，
+这 $K$ 次采样白跑。工程上要过滤掉全对 / 全错的 prompt，或把数据向中等难度倾斜。</p>
+
+<p><strong>(2)</strong> $\operatorname{clip}(\rho,0.8,1.2)$：$0.7\to0.8$，$1.5\to1.2$，$1.0\to1.0$。</p>
+
+<table>
+<thead><tr><th class="num">$\rho$</th><th class="num">$\hat A$</th><th class="num">$\rho\hat A$</th><th class="num">$\operatorname{clip}(\rho)\hat A$</th><th class="num">$L^{\text{CLIP}}$</th><th>$\nabla_\theta L$</th></tr></thead>
+<tbody>
+<tr><td class="num">0.7</td><td class="num">+2</td><td class="num">1.4</td><td class="num">1.6</td><td class="num"><strong>1.4</strong></td><td>非零（推高）</td></tr>
+<tr><td class="num">1.5</td><td class="num">+2</td><td class="num">3.0</td><td class="num">2.4</td><td class="num"><strong>2.4</strong></td><td><strong>0</strong>（常数）</td></tr>
+<tr><td class="num">0.7</td><td class="num">−2</td><td class="num">−1.4</td><td class="num">−1.6</td><td class="num"><strong>−1.6</strong></td><td><strong>0</strong>（常数）</td></tr>
+<tr><td class="num">1.5</td><td class="num">−2</td><td class="num">−3.0</td><td class="num">−2.4</td><td class="num"><strong>−3.0</strong></td><td>非零（压低）</td></tr>
+<tr><td class="num">1.0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num"><strong>0</strong></td><td>0（无信号）</td></tr>
+</tbody>
+</table>
+
+<p><strong>Justify：不会。</strong>被裁掉的只有第 2 行（好动作推过头）和第 3 行（差动作压过头）——
+这两行都是「已经改够了」的方向。第 1 行（好动作概率反而偏低）和第 4 行（差动作概率反而偏高）
+虽然也在区间外，却<strong>照常更新</strong>，因为那正是我们希望它改的方向。</p>
+<p>所以 clip 是<strong>单向刹车</strong>，不是禁止更新。另外第 5 行的 $\nabla=0$ 是另一种原因（$\hat A=0$，本来就没信号），
+两种「不更新」别混（§4.9 的易错框）。</p>
+
+<p><strong>(3)</strong> 括号里的比值差 $=0.5-(-0.5)=1.0$，所以</p>
+
+$$
+\Delta=\beta\times1.0=0.1,\qquad p=\sigma(0.1)=\frac{1}{1+e^{-0.1}}=\mathbf{0.5250},
+\qquad \mathcal{L}=-\ln0.5250=\mathbf{0.6444}
+$$
+
+<p>$\beta=0.2$：$\Delta=0.2$，$p=\sigma(0.2)=0.5498$，$\mathcal{L}=-\ln0.5498=\mathbf{0.5981}$。</p>
+<p><strong>不会减半</strong>（减半应是 0.3222，实际只降到 0.5981，约 $-7\%$）。
+$\mathcal{L}=-\ln\sigma(\beta\delta)$ 对 $\beta$ 是<strong>非线性</strong>的，sigmoid 在 0 附近近似线性、
+两端饱和，所以翻倍 $\beta$ 只是把 $\Delta$ 从 0.1 挪到 0.2，$p$ 只从 0.525 涨到 0.550。</p>
+<p>更值得写的一句：$\beta$ 真正调的是「<strong>要多大的 log 比值差才算赢</strong>」——
+要让 $p=0.9$ 需要 $\Delta=\ln9=2.197$，在 $\beta=0.1$ 时比值差得拉到 $21.97$，$\beta=1$ 时只要 $2.197$。
+所以 $\beta$ 小 = 允许偏离 $\pi_{\text{ref}}$ 更远。</p>
+</div>
+</details>
+</div>
+
+<h4>K.4 三个「原样平移」的陷阱，考前最后看一眼</h4>
+
+<table>
+<thead><tr><th>上次怎么问</th><th>后训练里对应的同一问</th><th>答案要点</th></tr></thead>
+<tbody>
+<tr><td>3(a) 「平均的平均等于总的平均吗？」</td><td>loss mask：分母是<strong>所有有效 token 数</strong>，不是「每条样本各自平均再平均」</td><td>样本不等长时两者不等，要按 token 数加权</td></tr>
+<tr><td>2(a) 「同一个 token ID 在不同位置，隐状态必须相同吗？」</td><td>「同一条回答里不同位置的 $G_t$ 必须相同吗？$\hat A_t$ 呢？」</td><td>奖励只在末尾给 ⇒ $G_t$ 处处等于 $R$；但 $V_\psi(s_t)$ 逐位置变，所以 $\hat A_t$ 不同</td></tr>
+<tr><td>1(b) 「$H$ 翻倍，参数翻倍吗？」</td><td>「lm_head 换成 1 维头，参数少 $|V|$ 倍吗？」「$\beta$ 翻倍，DPO 损失减半吗？」</td><td>都不是：前者只动输出头，主干不变；后者是 sigmoid 里的非线性缩放</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">如果只剩一小时</span>
+<ol>
+<li>背 <strong>附录 F 表 F-1</strong>（$\Delta=0/1/2$ 的 $\sigma$、$-\log\sigma$、$\sigma(-\Delta)$）与 <strong>表 F-3</strong>（三个参数量公式）。</li>
+<li>把 <strong>题 1(a)</strong> 的「加权 vs 平均的平均」和 <strong>题 3(b)</strong> 的五格表各手算一遍。</li>
+<li>把 §4.9 的 <strong>$\psi_t$ 阶梯表</strong>和 <strong>3×3 情形表</strong>各抄一遍——它们是唯一需要「记住结构」的两张表。</li>
+<li>剩下的时间全部用来练 <code>Explain</code>：每算完一个数，问自己「如果把某个条件改一下，这个数会动吗，动的是哪一项」。</li>
+</ol>
+</div>
 
 <h3 id="apE">E · 参考文献</h3>
 
