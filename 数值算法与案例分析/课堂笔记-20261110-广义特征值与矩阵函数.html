@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课堂笔记 · 2026-11-10 · 广义特征值、Sylvester 与矩阵指数：标准型还能做什么</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.8; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px; margin:0 auto; padding:56px 32px 96px}
+.eyebrow{font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin:0 0 14px}
+h1{font-size:30px; line-height:1.35; font-weight:600; margin:0 0 18px; letter-spacing:-.01em}
+.lede{font-size:15px; color:var(--ink2); margin:0 0 8px}
+h2{
+  font-size:21px; font-weight:600; margin:56px 0 18px; padding-bottom:10px;
+  border-bottom:1px solid var(--line); letter-spacing:-.01em;
+}
+h3{font-size:17px; font-weight:600; margin:34px 0 12px}
+h4{font-size:15px; font-weight:600; margin:24px 0 8px; color:var(--ink2)}
+p{margin:12px 0}
+ul,ol{margin:12px 0; padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; background:var(--bg2); padding:1px 5px; border-radius:4px}
+pre{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:14px 18px; overflow-x:auto; font-size:13px; line-height:1.65}
+pre code{background:none; padding:0}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+.toc{background:var(--bg3); border:1px solid var(--line); border-radius:12px; padding:18px 24px; margin:28px 0 8px}
+.toc ol{margin:8px 0 0; padding-left:22px}
+.toc li{margin:3px 0; font-size:14.5px}
+.toc ol ol{margin:2px 0 8px; padding-left:20px; border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px; color:var(--ink2)}
+.tag{
+  display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.02em;
+  padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:2px;
+  background:var(--gold-bg); color:var(--gold); white-space:nowrap;
+}
+.tag.a{background:var(--accent-bg); color:var(--accent)}
+.tag.o{background:var(--ok-bg); color:var(--ok)}
+.box{border:1px solid var(--line); border-radius:12px; padding:16px 22px; margin:20px 0; background:var(--bg3)}
+.box.key{background:var(--accent-bg); border-color:transparent}
+.box.warn{background:var(--warn-bg); border-color:transparent}
+.box.ok{background:var(--ok-bg); border-color:transparent}
+.box .label{font-size:12.5px; font-weight:600; letter-spacing:.06em; margin:0 0 6px}
+.box.key .label{color:var(--accent)}
+.box.warn .label{color:var(--warn)}
+.box.ok .label{color:var(--ok)}
+.box p:first-of-type{margin-top:0}
+.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse; width:100%; margin:20px 0; font-size:14.5px}
+th,td{border-bottom:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+th{font-weight:600; color:var(--ink2); font-size:13px; letter-spacing:.02em}
+.katex-display{overflow-x:auto; overflow-y:hidden; padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.5px; color:var(--ink3); margin-top:6px}
+table.apx th:nth-child(1),table.apx td:nth-child(1){width:52px}
+table.apx th:nth-child(2),table.apx td:nth-child(2){width:58px; white-space:nowrap}
+table.apx th:nth-child(4),table.apx td:nth-child(4){width:104px}
+.qrdemo{border:1px solid var(--line); border-radius:12px; background:var(--bg3); padding:16px 18px; margin:22px 0}
+.qrdemo-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
+.qrdemo-title{font-size:12.5px; font-weight:600; letter-spacing:.06em; color:var(--ink2); text-transform:uppercase}
+.qrdemo-step{font-size:13px; color:var(--ink3); font-variant-numeric:tabular-nums}
+.qrdemo-grid{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; margin:14px auto 12px; max-width:430px}
+.qrdemo-grid div{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:5px;
+  font-size:13px; font-variant-numeric:tabular-nums; transition:background-color .12s ease, color .12s ease}
+.qrdemo-range{width:100%; margin:0; accent-color:var(--accent)}
+.qrdemo-ticks{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink3); margin-top:2px}
+.qrdemo-readout{font-size:13px; color:var(--ink2); margin-top:12px; line-height:1.85}
+.qrdemo-readout b{color:var(--ink); font-variant-numeric:tabular-nums; font-weight:600}
+.qrdemo-bar{height:5px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:7px}
+.qrdemo-bar i{display:block; height:100%; width:0; background:var(--ok); border-radius:3px; transition:width .12s ease}
+figure{margin:26px 0}
+figcaption{font-size:13px; color:var(--ink3); margin-top:8px; text-align:center}
+
+/* ===== 侧边目录（PDF 式大纲） ===== */
+#side-toc{
+  position:fixed; top:0; left:0; width:286px; height:100vh; height:100dvh;
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  padding:26px 12px 64px; background:var(--bg,#fff);
+  border-right:1px solid var(--line,#e3e2dd);
+  font-size:13px; line-height:1.5; z-index:50; display:none;
+}
+#side-toc .st-title{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3,#77777f); padding:0 8px; margin:0 0 10px; font-weight:600;
+}
+#side-toc ol{list-style:none; margin:0; padding:0}
+#side-toc li{margin:0}
+#side-toc a{
+  display:block; padding:4px 8px; border-radius:6px; text-decoration:none;
+  color:var(--ink2,#4a4a52); border-left:2px solid transparent;
+  transition:background-color .12s ease, color .12s ease;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+#side-toc a:hover{background:var(--bg2,#f7f6f3); color:var(--ink,#1b1b1f)}
+#side-toc a.lv2{font-weight:600; color:var(--ink,#1b1b1f); margin-top:9px}
+#side-toc li:first-child a.lv2{margin-top:0}
+#side-toc a.lv3{padding-left:20px; font-size:12.5px}
+#side-toc a.active{background:var(--accent-bg,#e6f1fb); color:var(--accent,#185fa5); border-left-color:var(--accent,#185fa5); font-weight:600}
+#side-toc-toggle{
+  position:fixed; left:16px; bottom:16px; z-index:70; display:none;
+  align-items:center; gap:6px; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--line,#e3e2dd); background:var(--bg,#fff);
+  color:var(--ink2,#4a4a52); font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:0 2px 14px rgba(0,0,0,.10);
+}
+#side-toc-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:45; display:none}
+#side-toc-backdrop.show{display:block}
+h1,h2,h3,h4{scroll-margin-top:22px}
+@media (min-width:1180px){
+  #side-toc{display:block}
+  body{padding-left:286px}
+  #side-toc-toggle{display:none!important}
+}
+@media (max-width:1179px){
+  #side-toc.open{display:block; width:min(86vw,320px); box-shadow:0 0 40px rgba(0,0,0,.22)}
+  #side-toc-toggle{display:inline-flex}
+}
+@media print{
+  #side-toc,#side-toc-toggle,#side-toc-backdrop{display:none!important}
+  body{padding-left:0!important}
+}
+
+</style>
+</head>
+<body>
+<nav id="side-toc" aria-label="侧边目录">
+<div class="st-title">目录</div>
+<ol id="side-toc-list"></ol>
+</nav>
+<button id="side-toc-toggle" type="button" aria-controls="side-toc" aria-expanded="false">☰ 目录</button>
+<div id="side-toc-backdrop"></div>
+
+<div class="wrap"><p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-11-10 课堂</p>
+<h1>从振动方程到矩阵函数：<br>广义特征值、Sylvester 与 $e^A$</h1>
+
+<p class="lede">上一课（11.03）的最后一页停在弹簧振子 $Mx''+Dx'+Kx=0$。这一课又从 $mx''+kx=0$ 起笔，但方向变了：<strong>不再问「特征值怎么算得更快」，而是问「标准型还能替我们做多少事」</strong>。</p>
+
+<p class="lede">板书把这条线拉成了四段：<strong>① 反对称矩阵的谱</strong>（奇数阶行列式为零、不可约三对角无重特征值、奇偶重排 + SVD 直接读出 $\pm\mathrm i\sigma$）　<strong>② 广义特征值问题 GEP</strong>（QZ / 广义 Schur、对称正定束的 Cholesky 化归、周期 Schur、无穷特征值、QEP 与 PEP 的线性化）　<strong>③ Sylvester 方程</strong>（块对角化、Kronecker 形式、Bartels–Stewart 回代、Lyapunov 与稳定性）　<strong>④ 矩阵函数</strong>（Schur–Parlett 差商递推、状态空间解、缩放平方 + Padé 算 $e^A$）。</p>
+
+<p class="lede">串起来是一句话：<strong>把矩阵化成（广义）Schur 型之后，方程、特征值问题、矩阵函数都可以用回代解决</strong>；而振动方程之所以出现在本课首尾，是因为它一边给出二次特征值问题，一边给出 $e^{tA}$ 的物理意义。</p>
+
+<p class="lede" style="font-size:14px">配套：Schur 型与 QR 方法在 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20 课堂笔记</a> 的<a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html#p7">第七部分</a>；Schur 型后处理、Sylvester 与块交换在 <a href="课堂笔记-20261027-特征向量的计算.html">10.27 课堂笔记</a>；随机多边形 → 椭圆 → 振动在 <a href="课堂笔记-20261103-敏感性与SVD.html">11.03 课堂笔记</a> 的<a href="课堂笔记-20261103-敏感性与SVD.html#p6">第六部分</a>（尤其 <a href="课堂笔记-20261103-敏感性与SVD.html#s68">§6.8</a>）。<strong>本课把这些伏笔全部收口到讲义 PDF 7《矩阵函数》</strong>。</p>
+
+<div class="toc">
+<strong style="font-size:13px; letter-spacing:.06em; color:var(--ink3)">目录</strong>
+<ol>
+<li><a href="#p1">第一部分 · 本课在课程里的位置</a></li>
+<li><a href="#p2">第二部分 · 反对称矩阵的谱<span class="tag">板书 ①</span></a>
+  <ol>
+    <li><a href="#s21">§2.1 从 $mx''+kx=0$ 起：频率与特征值</a></li>
+    <li><a href="#s22">§2.2 $A^{*}=-A\iff(\mathrm iA)^{*}=\mathrm iA$：谱为什么成对</a></li>
+    <li><a href="#s23">§2.3 实正交标准型与奇数阶行列式为零</a></li>
+    <li><a href="#s24">§2.4 三对角反对称阵：对角相似与「无重特征值」</a></li>
+    <li><a href="#s25">§2.5 奇偶重排 + $B$ 的 SVD：把谱一次读出来</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 广义特征值问题 GEP 与 Schur 型<span class="tag">板书 ②</span></a>
+  <ol>
+    <li><a href="#s31">§3.1 $Ax=Bx\lambda$ 与「不要显式求 $B^{-1}A$」</a></li>
+    <li><a href="#s32">§3.2 QZ / 广义 Schur：direct → iter 两阶段</a></li>
+    <li><a href="#s33">§3.3 奇异 $B$、无穷特征值与 Kronecker 标准型</a></li>
+    <li><a href="#s34">§3.4 对称正定束：$B=LL^{*}$ 化归标准问题</a></li>
+    <li><a href="#s35">§3.5 周期（循环）Schur 分解与乘积特征值</a></li>
+  </ol>
+</li>
+<li><a href="#p4">第四部分 · 二次 / 多项式特征值问题的线性化<span class="tag">板书 ②③</span></a>
+  <ol>
+    <li><a href="#s41">§4.1 QEP：$\det(\lambda^2M+\lambda D+K)=0$</a></li>
+    <li><a href="#s42">§4.2 $2n$ 阶一次化：把 $Mx''+Dx'+Kx=0$ 写成 pencil</a></li>
+    <li><a href="#s43">§4.3 PEP 的 companion 线性化（三次为例）</a></li>
+    <li><a href="#s44">§4.4 三个问题其实是同一个动作</a></li>
+  </ol>
+</li>
+<li><a href="#p5">第五部分 · 七类标准问题与 Sylvester 方程<span class="tag">板书 ③④</span></a>
+  <ol>
+    <li><a href="#s51">§5.1 板书 0°–6°：标准型能解决的七类问题</a></li>
+    <li><a href="#s52">§5.2 块对角化 $\iff$ 解一个 Sylvester 方程</a></li>
+    <li><a href="#s53">§5.3 唯一性条件与 Kronecker 形式</a></li>
+    <li><a href="#s54">§5.4 Bartels–Stewart：Schur 化 + 逐列回代</a></li>
+    <li><a href="#s55">§5.5 Lyapunov 方程、Hurwitz 矩阵与稳定性</a></li>
+  </ol>
+</li>
+<li><a href="#p6">第六部分 · 矩阵函数与 Schur–Parlett<span class="tag">板书 ④⑤</span></a>
+  <ol>
+    <li><a href="#s61">§6.1 常用 $f(A)$ 与 Schur 化</a></li>
+    <li><a href="#s62">§6.2 $FT=TF$：Parlett 递推的起点</a></li>
+    <li><a href="#s63">§6.3 差商：$F_{12}=T_{12}\,f[T_{11},T_{22}]$</a></li>
+    <li><a href="#s64">§6.4 状态空间：$x(t)=e^{tA}x(0)+\int_0^t e^{(t-s)A}Bu(s)\,\mathrm ds$</a></li>
+  </ol>
+</li>
+<li><a href="#p7">第七部分 · 矩阵指数怎么算：缩放平方 + Padé<span class="tag">板书 ⑤</span></a>
+  <ol>
+    <li><a href="#s71">§7.1 为什么不用截断 Taylor 级数</a></li>
+    <li><a href="#s72">§7.2 Padé 逼近 $p_m/q_n$ 与 $O(x^{m+n+1})$</a></li>
+    <li><a href="#s73">§7.3 缩放平方：$e^A=(e^{A/2^s})^{2^s}$</a></li>
+    <li><a href="#s74">§7.4 本机实算</a></li>
+  </ol>
+</li>
+<li><a href="#p8">第八部分 · 关键公式核对（联网 + 本机实算）<span class="tag o">核对</span></a></li>
+<li><a href="#p9">第九部分 · 本课小结与三处存疑口径</a></li>
+<li><a href="#p10">附录 · 板书逐张对照</a></li>
+</ol>
+</div>
+
+<h2 id="p1">第一部分 · 本课在课程里的位置</h2>
+
+<p>到 11.03 为止，这门课的「算特征值」部分走完了一轮：幂法 / 反幂法（10.13）→ Krylov、Arnoldi、QR 方法（10.20）→ 特征向量与对称特征值（10.27）→ 敏感性与 SVD 的计算（11.03）。<strong>11.10 换了一个问法：拿到 Schur 型之后，还能用它做什么？</strong></p>
+
+<table>
+<tr><th>课次</th><th>主线</th><th>留下的问题</th></tr>
+<tr><td>10.13</td><td>幂法 / 反幂法 / RQI；第 2、3 章迭代法</td><td>只能求少数特征值</td></tr>
+<tr><td>10.20</td><td>Krylov / Arnoldi / QR 方法 → 实 Schur 型</td><td>Schur 型是终点还是起点？</td></tr>
+<tr><td>10.27</td><td>Schur 型上回代求特征向量、排序、块交换</td><td>块交换要解 Sylvester 方程</td></tr>
+<tr><td>11.03</td><td>这些数有多可信；SVD 怎么算</td><td>末页 $Mx''+Dx'+Kx=0$ 没展开</td></tr>
+<tr><td><strong>11.10</strong></td><td><strong>标准型的用途</strong>：GEP / QEP / Sylvester / $f(A)$ / $e^A$</td><td>从「算特征值」转到「用标准型解问题」</td></tr>
+</table>
+
+<div class="box key">
+<p class="label">一条主线</p>
+<p>$\text{Schur / QZ 型} \Longrightarrow \text{三角（或分块三角）} \Longrightarrow \text{回代} \Longrightarrow \text{方程、乘积特征值、矩阵函数}$。</p>
+<p>板书 ③ 上那张 0°–6° 清单，正是把「回代能干的事」一次列全：从 $C=AB$ 到 $f(A)$，中间夹着 $Ax=b$、最小二乘、标准特征值、SVD、Sylvester 方程。</p>
+</div>
+
+<div class="box warn">
+<p class="label">这一课的来源要分三态看</p>
+<p><strong>板书独有</strong>：第二部分的反对称矩阵谱、第三部分的 GEP / QZ / 周期 Schur / 无穷特征值、第四部分的 QEP / PEP 线性化 —— 在 8 份讲义 PDF 里全文检索「广义特征值 / QZ / 周期 / 二次特征值 / 多项式特征值 / Kronecker / 反对称」<strong>均无对应章节</strong>（讲义 PDF 4 里唯一一次「广义特征值问题」是 Arnoldi 语境下的一句提醒，不是本课内容）。</p>
+<p><strong>讲义对得上</strong>：Sylvester / Bartels–Stewart 在 <span class="tag a" style="margin:0">讲义 PDF 5 §5.4.2</span>；不可约三对角阵单重特征值在 <span class="tag a" style="margin:0">讲义 PDF 6 §6.4.1</span>；Taylor / 缩放平方 / Padé / Schur–Parlett / Lyapunov 分别是 <span class="tag a" style="margin:0">讲义 PDF 7 §7.2–§7.4</span>，其中 §7.3.2 的 Parlett 分块递推还明确回指「FDU 数值算法 5」的 Bartels–Stewart。</p>
+<p><strong>教材补充</strong>：奇数阶行列式为零的证明链、$[0\ B;-B^{\mathsf T}\ 0]$ 谱与奇异值的关系、$f(T)$ 对角元的两种证明、Padé 的一般定义与差商的一般递推。每节标题右侧有来源标签。</p>
+</div>
+
+<h2 id="p2">第二部分 · 反对称矩阵的谱<span class="tag">板书 ①</span></h2>
+
+<h3 id="s21">§2.1 从 $mx''+kx=0$ 起：频率与特征值</h3>
+
+<p>板书第一行的原文是</p>
+
+$$m\cdot x''+kx=0,\qquad x=c_1e^{\mathrm i\lambda_1 t}+c_2e^{\mathrm i\lambda_2 t}\ \xrightarrow{\ \text{振动频率}\ },\qquad m\lambda^2+k=0,\qquad \lambda=\pm\mathrm i\sqrt{k/m}.$$
+
+<p>令 $x=e^{\lambda t}$，代入得特征方程 $m\lambda^2+k=0$，两个根 $\lambda_{1,2}=\pm\mathrm i\sqrt{k/m}$。于是</p>
+
+$$x(t)=c_1e^{\mathrm i\sqrt{k/m}\,t}+c_2e^{-\mathrm i\sqrt{k/m}\,t},\qquad \omega=\sqrt{k/m}.$$
+
+<p class="footnote">板书把两个指数都写成 $e^{\mathrm i\lambda_jt}$，同时用 $\lambda$ 表示 $m\lambda^2+k=0$ 的根：一个记号兼任「角频率」与「特征值」。按标准记号应当分开（频率 $\omega$ 是实数，特征值 $\lambda=\pm\mathrm i\omega$ 是纯虚数）；本页下方一律按标准记号写。11.03 <a href="课堂笔记-20261103-敏感性与SVD.html#s68">§6.8</a> 用的是同一条推导，可对照。</p>
+
+<p>关键不在频率，而在<strong>特征值纯虚</strong>：它决定了自由振动既不衰减也不发散。后面整页板书都在解释「什么样的矩阵必然给出纯虚特征值」。</p>
+
+<h3 id="s22">§2.2 $A^{*}=-A\iff(\mathrm iA)^{*}=\mathrm iA$：谱为什么成对<span class="tag o">教材补充</span></h3>
+
+<p>板书第一行等价式（$A$ 实反对称时 $(\cdot)^{*}$ 就是转置）：</p>
+
+$$A^{*}=-A\ \Longleftrightarrow\ (\mathrm iA)^{*}=\overline{\mathrm i}\,A^{*}=-\mathrm i(-A)=\mathrm iA.$$
+
+<p>右边说 $\mathrm iA$ 是 <strong>Hermite 阵</strong>，于是 $\mathrm iA$ 可酉对角化且特征值全为实数；$A=-\mathrm i(\mathrm iA)$ 的特征值因而全在虚轴上。</p>
+
+<div class="box key">
+<p class="label">谱的两条对称性</p>
+<p>① $A$ 与 $A^{\mathsf T}=-A$ 相似（任一矩阵与其转置相似），故 $\lambda$ 是特征值 $\Rightarrow$ $-\lambda$ 也是，且重数相同；<br>
+② $A$ 是正规阵（$A^{*}A=AA^{*}$），可酉对角化；实反对称阵的非零特征值是 $\pm\mathrm i\sigma_1,\dots,\pm\mathrm i\sigma_r$ 成对出现，奇数阶时另有一个 $0$。</p>
+<p>这就是板书那句「但上述方法没用到<strong>谱的对称性</strong>」里的对称性：算谱时本可以只算一半。</p>
+</div>
+
+<h3 id="s23">§2.3 实正交标准型与奇数阶行列式为零</h3>
+
+<p>实反对称阵 $A^{\mathsf T}=-A,\ A\in\mathbb R^{n\times n}$ 不能在实数域对角化（特征值是虚数），但能化到 $2\times2$ 块：</p>
+
+$$Q^{\mathsf T}AQ=\operatorname{diag}\!\left(\begin{bmatrix}0&\sigma_1\\-\sigma_1&0\end{bmatrix},\dots,\begin{bmatrix}0&\sigma_r\\-\sigma_r&0\end{bmatrix},0,\dots,0\right),\qquad \sigma_j>0.$$
+
+<p>每个块的谱是 $\pm\mathrm i\sigma_j$；$n$ 为奇数时 $\Sigma$ 至少有一整行一整列为零。板书在旁边画的就是这个「主对角线上排一串斜方块」的形状图。</p>
+
+<p>紧接着的一行是<strong>奇数阶反对称阵行列式为零</strong>（板书原文）：</p>
+
+$$\det(A)=\det(A^{\mathsf T})=\det(-A)=(-1)^{2m+1}\det(A)=-\det(A)\ \Longrightarrow\ \det(A)=0.$$
+
+<p>等价的谱解释：$\pm\mathrm i\sigma_j$ 成对、乘积 $\sigma_j^2>0$，奇数阶必余一个 $0$ 特征值。这条结论在文献里叫 <strong>Jacobi 定理</strong>；注意它依赖域的特征不为 $2$（我们在 $\mathbb R$/$\mathbb C$ 上，没问题）。</p>
+
+<h3 id="s24">§2.4 三对角反对称阵：对角相似与「无重特征值」<span class="tag a">讲义 PDF 6 §6.4.1</span></h3>
+
+<p>板书 ① 中间画了一个 $6$ 阶零对角、超对角为 $\beta_1,\dots,\beta_5$ 的反对称三对角阵，然后写「<strong>不可约的三对角阵没有重特征值</strong>」。这句话的严格来源在讲义 PDF 6 §6.4.1：不可约对称三对角阵的顺序主子式满足三项递推，该定理的第 ④ 条给出「根都是单重实根、且严格交错」，于是</p>
+
+<div class="box ok">
+<p class="label">为什么要绕一道对角相似</p>
+<p>板书那行 $B\lambda$ 的三个矩阵相乘，是取 $D=\operatorname{diag}(1,\mathrm i,\mathrm i^2,\mathrm i^3,\mathrm i^4)$（右乘 $D^{-1}=\operatorname{diag}(1,-\mathrm i,-\mathrm i^2,-\mathrm i^3,-\mathrm i^4)$）：</p>
+$$DAD^{-1}=-\mathrm i\,T,\qquad T=\begin{bmatrix}0&\beta_1&&\\ \beta_1&0&\beta_2&\\ &\beta_2&0&\ddots\\ &&\ddots&\ddots&\beta_5\\ &&&\beta_5&0\end{bmatrix}\in\mathbb R^{6\times6}.$$
+<p>因为 $(DAD^{-1})_{j,j+1}=\mathrm i^{j-1}\beta_j/\mathrm i^{j}=-\mathrm i\beta_j=(DAD^{-1})_{j+1,j}$，反对称被「转成」对称。$T$ 不可约（次对角元 $\beta_j\ne0$）$\Rightarrow$ $T$ 有 $6$ 个互不相同的实特征值 $\mu_j$ $\Rightarrow$ $A$ 的特征值 $-\mathrm i\mu_j$ 全部单重。</p>
+</div>
+
+<p class="footnote">板书右边那个结果矩阵把 $\mathrm i$ 因子略掉了，只留了整数 $1,2,3,4$ 的骨架；上式是补全后的写法。本机用 $\beta=(1,2,3,4,5)$ 实算，$DAD^{-1}$ 与 $-\mathrm i T$ 逐元素相等（误差 $&lt;10^{-13}$）。</p>
+
+<div class="box warn">
+<p class="label">别把这句话推广到所有三对角阵</p>
+<p>「不可约 $\Rightarrow$ 特征值单重」在<strong>对称</strong>（或经对角相似化成对称）三对角阵上成立：不可约 $\Rightarrow$ nonderogatory（每个特征值只有一个 Jordan 块），再叠加对称 $\Rightarrow$ 单重。对一般的不可约<strong>非对称</strong>三对角阵，只能保证几何重数为 $1$，代数重数可以大于 $1$（例如取超对角 $1,-4,1$、次对角全 $1$ 的 $4$ 阶阵，特征多项式 $(\lambda^2+1)^2$）。本课的矩阵是反对称的，所以结论安全。</p>
+</div>
+
+<h3 id="s25">§2.5 奇偶重排 + $B$ 的 SVD：把谱一次读出来</h3>
+
+<p>板书接下来说「<strong>但上述方法没用到谱的对称性</strong>」，于是换了条更聪明的路：把指标按奇偶重排 $1,2,3,4,5,6\ \longrightarrow\ 1,3,5\,|\,2,4,6$。设 $\Pi$ 是这个置换矩阵，则</p>
+
+$$\Pi A\Pi^{\mathsf T}=\begin{bmatrix}0&B\\-B^{\mathsf T}&0\end{bmatrix},$$
+
+<p>其中 $B$ 是<strong>二对角阵</strong>。板书以 $\beta=(1,2,3,4,5)$ 为例，右侧画出的 $B$ 对角是 $\beta_1,\beta_3,\beta_5$、次对角是 $-\beta_2,-\beta_4$（符号取决于重排方向）。</p>
+
+<figure>
+<svg viewBox="0 0 680 250" width="100%" role="img" aria-labelledby="fig1t fig1d">
+<title id="fig1t">奇偶重排把零对角三对角阵变成二对角分块形式</title>
+<desc id="fig1d">左侧是 6 阶零对角三对角矩阵，超对角与次对角各有 5 个非零元；按 1,3,5 与 2,4,6 重排行列后，左上角与右下角变成全零块，非零元落进右上角的二对角块 B 与左下角的负 B 转置。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="70" y="24" font-size="12" fill="var(--ink2)">A（零对角，超对角 / 次对角）</text>
+  <rect x="70" y="40" width="120" height="120" fill="none" stroke="var(--line)"/>
+  <g stroke="var(--line)" stroke-width="0.7">
+    <line x1="90" y1="40" x2="90" y2="160"/><line x1="110" y1="40" x2="110" y2="160"/>
+    <line x1="130" y1="40" x2="130" y2="160"/><line x1="150" y1="40" x2="150" y2="160"/>
+    <line x1="170" y1="40" x2="170" y2="160"/>
+    <line x1="70" y1="60" x2="190" y2="60"/><line x1="70" y1="80" x2="190" y2="80"/>
+    <line x1="70" y1="100" x2="190" y2="100"/><line x1="70" y1="120" x2="190" y2="120"/>
+    <line x1="70" y1="140" x2="190" y2="140"/>
+  </g>
+  <g fill="var(--accent)">
+    <circle cx="100" cy="50" r="3.6"/><circle cx="120" cy="70" r="3.6"/><circle cx="140" cy="90" r="3.6"/>
+    <circle cx="160" cy="110" r="3.6"/><circle cx="180" cy="130" r="3.6"/>
+  </g>
+  <g fill="var(--warn)">
+    <circle cx="80" cy="70" r="3.6"/><circle cx="100" cy="90" r="3.6"/><circle cx="120" cy="110" r="3.6"/>
+    <circle cx="140" cy="130" r="3.6"/><circle cx="160" cy="150" r="3.6"/>
+  </g>
+  <line x1="215" y1="100" x2="320" y2="100" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar1)"/>
+  <defs><marker id="ar1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="var(--ink3)"/></marker></defs>
+  <text x="268" y="90" font-size="11.5" fill="var(--ink3)" text-anchor="middle">Π：1,3,5 | 2,4,6</text>
+  <rect x="360" y="40" width="120" height="120" fill="none" stroke="var(--line)"/>
+  <g stroke="var(--line)" stroke-width="0.7">
+    <line x1="380" y1="40" x2="380" y2="160"/><line x1="400" y1="40" x2="400" y2="160"/>
+    <line x1="440" y1="40" x2="440" y2="160"/><line x1="460" y1="40" x2="460" y2="160"/>
+    <line x1="360" y1="60" x2="480" y2="60"/><line x1="360" y1="80" x2="480" y2="80"/>
+    <line x1="360" y1="120" x2="480" y2="120"/><line x1="360" y1="140" x2="480" y2="140"/>
+  </g>
+  <line x1="420" y1="40" x2="420" y2="160" stroke="var(--ink3)" stroke-width="1.1"/>
+  <line x1="360" y1="100" x2="480" y2="100" stroke="var(--ink3)" stroke-width="1.1"/>
+  <g fill="var(--accent)">
+    <circle cx="430" cy="50" r="3.6"/><circle cx="430" cy="70" r="3.6"/><circle cx="450" cy="70" r="3.6"/>
+    <circle cx="450" cy="90" r="3.6"/><circle cx="470" cy="90" r="3.6"/>
+  </g>
+  <g fill="var(--warn)">
+    <circle cx="370" cy="110" r="3.6"/><circle cx="370" cy="130" r="3.6"/><circle cx="390" cy="130" r="3.6"/>
+    <circle cx="390" cy="150" r="3.6"/><circle cx="410" cy="150" r="3.6"/>
+  </g>
+  <text x="360" y="184" font-size="12" fill="var(--ink2)">ΠAΠᵀ = [ 0  B ; −Bᵀ  0 ]</text>
+  <text x="70" y="184" font-size="11.5" fill="var(--ink3)">蓝：超对角　红：次对角</text>
+  <text x="70" y="220" font-size="11.5" fill="var(--ink3)">重排后两个对角块全零，非零元只留在右上 B（二对角）与左下 −Bᵀ。</text>
+</g>
+</svg>
+<figcaption>图 1 · 板书底部那张「重排图」的规整版：奇偶置换把反对称三对角阵压成 $[0\ B;-B^{\mathsf T}\ 0]$。</figcaption>
+</figure>
+
+<p>现在取 $B$ 的 SVD：$B=U\Sigma V^{\mathsf T}$（$\Sigma=\operatorname{diag}(\sigma_1,\dots,\sigma_m)$）。板书写的两行是</p>
+
+$$\begin{bmatrix}0&B\\-B^{\mathsf T}&0\end{bmatrix}=\begin{bmatrix}0&U\Sigma V^{\mathsf T}\\-V\Sigma U^{\mathsf T}&0\end{bmatrix}=\begin{bmatrix}U&0\\0&V\end{bmatrix}\begin{bmatrix}0&\Sigma\\-\Sigma&0\end{bmatrix}\begin{bmatrix}U^{\mathsf T}&0\\0&V^{\mathsf T}\end{bmatrix}.$$
+
+<p>最右边是酉相似，所以 $A$ 的谱等于 $\begin{bmatrix}0&\Sigma\\-\Sigma&0\end{bmatrix}$ 的谱，即每个 $2\times2$ 块 $\begin{bmatrix}0&\sigma_j\\-\sigma_j&0\end{bmatrix}$ 给出 $\pm\mathrm i\sigma_j$。<strong>一次 SVD 就把反对称三对角阵的全部特征值读出来了</strong>，而且天然保持 $\pm$ 成对。</p>
+
+<div class="box ok">
+<p class="label">为什么这条最省事</p>
+<p>直接算 $M=\begin{bmatrix}0&B\\-B^{\mathsf T}&0\end{bmatrix}$ 的特征值也行，但 $M^2=\operatorname{diag}(-BB^{\mathsf T},-B^{\mathsf T}B)$，所以 $M$ 的特征值平方就是 $-B$ 的奇异值平方 —— 这正是上面 SVD 的结论。板书的路线等价于「不形成 $M^2$，直接对 $B$ 做 SVD」，与 11.03 §4 里「绝不形成 $A^{*}A$」是同一个数值直觉。</p>
+</div>
+
+<p class="footnote">本机实算（纯 Python，无 numpy）：取 $\beta=(1,2,3,4,5)$，重排得 $B=\begin{bmatrix}1&0&0\\-2&3&0\\0&-4&5\end{bmatrix}$；$B^{\mathsf T}B$ 的特征值为 $0.550056,\ 9.000000,\ 45.449944$，而 $-A^2$ 的六个特征值为这三个数各出现两次，与 $\pm\mathrm i\sigma_j$ 完全对上。$5$ 阶同型反对称阵的 $\det$ 实算为 $0$。</p>
+
+<h2 id="p3">第三部分 · 广义特征值问题 GEP 与 Schur 型<span class="tag">板书 ②</span></h2>
+
+<h3 id="s31">§3.1 $Ax=Bx\lambda$ 与「不要显式求 $B^{-1}A$」</h3>
+
+<p>板书 ② 开头写着 GEP 三行：</p>
+
+$$Ax=Bx\lambda,\qquad \det(B)\ne0,\qquad \Longleftrightarrow\ B^{-1}Ax=x\lambda.$$
+
+<p>这个等价式只是<strong>数学上</strong>的：真去形成 $B^{-1}A$ 有两个代价 —— ① 若 $A,B$ 都 Hermite、$B\succ0$，$B^{-1}A$ 一般不再 Hermite，实特征值、正交性等结构全丢了；② $B$ 接近奇异时求逆会把误差放大 $\kappa(B)$ 倍。<strong>QZ 的做法是不求逆，直接对束 $(A,B)$ 做酉等价</strong>。</p>
+
+<h3 id="s32">§3.2 QZ / 广义 Schur：direct → iter 两阶段</h3>
+
+<p>板书写了三行 $QZ$（$\triangledown$ 表示上三角）与一张流程图：</p>
+
+$$Q^{*}AZ=S,\qquad Q^{*}BZ=T,\qquad Z^{*}B^{-1}Q=T^{-1}\ \text{（仍上三角）},$$
+
+<p>其中 $Q,Z$ 酉、$S,T$ 上三角，于是广义特征值由对角对比值给出 $\lambda_i=s_{ii}/t_{ii}$（更稳妥地写成二元组 $(\alpha_i,\beta_i)=(s_{ii},t_{ii})$）。</p>
+
+<figure>
+<svg viewBox="0 0 680 210" width="100%" role="img" aria-labelledby="fig2t fig2d">
+<title id="fig2t">QZ 算法两阶段：直接约化到 Hessenberg 三角型，再迭代到三角三角型</title>
+<desc id="fig2d">左边是任意两个满矩阵 A 与 B；经过 direct 有限步酉变换后变成上 Hessenberg 阵与上三角阵；再经过 iter 迭代后两个都变成上三角阵，广义特征值从对角元比值读出。</desc>
+<g font-family="system-ui,sans-serif">
+  <g stroke="var(--ink2)" fill="none" stroke-width="1.3">
+    <rect x="40" y="60" width="66" height="66"/><rect x="118" y="60" width="66" height="66"/>
+    <rect x="248" y="60" width="66" height="66"/><rect x="326" y="60" width="66" height="66"/>
+    <rect x="456" y="60" width="66" height="66"/><rect x="534" y="60" width="66" height="66"/>
+  </g>
+  <path d="M248 60 L314 126" stroke="var(--ink2)" stroke-width="1.2"/>
+  <path d="M248 60 L248 126 M248 60 L314 60" stroke="var(--ink2)" stroke-width="1.2"/>
+  <path d="M326 60 L392 126 M326 60 L326 126 M326 60 L392 60" stroke="var(--ink2)" stroke-width="1.2"/>
+  <path d="M456 60 L522 126" stroke="var(--ink2)" stroke-width="1.2"/>
+  <path d="M534 60 L600 126" stroke="var(--ink2)" stroke-width="1.2"/>
+  <g stroke="var(--accent)" stroke-width="1">
+    <line x1="252" y1="66" x2="310" y2="66"/><line x1="252" y1="92" x2="310" y2="92"/>
+    <line x1="252" y1="118" x2="310" y2="118"/>
+    <line x1="460" y1="66" x2="518" y2="66"/><line x1="538" y1="66" x2="596" y2="66"/>
+  </g>
+  <line x1="192" y1="93" x2="240" y2="93" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar2)"/>
+  <line x1="400" y1="93" x2="448" y2="93" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar2)"/>
+  <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="var(--ink3)"/></marker></defs>
+  <text x="216" y="84" font-size="11.5" fill="var(--ink3)" text-anchor="middle">direct</text>
+  <text x="424" y="84" font-size="11.5" fill="var(--ink3)" text-anchor="middle">iter</text>
+  <text x="112" y="152" font-size="11.5" fill="var(--ink2)" text-anchor="middle">(A, B) 满阵</text>
+  <text x="320" y="152" font-size="11.5" fill="var(--ink2)" text-anchor="middle">(H, R)：Hessenberg + 三角</text>
+  <text x="528" y="152" font-size="11.5" fill="var(--ink2)" text-anchor="middle">(S, T)：双上三角</text>
+  <text x="340" y="188" font-size="11.5" fill="var(--ink3)" text-anchor="middle">板书 ② 的草图：两个方块 →（direct）一个带次对角斜线的三角 + 一个三角 →（iter）两个三角</text>
+</g>
+</svg>
+<figcaption>图 2 · 板书 ② 中间那张「(□ □) → direct → (▽ ▽) → iter → (▽ ▽)」草图的规整版。</figcaption>
+</figure>
+
+<p><strong>第一阶段（direct，有限步酉变换）</strong>：把 $(A,B)$ 约化成 $(H,R)$，$H$ 上 Hessenberg、$R$ 上三角；<strong>第二阶段（iter，隐式带位移的 QZ 迭代 + deflation）</strong>：把 $H$ 的次对角元逐个压到 $0$，最终 $S,T$ 都上三角。全程不形成 $B^{-1}A$。</p>
+
+<h3 id="s33">§3.3 奇异 $B$、无穷特征值与 Kronecker 标准型<span class="tag o">教材补充</span></h3>
+
+<p>板书 ② 下半写着 $Ax=Bx\lambda$、$\det(B)=0$、$\det(A-\theta B)\ne0$，旁边一行批注「…… canonical 标准型？允许无穷大特征值 矩阵块」。这里补上标准陈述：</p>
+
+<ul>
+<li>称线性束 $A-\lambda B$ <strong>正则</strong>（regular），当且仅当存在 $\theta$ 使 $\det(A-\theta B)\ne0$，即 $\det(A-\lambda B)\not\equiv0$；否则叫<strong>奇异束</strong>。</li>
+<li>若 $\det(B)=0$，$T=Q^{*}BZ$ 上三角且至少一个 $t_{ii}=0$。此时 $\lambda_i=\alpha_i/\beta_i$ 的 $\beta_i=0$：<strong>$\alpha_i\ne0$ 给出无穷特征值</strong>；若 $\alpha_i=0$ 也成立，则出现 $0/0$，属于奇异束，不能再用比值定义离散谱。</li>
+<li>处理无穷特征值与奇异矩阵块的标准工具是 <strong>Kronecker 标准型</strong>（正则束的特例是 Weierstrass 标准型）。板书批注的字迹不清，这里只保留可验证的结论。</li>
+</ul>
+
+<h3 id="s34">§3.4 对称正定束：$B=LL^{*}$ 化归标准问题</h3>
+
+<p>板书 ② 左半是 GEP 里结构最好的一类：$A^{*}=A$、$B=B^{*}\succ0$，Cholesky 分解 $B=LL^{*}$。令</p>
+
+$$\tilde A=L^{-1}AL^{-*},\qquad y=L^{*}x,$$
+
+<p>则板书那行 $(B^{-1/2}AB^{-1/2})(B^{1/2}x)=(B^{1/2}x)\lambda$ 精确化为</p>
+
+$$\tilde A y=y\lambda,\qquad \tilde A^{*}=\tilde A.$$
+
+<p>对 $\tilde A$ 做谱分解 $\tilde A=Q\Lambda Q^{*}$，取 $X=L^{-*}Q$，板书的两行同时对角化就成立了：</p>
+
+$$X^{*}AX=Q^{*}L^{-1}AL^{-*}Q=\Lambda,\qquad X^{*}BX=Q^{*}L^{-1}(LL^{*})L^{-*}Q=Q^{*}Q=I,$$
+
+<p>广义特征向量 $x=L^{-*}y=(B^{-1/2})^{*}Q$。板书右半的「$X^{*}AX=D_1=\Lambda$、$X^{*}BX=D_2=I$」「$X=L^{-*}Q$」「$X^{*}BX=Q^{*}L^{-1}BL^{-*}Q=I$」逐行与此一致。</p>
+
+<div class="box key">
+<p class="label">与 QZ 的分工</p>
+<p>$B\succ0$ 时用 Cholesky 把问题化回<strong>对称标准特征值问题</strong>，能保住实特征值与 $B$-正交性，代价是显式形成 $L^{-1}AL^{-*}$（$B$ 病态时会放大误差，讲义/文献里的 Cholesky 方法常配迭代精化）。$B$ 一般或奇异时走 QZ，不碰逆。</p>
+</div>
+
+<h3 id="s35">§3.5 周期（循环）Schur 分解与乘积特征值<span class="tag">板书 ②</span></h3>
+
+<p>板书 ② 右上那一列 $A_1,A_2,\dots,A_k$ 与</p>
+
+$$Q_1^{*}A_1Q_2=\triangledown_1,\quad Q_2^{*}A_2Q_3=\triangledown_2,\quad\dots,\quad Q_k^{*}A_kQ_1=\triangledown_k$$
+
+<p>（每个 $\triangledown_i$ 上三角、$Q_{k+1}=Q_1$），对应的是 <strong>周期 / 循环 Schur 分解</strong>。板书下面一行写 $A_1A_2\cdots A_k\,x=x\lambda$「循环 schur 分解」。</p>
+
+<p>它的用处是<strong>不求乘积就能算乘积的特征值</strong>：把 $Q_1^{*}A_1Q_2\cdots Q_k^{*}A_kQ_1=\triangledown_1\cdots\triangledown_k$ 连乘，右边是上三角阵，对角元就是 $\prod_{i=1}^k(\triangledown_i)_{jj}$；因此</p>
+
+$$\lambda_j\big(A_1A_2\cdots A_k\big)=\prod_{i=1}^{k}(\triangledown_i)_{jj}.$$
+
+<div class="box warn">
+<p class="label">这一条的口径</p>
+<p>板书只给了「每个 $Q_i^{*}A_iQ_{i+1}$ 上三角、首尾同一个 $Q_1$」这个形式，以及乘积特征值的目标；标准名称是 <em>periodic / cyclic Schur form</em>，公开资料可查到周期矩阵对重排、乘积 SVD 等相关文献，但<strong>没找到与本页逐字对应的定理编号</strong>。本页按「板书原式 + 可由连乘直接验证的结论」处理，不拿它和教材逐字比对，也不补写板书上没有的算法细节。</p>
+</div>
+
+<h2 id="p4">第四部分 · 二次 / 多项式特征值问题的线性化<span class="tag">板书 ②③</span></h2>
+
+<h3 id="s41">§4.1 QEP：$\det(\lambda^2M+\lambda D+K)=0$</h3>
+
+<p>板书 ② 底部回到振动系统：</p>
+
+$$Mx''+Dx'+Kx=0,\qquad y=\begin{bmatrix}x'\\x\end{bmatrix}.$$
+
+<p>做 Laplace 变换（或代入 $x(t)=e^{\lambda t}v$）：$\lambda^2Mx+\lambda Dx+Kx=0$，于是板书最后一行</p>
+
+$$\det(\lambda^2M+\lambda D+K)=0.$$
+
+<p>这是 <strong>QEP（二次特征值问题）</strong>。$M$ 非奇异时它是正则的，有 $2n$ 个特征值（有限或无穷，且可能有零）；$M,D,K$ 分别是质量、阻尼、刚度矩阵。$D=0$、$n=1$ 就退回第二部分的 $m\lambda^2+k=0$。</p>
+
+<h3 id="s42">§4.2 $2n$ 阶一次化：把 $Mx''+Dx'+Kx=0$ 写成 pencil</h3>
+
+<p>板书 ② 最下面那两行分块矩阵（$D$ 写得像 $0$，按上下文应读阻尼矩阵 $D$，否则推不出含 $\lambda D$ 的特征方程）：</p>
+
+$$\begin{bmatrix}M&D\\0&I\end{bmatrix}\begin{bmatrix}x'\\x\end{bmatrix}'+\begin{bmatrix}0&K\\-I&0\end{bmatrix}\begin{bmatrix}x'\\x\end{bmatrix}=0,$$
+
+$$\Longleftrightarrow\quad \begin{bmatrix}M&D\\0&I\end{bmatrix}\begin{bmatrix}\lambda x\\x\end{bmatrix}\lambda=\begin{bmatrix}0&-K\\I&0\end{bmatrix}\begin{bmatrix}\lambda x\\x\end{bmatrix}.$$
+
+<p>第二行是一个 $2n$ 阶 <strong>GEP</strong>：$A_1z\lambda=A_0z$，$z=[\lambda x;x]$，$A_1=[M\ D;0\ I]$、$A_0=[0\ -K;I\ 0]$。逐块验证：第一行 $M(\lambda x)\lambda+D(\lambda x)\lambda$ 对 $[0\ -K;I\ 0]z$ 的第一行 $-Kx$，即 $(\lambda^2M+\lambda D+K)x=0$；第二行 $\lambda x=\lambda x$ 是恒等式。于是</p>
+
+$$\det\!\big(\lambda A_1-A_0\big)=\det\!\big(\lambda^2M+\lambda D+K\big).$$
+
+<p class="footnote">本机取 $M=\begin{bmatrix}2&amp;0.3\\0.3&amp;1.5\end{bmatrix}$、$D=\begin{bmatrix}0.4&amp;0.1\\0.1&amp;0.2\end{bmatrix}$、$K=\begin{bmatrix}3&amp;-0.5\\-0.5&amp;2\end{bmatrix}$，在 $\lambda=0.3,1.0,-0.7,2.2$ 四点实算两侧 $4\times4$ / $2\times2$ 行列式，最大差 $2.8\times10^{-14}$。</p>
+
+<h3 id="s43">§4.3 PEP 的 companion 线性化（三次为例）</h3>
+
+<p>板书 ③ 顶上把二次推广到三次：</p>
+
+$$(\lambda^3A_3+\lambda^2A_2+\lambda A_1+A_0)x=0,\qquad z=\begin{bmatrix}\lambda^2x\\\lambda x\\x\end{bmatrix},\qquad Az=Bz\lambda.$$
+
+<p>补全成标准的 companion（Frobenius）线性化：</p>
+
+$$A=\begin{bmatrix}0&0&-A_0\\ I&0&0\\ 0&I&0\end{bmatrix},\qquad B=\begin{bmatrix}A_3&A_2&A_1\\ 0&I&0\\ 0&0&I\end{bmatrix}.$$
+
+<p>逐行验证 $Az=\lambda Bz$：第二行 $\lambda^2x=\lambda\cdot\lambda x$、第三行 $\lambda x=\lambda\cdot x$ 都是恒等式，第一行 $-A_0x=\lambda(A_3\lambda^2x+A_2\lambda x+A_1x)$ 正是 $P_3(\lambda)x=0$。代入标量系数实算，$\det(A-\lambda B)=-P_3(\lambda)$（本机四点误差 $0$）。</p>
+
+<p class="footnote">板书那两个矩阵把单位阵写得像「2」并带了个箭头，且只画了骨架；上式是补全后的 $3\times3$ 分块形式。板书 ③ 在 $0°$ 旁批注的「Frobenius」应该指的就是这个 companion / Frobenius 矩阵。</p>
+
+<h3 id="s44">§4.4 三个问题其实是同一个动作</h3>
+
+<table>
+<tr><th>问题</th><th>原式</th><th>一次化后的 pencil</th><th>规模</th></tr>
+<tr><td>标准特征值</td><td>$Ax=x\lambda$</td><td>$A-\lambda I$</td><td>$n$</td></tr>
+<tr><td>GEP</td><td>$Ax=Bx\lambda$</td><td>$A-\lambda B$</td><td>$n$</td></tr>
+<tr><td>QEP</td><td>$(\lambda^2M+\lambda D+K)x=0$</td><td>$\lambda\begin{bmatrix}M&amp;D\\0&amp;I\end{bmatrix}-\begin{bmatrix}0&amp;-K\\I&amp;0\end{bmatrix}$</td><td>$2n$</td></tr>
+<tr><td>PEP（$d$ 次）</td><td>$P_d(\lambda)x=0$</td><td>$d$ 个 companion 块</td><td>$dn$</td></tr>
+</table>
+
+<p>共同点：<strong>把 $\lambda$ 的高次幂换成扩充状态向量 $z$ 的分量，把非线性特征值问题化成一次 pencil，再交给 QZ / Schur 型</strong>。代价是规模乘上 $d$、且可能引入无穷特征值；收益是可以直接用已经成熟的 QR/QZ 算法。</p>
+
+<h2 id="p5">第五部分 · 七类标准问题与 Sylvester 方程<span class="tag">板书 ③④</span></h2>
+
+<h3 id="s51">§5.1 板书 0°–6°：标准型能解决的七类问题</h3>
+
+<p>板书 ③ 左下列了一张编号清单（原文）：</p>
+
+<table>
+<tr><th>编号</th><th>问题</th><th>用哪种标准型</th></tr>
+<tr><td>$0^\circ$</td><td>$C=AB$</td><td>矩阵乘法本身（旁批「Frobenius」）</td></tr>
+<tr><td>$1^\circ$</td><td>$Ax=b$</td><td>LU / QR</td></tr>
+<tr><td>$2^\circ$</td><td>$\min_x\|b-Ax\|_2$</td><td>QR / SVD</td></tr>
+<tr><td>$3^\circ$</td><td>$Ax=x\lambda$</td><td>Schur / QZ</td></tr>
+<tr><td>$4^\circ$</td><td>$Av=u\sigma,\ A^{*}u=v\sigma$</td><td>SVD（Jordan–Wielandt）</td></tr>
+<tr><td>$5^\circ$</td><td>$AX-XB=C$</td><td>Schur–Parlett 回代（本课第五部分）</td></tr>
+<tr><td>$6^\circ$</td><td>$f(A)$</td><td>Schur–Parlett（本课第六、七部分）</td></tr>
+</table>
+
+<p class="footnote">这是<strong>课堂提纲</strong>，不是教材里的定理编号；$0^\circ$ 后面的手写批注辨认不清，只能确认以「Frobenius」开头。此表右列是本笔记按后续内容补的对应关系。</p>
+
+<h3 id="s52">§5.2 块对角化 $\iff$ 解一个 Sylvester 方程<span class="tag a">讲义 PDF 5 §5.4.2</span></h3>
+
+<p>板书 ③ 中间第一行：</p>
+
+$$\begin{bmatrix}I&X\\0&I\end{bmatrix}\begin{bmatrix}A&C\\0&B\end{bmatrix}\begin{bmatrix}I&-X\\0&I\end{bmatrix}=\begin{bmatrix}A&0\\0&B\end{bmatrix}.$$
+
+<p>把左边乘开，右上角是 $C-AX+XB$；要让右上块为零，等价于</p>
+
+$$C-AX+XB=0\ \Longleftrightarrow\ AX-XB=C.$$
+
+<p>所以「把一个分块上三角阵<strong>解耦</strong>成块对角」与「解 Sylvester 方程」是同一件事。这正是 10.20 §7.10 / 10.27 里「实 Schur 型对角块排序要解 Sylvester 方程」的代数来源。</p>
+
+<h3 id="s53">§5.3 唯一性条件与 Kronecker 形式</h3>
+
+<p>板书接着写「（无公共特征值有唯一解）」与 $X\in\mathbb C^{m\times n}$、$\lambda(A)\cap\lambda(B)=\varnothing$。标准陈述（板书用 $AX-XB=C$ 这一形式）：</p>
+
+<div class="box key">
+<p class="label">Sylvester 定理</p>
+<p>$AX-XB=C$ 对任意 $C$ 有唯一解 $\iff$ $\sigma(A)\cap\sigma(B)=\varnothing$ $\iff$ $\lambda_i(A)-\mu_j(B)\ne0\ (\forall i,j)$。<br>
+（若写成 $AX+XB=C$，条件相应变成 $\sigma(A)\cap\sigma(-B)=\varnothing$，即 $\lambda_i+\mu_j\ne0$；两种写法别混。）</p>
+</div>
+
+<p>用 $\operatorname{vec}$ 与 Kronecker 积把 $X$ 拉成向量，板书那行是</p>
+
+$$(I_n\otimes A-B^{\mathsf T}\otimes I_m)\operatorname{vec}X=\operatorname{vec}C,$$
+
+<p>一个 $mn\times mn$ 的线性系统。板书标注「代价 $O(m^3n^3)$」：这就是稠密求解 $(mn)^3$ 的量级，也是为什么它<strong>只适合当理论工具</strong>——数值上既贵又可能病态。</p>
+
+<h3 id="s54">§5.4 Bartels–Stewart：Schur 化 + 逐列回代<span class="tag a">讲义 PDF 5 §5.4.2、PDF 7 §7.3.2</span></h3>
+
+<p>板书 ③ 下半的三行是「两边各做一次 Schur 分解」：</p>
+
+$$Q_1^{*}AQ_1=\tilde A,\quad Q_1^{*}XQ_2=\tilde X,\quad Q_2^{*}BQ_2=\tilde B,\quad Q_1^{*}CQ_2=\tilde C,$$
+
+$$(\underbrace{Q_1^{*}AQ_1}_{\tilde A})(\underbrace{Q_1^{*}XQ_2}_{\tilde X})-(\underbrace{Q_1^{*}XQ_2}_{\tilde X})(\underbrace{Q_2^{*}BQ_2}_{\tilde B})=Q_1^{*}CQ_2,$$
+
+$$\tilde A\tilde X-\tilde X\tilde B=\tilde C,\qquad \tilde A\ \text{上三角(▽)},\quad \tilde B\ \text{上三角(△)}.$$
+
+<p>两边三角以后就能逐列回代。板书 ③ 末尾取 $\tilde x_1=\tilde X e_1$（第一列）得到</p>
+
+$$\tilde A\,\tilde x_1-\tilde x_1 b_{11}=\tilde c\,e_1\quad\Longleftrightarrow\quad (\tilde A-b_{11}I)\tilde x_1=\tilde c\,e_1,$$
+
+<p>板书 ④ 开头接着写第二列 $\tilde A\tilde x_2-\tilde X\tilde B e_2=\tilde c e_2$，而 $\tilde B e_2=e_1b_{12}+e_2b_{22}$，故</p>
+
+$$(\tilde A-b_{22}I)\tilde x_2=\tilde c e_2+\tilde x_1 b_{12}.$$
+
+<p>板书 ④ 又写了「$A[x_0,Y]-[x_0,Y]\tilde B=[C_0,C]$」与「$(\tilde A-B_{22}I)Y=C_1+x_0B_{12}$」：先解出第一列 $x_0$，剩下的列 $Y$ 解一个同型三角方程，这就是<strong>逐列（或分块）回代</strong>的骨架。</p>
+
+<p>$2\times2$ 分块的四条递推式（板书 ④ 中间，按分块回代整理）：</p>
+
+<table>
+<tr><th>顺序</th><th>方程</th><th>求谁</th></tr>
+<tr><td>①</td><td>$A_{22}X_{21}-X_{21}B_{11}=C_{21}$</td><td>$X_{21}$</td></tr>
+<tr><td>②</td><td>$A_{11}X_{11}-X_{11}B_{11}=C_{11}-A_{12}X_{21}$</td><td>$X_{11}$</td></tr>
+<tr><td>③</td><td>$A_{22}X_{22}-X_{22}B_{22}=C_{22}+X_{21}B_{12}$</td><td>$X_{22}$</td></tr>
+<tr><td>④</td><td>$A_{11}X_{12}-X_{12}B_{22}=C_{12}-A_{12}X_{22}+X_{11}B_{12}$</td><td>$X_{12}$</td></tr>
+</table>
+
+<p>板书 ③ 底部那个 $2\times2$ 展开给出的第一块最容易手算：</p>
+
+$$x_{22}=\frac{c_{22}}{a_{22}-b_{22}},$$
+
+<p>分母 $a_{22}-b_{22}$ 正是「谱不交」在标量情形下的样子 —— 分母为零 ⇔ $\tilde A$ 与 $\tilde B$ 撞了特征值 ⇔ 解不唯一/不存在。<strong>这与 10.27 §2.4 里「回代分母 = 两个特征值之差」是同一件事。</strong></p>
+
+<p class="footnote">板书 ④ 第 ④ 式左端系数写得近 $A_{12}X_{12}$；按 $(1,2)$ 块的回代应为 $A_{11}X_{12}$（右端 $-A_{12}X_{22}+X_{11}B_{12}$ 与推导一致），本表按可验证的写法给出。把 $\tilde A$、$\tilde B$ 都换成本机随机的酉相似矩阵实算，$\tilde A\tilde X-\tilde X\tilde B-\tilde C$ 残差 $6.0\times10^{-16}$；Kronecker 形式解回代与真解差 $2.8\times10^{-16}$。</p>
+
+<div class="box ok">
+<p class="label">代价对比</p>
+<p>Kronecker 形式：解 $mn\times mn$ 稠密系统，$O(m^3n^3)$，且数值上不推荐。<br>
+Bartels–Stewart：两次 Schur 分解 $O(m^3+n^3)$ + 三角回代 $O(mn(m+n))$，是 LAPACK / MATLAB <code>sylvester</code> / SciPy 的默认路线。<strong>讲义 PDF 7 §7.3.2 的 Parlett 分块递推，遇到相近特征值时也是调它来解那个 Sylvester 方程</strong>——第五、六部分在这里接上了。</p>
+</div>
+
+<h3 id="s55">§5.5 Lyapunov 方程、Hurwitz 矩阵与稳定性<span class="tag a">讲义 PDF 7 §7.4.4</span></h3>
+
+<p>板书 ④ 中间一行（原式把 $X$ 写成小写）：</p>
+
+$$A^{\mathsf T}X+XA=-B,\qquad \operatorname{Re}\lambda(A)&lt;0\ \Rightarrow\ \text{有唯一解}.$$
+
+<p>这是 Lyapunov 方程，也是 Sylvester 方程的特例（把 $AX-XB=C$ 里的 $A$ 换成 $A^{\mathsf T}$、$B$ 换成 $-A$、$C$ 换成 $-B$），唯一性条件是 $\lambda_i(A^{\mathsf T})+\lambda_j(A)\ne0$；所有特征值实部为负（$A$ 是 <strong>Hurwitz 矩阵</strong>）时这个和必然不为零。讲义 PDF 7 §7.4.4 进一步给出：此时自由响应 $x(t)=e^{tA}x(0)\to0$，且 $X=\int_0^\infty e^{tA^{\mathsf T}}Be^{tA}\,\mathrm dt$（$B\succeq0$ 时 $X\succeq0$）。</p>
+
+<p>板书下面那句「民航 $A$ 特征值 $\operatorname{Re}&lt;0$，战斗机 $\operatorname{Re}&gt;0$ …… 稳定」是控制里的经典类比：客机设计成开环稳定，战斗机为机动性允许开环不稳定、靠飞控闭环镇定。<strong>这行批注字迹不清，只按可确认的「$\operatorname{Re}\lambda(A)&lt;0$ ⇔ 渐近稳定」记录，不逐字还原。</strong></p>
+
+<h2 id="p6">第六部分 · 矩阵函数与 Schur–Parlett<span class="tag">板书 ④⑤</span></h2>
+
+<h3 id="s61">§6.1 常用 $f(A)$ 与 Schur 化<span class="tag a">讲义 PDF 7 §7.1、§7.3</span></h3>
+
+<p>板书 ④ 列出「常用 $f(A)$：$e^A,\ A^{1/2},\ A^{-1/2},\ \log A$」，接着是三行（板书把 Schur 分解写成 $A=Q^{*}TQ$）：</p>
+
+$$A=Q^{*}TQ,\qquad f(A)=Q^{*}f(T)Q,\qquad f(T)_{ii}=f(T_{ii}),\qquad F=f(T),\qquad FT=TF.$$
+
+<p>第一条来自相似协变性 $f(SAS^{-1})=Sf(A)S^{-1}$；第二条因为上三角阵的幂仍上三角且 $(T^k)_{ii}=t_{ii}^k$（用幂级数逐项看，或用 Cauchy 积分公式看 $(zI-T)^{-1}$ 的对角元 $1/(z-t_{ii})$）；第三条 $F=f(T)$ 与 $T$ 可交换，因为按 Cayley–Hamilton，$f(T)$ 可写成 $T$ 的次数不超过 $n-1$ 的多项式。</p>
+
+<div class="box warn">
+<p class="label">为什么不用 Jordan 型</p>
+<p>讲义 PDF 7 §7.1.3 明确说过：用 Jordan 标准型算 $f(A)$ 在数值上不稳定（$Z$ 可能极病态），而 Schur 型用的是<strong>酉</strong>变换，$Q$ 条件数为 $1$。这就是「Schur–Parlett」里 Schur 的分量。</p>
+</div>
+
+<h3 id="s62">§6.2 $FT=TF$：Parlett 递推的起点<span class="tag a">讲义 PDF 7 §7.3.1</span></h3>
+
+<p>把上三角 $T$ 分成 $2\times2$ 块，令 $F=f(T)$ 同样分块（板书 ⑤ 第一行）：</p>
+
+$$\begin{bmatrix}F_{11}&F_{12}\\0&F_{22}\end{bmatrix}\begin{bmatrix}T_{11}&T_{12}\\0&T_{22}\end{bmatrix}=\begin{bmatrix}T_{11}&T_{12}\\0&T_{22}\end{bmatrix}\begin{bmatrix}F_{11}&F_{12}\\0&F_{22}\end{bmatrix},$$
+
+<p>比较 $(1,2)$ 块：</p>
+
+$$F_{11}T_{12}+F_{12}T_{22}=T_{11}F_{12}+T_{12}F_{22},\qquad F_{11}=f(T_{11}),\quad F_{22}=f(T_{22}).$$
+
+<figure>
+<svg viewBox="0 0 680 230" width="100%" role="img" aria-labelledby="fig3t fig3d">
+<title id="fig3t">Parlett 递推沿超对角线逐条计算 f(T) 的严格上三角部分</title>
+<desc id="fig3d">上三角矩阵 T 的对角元先由 f(t_ii) 直接得到，然后第一条超对角线、第二条超对角线依次由 FT=TF 的比较元素方程解出，直到填满整个严格上三角部分。</desc>
+<g font-family="system-ui,sans-serif">
+  <text x="70" y="24" font-size="12" fill="var(--ink2)">T 的 4×4 示意（下三角为 0）</text>
+  <g stroke="var(--line)" fill="none"><rect x="70" y="40" width="160" height="160"/></g>
+  <g fill="var(--accent)" opacity="0.85">
+    <rect x="70" y="40" width="40" height="40"/><rect x="110" y="80" width="40" height="40"/>
+    <rect x="150" y="120" width="40" height="40"/><rect x="190" y="160" width="40" height="40"/>
+  </g>
+  <g fill="var(--ok)" opacity="0.85">
+    <rect x="110" y="40" width="40" height="40"/><rect x="150" y="80" width="40" height="40"/>
+    <rect x="190" y="120" width="40" height="40"/>
+  </g>
+  <g fill="var(--gold)" opacity="0.85">
+    <rect x="150" y="40" width="40" height="40"/><rect x="190" y="80" width="40" height="40"/>
+  </g>
+  <rect x="190" y="40" width="40" height="40" fill="var(--bg2)" stroke="var(--line)" stroke-dasharray="3 3"/>
+  <g stroke="var(--line)" stroke-width="0.7">
+    <line x1="110" y1="40" x2="110" y2="200"/><line x1="150" y1="40" x2="150" y2="200"/><line x1="190" y1="40" x2="190" y2="200"/>
+    <line x1="70" y1="80" x2="230" y2="80"/><line x1="70" y1="120" x2="230" y2="120"/><line x1="70" y1="160" x2="230" y2="160"/>
+  </g>
+  <g fill="var(--ink3)" font-size="11" text-anchor="middle">
+    <text x="90" y="216">t₁₁</text><text x="130" y="216">t₂₂</text><text x="170" y="216">t₃₃</text><text x="210" y="216">t₄₄</text>
+  </g>
+  <g font-size="12" fill="var(--ink2)">
+    <rect x="270" y="52" width="12" height="12" fill="var(--accent)" opacity="0.85"/>
+    <text x="290" y="63">① 对角：Fᵢᵢ = f(tᵢᵢ)（直接代入）</text>
+    <rect x="270" y="92" width="12" height="12" fill="var(--ok)" opacity="0.85"/>
+    <text x="290" y="103">② 第 1 条超对角线：差商 f[tᵢ, tᵢ₊₁]</text>
+    <rect x="270" y="132" width="12" height="12" fill="var(--gold)" opacity="0.85"/>
+    <text x="290" y="143">③ 第 2 条超对角线：带求和项的递推</text>
+    <rect x="270" y="172" width="12" height="12" fill="var(--bg2)" stroke="var(--line)"/>
+    <text x="290" y="183">④ …… 直到填满严格上三角</text>
+  </g>
+  <text x="70" y="228" font-size="11.5" fill="var(--ink3)" visibility="hidden">占位</text>
+</g>
+</svg>
+<figcaption>图 3 · Schur–Parlett 递推的填表顺序（讲义 PDF 7 §7.3.1）。</figcaption>
+</figure>
+
+<p>一般地，比较 $(i,j)$ 元（$i&lt;j$）得到 <strong>Parlett 递推</strong>：</p>
+
+$$F_{ij}=\frac{T_{ij}\big(f(\lambda_i)-f(\lambda_j)\big)+\sum_{k=i+1}^{j-1}\big(F_{ik}T_{kj}-T_{ik}F_{kj}\big)}{\lambda_i-\lambda_j},\qquad \lambda_i=t_{ii}.$$
+
+<p>按超对角线 $j-i=1,2,\dots,n-1$ 逐条计算即可填满 $f(T)$；分母 $\lambda_i-\lambda_j$ 就是特征值间隔，特征值相近时递推会炸 —— 讲义 §7.3.2 的对策是<strong>分块</strong>：把相近特征值聚成对角块，块内用逼近法算 $f$，块间解 Sylvester 方程（调用第五部分的 Bartels–Stewart）。</p>
+
+<h3 id="s63">§6.3 差商：$F_{12}=T_{12}\,f[T_{11},T_{22}]$<span class="tag o">教材补充</span></h3>
+
+<p>板书 ⑤ 第二、三行与那行「移项 Ex」：</p>
+
+$$F_{11}T_{12}+F_{12}T_{22}=T_{11}F_{12}+T_{12}F_{22},\qquad F_{11}=f(T_{11}),\ F_{22}=f(T_{22}),$$
+
+$$F_{12}=T_{12}\,\frac{F_{11}-F_{22}}{T_{11}-T_{22}}=T_{12}\,f[T_{11},T_{22}],\qquad f[x,y]=\frac{f(x)-f(y)}{x-y}.$$
+
+<p>标量块时把 $F_{12}$ 的项移到一边即得：$(T_{11}-T_{22})F_{12}=T_{12}(F_{11}-F_{22})$。右边就是 <strong>一阶差商</strong>；若 $T_{11}=T_{22}$，取极限 $f[x,x]=f'(x)$，对应 confluent divided difference。</p>
+
+<p class="footnote">本机实算：$T=\begin{bmatrix}1&amp;0.6\\0&amp;-0.5\end{bmatrix}$、$f=\exp$，直接算 $e^T$ 得 $F_{12}=0.844700467499$，差商公式给出同一个数；$FT-TF$ 残差 $&lt;10^{-12}$。$F_{11}=e^{1}$、$F_{22}=e^{-0.5}$ 亦逐位吻合。</p>
+
+<h3 id="s64">§6.4 状态空间：$x(t)=e^{tA}x(0)+\int_0^t e^{(t-s)A}Bu(s)\,\mathrm ds$<span class="tag a">讲义 PDF 7 §7.4.2–§7.4.3</span></h3>
+
+<p>板书 ④ 下半的线性时不变系统（$u$ 是输入、$y$ 是输出）：</p>
+
+$$x'(t)=Ax(t)+Bu(t),\qquad y(t)=Cx(t)+Du(t),$$
+
+$$x(t)=e^{tA}x(0)+\int_0^t e^{(t-s)A}Bu(s)\,\mathrm ds.$$
+
+<p>板书紧接着用积分因子推了一遍：</p>
+
+$$\big(e^{-tA}x(t)\big)'=-Ae^{-tA}x(t)+e^{-tA}x'(t)=e^{-tA}\big(-Ax(t)+x'(t)\big)=e^{-tA}Bu(t),$$
+
+$$\therefore\quad e^{-tA}x(t)-x(0)=\int_0^t e^{-sA}Bu(s)\,\mathrm ds.$$
+
+<div class="box warn">
+<p class="label">板书这里有一处笔误</p>
+<p>板书把积分号内写成 $e^{-tA}Bu(s)\,\mathrm ds$。按上一行的求导结果，被积函数应随积分变量 $s$ 取 $e^{-sA}Bu(s)$；否则把与 $s$ 无关的因子提出后，右乘 $e^{tA}$ 得到的解会缺少卷积结构，与上面第一行的 $x(t)$ 公式矛盾。本页按 <strong>$e^{-sA}$</strong> 给出，并保留原文供对照。11.03 <a href="课堂笔记-20261103-敏感性与SVD.html#p6">第六部分</a> 末提到的 $e^{Ct}$ 就是这里的齐次解。</p>
+</div>
+
+<h2 id="p7">第七部分 · 矩阵指数怎么算：缩放平方 + Padé<span class="tag">板书 ⑤</span></h2>
+
+<h3 id="s71">§7.1 为什么不用截断 Taylor 级数<span class="tag a">讲义 PDF 7 §7.2.4</span></h3>
+
+<p>板书 ⑤ 写了一行幂级数并打了个叉：</p>
+
+$$e^x=1+x+\frac{x^2}{2!}+\cdots+\frac{x^m}{m!}+O(x^{m+1}),$$
+
+<p>旁边批注「一般不用幂级数展开之逼近」「$\Rightarrow\|X\|\le1$ 逼近到 0」。理由正如讲义 §7.2.4：截断 Taylor 只在原点附近有效；对矩阵而言，$\|A\|$ 大时高阶项先剧烈增长再相消，浮点里会出现严重的<strong>相消误差</strong>（经典例子是 $A$ 有较大负特征值时 $e^A$ 的条目被正负大数抵消）。</p>
+
+<h3 id="s72">§7.2 Padé 逼近 $p_m/q_n$ 与 $O(x^{m+n+1})$<span class="tag a">讲义 PDF 7 §7.2.5</span></h3>
+
+<p>板书下一行：</p>
+
+$$e^x=\frac{p_m(x)}{q_n(x)}+O(x^{m+n+1}),\qquad q_n(0)=1.$$
+
+<p>这是 $[m/n]$ 阶 <strong>Padé 逼近</strong>：分子至多 $m$ 次、分母至多 $n$ 次，共 $m+n+1$ 个待定系数，用它匹配 $e^x$ 的 Maclaurin 展开前 $m+n+1$ 项。对角情形 $m=n=N$ 时 $q_N(x)=p_N(-x)$、误差 $O(x^{2N+1})$，且 $R_{N,N}(-x)=1/R_{N,N}(x)$，与 $e^{-x}=1/e^x$ 一致；这正是 MATLAB / Octave / R / SciPy 的 <code>expm</code> 所用的有理逼近。</p>
+
+<div class="box warn">
+<p class="label">板书写作「Parlett 逼近」，这里要改名</p>
+<p>板书 ⑤ 那行批注写的是「Parlett 逼近」，但 $p_m(x)/q_n(x)+O(x^{m+n+1})$ 的标准名称是 <strong>Padé 逼近</strong>（讲义 PDF 7 §7.2.5 用的就是 Padé）。Parlett 是上一部分 §6.2 那个 $FT=TF$ 差商递推的人；两个名字在同一页板书里连着出现，容易串。本页按可查证的名称给出，并保留板书写法供对照。</p>
+</div>
+
+<h3 id="s73">§7.3 缩放平方：$e^A=(e^{A/2^s})^{2^s}$<span class="tag a">讲义 PDF 7 §7.2.4–§7.2.5</span></h3>
+
+<p>板书 ⑤ 的两行与最后一行：</p>
+
+$$e^A=\big(e^{A/2^s}\big)^{2^s}\quad\text{scaling-and-squaring},\qquad \operatorname{expm}(A)=\big(e^{A/2^k}\big)^{2^k},$$
+
+$$\therefore\quad e^A=\big(e^{A/2^k}\big)^{2^k}\approx\big(R(A/2^k)\big)^{2^k},$$
+
+<p>其中 $R=p_m/q_n$ 是 Padé 有理逼近。等式本身是<strong>精确恒等式</strong>：$(e^{A/2^s})^{2^s}=e^{2^s\cdot A/2^s}=e^A$（同一个矩阵的指数必然可交换，用 $e^{aX}e^{bX}=e^{(a+b)X}$ 即可）。</p>
+
+<figure>
+<svg viewBox="0 0 680 200" width="100%" role="img" aria-labelledby="fig4t fig4d">
+<title id="fig4t">缩放平方：先把 A 缩小到 Padé 有效范围，再连续平方 s 次还原</title>
+<desc id="fig4d">A 除以 2 的 s 次方后范数变小，在此小矩阵上用 Padé 有理逼近算出 E0，然后连续平方 s 次，得到 e 的 A 次方。</desc>
+<g font-family="system-ui,sans-serif">
+  <rect x="20" y="62" width="100" height="52" rx="8" fill="var(--bg2)" stroke="var(--line)"/>
+  <text x="70" y="94" font-size="13" fill="var(--ink)" text-anchor="middle">A</text>
+  <line x1="124" y1="88" x2="166" y2="88" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar4)"/>
+  <text x="145" y="78" font-size="10.5" fill="var(--ink3)" text-anchor="middle">/ 2ˢ</text>
+  <rect x="170" y="62" width="122" height="52" rx="8" fill="var(--accent-bg)" stroke="var(--accent)"/>
+  <text x="231" y="94" font-size="13" fill="var(--ink)" text-anchor="middle">A/2ˢ，范数小</text>
+  <line x1="296" y1="88" x2="338" y2="88" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar4)"/>
+  <text x="317" y="78" font-size="10.5" fill="var(--ink3)" text-anchor="middle">Padé</text>
+  <rect x="342" y="62" width="122" height="52" rx="8" fill="var(--ok-bg)" stroke="var(--ok)"/>
+  <text x="403" y="94" font-size="12.5" fill="var(--ink)" text-anchor="middle">E₀ ≈ e^(A/2ˢ)</text>
+  <line x1="468" y1="88" x2="510" y2="88" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ar4)"/>
+  <text x="489" y="78" font-size="10.5" fill="var(--ink3)" text-anchor="middle">平方 ×s</text>
+  <rect x="514" y="62" width="122" height="52" rx="8" fill="var(--gold-bg)" stroke="var(--gold)"/>
+  <text x="575" y="94" font-size="12.5" fill="var(--ink)" text-anchor="middle">Eₛ ≈ e^A</text>
+  <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="var(--ink3)"/></marker></defs>
+  <text x="340" y="150" font-size="11.5" fill="var(--ink3)" text-anchor="middle">Eⱼ₊₁ = Eⱼ²（j = 0, …, s−1），只需 s 次矩阵乘法</text>
+  <text x="340" y="176" font-size="11.5" fill="var(--ink3)" text-anchor="middle">缩放解决「Padé 只在原点附近好」，平方还原恒等式 e^A = (e^(A/2ˢ))^(2ˢ)</text>
+</g>
+</svg>
+<figcaption>图 4 · 缩放平方的完整链条（板书 ⑤ 的 $e^A=(R(A/2^k))^{2^k}$ 展开）。</figcaption>
+</figure>
+
+<p>选 $s$ 的原则是让 $\|A/2^s\|$ 落进 Padé 逼近的有效范围，再连续平方 $s$ 次；$s$ 由所需精度决定，这也是 Higham 对 scaling-and-squaring 做反向误差分析后给出的选参思路。</p>
+
+<h3 id="s74">§7.4 本机实算</h3>
+
+<p>取 $A=\begin{bmatrix}0.4&amp;0.9\\-0.2&amp;0.7\end{bmatrix}$，用截断 Taylor 直接算 $e^A$ 作参照，再取 $s=4$：先算 $e^{A/16}$，连续平方 $4$ 次。两者差</p>
+
+$$\big\|(e^{A/16})^{16}-e^A\big\|_F=8.4\times10^{-15}.$$
+
+<p>恒等式在浮点精度内成立；误差只来自 $e^{A/16}$ 的截断逼近，与板书「一般不用幂级数展开之逼近」并不矛盾 —— 在缩放后的小矩阵上，低阶逼近已经足够。</p>
+
+<h2 id="p8">第八部分 · 关键公式核对（联网 + 本机实算）<span class="tag o">核对</span></h2>
+
+<p>按用户要求，本课的<strong>关键公式逐条联网核对</strong>过。下表区分「可查到标准陈述」「由标准陈述直接推出」「板书原式但公开资料无逐字出处」三种情况。</p>
+
+<table>
+<tr><th>结论</th><th>核对结果</th><th>出处 / 手段</th></tr>
+<tr><td>奇数阶反对称阵 $\det=0$；实反对称谱为 $\pm\mathrm i\sigma$；$Q^{\mathsf T}AQ$ 块对角规范形</td><td>✅ 标准陈述（Jacobi 定理）</td><td>Wikipedia <em>Skew-symmetric matrix</em>（Determinant / Spectral theory）</td></tr>
+<tr><td>$\operatorname{spec}\begin{bmatrix}0&amp;B\\-B^{\mathsf T}&amp;0\end{bmatrix}=\{\pm\mathrm i\sigma_j(B)\}$</td><td>✅ 由 $M^2=\operatorname{diag}(-BB^{\mathsf T},-B^{\mathsf T}B)$ 直接推出；网页未逐字列出</td><td>Wikipedia 谱理论 + 本机 $6\times6$ 实算</td></tr>
+<tr><td>不可约（对称）三对角阵特征值单重</td><td>✅ 定理 ④ / Theorem 4 + Corollary 5</td><td>讲义 PDF 6 §6.4.1；N. Higham, <em>What Is a Tridiagonal Matrix?</em></td></tr>
+<tr><td>广义 Schur / QZ：$Q^{*}AZ=S$、$Q^{*}BZ=T$ 上三角，$\lambda_i=s_{ii}/t_{ii}$；direct 约化 + iter 迭代</td><td>✅ 标准陈述</td><td>Wikipedia <em>QZ algorithm</em> / <em>Schur decomposition</em>（Generalized Schur）</td></tr>
+<tr><td>正则束 $\exists\theta:\det(A-\theta B)\ne0$；$B$ 奇异 ⇒ 无穷特征值；$(0,0)$ ⇒ 奇异束</td><td>✅ 标准陈述</td><td>Wikipedia <em>Matrix pencil</em></td></tr>
+<tr><td>对称正定束 $B=LL^{*}\Rightarrow\tilde A=L^{-1}AL^{-*}$ 化归标准对称问题</td><td>✅ 标准方法</td><td>百度百科「广义特征值问题」；Davies–Higham–Tisseur, <em>SIAM J. Matrix Anal. Appl.</em> (2001)</td></tr>
+<tr><td>QEP $\det(\lambda^2M+\lambda D+K)=0$，正则时 $2n$ 个特征值，用 companion 一次化</td><td>✅ 标准陈述</td><td>Wikipedia <em>Quadratic eigenvalue problem</em>；Tisseur &amp; Meerbergen, <em>SIAM Rev.</em> 43 (2001)</td></tr>
+<tr><td>Sylvester：$AX-XB=C$ 唯一解 $\iff\sigma(A)\cap\sigma(B)=\varnothing$；$(I\otimes A-B^{\mathsf T}\otimes I)\operatorname{vec}X=\operatorname{vec}C$；Bartels–Stewart $O(n^3)$</td><td>✅ 标准陈述</td><td>Wikipedia <em>Sylvester equation</em>；讲义 PDF 5 §5.4.2</td></tr>
+<tr><td>Lyapunov：$A$ 为 Hurwitz（$\operatorname{Re}\lambda&lt;0$）⇒ $A^{\mathsf T}X+XA=-B$ 唯一解、自由响应渐近稳定</td><td>✅ 标准陈述</td><td>讲义 PDF 7 §7.4.4（Sylvester 定理）</td></tr>
+<tr><td>$f(T)_{ii}=f(t_{ii})$；$FT=TF$；$F_{i,i+1}=T_{i,i+1}f[\lambda_i,\lambda_{i+1}]$</td><td>✅ 由幂级数 / Cauchy 积分定义与 $FT=TF$ 比较元素直接推出</td><td>Wikipedia <em>Matrix function</em>（含 divided differences 提示）；讲义 PDF 7 §7.3.1；本机实算</td></tr>
+<tr><td>$e^A=(e^{A/2^s})^{2^s}$；$e^x=p_m/q_n+O(x^{m+n+1})$；MATLAB/Octave/R/SciPy 的 <code>expm</code> 用 Padé</td><td>✅ 标准陈述</td><td>Wikipedia <em>Matrix exponential</em> / <em>Padé approximant</em>；Higham, <em>The Scaling and Squaring Method … Revisited</em></td></tr>
+<tr><td>$x(t)=e^{tA}x(0)+\int_0^te^{(t-s)A}Bu(s)\mathrm ds$；$\frac{\mathrm d}{\mathrm dt}(e^{-tA}x)=e^{-tA}Bu$</td><td>✅ 标准陈述（常数变易 / 积分因子）</td><td>Wikipedia <em>Matrix exponential</em>；由此判定板书积分号内应为 $e^{-sA}$</td></tr>
+<tr><td>周期 / 循环 Schur 分解 $Q_i^{*}A_iQ_{i+1}$ 全上三角</td><td>⚠️ 板书形式 + 可推导结论；只查到周期矩阵对 / 乘积 SVD 相关文献，<strong>未找到逐字定理编号</strong></td><td>按「可验证的说死、不可验证的标明」处理</td></tr>
+<tr><td>板书 0°–6° 清单及「Frobenius」批注</td><td>⚠️ 课堂提纲，非教材定理；批注字迹不清</td><td>只保留可辨认的编号与公式</td></tr>
+</table>
+
+<h3>本机实算清单</h3>
+
+<p>以下数值全部由本机纯 Python 实算得出（无 numpy / scipy，自写对称 Jacobi 特征分解、Gauss 消元、截断 Taylor 矩阵指数、Gram–Schmidt）：</p>
+
+<table>
+<tr><th>项目</th><th>结果</th></tr>
+<tr><td>$6$ 阶反对称三对角 $\beta=(1,2,3,4,5)$，$DAD^{-1}=-\mathrm iT$</td><td>逐元素误差 $&lt;10^{-13}$，$(iA)^{*}=iA$ 成立</td></tr>
+<tr><td>$5$ 阶同型反对称阵 $\det(A)$</td><td>$0$</td></tr>
+<tr><td>$\Pi A\Pi^{\mathsf T}=[0\ B;-B^{\mathsf T}\ 0]$，$B=\begin{bmatrix}1&amp;0&amp;0\\-2&amp;3&amp;0\\0&amp;-4&amp;5\end{bmatrix}$</td><td>$B^{\mathsf T}B$ 特征值 $0.550056,\ 9.000000,\ 45.449944$；$-A^2$ 的六个特征值为三者各两次</td></tr>
+<tr><td>QEP 线性化 $\det(\lambda A_1-A_0)=\det(\lambda^2M+\lambda D+K)$</td><td>四点最大差 $2.84\times10^{-14}$</td></tr>
+<tr><td>PEP companion $\det(A-\lambda B)=-P_3(\lambda)$</td><td>四点差 $0$</td></tr>
+<tr><td>Kronecker 形式解 Sylvester 回代</td><td>$\|X_{\text{kron}}-X\|_F=2.84\times10^{-16}$</td></tr>
+<tr><td>酉变换后 $\tilde A\tilde X-\tilde X\tilde B=\tilde C$</td><td>残差 $6.00\times10^{-16}$；$x_{22}=c_{22}/(a_{22}-b_{22})=0.6$</td></tr>
+<tr><td>Parlett 差商 $F_{12}=T_{12}f[t_1,t_2]$（$f=\exp$）</td><td>$0.844700467499$，与直接算 $e^T$ 逐位相同；$FT=TF$ 成立</td></tr>
+<tr><td>缩放平方 $s=4$</td><td>$\|(e^{A/16})^{16}-e^A\|_F=8.41\times10^{-15}$</td></tr>
+</table>
+
+<h2 id="p9">第九部分 · 本课小结与三处存疑口径</h2>
+
+<table>
+<tr><th>板书页</th><th>一句话</th><th>落到哪条标准型</th></tr>
+<tr><td>①</td><td>反对称阵的谱天生 $\pm\mathrm i\sigma$ 成对，奇偶重排后 <strong>一次 SVD 读出全部特征值</strong></td><td>正交标准型 / SVD</td></tr>
+<tr><td>②</td><td>GEP 走 QZ；$B\succ0$ 走 Cholesky；乘积走周期 Schur；$B$ 奇异出现无穷特征值；QEP 线性化成 $2n$ 阶 pencil</td><td>广义 Schur / companion</td></tr>
+<tr><td>③</td><td>0°–6° 里最硬的 $5°$：<strong>块对角化 = 解 Sylvester 方程</strong>，Schur 化后逐列回代</td><td>Schur + Bartels–Stewart</td></tr>
+<tr><td>④</td><td>Lyapunov 把 $\operatorname{Re}\lambda&lt;0$ 写成稳定性；$f(A)=Q^{*}f(T)Q$ 与 $FT=TF$ 打开 Parlett 递推；状态空间解出 $e^{tA}$</td><td>Schur–Parlett</td></tr>
+<tr><td>⑤</td><td>$FT=TF$ 的 $(1,2)$ 块给出差商；$e^A$ 靠 <strong>Padé + 缩放平方</strong> 真正算出来</td><td>有理逼近 + $(e^{A/2^s})^{2^s}$</td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">引用时请注意这三处</p>
+<p><strong>① 周期 Schur 的名称与出处</strong>：板书叫「循环 schur 分解」，标准名称是 periodic / cyclic Schur form；本页只保证「连乘后对角元给出乘积特征值」这个可验证结论，不保证与某本教材的定理逐字一致。</p>
+<p><strong>② 「Parlett 逼近」≠ Padé 逼近</strong>：$p_m/q_n+O(x^{m+n+1})$ 是 Padé；Parlett 是 $f(T)$ 的差商递推。同页板书两个名字挨着，正文已按正确名称写出并保留原文。</p>
+<p><strong>③ 板书四处笔误 / 跳步</strong>：§2.1 把频率与特征值都记作 $\lambda$、两个指数同号；§4.2 线性化首块右上写得像 $0$（应为阻尼矩阵 $D$）；§5.4 第 ④ 式左端系数近 $A_{12}$（应为 $A_{11}X_{12}$）；§6.4 积分号内 $e^{-tA}$（应为 $e^{-sA}$）。正文一律按可验证的写法给出，附录保留原文。</p>
+</div>
+
+<p class="footnote">另有两处字迹不清、本页不逐字还原：板书 ② 的「…… canonical 标准型？允许无穷大特征值 矩阵块」（按 Kronecker 标准型理解）、板书 ④ 的「民航 / 战斗机」稳定性类比（按 Hurwitz 矩阵理解）。</p>
+
+<h2 id="p10">附录 · 板书逐张对照</h2>
+
+<table class="apx">
+<tr><th>编号</th><th>类型</th><th>内容（板书逐字原文，公式按本页规范记号排版）</th><th>本笔记对应</th></tr>
+<tr><td>①</td><td>手写</td><td><strong>振动与反对称</strong>：$m\cdot x''+kx=0$；$x=c_1e^{\mathrm i\lambda_1t}+c_2e^{\mathrm i\lambda_2t}$（箭头「振动频率」）；$m\lambda^2+k=0$；$\lambda=\pm\mathrm i\sqrt{k/m}$；$A^{*}=-A\iff(\mathrm iA)^{*}=\mathrm iA$；$A^{\mathsf T}=-A,\ A\in\mathbb R$，「实反对称矩阵」$Q^{\mathsf T}AQ=$ 一串 $2\times2$ 斜方块；零对角三对角反对称阵（$\beta_1,\beta_2,\dots$）；「$B\lambda$」$\operatorname{diag}(1,\mathrm i,\mathrm i^2,\mathrm i^3,\mathrm i^4)\cdot$[反对称三对角]$\cdot\operatorname{diag}(1,-\mathrm i,-\mathrm i^2,-\mathrm i^3,-\mathrm i^4)=$[整数 $1,2,3,4$ 的对称三对角骨架]；<strong>「奇数阶的反对称阵行列式是 0」</strong> $\det(A)=\det(A^{\mathsf T})=\det(-A)=(-1)^{2m+1}\det(A)$；<strong>「不可约的三对角阵没有重特征值」</strong>；<strong>「但上述方法没用到谱的对称性」</strong>；$1,2,3,4,5,6\to 1,3,5\,|\,2,4,6$ 的奇偶重排，$\Pi A\Pi^{\mathsf T}=\begin{bmatrix}0&amp;B\\-B^{\mathsf T}&amp;0\end{bmatrix}$；$=\begin{bmatrix}0&amp;U\Sigma V^{\mathsf T}\\-V\Sigma U^{\mathsf T}&amp;0\end{bmatrix}=[U\ V]\begin{bmatrix}\Sigma\\-\Sigma\end{bmatrix}[U^{\mathsf T}\ V^{\mathsf T}]$ 的简写；底部「重排图」网格示意</td><td><a href="#p2">第二部分</a>（§2.1–§2.5）</td></tr>
+<tr><td>②</td><td>手写</td><td><strong>GEP 与线性化</strong>：「GEP」$Ax=Bx\lambda$，$\det(B)\ne0$，$\iff B^{-1}Ax=x\lambda$；「QZ」$Q^{*}AZ=\triangledown$、$Q^{*}BZ=\triangledown$、$Z^{*}B^{-1}Q=\triangledown$；右侧一列 $A_1,A_2,\dots,A_k$ 与 $Q_1^{*}A_1Q_2=\triangledown,\ Q_2^{*}A_2Q_3=\triangledown,\ \dots,\ Q_k^{*}A_kQ_1=\triangledown$；草图 $(\square\ \square)\xrightarrow{\text{direct}}(\text{Hessenberg},\triangledown)\xrightarrow{\text{iter}}(\triangledown,\triangledown)$；$Ax=Bx\lambda$、$A^{*}=A$、$LL^{*}=B^{*}=B\succ0$ $\Rightarrow X^{*}AX=D_1=\Lambda$、$X^{*}BX=D_2=I$；$(B^{-1/2}AB^{-1/2})(B^{1/2}x)=(B^{1/2}x)\lambda$，$\tilde A y=y\lambda$（上方标注 $L^{-1},L^{-*},L^{*}$）；「对这个矩阵谱分解 $Q\Lambda Q^{*}$」、$x=(B^{-1/2})^{*}Q$；「或者对 $B=LL^{*}$」，$L^{-1}AL^{-*}=Q\Lambda Q^{*}$，$X=L^{-*}Q$，$X^{*}BX=Q^{*}L^{-1}BL^{-*}Q=I$；$A_1A_2\cdots A_k\,x=x\lambda$「循环 schur 分解」；$Ax=Bx\lambda$、$\det(B)=0$、$\det(A-\theta B)\ne0$、「…… canonical 标准型？允许无穷大特征值 矩阵块」；$Mx''+Dx'+Kx=0$、$y=[x';x]$；$\begin{bmatrix}M&amp;D\\0&amp;I\end{bmatrix}[x';x]'+\begin{bmatrix}0&amp;K\\-I&amp;0\end{bmatrix}[x';x]=0$，$\begin{bmatrix}M&amp;D\\0&amp;I\end{bmatrix}[x\lambda;x]\lambda=\begin{bmatrix}0&amp;-K\\I&amp;0\end{bmatrix}[x\lambda;x]$；「Laplace 变换」$\lambda^2Mx+\lambda Dx+Kx=0$，$\det(\lambda^2M+\lambda D+K)=0$</td><td><a href="#p3">第三部分</a>、<a href="#p4">第四部分</a></td></tr>
+<tr><td>③</td><td>手写</td><td><strong>PEP 与 Sylvester</strong>：$(\lambda^3A_3+\lambda^2A_2+\lambda A_1+A_0)x=0$，$z=[\lambda^2x;\lambda x;x]$，$Az=Bz\lambda$；左 $\begin{bmatrix}&amp;-A_0\\I&amp;\\&amp;I\end{bmatrix}$（板书把 $I$ 写得近「2」，带箭头）、右 $\begin{bmatrix}A_3&amp;A_2&amp;A_1\\&amp;I&amp;\\&amp;&amp;I\end{bmatrix}$；清单 $0^\circ\ C=AB$（旁批「Frobenius」）、$1^\circ\ Ax=b$、$2^\circ\ \min_x\|b-Ax\|_2$、$3^\circ\ Ax=x\lambda$、$4^\circ\ Av=u\sigma,\ A^{*}u=v\sigma$、$5^\circ\ AX-XB=C$、$6^\circ\ f(A)$；$6^\circ\ f(A)$；$\begin{bmatrix}I&amp;X\\0&amp;I\end{bmatrix}\begin{bmatrix}A&amp;C\\0&amp;B\end{bmatrix}\begin{bmatrix}I&amp;-X\\0&amp;I\end{bmatrix}=\begin{bmatrix}A&amp;0\\0&amp;B\end{bmatrix}$；$C-AX+XB=0$（「无公共特征值有唯一解」）；$\lambda(A)\cap\lambda(B)=\varnothing$，$X\in\mathbb C^{m\times n}$；$(I\otimes A-B^{\mathsf T}\otimes I)\operatorname{vec}X=\operatorname{vec}C$（「代价 $O(m^3n^3)$」）；$Q_1^{*}AQ_1Q_1^{*}X-Q_1^{*}XB=Q_1^{*}C$；$(Q_1^{*}AQ_1)(Q_1^{*}XQ_2)-(Q_1^{*}XQ_2)(Q_2^{*}BQ_2)=Q_1^{*}CQ_2$；$\tilde A\tilde X-\tilde X\tilde B=\tilde C$（▽ / △）；$2\times2$ 展开 $(a_{ij})(x_{ij})-(x_{ij})(b_{ij})=(c_{ij})$，$x_{22}=c_{22}/(a_{22}-b_{22})$；$\tilde x_1=\tilde Xe_1$「Bartels–Stewart」；$\tilde A\tilde Xe_1-\tilde Xe_1b_{11}=\tilde Ce_1$，$(\tilde A-b_{11}I)\tilde x=\tilde Ce_1$</td><td><a href="#p4">§4.3</a>、<a href="#p5">第五部分</a></td></tr>
+<tr><td>④</td><td>手写</td><td><strong>回代续、状态空间、$f(A)$</strong>：$\tilde A\tilde Xe_2-\tilde X\tilde B e_2=\tilde C e_2$（下注 $e_1b_{12}+e_2b_{22}$）；$(\tilde A-b_{22}I)x_2=\tilde C e_2+x_1b_{12}$；$A[x_0,Y]-[x_0,Y]\tilde B=[C_0,C]$（$x_0$ 是解出第一列后、$Y$ 是余下要解的），$\tilde B=\begin{bmatrix}b_{11}&amp;b_{12}\\&amp;b_{22}\end{bmatrix}$；「这个解是」$\tilde A Y-x_0B_{22}-YB_{22}=C_1\Rightarrow(\tilde A-B_{22}I)Y=C_1+x_0B_{12}$；递推式 $\begin{pmatrix}A_{11}&amp;A_{12}\\A_{21}&amp;A_{22}\end{pmatrix}\begin{pmatrix}x_{11}&amp;x_{12}\\x_{21}&amp;x_{22}\end{pmatrix}-\begin{pmatrix}x_{11}&amp;x_{12}\\x_{21}&amp;x_{22}\end{pmatrix}\begin{pmatrix}b_{11}&amp;b_{12}\\b_{21}&amp;b_{22}\end{pmatrix}=\begin{pmatrix}c_{11}&amp;c_{12}\\c_{21}&amp;c_{22}\end{pmatrix}$ 与 ①–④ 四条（原文见 §5.4 表格）；$A^{\mathsf T}X+XA=-B$，$\operatorname{Re}\lambda(A)&lt;0$「有唯一解」；「常用 $f(A)$」$e^A,\ A^{1/2},\ A^{-1/2},\ \log A$；$x'(t)=Ax(t)+Bu(t)$、$y(t)=Cx(t)+Du(t)$；$X(t)=e^{tA}x(0)+\int_0^te^{(t-s)A}Bu(s)\mathrm ds$；$(e^{-tA}x(t))'=-Ae^{-tA}x(t)+e^{-tA}x'(t)-e^{-tA}(-Ax(t)+x'(t))=e^{-tA}Bu(t)$；$\therefore e^{-tA}x(t)-x(0)=\int_0^te^{-tA}Bu(s)\mathrm ds$；「民航 $A$ 特征值 $\operatorname{Re}&lt;0$，战斗机 $\operatorname{Re}&gt;0$ …… 稳定」；$A=Q^{*}TQ$，$f(A)=Q^{*}f(T)Q$；$f(T)_{ii}=f(T_{ii})$；$F=f(T)$；$FT=TF$「schur–Parlett」</td><td><a href="#s54">§5.4</a>–<a href="#p6">第六部分</a></td></tr>
+<tr><td>⑤</td><td>手写</td><td><strong>Parlett 差商与 $e^A$</strong>：$\begin{bmatrix}F_{11}&amp;F_{12}\\0&amp;F_{22}\end{bmatrix}\begin{bmatrix}T_{11}&amp;T_{12}\\0&amp;T_{22}\end{bmatrix}=\begin{bmatrix}T_{11}&amp;T_{12}\\0&amp;T_{22}\end{bmatrix}\begin{bmatrix}F_{11}&amp;F_{12}\\0&amp;F_{22}\end{bmatrix}$；$F_{11}T_{12}+F_{12}T_{22}=T_{11}F_{12}+T_{12}F_{22}$；$F_{11}=f(T_{11})$、$F_{22}=f(T_{22})$；「移项 Ex」$F_{12}=T_{12}(F_{11}-F_{22})/(T_{11}-T_{22})=T_{12}f(T_{11},T_{22})$；$e^A=(e^{A/2^s})^{2^s}$「scaling-and-squaring」；$\operatorname{expm}(A)=(e^{A/2^k})^{2^k}$；$e^x=1+x+\frac{x^2}{2!}+\cdots+\frac{x^m}{m!}+O(x^{m+1})$（「一般不用幂级数展开之逼近」，$\Rightarrow\|X\|\le1$「逼近到 0」）；「Parlett 逼近」$e^x=\frac{p_m(x)}{q_n(x)}+O(x^{m+n+1})$；$\therefore e^A=(e^{A/2^k})^{2^k}=(e^{M_k})^{2^k}\triangleq(R(A/2^k))^{2^k}$</td><td><a href="#s63">§6.3</a>、<a href="#p7">第七部分</a></td></tr>
+</table>
+
+<p class="footnote">本课笔记与 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">10.20</a>、<a href="课堂笔记-20261027-特征向量的计算.html">10.27</a>、<a href="课堂笔记-20261103-敏感性与SVD.html">11.03</a> 是四份独立文件，按课次分工：QR 方法属 10.20，特征向量与对称特征值属 10.27，敏感性与 SVD 属 11.03，<strong>广义特征值 / Sylvester / 矩阵函数属 11.10</strong>。5 页板书照片全部属于这一课，无跨课旧页。</p>
+
+<p class="footnote"><strong>来源划分</strong>：板书独有 —— §2.1–§2.5、§3.1–§3.3、§3.5、§4.1–§4.3、§5.1；讲义对应 —— §2.4（PDF 6 §6.4.1）、§5.2–§5.4（PDF 5 §5.4.2）、§5.5（PDF 7 §7.4.4）、§6.1–§6.2（PDF 7 §7.1/§7.3.1）、§6.4（PDF 7 §7.4.2–§7.4.3）、§7.1–§7.3（PDF 7 §7.2.4/§7.2.5）；教材补充与联网核对 —— §2.2/§2.3 的证明、§3.4 的 Cholesky 推导、§4.4 的对照表、§6.3 的差商一般式、<a href="#p8">第八部分</a>全部核对条目。</p>
+
+<p class="footnote" style="margin-top:40px">本文全部数值结果（$DAD^{-1}$、奇偶重排与 $\sigma(B)$ 对照、QEP / PEP 线性化行列式、Kronecker 与 Schur 化 Sylvester 残差、Parlett 差商、缩放平方）均由自写纯 Python 代码实测得出，无 numpy / scipy 依赖，精度 $10^{-15}$ 量级。公式的关键陈述另经 Wikipedia（<em>Skew-symmetric matrix</em> / <em>Matrix pencil</em> / <em>QZ algorithm</em> / <em>Sylvester equation</em> / <em>Quadratic eigenvalue problem</em> / <em>Matrix function</em> / <em>Matrix exponential</em> / <em>Padé approximant</em>）与 N. Higham 的 tridiagonal matrix 短文联网核对，详见第八部分。图 1–4 为本笔记自绘内联 SVG。公式排版：KaTeX 0.16.11（本地，离线可用）。</p>
+
+</div><script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){
+  function boot(){
+    if (typeof renderMathInElement !== 'function') { return; }
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false,
+      errorColor: '#c0392b'
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+})();
+</script>
+
+<script>
+(function(){
+  function boot(){
+    var nav = document.getElementById('side-toc');
+    var list = document.getElementById('side-toc-list');
+    var btn = document.getElementById('side-toc-toggle');
+    var bd = document.getElementById('side-toc-backdrop');
+    if(!nav || !list) return;
+
+    var hs = [].slice.call(document.querySelectorAll('h2[id], h3[id]')).filter(function(h){
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      return t !== '目录' && t !== 'Contents' && t !== 'CONTENTS';
+    });
+    if(!hs.length){ nav.style.display='none'; if(btn) btn.style.display='none'; return; }
+
+    var links = [];
+    hs.forEach(function(h){
+      var clone = h.cloneNode(true);
+      [].slice.call(clone.querySelectorAll('.tag,.katex-mathml')).forEach(function(t){ t.parentNode.removeChild(t); });
+      var txt = (clone.textContent || '').replace(/\s+/g,' ').trim();
+      if(txt.length > 42) txt = txt.slice(0, 41) + '…';
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = txt || h.id;
+      a.className = (h.tagName === 'H2') ? 'lv2' : 'lv3';
+      a.title = txt;
+      li.appendChild(a); list.appendChild(li); links.push(a);
+    });
+
+    var cur = -1;
+    function update(){
+      var best = -1;
+      for(var i=0;i<hs.length;i++){
+        if(hs[i].getBoundingClientRect().top <= 130) best = i;
+      }
+      if(best === cur) return;
+      if(cur >= 0) links[cur].classList.remove('active');
+      if(best >= 0){
+        links[best].classList.add('active');
+        var r = links[best].getBoundingClientRect();
+        var nr = nav.getBoundingClientRect();
+        if(r.top < nr.top + 48 || r.bottom > nr.bottom - 60){
+          nav.scrollTop += (r.top - nr.top) - nav.clientHeight/2;
+        }
+      }
+      cur = best;
+    }
+    function onScroll(){ update(); }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll, {passive:true});
+    update();
+
+    function closeDrawer(){
+      nav.classList.remove('open');
+      bd.classList.remove('show');
+      if(btn) btn.setAttribute('aria-expanded','false');
+    }
+    if(btn){
+      btn.addEventListener('click', function(){
+        var open = nav.classList.toggle('open');
+        bd.classList.toggle('show', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+    if(bd) bd.addEventListener('click', closeDrawer);
+    list.addEventListener('click', function(e){
+      if(e.target && e.target.tagName === 'A') closeDrawer();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeDrawer();
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot, 0); });
+  } else {
+    setTimeout(boot, 0);
+  }
+})();
+</script>
+</body>
+</html>
