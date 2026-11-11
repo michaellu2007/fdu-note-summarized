@@ -3440,6 +3440,58 @@ $\psi_t$ 的选择，本质上是<strong>在这两者之间选一个配比</stro
 <p>这也解释了为什么 PPO 一定要额外训一个 value 网络：只有 $V$ 存在，表里后两行才有定义。</p>
 </div>
 
+<div class="box read">
+<span class="label">「无偏 / 有偏」到底在说什么</span>
+
+<p><strong>只问一件事：重复很多次、取平均，能不能得到真值。</strong>别管公式，先看一组能心算的数字。</p>
+
+<p>假设某一步的 advantage 真值是 $A=0.3$（全知视角才知道，训练时看不到）。两种方法各重复 4 次：</p>
+
+<table>
+<thead><tr><th>估计方法</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">平均</th><th>判断</th></tr></thead>
+<tbody>
+<tr><td>A：采到底，再减 baseline</td><td class="num">0.10</td><td class="num">0.50</td><td class="num">0.20</td><td class="num">0.40</td><td class="num"><strong>0.30</strong></td><td>平均 = 真值 → <strong>无偏</strong></td></tr>
+<tr><td>B：只走一步，靠一个<strong>系统性低估 0.1</strong> 的 $V$ 补上未来</td><td class="num">0.19</td><td class="num">0.21</td><td class="num">0.20</td><td class="num">0.20</td><td class="num"><strong>0.20</strong></td><td>平均歪了 0.1 → <strong>有偏</strong></td></tr>
+</tbody>
+</table>
+
+<p>两行数字的性格<strong>完全相反</strong>：</p>
+
+<ul>
+<li><strong>A 抖，但平均对。</strong>单次看 0.10 和 0.50 都离 0.3 很远，可多采几次取平均，噪声会互相抵消。
+这个毛病<strong>能靠「多采样」救回来</strong>。</li>
+<li><strong>B 稳，但平均错。</strong>四个数几乎一模一样，却齐刷刷偏了 0.1。
+<strong>重复一万次还是 0.20</strong>——歪是系统性的，采多少次都救不回来。
+这就是「有偏」真正麻烦的地方：<em>它不是不准，是稳定地不准，而且你从数据里看不出来</em>。</li>
+</ul>
+
+<p>写成符号只有一行（$\mathbb{E}$ 就是「重复很多次取平均」）：</p>
+
+$$
+\mathbb{E}[\hat A]=A\ \Rightarrow\ \text{无偏};
+\qquad
+\mathbb{E}[\hat A]=A+0.1\ \Rightarrow\ \text{有偏，偏差}=+0.1
+$$
+
+<div class="box warn">
+<span class="label">易错 · 在这张 $\psi_t$ 阶梯表里，偏差到底是谁带来的</span>
+<p><strong>不是 baseline，是「用 $V$ 的猜测替代真实未来」这件事。</strong></p>
+<ul>
+<li><strong>减 baseline 不引入偏差。</strong>$G_t-b(s_t)$ 仍然无偏，因为 $b(s_t)$ 只依赖状态、不依赖动作，
+$\mathbb{E}\big[b(s)\nabla\log\pi\big]=0$（本节开头那个零均值证明）。减它只是把「绝对水平」扣掉。</li>
+<li><strong>$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$ 才可能有偏。</strong>它只走一步就用 $V$ 补上整个未来。
+$V$ 若系统性低估 0.1，这 0.1 会留在结果里，<strong>不会被抵消</strong>。</li>
+<li><strong>$\lambda=1$ 时中间的 $V$ 全部抵消</strong>（望远镜求和），所以 $V$ 不准也不影响 → 无偏；
+代价是 $G_t$ 只有一次采样 → 抖。</li>
+</ul>
+<p>所以 GAE 的 $\lambda$ 调的是：<strong>$\lambda$ 小 = 多信 $V$（可能偏、但稳）；$\lambda=1$ = 完全不靠 $V$（不偏、但抖）。</strong>
+「用一点偏差换大量方差」说的就是这个交换。</p>
+</div>
+
+<p class="small"><strong>生活类比：</strong>秤没校准（每次都少 1 斤）是<strong>有偏</strong>；手抖（有时多有时少）是<strong>无偏但方差大</strong>。
+称 10 次取平均：手抖能抵掉，没校准抵不掉。</p>
+</div>
+
 <div class="box gold">
 <span class="label">易错 · 有偏的估计也能用</span>
 <p>表里 2.5★ 那行<strong>有偏</strong>（$V$ 不准时，$r_t+\gamma V(s_{t+1})-V(s_t)$ 的期望不等于 $A$）。
