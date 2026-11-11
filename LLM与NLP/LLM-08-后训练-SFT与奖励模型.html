@@ -3954,6 +3954,8 @@ $$
 
 <h3 id="apA">A · 公式速查</h3>
 
+<h4>A.1 · 主线公式（SFT → RM → RL → DPO）</h4>
+
 <table>
 <thead><tr><th>名称</th><th>式子</th><th>备注</th></tr></thead>
 <tbody>
@@ -3983,6 +3985,62 @@ $$
 <tr><td>策略更新</td><td>$\theta\leftarrow\theta+\eta\,r\,\nabla_\theta\log P_\theta$</td><td>三步算法的第 3 步</td></tr>
 </tbody>
 </table>
+
+<h4>A.2 · PPO / clip 速查（ppo.pdf 更新版）</h4>
+
+<p>对应 §4.9。这一组是讲义更新版新补的公式，考场上最容易要「写一行出来」的就是前 5 行。</p>
+
+<table>
+<thead><tr><th>名称</th><th>式子</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>重要性采样比 $\rho$</td><td>$\rho_t(\theta)=\dfrac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}=\exp\!\big(\ell_t(\theta)-\ell_t^{\text{old}}\big)$</td><td>分母是<strong>采数据时冻结的旧策略</strong>；右端是代码里更稳的写法</td></tr>
+<tr><td>$\operatorname{clip}$ 定义</td><td>$\operatorname{clip}(z,a,b)=a\ (z&lt;a);\ \ z\ (a\le z\le b);\ \ b\ (z&gt;b)$</td><td>把 $z$ 卡进 $[a,b]$；此处 $a=1-\epsilon,\ b=1+\epsilon$</td></tr>
+<tr><td>PPO <strong>分情况</strong>写法</td><td>$A&gt;0:\ \min(\rho,1+\epsilon)A$；　$A&lt;0:\ \max(\rho,1-\epsilon)A$</td><td>好动作只卡<strong>上界</strong>，坏动作只卡<strong>下界</strong></td></tr>
+<tr><td>PPO <strong>统一</strong>目标</td><td>$L^{\text{CLIP}}=\mathbb{E}_t\Big[\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)\Big]$</td><td>$\hat A$ 的符号翻转大小关系，一个 $\min$ 自动完成分工</td></tr>
+<tr><td>被裁掉的两格</td><td>$\hat A&gt;0,\ \rho&gt;1+\epsilon\Rightarrow L=(1+\epsilon)\hat A,\ \nabla=0$；<br>$\hat A&lt;0,\ \rho&lt;1-\epsilon\Rightarrow L=(1-\epsilon)\hat A,\ \nabla=0$</td><td><strong>单向刹车</strong>：只刹「已经改够了」的方向；其余区间外照常更新（完整 3×3 表见 §4.9）</td></tr>
+<tr><td>逐 token 奖励</td><td>$r_{i,t}=-\beta\big(\ell^{\text{old}}_{i,t}-\ell^{\text{ref}}_{i,t}\big)$，<br>$r_{i,T}=-\beta\big(\ell^{\text{old}}_{i,T}-\ell^{\text{ref}}_{i,T}\big)+r^{\text{RM}}_\phi(x_i,y_i)$</td><td>每步扣 KL 罚金，<strong>只有末步</strong>加奖励模型的分</td></tr>
+<tr><td>一次迭代的量</td><td>$G_{i,t}=\sum_{u=t}^{T}r_{i,u}$，$\ \hat A_{i,t}=G_{i,t}-V_\psi(s_{i,t})$</td><td>$\hat A$ 正是 $\psi_t$ 阶梯表的 2★ 行</td></tr>
+<tr><td>总损失</td><td>$L^{\text{PPO}}=-L^{\text{CLIP}}+c_V L_V-c_H L_H$</td><td>策略<strong>最大化</strong>、价值<strong>最小化</strong>、熵<strong>最大化</strong></td></tr>
+<tr><td>价值损失</td><td>$L_V=\dfrac{1}{T}\sum_t\big(V_\psi(s_t)-G_t\big)^2$</td><td>回归；与策略头共享主干</td></tr>
+<tr><td>熵项</td><td>$L_H=\mathbb{E}\big[-\sum_a\pi_\theta\log\pi_\theta\big]$</td><td>前面是<strong>负号</strong>：把熵推大以保持探索</td></tr>
+<tr><td>$\epsilon$</td><td>常取 $0.2$</td><td>概率比最多变 $\pm20\%$</td></tr>
+</tbody>
+</table>
+
+<div class="box key">
+<span class="label">最该背的三行</span>
+<ol>
+<li>$\rho=\pi_\theta/\pi_{\theta_{\text{old}}}$——分母永远是<strong>冻结的快照</strong>。</li>
+<li>$L^{\text{CLIP}}=\mathbb{E}\big[\min(\rho\hat A,\ \operatorname{clip}(\rho,1\pm\epsilon)\hat A)\big]$——一个 $\min$ 管住两个方向。</li>
+<li>$L^{\text{PPO}}=-L^{\text{CLIP}}+c_V L_V-c_H L_H$——两个负号、一个正号，别记反。</li>
+</ol>
+</div>
+
+<h4>A.3 · 同批补进来的基础公式（ppo.pdf 两版）</h4>
+
+<p>这些是 §4.2 / §4.5 / §4.6 / §4.9 里新加的，A.1 那张表没有收。</p>
+
+<table>
+<thead><tr><th>名称</th><th>式子</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>MDP 六元组</td><td>$M=(\mathcal{S},\ \mathcal{A},\ P,\ r,\ d_0,\ \gamma)$</td><td>LLM 里 $P$ 是确定性拼接、$\gamma$ 常取 1</td></tr>
+<tr><td>轨迹概率</td><td>$p_\theta(\tau)=d_0(s_0)\prod_t\pi_\theta(a_t\mid s_t)\,P(s_{t+1}\mid s_t,a_t)$</td><td>取 $\log$ 后连乘变连加</td></tr>
+<tr><td><strong>只剩策略项</strong></td><td>$\nabla_\theta\log p_\theta(\tau)=\sum_t\nabla_\theta\log\pi_\theta(a_t\mid s_t)$</td><td>$d_0$ 与 $P$ 不含 $\theta$，梯度为 0</td></tr>
+<tr><td>因果性</td><td>$\mathbb{E}[h_t\mid H_t]=0\ \Rightarrow\ \mathbb{E}[\gamma^{u-t}r_u h_t]=0\quad(u&lt;t)$</td><td>过去的奖励不进这一步的权重</td></tr>
+<tr><td>轨迹版策略梯度</td><td>$\nabla_\theta J=\mathbb{E}\big[\sum_t\gamma^t G_t\,\nabla_\theta\log\pi_\theta\big]$</td><td>从「整条一个分」到「逐 token 一个权重」</td></tr>
+<tr><td>$Q$ 函数</td><td>$Q^\pi(s,a)=\mathbb{E}_\pi\big[G_t\mid s,a\big]$</td><td>比 $V$ 多一个「先做 $a$」</td></tr>
+<tr><td>$V$–$Q$–$A$ 三式</td><td>$V^\pi(s)=\sum_a\pi(a\mid s)Q^\pi(s,a)$，$ \ A^\pi=Q^\pi-V^\pi$</td><td>LLM 里 $Q(s_t,a_t)=V(s_{t+1})$</td></tr>
+<tr><td>Return 递推</td><td>$G_t=r_t+\gamma G_{t+1}$</td><td>TD 误差 / GAE 全部 bootstrapping 的前提</td></tr>
+<tr><td>TD 误差</td><td>$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$</td><td>$\psi_t$ 阶梯表 2.5★，<strong>有偏</strong>但方差小</td></tr>
+<tr><td>GAE</td><td>$\hat A_t=\sum_l(\gamma\lambda)^l\delta_{t+l}$</td><td>$\lambda=0$ 一步 TD；$\lambda=1$ 得 $G_t-V(s_t)$</td></tr>
+<tr><td>$\psi_t$ 六种取法</td><td>$R(\tau)\ 5★\to G_t\ 4★\to Q\ 3★\to G_t-b\ 2★\to \delta_t\ 2.5★\to A\ 1★$</td><td>方差阶梯，★ 越多方差越大；完整表见 §4.9</td></tr>
+<tr><td>TRPO 目标</td><td>$\max_\theta L(\theta,\theta_t)=\mathbb{E}_{s,a\sim\pi_{\theta_t}}[\rho A]$，s.t. $\mathrm{KL}(\pi_\theta\|\pi_{\theta_t})\le\epsilon$</td><td>$\rho$ 的出处；PPO 用 clip 把它改成一阶</td></tr>
+<tr><td>RLOO 留一</td><td>$b(s,a_k)=\dfrac{1}{K-1}\sum_{i\ne k}R(s,a_i)$</td><td>排除第 $k$ 条自己，满足「$b$ 不依赖动作」</td></tr>
+</tbody>
+</table>
+
+<p class="small">A.1 是主线公式（SFT → RM → RL → DPO），A.2 是 PPO/clip，A.3 是同一批讲义补进来的基础量。
+考前数值请看 <a href="#apF">附录 F</a>，真题风格练习请看 <a href="#apK">附录 K</a>。</p>
 
 <h3 id="apB">B · 符号表</h3>
 
