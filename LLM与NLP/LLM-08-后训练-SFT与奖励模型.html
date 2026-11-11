@@ -313,7 +313,7 @@ SFT 的信号是示范，RM 的信号是比较，RL 的信号是那个打分器�
     <li><a href="#s46">4.6 REINFORCE：log-derivative trick</a></li>
     <li><a href="#s47">4.7 三步算法与实践细节</a></li>
     <li><a href="#s48">4.8 KL 约束与闭式解</a></li>
-    <li><a href="#s49">4.9 PPO 与 GRPO：从 ψ_t 到 clip</a></li>
+    <li><a href="#s49">4.9 ④ PPO（基于 TRPO）与 ⑤ GRPO</a></li>
     <li><a href="#s410">4.10 DPO：把奖励模型隐式化</a></li>
     <li><a href="#s411">4.11 可验证奖励：ground truth 回来的时候</a></li>
   </ol>
@@ -2202,6 +2202,54 @@ RM 的分数也就失去意义。这就是 §3.7 那个 reward hacking 的本质
 <p><strong>有了分数，怎么让模型自己变得更好？</strong><br>这一部分先讲清「RL 和前面三步到底差在哪」（4.1），再一步步推公式。看不懂 4.6 的推导，可以先只看 4.1 和 4.7 的三步算法。</p>
 </div>
 
+<div class="box read">
+<span class="label">本节路线图：整个 §4 只在解同一个问题</span>
+
+<p>先把目标写死，后面所有算法都只是<strong>它的不同解法</strong>：</p>
+
+$$
+\max_\theta J(\theta)=\mathbb{E}_{x\sim\mathcal{D},\ y\sim\pi_\theta(\cdot\mid x)}\big[r(x,y)\big]
+$$
+
+<p>老师讲的是「<strong>解这个最优解有几种办法</strong>」，顺序是一条主链 + 一条旁路：</p>
+
+<table>
+<thead><tr><th></th><th>办法</th><th>它在解什么 / 关键式子</th><th>本文位置</th></tr></thead>
+<tbody>
+<tr><td><strong>①</strong></td><td><strong>REINFORCE</strong></td><td>log-derivative trick 把 $\nabla_\theta J$ 写成期望，直接采样估计；再靠 baseline 压方差</td><td>§4.6、§4.7 前</td></tr>
+<tr><td><strong>②</strong></td><td><strong>TRPO</strong></td><td>给更新加信任域硬约束：$\max_\theta\mathbb{E}\big[\rho A(s,a)\big]$ s.t. $\mathrm{KL}\le\epsilon$</td><td>§4.7 末</td></tr>
+<tr><td><strong>③</strong></td><td><strong>Natural policy gradient</strong></td><td>「步长」不该用参数空间的欧氏距离量，要用 KL / Fisher 信息矩阵量；这是 ② 的理论根基</td><td>§4.7 末</td></tr>
+<tr><td><strong>④</strong></td><td><strong>PPO</strong>（基于 TRPO）</td><td>保留 TRPO 的 $\rho A$ 目标，把<strong>KL 硬约束</strong>换成 <strong>clip</strong>：$L^{\text{CLIP}}=\mathbb{E}[\min(\rho\hat A,\operatorname{clip}(\rho,1\pm\epsilon)\hat A)]$</td><td>§4.9</td></tr>
+<tr><td>⑤</td><td>GRPO / RLOO</td><td>不动目标，只换 baseline $b$ 的取法，省掉 value 网络</td><td>§4.9</td></tr>
+<tr><td>旁路</td><td>DPO</td><td>KL 约束有闭式解 $\pi^\star\propto\pi_{\text{ref}}e^{r/\beta}$，于是直接对策略做分类损失，<strong>根本不做 RL 采样</strong></td><td>§4.8 → §4.10</td></tr>
+</tbody>
+</table>
+
+<div class="box gold">
+<span class="label">三条容易搞反的因果（务必记住）</span>
+<ol>
+<li><strong>$\rho\,A(s,a)$ 是 TRPO 里就有的</strong>——重要性采样比乘优势，用来「拿旧策略采的数据评新策略」。不是 PPO 引入的。</li>
+<li><strong>clip 只出现在 PPO</strong>。TRPO 里没有 clip，它用的是 KL 距离的<strong>硬约束</strong>（要解约束优化、算 Fisher 矩阵）。</li>
+<li><strong>PPO 是 based on TRPO 的</strong>：目标函数照抄 $\rho A$，只把「别走太远」这件事从硬约束改写成软裁剪，于是二阶方法变成一阶反向传播。</li>
+</ol>
+</div>
+
+<p class="small">关于 ② 与 ③ 的先后：板书写作顺序是 <em>natural policy gradient → TRPO</em>（先给「用 KL 量距离」的动机，再整理成带约束的可优化形式）；
+课上若先报 TRPO 再回头讲自然梯度，两者仍是同一条链，公式与结论完全一致。本文按老师口头顺序排列，
+但在 §4.7 末把两者的推导关系一并写清。</p>
+
+<p><strong>为什么 DPO 排在最后：</strong>它不是「解 $\nabla_\theta J$ 的第 ④ 种办法」，而是绕开了整件事。
+把它放在主链之后，才不会误以为 DPO 和 PPO 是同一层级的竞争方案。</p>
+
+<div class="box key">
+<span class="label">读这一节的正确顺序</span>
+<p>目标（4.4）→ $G/V/A$（4.5）→ <strong>① REINFORCE</strong>（4.6、4.7）→
+<strong>② TRPO → ③ natural PG</strong>（4.7 末）→ KL 闭式解（4.8）→
+<strong>④ PPO / ⑤ GRPO</strong>（4.9）→ <strong>旁路 DPO</strong>（4.10）→ RLVR（4.11）。</p>
+<p>一句话：<strong>① 直接估梯度，②③ 给更新加信任域，PPO 把硬约束变便宜，GRPO 换参照系，DPO 不做 RL。</strong></p>
+</div>
+</div>
+
 <p>板书上这一部分叫 <em>General RL Algo</em>。前两级都是「拟合一个数据集」，这一级换成「优化一个期望」——
 而且数据<strong>由模型自己在训练过程中生成</strong>。这个区别比损失函数长什么样重要得多。</p>
 
@@ -3031,6 +3079,63 @@ $\beta$ 大则模型不敢动，$\beta$ 小则很快跑飞（§4.8 会给出它�
 <p>这就是「只会说对的」和「知道什么是不对的」的差别。而且注意右边四条的权重之和是 $0$：
 整组的平均梯度为零，只有<em>相对</em>好坏在起作用——这也解释了为什么归一化之后 $\mu$ 取多少不重要。</p>
 
+<h4>②③ 解 $\nabla_\theta J$ 的另两种办法：TRPO 与 natural policy gradient <span class="tag s">板书</span></h4>
+
+<p>① REINFORCE 解决了「梯度怎么估」，但<strong>没管「一步能走多远」</strong>：
+朴素更新 $\theta_{t+1}\leftarrow\theta_t+\alpha\nabla_\theta J(\theta_t)$ 里 $\alpha$ 是个固定的数，
+而「参数走多远」和「策略变多少」不是一回事——有些方向上参数动一点点，概率分布就翻天了。
+一步迈大了策略直接崩，而且 on-policy 采的数据全是废的、没法回滚。</p>
+
+<p><strong>② TRPO（Trust Region Policy Optimization）</strong>的做法：给更新加一个<strong>信任域硬约束</strong>，
+并用<strong>重要性采样比乘优势</strong>作为目标：</p>
+
+$$
+\max_\theta\ L(\theta,\theta_t)
+=\mathbb{E}_{s,a\sim\pi_{\theta_t}}\Big[\underbrace{\frac{\pi_\theta(a\mid s)}{\pi_{\theta_t}(a\mid s)}}_{\rho}\,A^{\pi_{\theta_t}}(s,a)\Big]
+\qquad\text{s.t.}\qquad
+D_{\mathrm{KL}}\big(\pi_\theta\,\|\,\pi_{\theta_t}\big)\le\epsilon
+$$
+
+<div class="box warn">
+<span class="label">易错 · $\rho\,A(s,a)$ 是 TRPO 就有的，clip 不是</span>
+<p>$\rho=\pi_\theta/\pi_{\theta_t}$ 为什么必须存在：TRPO 用的是<strong>旧策略采的数据</strong>（$\pi_{\theta_t}$），
+却要评估<strong>新策略</strong>的期望，两者不是一个分布，所以乘一个重要性采样纠正权重。
+$\rho=1$ 表示新旧一样，$\rho=1.5$ 表示新策略给这个动作的概率是旧的 1.5 倍。</p>
+<p>同时它也解释了 $\rho$ 不能太大：重要性采样的方差随 $\rho$ 爆炸，偏离 1 太远估计就不可信。</p>
+<p><strong>TRPO 里没有 clip</strong>——它限制步长靠的是那个 $\mathrm{KL}\le\epsilon$ 的<strong>硬约束</strong>，
+解起来要 Fisher 矩阵 + 共轭梯度，是二阶方法。clip 要等到 ④ PPO 才出现（§4.9）。</p>
+</div>
+
+<p><strong>③ Natural policy gradient</strong> 回答的是 ② 背后那个更基本的问题：
+<em>「步长」到底该用什么度量？</em>普通梯度默认用参数空间的欧氏距离，但参数空间不是策略空间。
+自然梯度改用 <strong>KL 距离 / Fisher 信息矩阵</strong>量距离：</p>
+
+$$
+\max_{\theta_{t+1}}\ J(\theta_t)+(\theta_{t+1}-\theta_t)^{\top}\nabla_\theta J(\theta_t)
+\qquad\text{s.t.}\qquad
+\mathbb{E}_{s\sim\pi_{\theta_t}}\Big[D_{\mathrm{KL}}\big(\pi_{\theta_{t+1}}(\cdot\mid s)\,\|\,\pi_{\theta_t}(\cdot\mid s)\big)\Big]\le\epsilon
+$$
+
+<p>读法：<strong>在「策略变化不超过 $\epsilon$」的前提下，尽量让目标变大。</strong>
+目标那一项是 $J$ 的一阶展开——约束已经限制了步长，一阶近似就够用。
+等价地可以写成 $\tilde\nabla_\theta J=F^{-1}\nabla_\theta J$，其中 $F$ 是 Fisher 信息矩阵。
+<strong>TRPO 就是把这个思想整理成能实际优化的约束问题</strong>，所以两者是同一条链：
+③ 给度量，② 给可解的形式。</p>
+
+<table>
+<thead><tr><th>办法</th><th>怎么限制「别走太远」</th><th>目标函数</th><th>优化难度</th></tr></thead>
+<tbody>
+<tr><td>① 朴素策略梯度 / REINFORCE</td><td><strong>不限制</strong>，靠调学习率</td><td>$\mathbb{E}[r\nabla\log\pi]$</td><td>一阶，简单但容易崩</td></tr>
+<tr><td>③ Natural policy gradient</td><td>用 KL / Fisher 度量距离（$\tilde\nabla J=F^{-1}\nabla J$）</td><td>$J$ 的一阶展开</td><td>要算 Fisher 矩阵</td></tr>
+<tr><td><strong>② TRPO</strong></td><td>$\mathrm{KL}\le\epsilon$ <strong>硬约束</strong></td><td>$\mathbb{E}[\rho A]$</td><td>二阶（共轭梯度）</td></tr>
+<tr><td>④ PPO（§4.9）</td><td>把硬约束换成 <strong>clip</strong></td><td>$\mathbb{E}[\min(\rho\hat A,\operatorname{clip}(\rho)\hat A)]$</td><td>一阶，只要反向传播</td></tr>
+</tbody>
+</table>
+
+<p><strong>到 ②③ 为止，问题还没解决干净：</strong>它们都是二阶方法，工程上太重。
+下一步 ④ PPO 做的事，就是<strong>基于 TRPO</strong> 保留 $\rho A$ 这个目标，
+只把那个难解的 KL 硬约束换成软裁剪——见 §4.9 开头。</p>
+
 <h3 id="s48">4.8 KL 约束与闭式解 <span class="tag a">推导</span></h3>
 
 <p>上面那个「Total = A − β·KL」不是随手加的。它来自一个有明确解的目标：</p>
@@ -3153,7 +3258,18 @@ $$
 给定 $\pi^\star$ 就能写出 $r$，给定 $r$ 就能写出 $\pi^\star$。所以「学一个奖励模型」和「直接学策略」在信息上是等价的——
 这就是 DPO 的出发点。</p>
 
-<h3 id="s49">4.9 PPO 与 GRPO：从 $\psi_t$ 到 clip <span class="tag s">板书</span></h3>
+<h3 id="s49">4.9 ④ PPO（基于 TRPO）与 ⑤ GRPO <span class="tag s">板书</span></h3>
+
+<div class="box key">
+<span class="label">本小节的结构（算法顺序见 §4 开头的路线图）</span>
+<p>开头两屏是 <strong>① REINFORCE 的收尾</strong>：把「梯度权重 $\psi_t$ 该取什么」一次列全
+（baseline 的零均值证明、方差对照、$\psi_t$ 六种取法）。它是 §4.6–4.7 的延续，
+服务于后面<strong>所有</strong>算法，不是 PPO 独有的。</p>
+<p>从「<strong>④ PPO 是基于 TRPO 的</strong>」那一段起，才正式进入 PPO 与 GRPO。
+②③ TRPO / natural policy gradient 的推导已移到 §4.7 末，紧跟 REINFORCE。</p>
+</div>
+
+
 
 <p>回到 §4.6 的梯度。它有一个致命的实践问题：方差太大。所有后续算法都在回答同一个问题——
 <strong>用什么当 $b$，使得 $\mathbb{E}_{a\sim\pi}\big[(r-b)\nabla_\theta\log\pi\big]$ 与
@@ -3331,63 +3447,41 @@ $\psi_t$ 的选择，本质上是<strong>在这两者之间选一个配比</stro
 这就是 GAE 里 $\lambda$ 那个旋钮在做的事——<strong>用一点偏差换大量方差</strong>。</p>
 </div>
 
-<h4>clip 是从哪来的：自然梯度 → TRPO → PPO <span class="tag s">板书</span></h4>
+<h4>④ PPO 是基于 TRPO 的：clip 只在这里才出现 <span class="tag s">板书</span></h4>
 
-<p>上面所有讨论都假设「梯度指哪就往哪走一步」。但<strong>步长多大</strong>从来没管过。
-板书在最后写了一段「Reg policy gradient」，讲的正是这件事——<strong>PPO 为什么要 clip，clip 之前有什么</strong>。</p>
-
-<p><strong>问题：</strong>朴素更新 $\theta_{t+1}\leftarrow\theta_t+\alpha\nabla_\theta J(\theta_t)$ 里，$\alpha$ 是一个固定的数。
-但在策略空间里，「参数走多远」和「策略变多少」<strong>不是一回事</strong>——有些方向上参数动一点点，概率分布就翻天了。
-一步迈大了，策略直接崩，而且<strong>崩了之后采出来的数据全是废的</strong>（on-policy，没法回滚）。</p>
-
-<p><strong>自然梯度的做法</strong>：把「别走太远」写成约束，而且用 <strong>KL 距离</strong>量「远」，不用参数空间的欧氏距离。</p>
-
-$$
-\max_{\theta_{t+1}}\ J(\theta_t)+(\theta_{t+1}-\theta_t)^{\top}\nabla_\theta J(\theta_t)
-\qquad\text{s.t.}\qquad
-\mathbb{E}_{s\sim\pi_{\theta_t}}\Big[D_{\mathrm{KL}}\big(\pi_{\theta_{t+1}}(\cdot\mid s)\,\|\,\pi_{\theta_t}(\cdot\mid s)\big)\Big]\le\epsilon
-$$
-
-<p>读法：<strong>在「策略变化不超过 $\epsilon$」的前提下，尽量让目标变大。</strong>目标那一项是 $J$ 的一阶展开——
-因为约束已经限制了步长，一阶近似就够用了。</p>
-
-<p><strong>TRPO</strong>（Trust Region Policy Optimization）把它整理成可以直接优化的形式：</p>
-
-$$
-\max_\theta\ L(\theta,\theta_t)\quad\text{s.t.}\quad D_{\mathrm{KL}}\big(\pi_\theta\,\|\,\pi_{\theta_t}\big)\le\epsilon,
-\qquad
-L(\theta,\theta_t)=\mathbb{E}_{s,a\sim\pi_{\theta_t}}\left[\frac{\pi_\theta(a\mid s)}{\pi_{\theta_t}(a\mid s)}\,A(s,a)\right]
-$$
+<p>§4.7 末的 TRPO 已经给出了两样东西：<strong>目标 $\mathbb{E}[\rho A(s,a)]$</strong> 和
+<strong>约束 $\mathrm{KL}\le\epsilon$</strong>。PPO 完全继承前者，只改后者。</p>
 
 <div class="box key">
-<span class="label">$\rho$ 就是从这里来的</span>
-<p>$L(\theta,\theta_t)$ 里那个比值 $\dfrac{\pi_\theta(a\mid s)}{\pi_{\theta_t}(a\mid s)}$，就是后面 clip 里的 $\rho$。</p>
-<p>它为什么必须存在：TRPO 用的是<strong>旧策略采的数据</strong>（$\pi_{\theta_t}$ 采的），却要评估<strong>新策略</strong>的期望。
-两者不是一个分布，所以要乘一个<strong>重要性采样</strong>的纠正权重。$\rho=1$ 表示新旧一样，$\rho=1.5$ 表示新策略给这个动作的概率是旧的 1.5 倍。</p>
-<p>顺便解释了为什么 $\rho$ 不能太大：重要性采样的方差随 $\rho$ 爆炸，$\rho$ 偏离 1 太远，估计就完全不可信了。</p>
+<span class="label">PPO 做了什么 / 没做什么</span>
+<ul>
+<li><strong>照抄</strong>：重要性比 $\rho=\pi_\theta/\pi_{\theta_{\text{old}}}$ 与优势 $\hat A$ 相乘的目标。</li>
+<li><strong>换掉</strong>：把「解一个带 KL 硬约束的二阶优化」改成「把 $\rho$ 裁进 $[1-\epsilon,1+\epsilon]$ 的一阶目标」。</li>
+<li><strong>新出现</strong>：<code>clip</code>。它在 TRPO 里<strong>不存在</strong>，是 PPO 的发明。</li>
+</ul>
 </div>
 
-<p><strong>PPO</strong> 嫌 TRPO 太麻烦：那个约束优化要算 Fisher 矩阵、要解二次规划，是二阶方法，工程上很重。
-于是它把「硬约束」换成「软惩罚」——用 clip 把 $\rho$ 卡在 $[1-\epsilon,1+\epsilon]$ 里，
-变成一个普通的、能一阶优化的目标：</p>
+<p>动机只有两条（板书原话）：<strong>① 朴素策略梯度对步长极其敏感；② TRPO 解决了①，但代价是二阶方法</strong>
+（要算 Fisher 矩阵、解约束优化）。PPO 要的是「TRPO 的效果 + 一阶的代价」——
+也就是板书那句 <em>directly inserts the constraint into</em>：把约束塞进目标函数本身。</p>
 
 $$
-\mathcal{L}^{\text{CLIP}}(\theta)=\mathbb{E}\Big[\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)\Big]
+\mathcal{L}^{\text{CLIP}}(\theta)=\mathbb{E}\Big[\min\big(\rho\hat A,\ \operatorname{clip}(\rho,1-\epsilon,1+\epsilon)\hat A\big)\Big],
+\qquad
+\rho_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}
 $$
-
-<p>三者关系一句话说完：</p>
 
 <table>
-<thead><tr><th>算法</th><th>怎么限制「别走太远」</th><th>优化难度</th></tr></thead>
+<thead><tr><th>算法</th><th>怎么限制「别走太远」</th><th>目标里有没有 clip</th><th>优化难度</th></tr></thead>
 <tbody>
-<tr><td>朴素策略梯度</td><td><strong>不限制</strong>，靠调学习率</td><td>一阶，简单但容易崩</td></tr>
-<tr><td>自然梯度 / TRPO</td><td>KL 距离的<strong>硬约束</strong> $\le\epsilon$</td><td>二阶（Fisher 矩阵 + 共轭梯度）</td></tr>
-<tr><td><strong>PPO</strong></td><td>把 $\rho$ 裁到 $[1-\epsilon,1+\epsilon]$，<strong>超了就梯度归零</strong></td><td>一阶，只要反向传播</td></tr>
+<tr><td>朴素策略梯度 / REINFORCE</td><td>不限制，靠调学习率</td><td>无</td><td>一阶，但容易崩</td></tr>
+<tr><td><strong>TRPO</strong></td><td>$\mathrm{KL}\le\epsilon$ <strong>硬约束</strong></td><td><strong>无</strong>（已有 $\rho A$）</td><td>二阶（Fisher + 共轭梯度）</td></tr>
+<tr><td><strong>PPO</strong>（based on TRPO）</td><td>把 $\rho$ 裁到 $[1-\epsilon,1+\epsilon]$，超了就梯度归零</td><td><strong>有</strong></td><td>一阶，只要反向传播</td></tr>
 </tbody>
 </table>
 
 <p>所以：<strong>TRPO 是「解一个带约束的优化」，PPO 是「把它改写成不带约束、能一阶优化的形式」。</strong>
-clip 不是拍脑袋的技巧，它是 KL 约束的一阶近似——这就是为什么 $\epsilon$ 常取 0.2（对应「概率比最多变 ±20%」）。</p>
+clip 不是拍脑袋的技巧，它是 KL 约束的一阶近似——这就是 $\epsilon$ 常取 0.2（概率比最多变 ±20%）的来历。</p>
 
 <div class="box read">
 <span class="label">GAE 和 clip 怎么读</span>
@@ -3519,17 +3613,7 @@ $0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$。也就是说「<strong>大约�
 
 <h4>把 clip 写成公式：两种等价写法 <span class="tag s">板书</span></h4>
 
-<p>板书把「为什么还需要 PPO」写成两条：</p>
-
-<ol>
-<li><strong>朴素策略梯度对步长极其敏感。</strong>学习率大一点，策略就崩；小一点，训不动。而且崩了没法回滚。</li>
-<li><strong>TRPO 解决了这件事，但代价是二阶方法。</strong>要算 Fisher 矩阵、解约束优化，工程上太重。</li>
-</ol>
-
-<p>PPO 要的是：<strong>TRPO 的效果 + 一阶方法的代价。</strong>做法是「直接把约束塞进目标函数里」——
-这也是板书那句 <em>directly inserts the constraint into</em> 的意思。</p>
-
-<p>先把 $\operatorname{clip}$ 本身定义清楚：</p>
+<p>接着把上一段的 $\mathcal{L}^{\text{CLIP}}$ 写成能照着实现的形式。先定义 $\operatorname{clip}$ 本身：</p>
 
 $$
 \operatorname{clip}(z,a,b)=
@@ -3954,7 +4038,11 @@ $$
 
 <h3 id="apA">A · 公式速查</h3>
 
-<h4>A.1 · 主线公式（SFT → RM → RL → DPO）</h4>
+<h4>A.1 · 主线公式（按算法演进顺序）</h4>
+
+<p class="small">排列顺序即老师的主链：<strong>SFT → RM → ① REINFORCE → ⑤ GRPO → 旁路 DPO</strong>。
+② TRPO 与 ③ natural policy gradient 的式子见 <a href="#apA">A.3</a>，
+④ PPO / clip 的式子见 A.2（PPO 基于 TRPO，clip 只在 PPO 出现）。</p>
 
 <table>
 <thead><tr><th>名称</th><th>式子</th><th>备注</th></tr></thead>
@@ -3971,18 +4059,18 @@ $$
 <tr><td>差值</td><td>$\Delta=w^{\top}(h_w-h_l)$</td><td>偏置 $b$ 被约掉</td></tr>
 <tr><td>RM 损失</td><td>$-\log\sigma(\Delta)=\operatorname{softplus}(-\Delta)$</td><td>二分类逻辑回归</td></tr>
 <tr><td>RM 梯度</td><td>$-\sigma(-\Delta)\big(\nabla r_w-\nabla r_l\big)$</td><td>权重 = 判错的概率</td></tr>
+<tr><td>分数差的含义</td><td>$\Delta=\log\dfrac{p}{1-p}$</td><td>log odds of preference</td></tr>
 <tr><td>Plackett–Luce</td><td>$-\sum_k\big[r(y_k)-\log\sum_{j\ge k}e^{r(y_j)}\big]$</td><td>$K=2$ 退化为 BT</td></tr>
 <tr><td>RLHF 目标</td><td>$\max_\pi\mathbb{E}[r_\phi]-\beta\,\mathrm{KL}(\pi\|\pi_{\text{ref}})$</td><td>$\beta$ 控制漂移</td></tr>
-<tr><td>最优策略</td><td>$\pi^\star\propto\pi_{\text{ref}}\exp(r/\beta)$</td><td>指数重加权</td></tr>
-<tr><td>反解奖励</td><td>$r=\beta\log\dfrac{\pi^\star}{\pi_{\text{ref}}}+\beta\log Z(x)$</td><td>DPO 的起点</td></tr>
-<tr><td>DPO 损失</td><td>$-\log\sigma\!\big(\beta\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}-\beta\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}\big)$</td><td>$Z(x)$ 约掉</td></tr>
-<tr><td>GRPO 优势</td><td>$\hat A_i=\dfrac{r_i-\operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})}$</td><td>组内归一化，无 value 网络</td></tr>
-<tr><td>分数差的含义</td><td>$\Delta=\log\dfrac{p}{1-p}$</td><td>log odds of preference</td></tr>
 <tr><td>Return</td><td>$G_t=\sum_{k=t}^{T}r_k$</td><td>从这一步起的全部奖励</td></tr>
 <tr><td>Value</td><td>$V_\psi(s_t)=\mathbb{E}[G_t\mid s_t]$</td><td>「还能拿多少分」的估计</td></tr>
 <tr><td>Advantage</td><td>$\hat A_t=G_t-V_\psi(s_t)$</td><td>$A&gt;0$ 比平常好</td></tr>
 <tr><td>REINFORCE</td><td>$\nabla_\theta J=\mathbb{E}[\,r(x,y)\nabla_\theta\log P_\theta(y\mid x)]$</td><td>log-derivative trick 的结果</td></tr>
 <tr><td>策略更新</td><td>$\theta\leftarrow\theta+\eta\,r\,\nabla_\theta\log P_\theta$</td><td>三步算法的第 3 步</td></tr>
+<tr><td>GRPO 优势</td><td>$\hat A_i=\dfrac{r_i-\operatorname{mean}(r_{1:G})}{\operatorname{std}(r_{1:G})}$</td><td>组内归一化，无 value 网络</td></tr>
+<tr><td>最优策略</td><td>$\pi^\star\propto\pi_{\text{ref}}\exp(r/\beta)$</td><td>指数重加权</td></tr>
+<tr><td>反解奖励</td><td>$r=\beta\log\dfrac{\pi^\star}{\pi_{\text{ref}}}+\beta\log Z(x)$</td><td>DPO 的起点</td></tr>
+<tr><td>DPO 损失</td><td>$-\log\sigma\!\big(\beta\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}-\beta\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}\big)$</td><td>$Z(x)$ 约掉</td></tr>
 </tbody>
 </table>
 
@@ -4034,7 +4122,7 @@ $$
 <tr><td>TD 误差</td><td>$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$</td><td>$\psi_t$ 阶梯表 2.5★，<strong>有偏</strong>但方差小</td></tr>
 <tr><td>GAE</td><td>$\hat A_t=\sum_l(\gamma\lambda)^l\delta_{t+l}$</td><td>$\lambda=0$ 一步 TD；$\lambda=1$ 得 $G_t-V(s_t)$</td></tr>
 <tr><td>$\psi_t$ 六种取法</td><td>$R(\tau)\ 5★\to G_t\ 4★\to Q\ 3★\to G_t-b\ 2★\to \delta_t\ 2.5★\to A\ 1★$</td><td>方差阶梯，★ 越多方差越大；完整表见 §4.9</td></tr>
-<tr><td>TRPO 目标</td><td>$\max_\theta L(\theta,\theta_t)=\mathbb{E}_{s,a\sim\pi_{\theta_t}}[\rho A]$，s.t. $\mathrm{KL}(\pi_\theta\|\pi_{\theta_t})\le\epsilon$</td><td>$\rho$ 的出处；PPO 用 clip 把它改成一阶</td></tr>
+<tr><td>TRPO 目标</td><td>$\max_\theta L(\theta,\theta_t)=\mathbb{E}_{s,a\sim\pi_{\theta_t}}[\rho A]$，s.t. $\mathrm{KL}(\pi_\theta\|\pi_{\theta_t})\le\epsilon$</td><td>$\rho A$ 在 TRPO 里就有；PPO 基于它，用 clip 把硬约束改成一阶</td></tr>
 <tr><td>RLOO 留一</td><td>$b(s,a_k)=\dfrac{1}{K-1}\sum_{i\ne k}R(s,a_i)$</td><td>排除第 $k$ 条自己，满足「$b$ 不依赖动作」</td></tr>
 </tbody>
 </table>
@@ -4720,7 +4808,7 @@ $\beta$ 越大，同样的比值差就被判为越大的 margin，模型越<stro
 从 MDP 一路推到 PPO 与 GRPO）。它的内容已按主题并入正文，不再单列：
 MDP 六元组与轨迹 → §4.2；$Q$ 函数与 $V=\sum_a\pi Q$ → §4.5；
 轨迹写法、$\nabla\log p_\theta(\tau)$ 只剩策略项、因果性 → §4.6；
-$\psi_t$ 的六种取法（方差阶梯表）、自然梯度 → TRPO → PPO、RLOO → §4.9；
+② TRPO 与 ③ natural policy gradient → §4.7 末；$\psi_t$ 的六种取法（方差阶梯表）→ §4.9 开头；④ PPO / ⑤ GRPO / RLOO → §4.9；
 clip 的两种写法与九种情形、一次 PPO 迭代的五步流程 → §4.9。</p>
 
 <h3 id="apK">K · 从上一份真题推断下一次（题型分析 + 预测卷） <span class="tag n">补充</span></h3>
@@ -5436,7 +5524,9 @@ $0/1$ 一点也教不了。而且回来的 GT 是「答案对不对」，不是�
 
 <h4>K.6 · 覆盖对照表：哪个知识点在哪道题里</h4>
 
-<p>下表把正文每一节都列出来，标出它在哪套卷里被考到。<strong>没有落单的考点</strong>——
+<p>下表把正文每一节都列出来，标出它在哪套卷里被考到。
+<strong>算法按老师的主链排列：① REINFORCE → ② TRPO → ③ natural policy gradient → ④ PPO（基于 TRPO）→ ⑤ GRPO → 旁路 DPO</strong>，
+详见 §4 开头的路线图。<strong>没有落单的考点</strong>——
 如果某节只适合定性问，就放进下面的「Explain 专项」。</p>
 
 <table>
@@ -5464,11 +5554,11 @@ $0/1$ 一点也教不了。而且回来的 GT 是「答案对不对」，不是�
 <tr><td>§4.2</td><td>MDP 六元组、轨迹、状态/动作映射</td><td><strong>III-1(a)</strong></td></tr>
 <tr><td>§4.4</td><td>$\max\mathbb{E}[r]=\sum_y P_\theta r$</td><td>Explain 专项 6</td></tr>
 <tr><td>§4.5</td><td>Return / Value / <strong>Q</strong> / Advantage、$V=\sum\pi Q$</td><td><strong>III-1(a)(b)</strong>；I 卷 C1</td></tr>
-<tr><td>§4.6</td><td>log-derivative、轨迹分解、因果性</td><td><strong>II-2(a)</strong>（连乘取 log）；Explain 专项 7</td></tr>
-<tr><td>§4.7</td><td>三步算法、$k$ 条 rollout、$(r-\mu)/\sigma$、KL 惩罚</td><td><strong>K.3 题 3(a)</strong>；I 卷 C1/C2</td></tr>
-<tr><td>§4.8</td><td>KL 约束、闭式解、$Z(x)$</td><td><strong>III-3(a)</strong></td></tr>
-<tr><td>§4.9</td><td>$\psi_t$ 阶梯、GAE、TRPO、clip、PPO 迭代、GRPO、RLOO</td><td><strong>III-2</strong>；<strong>K.3 题 3(b)</strong>；Explain 专项 8</td></tr>
-<tr><td>§4.10</td><td>DPO 四次前向、隐式奖励、$\beta$</td><td><strong>III-3(b)</strong>；I 卷 C3；K.3 题 3(c)</td></tr>
+<tr><td>§4.6</td><td><strong>① REINFORCE</strong>：log-derivative、轨迹分解、因果性</td><td><strong>II-2(a)</strong>（连乘取 log）；Explain 专项 7</td></tr>
+<tr><td>§4.7</td><td>① 三步算法、$k$ 条 rollout、$(r-\mu)/\sigma$、KL 惩罚；<strong>② TRPO（$\rho A$ + KL 硬约束）、③ natural policy gradient</strong>（本节末）</td><td><strong>K.3 题 3(a)</strong>；I 卷 C1/C2；Explain 专项 8</td></tr>
+<tr><td>§4.8</td><td><strong>旁路起点</strong>：KL 约束、闭式解、$Z(x)$</td><td><strong>III-3(a)</strong></td></tr>
+<tr><td>§4.9</td><td>开头收尾 ① 的 baseline / $\psi_t$ 阶梯；<strong>④ PPO（基于 TRPO，clip 只在此出现）</strong>、GAE、PPO 迭代、<strong>⑤ GRPO / RLOO</strong></td><td><strong>III-2</strong>；<strong>K.3 题 3(b)</strong>；Explain 专项 8</td></tr>
+<tr><td>§4.10</td><td><strong>旁路</strong>：DPO 四次前向、隐式奖励、$\beta$</td><td><strong>III-3(b)</strong>；I 卷 C3；K.3 题 3(c)</td></tr>
 <tr><td>§4.11</td><td>RLVR、可验证奖励</td><td><strong>III-3(c)</strong></td></tr>
 <tr><td>附录 A / F / J</td><td>公式速查、数值表、20 道快问快答</td><td>全部卷的查表工具</td></tr>
 </tbody>
@@ -5513,12 +5603,12 @@ $p_\theta(\tau)=d_0(s_0)\prod\pi_\theta P$，取 log 后三项里 $d_0$ 与 $P$ 
 因果性用 $\mathbb{E}[h_t\mid H_t]=\sum_a\nabla\pi_\theta=0$ 证明 $u&lt;t$ 的奖励项期望为 0，
 于是权重从「整条一个 $R(\tau)$」变成「每个位置一个 $G_t$」——买到逐 token 的信号。</p>
 
-<p><strong>8. $\psi_t$ 阶梯表为什么 $A^\pi$ 是 1★、TD 误差却「有偏」？TRPO → PPO 改了什么？</strong>
+<p><strong>8. $\psi_t$ 阶梯表为什么 $A^\pi$ 是 1★、TD 误差却「有偏」？PPO 基于 TRPO 改了什么？</strong>
 越往下越少依赖「这一次采样」、越多依赖「$V$ 的估计」：采样准但吵，$V$ 安静但可能错。
 TD 误差 $r_t+\gamma V(s_{t+1})-V(s_t)$ 只走一步就靠 $V$ 补，$V$ 不准时期望不等于 $A$ → 有偏，
 但方差收益大，所以用一点偏差换大量方差是划算的（这就是 GAE 的 $\lambda$）。
-TRPO 把「别走太远」写成 KL 硬约束、要二阶方法（Fisher 矩阵 + 共轭梯度）；
-PPO 把 $\rho$ 裁进 $[1-\epsilon,1+\epsilon]$，变成一阶就能优化的软惩罚。<strong>clip 是 KL 约束的一阶近似</strong>。</p>
+② TRPO 已有 $\rho A$ 目标，把「别走太远」写成 KL 硬约束、要二阶方法（Fisher 矩阵 + 共轭梯度）；
+④ PPO <strong>基于 TRPO</strong> 照抄 $\rho A$，只把 $\rho$ 裁进 $[1-\epsilon,1+\epsilon]$ 变成一阶软惩罚。<strong>clip 只在 PPO 出现，是 KL 约束的一阶近似</strong>。</p>
 </div>
 
 <div class="box key">
