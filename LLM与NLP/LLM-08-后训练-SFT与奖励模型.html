@@ -5004,6 +5004,533 @@ $\mathcal{L}=-\ln\sigma(\beta\delta)$ 对 $\beta$ 是<strong>非线性</strong>�
 </ol>
 </div>
 
+<h4>K.5 · 追加两套卷：把课上讲过但 K.3 没覆盖的考点补完</h4>
+
+<p>K.3 那套只覆盖了 6 个考点。下面两套仍按 <strong>30 / 30 / 40</strong>、每题 2–3 小问、每问都带 <code>Explain / Justify / Show</code> 的原格式，
+专门打 §1、§2 前半、§3 后半、§4 前半这些还没出过题的地方。</p>
+
+<div class="box gold">
+<span class="label">预测卷 II · §1 / §2 / §3 的缺口（100 分）</span>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 II-1</span><span class="ttl">缩放律与四级监督信号</span><span class="pt">30 分</span></div>
+<ol class="asks">
+<li><strong>[15]</strong> 板书的纯幂律 $L(N)=L_0(N_0/N)^{\alpha}$，取 $L_0=3.0$（nats/token，在 $N_0=10^{9}$ 参数处）、$\alpha=0.34$。
+求 $N=2N_0$ 与 $N=8N_0$ 时的 $L$，并给出双对数坐标下的斜率。
+现改用带不可约项的形式 $L(N,D)=E+A N^{-\alpha}+B D^{-\beta}$，固定算力 $C\approx6ND$，令 $\alpha=\beta=0.5$、$A=B=1$。
+推导 $N^{\star}$ 关于 $C$ 的表达式，并代入 $C=6\times10^{20}$ 求出 $N^{\star}$ 与 $D^{\star}$。
+<strong>若 $C$ 增大 4 倍，$N^{\star}$ 会翻倍吗？Explain。</strong></li>
+<li><strong>[15]</strong> 设 $|V|=10^{5}$，一条回答 100 个 token，偏好数据 10 万条 pair。
+分别写出预训练 / SFT / RM / RL 四级每一步的监督信号与信息量（自然对数或 bit，精确表达式即可）。
+<strong>若某个 RM 的验证准确率达到 92%，而标注者之间的一致率只有 75%，你该怀疑什么？Explain。</strong></li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1a)</strong> $L=L_0\left(\frac{N}{N_0}\right)^{-\alpha}$。</p>
+
+$$
+L(2N_0)=3\times2^{-0.34}=3\times0.790=\mathbf{2.370},
+\qquad
+L(8N_0)=3\times8^{-0.34}=3\times0.493=\mathbf{1.479}
+$$
+
+<p>取对数 $\log L=\log L_0-\alpha\log(N/N_0)$，所以双对数下是斜率 $-\alpha=\mathbf{-0.34}$ 的直线。</p>
+<p><strong>代入约束：</strong>$D=C/(6N)$，$B D^{-\beta}=B\left(\frac{6N}{C}\right)^{\beta}$。取 $\alpha=\beta=a=0.5$、$A=B=1$：</p>
+
+$$
+L(N)=E+N^{-0.5}+\left(\frac{6N}{C}\right)^{0.5}
+$$
+
+<p>这是 $N$ 的 U 形函数。求导置零：</p>
+
+$$
+-\tfrac12 N^{-3/2}+\tfrac12\left(\tfrac{6}{C}\right)^{0.5}N^{-0.5}=0
+\ \Longrightarrow\
+N^{-1}=\left(\tfrac{6}{C}\right)^{0.5}
+\ \Longrightarrow\
+\boxed{\,N^{\star}=\sqrt{C/6}\,}
+$$
+
+<p>代入 $C=6\times10^{20}$：$N^{\star}=\sqrt{10^{20}}=\mathbf{10^{10}}$，
+$D^{\star}=C/(6N^{\star})=\mathbf{10^{10}}$——<strong>参数量与 token 数正好相等</strong>，这就是 Chinchilla 的结论。</p>
+<p><strong>会翻倍。</strong>$N^{\star}\propto C^{1/2}$，所以 $C$ 变 4 倍，$N^{\star}$ 变 $\sqrt4=2$ 倍，
+$D^{\star}=C/(6N^{\star})$ 也变 2 倍。注意这与纯幂律不同：纯幂律里 $L$ 随 $N$ 单调下降，
+<strong>只有把「预算固定」这个条件放进去，才会出现最低点</strong>。</p>
+
+<p><strong>(2)</strong></p>
+
+<table>
+<thead><tr><th>阶段</th><th>每步的监督信号</th><th>信息量</th></tr></thead>
+<tbody>
+<tr><td>预训练</td><td>语料里的下一个 token（自监督）</td><td>$\le\ln|V|=5\ln10\approx11.51$ nats/token</td></tr>
+<tr><td>SFT</td><td>人类写下的那一个 token（回答段）</td><td>一条 100-token 回答 $\le100\ln|V|\approx1151$ nats</td></tr>
+<tr><td>RM</td><td>一次二选一</td><td><strong>1 bit / pair</strong>；10 万对 $=10^{5}$ bit $=12500$ B $\approx12.2$ KB</td></tr>
+<tr><td>RL</td><td>只有 $r_\phi(x,y)$（学出来的代理）</td><td><strong>0</strong>——没有 ground truth</td></tr>
+</tbody>
+</table>
+
+<p>两条方向相反的趋势：<strong>信息量单调下降，目标却越来越接近我们真正想要的</strong>。
+后训练的每一级都是「用更少的监督换更对的目标」，越往后越难训、越容易跑偏，是信息问题不是工程问题。</p>
+
+<p><strong>该怀疑数据泄漏或过拟合标注噪声，而不是庆祝。</strong>RM 的准确率上限不是 100%，而是<strong>人类之间的一致率</strong>（本例 75%）——
+因为标签本身是「一次人类判断的采样」，不是客观事实，同一个人隔一周再标都可能翻。
+超过 75% 的那部分，模型只能是在背噪声或背见过的 pair。同理，「reward 在涨」只说明模型越来越会讨好 $r_\phi$；
+唯一不含代理的评估是<strong>人工评估</strong>，且不能拿它调参。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 II-2</span><span class="ttl">序列概率、teacher forcing 与解码</span><span class="pt">30 分</span></div>
+<p class="stem">词表只有 $\{A,B,C\}$，prompt 固定，示范回答为 $(A,C,B)$。模型在三个位置上给各候选 token 的概率如下：</p>
+
+<table>
+<thead><tr><th>位置 / 前缀</th><th class="num">$P(A)$</th><th class="num">$P(B)$</th><th class="num">$P(C)$</th></tr></thead>
+<tbody>
+<tr><td>$t=1$，前缀 $=x$</td><td class="num">0.5</td><td class="num">0.3</td><td class="num">0.2</td></tr>
+<tr><td>$t=2$，前缀 $=x,A$</td><td class="num">0.1</td><td class="num">0.2</td><td class="num">0.7</td></tr>
+<tr><td>$t=3$，前缀 $=x,A,C$</td><td class="num">0.25</td><td class="num">0.5</td><td class="num">0.25</td></tr>
+</tbody>
+</table>
+
+<ol class="asks">
+<li><strong>[15]</strong> 求整条示范回答的概率 $\pi_\theta(y\mid x)$、$-\log\pi_\theta(y\mid x)$，以及 SFT 的每 token 平均损失。
+验证「连乘取 $\log$ 变连加」。
+<strong>若第 3 步的前缀用的是模型自己生成的 token（不是示范里的 $C$），这个概率还一样吗？Explain。</strong></li>
+<li><strong>[15]</strong> 另一个任务：生成恰好两个 token，无 EOS，第一步只能是 $A,B,C$，第二步只能是 $X,Y$：</li>
+</ol>
+
+<table>
+<thead><tr><th>首 token $u$</th><th class="num">$p(u)$</th><th class="num">$P(X\mid u)$</th><th class="num">$P(Y\mid u)$</th></tr></thead>
+<tbody>
+<tr><td>$A$</td><td class="num">0.35</td><td class="num">0.6</td><td class="num">0.4</td></tr>
+<tr><td>$B$</td><td class="num">0.34</td><td class="num">0.7</td><td class="num">0.3</td></tr>
+<tr><td>$C$</td><td class="num">0.31</td><td class="num">0.1</td><td class="num">0.9</td></tr>
+</tbody>
+</table>
+
+<p class="stem">给出 greedy 与 beam width 2 各自返回的序列及联合概率（beam 每步保留两个最高乘积的前缀，最后返回最优完整序列，无长度惩罚）。
+<strong>beam 找到全局最可能的序列了吗？Justify。</strong></p>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 自回归分解 $\pi_\theta(y\mid x)=\prod_{t}\pi_\theta(y_t\mid x,y_{&lt;t})$，取三步的正确 token：</p>
+
+$$
+\pi_\theta(y\mid x)=0.5\times0.7\times0.5=\mathbf{0.175}
+$$
+
+$$
+-\log\pi_\theta=-\ln0.175=\mathbf{1.743}\ \text{nats},
+\qquad
+\mathcal{L}_{\text{SFT}}=\frac{1.743}{3}=\mathbf{0.581}
+$$
+
+<p>验证连加：$\ln0.5+\ln0.7+\ln0.5=-0.693-0.357-0.693=-1.743$ ✓。
+句子越长乘积越小，100 个 token 会小到 $10^{-30}$ 量级，所以训练时<strong>必须取对数</strong>把连乘变连加。</p>
+
+<p><strong>不一样。</strong>上面每个条件概率都建立在「前缀是示范给的 $A,C$」上——这就是 <strong>teacher forcing</strong>。
+推理时前缀是模型自己写的，一旦某步写错，后面每一步都站在错误的输入上，误差会累积（exposure bias / compounding error）。
+而且 SFT 的目标函数里<strong>根本没有「写错了怎么救」这一项</strong>，这不是实现问题，是目标本身的性质（§2.2 / §2.10）。</p>
+
+<p><strong>(2)</strong> 六个联合概率：</p>
+
+<table>
+<thead><tr><th class="num">$AX$</th><th class="num">$AY$</th><th class="num">$BX$</th><th class="num">$BY$</th><th class="num">$CX$</th><th class="num">$CY$</th></tr></thead>
+<tbody>
+<tr><td class="num">0.210</td><td class="num">0.140</td><td class="num">0.238</td><td class="num">0.102</td><td class="num">0.031</td><td class="num"><strong>0.279</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>Greedy：</strong>第一步选 $A$（0.35 最大），第二步在 $A$ 下选 $X$（0.6 &gt; 0.4）→ 返回 $\boxed{AX=0.210}$。</p>
+<p><strong>Beam width 2：</strong>第一步保留 $A(0.35)$、$B(0.34)$（$C$ 被剪掉）；扩展后四个候选
+$(0.210,0.140,0.238,0.102)$ 里最高两个是 $BX=0.238$ 与 $AX=0.210$，第二步结束 → 返回 $\boxed{BX=0.238}$。</p>
+<p><strong>没有找到。</strong>全局最优是 $CY=0.279$。$C$ 在第一步概率排第三（0.31）就被剪掉了，
+但它的条件分布极偏（$P(Y\mid C)=0.9$），联合概率反而最高。</p>
+<p><strong>Justify：</strong>beam 是<strong>按前缀概率做局部剪枝</strong>，不保证全局最优——
+一个首步概率略低、后续却高度确定的分支会被提前淘汰。这也解释了为什么 best-of-$n$（整条采完再打分）
+在某些任务上比 beam 更稳：它不剪中间前缀。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 II-3</span><span class="ttl">奖励模型：排序、best-of-$n$ 与失效</span><span class="pt">40 分</span></div>
+<ol class="asks">
+<li><strong>[15]</strong> 一个 prompt 采 3 条回答，人类给出全序 $y_1\succ y_2\succ y_3$，RM 分数为 $r=(\ln4,\ \ln2,\ 0)$。
+用 Plackett–Luce 损失 $\mathcal{L}_{\text{PL}}=-\sum_k\big[r(y_k)-\log\sum_{j\ge k}e^{r(y_j)}\big]$ 计算该样本的损失（精确值）。
+<strong>若只有两条回答 $y_1\succ y_2$，这个损失等于 BT 损失 $-\log\sigma(r_1-r_2)$ 吗？Show。</strong></li>
+<li><strong>[15]</strong> best-of-$n$ 不改参数，只多采 $n$ 条再取 RM 分数最高的。
+设每条回答的分数独立服从 $[0,1]$ 上的均匀分布。推导 $\mathbb{E}[\max\{r_1,\dots,r_n\}]$，
+并求 $n=1,3,7$ 的值。<strong>$n$ 从 3 增到 7（约翻倍），期望最高分也翻倍吗？Explain。</strong></li>
+<li><strong>[10]</strong> 训练到第 3 个 epoch 时：训练损失持续下降、验证 pairwise acc 升到 78%、人工盲评的胜率却从 62% 掉到 55%。
+<strong>你会用哪个数决定早停？Explain。</strong>并说明 RM 的 acc 上限由什么决定。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> $e^{r}=(4,2,1)$。</p>
+
+$$
+\begin{aligned}
+k=1&:\ \ln4-\ln(4+2+1)=\ln4-\ln7\\
+k=2&:\ \ln2-\ln(2+1)=\ln2-\ln3\\
+k=3&:\ 0-\ln1=0
+\end{aligned}
+$$
+
+$$
+\mathcal{L}_{\text{PL}}=-\big[(\ln4+\ln2)-(\ln7+\ln3)\big]
+=\ln\frac{21}{8}=\ln2.625\approx\mathbf{0.965}
+$$
+
+<p><strong>$K=2$ 时相等。</strong>只保留前两项：$e^r=(4,2)$，</p>
+
+$$
+\mathcal{L}_{\text{PL}}=-\big[(\ln4-\ln6)+(\ln2-\ln2)\big]=\ln\frac{6}{4}=\ln\tfrac32\approx0.405
+$$
+
+<p>而 BT：$\Delta=r_1-r_2=\ln4-\ln2=\ln2$，$\sigma(\ln2)=\frac{1}{1+1/2}=\frac23$，
+$-\log\sigma(\Delta)=-\ln\frac23=\ln\frac32\approx0.405$。<strong>两者完全一致</strong> ✓。
+所以 BT 就是 PL 在「只有一对」时的特例。</p>
+
+<p><strong>(2)</strong> $M_n=\max\{r_1,\dots,r_n\}$，$P(M_n\le t)=t^{n}$，密度 $f(t)=n t^{n-1}$：</p>
+
+$$
+\mathbb{E}[M_n]=\int_0^1 t\cdot n t^{n-1}\,dt=\frac{n}{n+1}
+$$
+
+<p>$n=1:\ 0.500$；$n=3:\ 0.750$；$n=7:\ 0.875$。</p>
+<p><strong>不会翻倍。</strong>从 0.750 到 0.875 只涨 17%，而且上界就是 1（永远不可能到 1.5）。
+收益是<strong>对数式 / 饱和</strong>的：要再提升就得采到比「当前最好那条」还好的样本，越往后越难。</p>
+<p>另一个更重要的 Explain 点：$n$ 越大，选中的越接近「$r_\phi$ 眼中的最好」而不是「人眼中的最好」；
+$n\to\infty$ 时你拿到的就是 $r_\phi$ 的 argmax，也就是 <strong>reward hacking 的极端形态</strong>（§3.1 / §3.7）。</p>
+
+<p><strong>(3)</strong> 用<strong>人工盲评胜率</strong>决定早停，在 epoch 2 停。</p>
+<p>理由：验证 acc 和 reward 是<strong>同一个代理的两张脸</strong>，模型学会讨好 $r_\phi$ 时两者会一起涨，
+所以验证 acc 涨不能证明「变好了」。而 RM 的 acc 上限由<strong>标注者之间的一致率</strong>决定（通常 70–80%），
+78% 已经逼近甚至超过这个上限，多出来的部分是对标注噪声 / 数据泄漏的拟合。</p>
+<p>三者合起来正是 reward hacking 的标准画像：<strong>不是模型学坏了，是它一直在优化那个「相关性」，只是被推到了极限</strong>（§3.9）。
+工程对策：只训 1 个 epoch、留一套不参与调参的人评集、监控长度偏置与谄媚。</p>
+</div>
+</details>
+</div>
+
+<div class="box gold">
+<span class="label">预测卷 III · §4 的缺口（100 分）</span>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 III-1</span><span class="ttl">MDP、Return 与 Q 函数</span><span class="pt">30 分</span></div>
+<p class="stem">一条回答只有 2 个 token（$T=2$），$\gamma=1$，奖励只在末尾给一次：$r_1=0,\ r_2=R=0.8$。
+价值网络给出 $V_\psi(s_1)=0.5,\ V_\psi(s_2)=0.7,\ V_\psi(s_3)=0.8$（$s_3$ 是终态）。</p>
+<ol class="asks">
+<li><strong>[15]</strong> 写出这条轨迹 $\tau$（用 $s_t,a_t,r_t$ 记号）、$s_1,s_2,s_3$ 与 $a_1,a_2$ 在 LLM 里具体是什么；
+求 $G_1,G_2$、$Q^\pi(s_2,a_2)$、$A^\pi(s_1,a_1)$、$A^\pi(s_2,a_2)$ 以及采样估计 $\hat A_1=G_1-V_\psi(s_1)$。
+<strong>必须有 $G_1=G_2$ 吗？Explain。</strong>并说明为什么 $\hat A_1\ne A^\pi(s_1,a_1)$。</li>
+<li><strong>[15]</strong> 另设某状态只有两个动作，$\pi(a_1\mid s)=0.7,\ \pi(a_2\mid s)=0.3$，$Q^\pi(s,a_1)=1.0,\ Q^\pi(s,a_2)=0.0$。
+求 $V^\pi(s)$、两个 $A^\pi$，并验证 $\sum_a\pi(a\mid s)A^\pi(s,a)=0$。
+<strong>若把 $\pi$ 改成均匀分布 $(0.5,0.5)$，$V$ 会变吗？$A^\pi(s,a_1)$ 会变吗？Explain。</strong></li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 状态 $s_t=(x,y_{&lt;t})$，动作 $a_t=y_t$，转移确定性 $s_{t+1}=(s_t,a_t)$：</p>
+
+$$
+s_1=(x),\quad s_2=(x,y_1),\quad s_3=(x,y_1,y_2),\qquad a_1=y_1,\ a_2=y_2
+$$
+
+$$
+\tau=(s_1,a_1,0,\ s_2,a_2,0.8,\ s_3)
+$$
+
+<p>$G_1=0+0.8=\mathbf{0.8}$，$G_2=\mathbf{0.8}$。因为转移确定、$r_1=0$：</p>
+
+$$
+Q^\pi(s_2,a_2)=\mathbb{E}[G_2\mid s_2,a_2]=\mathbb{E}[G_3\mid s_3]=V_\psi(s_3)=\mathbf{0.8}
+$$
+
+<p>在 LLM 里 $Q^\pi(s_t,a_t)=V^\pi(s_{t+1})$（§4.5），所以</p>
+
+$$
+A^\pi(s_1,a_1)=V(s_2)-V(s_1)=0.7-0.5=\mathbf{0.2},
+\qquad
+A^\pi(s_2,a_2)=V(s_3)-V(s_2)=0.8-0.7=\mathbf{0.1}
+$$
+
+$$
+\hat A_1=G_1-V_\psi(s_1)=0.8-0.5=\mathbf{0.3}
+$$
+
+<p><strong>在 LLM 里必须有</strong> $G_1=G_2$：奖励只在末尾给一次，中间 $r_t=0$，所以每个位置的 return 都等于同一个 $R$。
+<strong>但有一个例外</strong>：一旦加了逐 token 的 KL 惩罚（§4.9 一次迭代的第 2 步，$r_{i,t}=-\beta(\ell^{\text{old}}-\ell^{\text{ref}})$），
+中间步骤就不再全为 0，$G_t$ 会带上位置信息。</p>
+<p><strong>$\hat A_1\ne A^\pi$</strong> 是因为 $\hat A_1=G_1-V_\psi(s_1)$ 用的是<strong>一次采样</strong>的 $G_1$，
+而 $A^\pi=Q^\pi-V^\pi$ 是两个<strong>期望</strong>之差。前者是后者的无偏估计，带采样噪声；
+再加一个 $V_\psi$ 只是估计器也不是真值。这正是 $\psi_t$ 阶梯表里「$G_t-V$ 是 2★、$A^\pi$ 是 1★」的原因。</p>
+
+<p><strong>(2)</strong> $V^\pi(s)=\sum_a\pi(a\mid s)Q^\pi(s,a)=0.7\times1.0+0.3\times0=\mathbf{0.7}$。</p>
+
+$$
+A^\pi(s,a_1)=1.0-0.7=\mathbf{+0.3},
+\qquad
+A^\pi(s,a_2)=0.0-0.7=\mathbf{-0.7}
+$$
+
+$$
+\sum_a\pi A=0.7\times0.3+0.3\times(-0.7)=0.21-0.21=\mathbf{0}\ \checkmark
+$$
+
+<p>这条恒等式对任何 $\pi$ 都成立，因为 $A=Q-V$ 而 $V=\sum\pi Q$，加权平均后自然抵消。</p>
+<p><strong>两者都会变。</strong>均匀 $\pi$ 时 $V=0.5\times1.0+0.5\times0=\mathbf{0.5}$，
+$A(s,a_1)=1.0-0.5=\mathbf{+0.5}$，$A(s,a_2)=-0.5$，加权和仍为 0。</p>
+<p><strong>Explain：</strong>advantage 是<strong>相对于当前策略的平均水平</strong>的好坏，不是动作的固有属性。
+策略一变，「平均」就变，同一个动作的 $A$ 也跟着变。所以严格写法是 $A^\pi$ 而不是 $A$——
+这也是为什么 PPO 用旧策略的数据时要乘 $\rho$ 来纠正：数据来自 $\pi_{\text{old}}$，而 $A$ 是相对 $\pi_\theta$ 定义的。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 III-2</span><span class="ttl">TD 误差与 GAE 的 $\lambda$</span><span class="pt">30 分</span></div>
+<p class="stem">$\gamma=1$，$T=3$，奖励 $r_1=r_2=0,\ r_3=1$；价值估计 $V(s_1)=0.3,\ V(s_2)=0.5,\ V(s_3)=0.7,\ V(s_4)=0$（终态）。
+TD 误差 $\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$，GAE 为 $\hat A_t=\sum_{l}(\gamma\lambda)^l\delta_{t+l}$。</p>
+<ol class="asks">
+<li><strong>[15]</strong> 求 $\delta_1,\delta_2,\delta_3$ 并验证 $\sum_{t=1}^{3}\delta_t=G_1-V(s_1)$（写出抵消过程）。</li>
+<li><strong>[15]</strong> 分别取 $\lambda=0,\ 0.5,\ 1$，求 $\hat A_1$。
+<strong>$\lambda=0$ 与 $\lambda=1$ 给出同一个答案吗？哪一个有偏、为什么？Explain。</strong>
+再说明 $\lambda=0.95$ 时 $(\gamma\lambda)^l$ 大约覆盖多少步。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong></p>
+
+$$
+\delta_1=0+0.5-0.3=\mathbf{0.2},\quad
+\delta_2=0+0.7-0.5=\mathbf{0.2},\quad
+\delta_3=1+0-0.7=\mathbf{0.3}
+$$
+
+<p>求和 = $0.7$。而 $G_1=r_1+r_2+r_3=1$，$G_1-V(s_1)=1-0.3=0.7$ ✓。</p>
+<p><strong>抵消过程</strong>（望远镜求和）：</p>
+
+$$
+\sum_t\delta_t=\sum_t\big(r_t+V(s_{t+1})-V(s_t)\big)
+=\underbrace{\sum_t r_t}_{G_1}+\big[V(s_2)-V(s_1)+V(s_3)-V(s_2)+V(s_4)-V(s_3)\big]
+=G_1+V(s_4)-V(s_1)
+$$
+
+<p>中间的 $V(s_2),V(s_3)$ 一正一负全部抵消；$V(s_4)=0$，所以等于 $G_1-V(s_1)$。
+<strong>这正是 $\lambda=1$ 时 GAE 不依赖中间 $V$ 的原因</strong>——那些「猜」出来的值全都消掉了。</p>
+
+<p><strong>(2)</strong></p>
+
+$$
+\hat A_1=\sum_{l=0}^{2}\lambda^{l}\delta_{1+l}
+=\begin{cases}
+0.2 & \lambda=0\\
+0.2+0.5(0.2)+0.25(0.3)=0.375 & \lambda=0.5\\
+0.2+0.2+0.3=0.7 & \lambda=1
+\end{cases}
+$$
+
+<p><strong>不一样</strong>（0.2 vs 0.7）。</p>
+<ul>
+<li><strong>$\lambda=0$ 有偏。</strong>它只用一步 $\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$，
+式子里出现<strong>两个</strong> $V$；$V$ 若系统性低估 0.1，这个误差会留在结果里、不会被抵消。
+它把赌注押在「$V$ 准不准」上：<strong>稳定地错</strong>。好处是只用一步采样，噪声小。</li>
+<li><strong>$\lambda=1$ 无偏</strong>（就是 $G_1-V(s_1)$），中间的 $V$ 全抵消了；
+但 $G_1$ 是<strong>一次采样</strong>的结果，换个随机种子就是另一个数，<strong>单次说不准</strong>（方差大）。</li>
+</ul>
+<p>所以 $\lambda$ 是在「信 $V$」和「信实际采样」之间调配比。
+$0.95^{20}\approx0.36$、$0.95^{50}\approx0.08$，即<strong>大约算到后面二十步，再远的基本忽略</strong>。</p>
+<p class="small">用打靶的话说：$\lambda=0$ 是「瞄歪了但每次都很一致」（偏差大），$\lambda=1$ 是「手抖但平均正中」（方差大）。</p>
+</div>
+</details>
+</div>
+
+<div class="exam">
+<div class="head"><span class="no">题 III-3</span><span class="ttl">归一化常数、DPO 与可验证奖励</span><span class="pt">40 分</span></div>
+<ol class="asks">
+<li><strong>[15]</strong> 某 prompt 下只有 3 条可能的回答，$\pi_{\text{ref}}=(0.5,0.3,0.2)$，奖励 $r=(1,0,-1)$，$\beta=1$。
+由 $\pi^{\star}(y\mid x)=\frac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)e^{r(x,y)/\beta}$ 求权重、$Z(x)$ 与 $\pi^{\star}$。
+<strong>$Z$ 改变了三条回答的好坏顺序吗？Explain。</strong>若 $\beta$ 变成 2，$Z$ 会翻倍吗？Explain。
+并写出同一个 prompt 下两条回答的 $\Delta$，说明为什么 $Z(x)$ 会消失。</li>
+<li><strong>[15]</strong> DPO 某条样本的四个 log 概率为
+$\log\pi_\theta(y_w\mid x)=-2.0$、$\log\pi_\theta(y_l\mid x)=-3.0$、
+$\log\pi_{\text{ref}}(y_w\mid x)=-2.5$、$\log\pi_{\text{ref}}(y_l\mid x)=-2.0$，$\beta=0.5$。
+求两个 log 比值、$\Delta$、$p$、$\mathcal{L}$。
+<strong>若四个 log 概率同时加上同一个常数，损失会变吗？Explain。</strong>
+$\pi_{\text{ref}}$ 为什么必须冻结？DPO 需不需要单独训一个奖励模型？Explain。</li>
+<li><strong>[10]</strong> 把奖励换成数学题的 $0/1$（程序判对错），即 RLVR。
+<strong>ground truth 回来了吗？回来的是什么、没回来的又是什么？Explain。</strong>并指出它带来的一个新问题。</li>
+</ol>
+<details><summary>解答</summary>
+<div class="body">
+<p><strong>(1)</strong> 权重 $w=\pi_{\text{ref}}e^{r/\beta}$：</p>
+
+$$
+w_1=0.5e^{1}=\mathbf{1.359},\quad
+w_2=0.3e^{0}=\mathbf{0.300},\quad
+w_3=0.2e^{-1}=\mathbf{0.074}
+$$
+
+$$
+Z(x)=\sum_y w_y=\mathbf{1.733},
+\qquad
+\pi^{\star}=\left(\frac{1.359}{1.733},\frac{0.300}{1.733},\frac{0.074}{1.733}\right)
+=\mathbf{(0.784,\ 0.173,\ 0.043)}
+$$
+
+<p><strong>不改变顺序。</strong>$Z$ 只是一个正数，三条权重同除它，比例从
+$1.359:0.300:0.074$ 变成 $0.784:0.173:0.043$，<strong>一模一样</strong>。
+它唯一的作用是把总和从 1.733 缩到 1，让权重成为合法概率。
+真正的变化要跟 $\pi_{\text{ref}}=(0.5,0.3,0.2)$ 比：高分回答从 0.5 涨到 0.784——<strong>概率质量被搬过去了</strong>。</p>
+<p><strong>$Z$ 不会翻倍，反而变小。</strong>$\beta=2$ 时 $e^{r/2}=(1.6487,1,0.6065)$，
+$w=(0.824,0.300,0.121)$，$Z=\mathbf{1.246}$。因为 $Z=\sum\pi_{\text{ref}}e^{r/\beta}$ 对 $\beta$ 是<strong>指数型非线性</strong>：
+$\beta$ 增大把指数压平，权重更接近 $\pi_{\text{ref}}$，$Z\to1$。</p>
+<p><strong>$Z$ 在 $\Delta$ 里消失：</strong>对同一 prompt 代入两次，各带一个 $\beta\log Z(x)$：</p>
+
+$$
+\Delta=\beta\log\frac{\pi^{\star}(y_w)}{\pi_{\text{ref}}(y_w)}-\beta\log\frac{\pi^{\star}(y_l)}{\pi_{\text{ref}}(y_l)}
++\underbrace{\beta\log Z(x)-\beta\log Z(x)}_{=0}
+$$
+
+<p>$Z$ 只依赖 $x$、不依赖 $y$（求和已经把 $y$ 消掉了），所以两条回答共享同一个 $Z$，一减就没了。
+这就是 DPO 最精妙的一步：<strong>一个枚举不完（$|V|^{T}$ 项）的量，被证明根本不用算</strong>。</p>
+
+<p><strong>(2)</strong></p>
+
+$$
+\log\frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}=-2.0-(-2.5)=\mathbf{+0.5},
+\qquad
+\log\frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}=-3.0-(-2.0)=\mathbf{-1.0}
+$$
+
+$$
+\Delta=0.5\times(0.5-(-1.0))=\mathbf{0.75},
+\qquad p=\sigma(0.75)=\mathbf{0.679},
+\qquad \mathcal{L}=-\ln0.679=\mathbf{0.387}
+$$
+
+<p><strong>不会变。</strong>两个 log 比值都是「差」，四个数同时加 $c$ 时每个差里的 $c$ 都消掉，
+$\Delta$ 不变。这和 RM 的 BT 损失对分数平移不变是同一件事（§3.3）。</p>
+<p><strong>$\pi_{\text{ref}}$ 必须冻结</strong>：否则优化器可以同时改动 $\pi_\theta$ 和 $\pi_{\text{ref}}$ 来「作弊」——
+把两个 log 比值一起拉大而不真正学到偏好，KL 约束就失效了。冻结它等于把「别走太远」变成一个固定参照系。</p>
+<p><strong>不需要单独的 RM。</strong>隐式奖励就是 $\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$——
+训策略的同时顺手把奖励「训」出来了，只是没存成一个独立模型。
+代价：它是纯离线的，不会自己采样探索，所以<strong>超不过数据集里最好的那条</strong>；
+且 $\beta$ 只是隐式约束，训久了会退化成只会说那几条标准答案。</p>
+
+<p><strong>(3)</strong> <strong>回来了，但只回来了一半。</strong>回来的是<strong>任务的标准答案</strong>：
+数学题有唯一解、代码有单元测试，奖励由程序算出来，不再是学出来的代理 $r_\phi$，
+所以「reward 在涨」第一次真的接近「模型变好了」。</p>
+<p><strong>没回来的是「人类偏好」</strong>：写作、共情、分寸感、该不该拒绝，这些没有可验证的对错，
+$0/1$ 一点也教不了。而且回来的 GT 是「答案对不对」，不是「过程好不好」——
+一条胡猜对答案的推理链照样得 1 分。</p>
+<p><strong>新问题：</strong>reward hacking 从「钻 RM 的空子」变成「<strong>钻验证器的空子</strong>」——
+比如输出格式恰好骗过判题脚本、或者利用单元测试的漏洞。
+另外还有「可验证领域以外没法训」的覆盖问题，以及过拟合验证集。</p>
+</div>
+</details>
+</div>
+
+<h4>K.6 · 覆盖对照表：哪个知识点在哪道题里</h4>
+
+<p>下表把正文每一节都列出来，标出它在哪套卷里被考到。<strong>没有落单的考点</strong>——
+如果某节只适合定性问，就放进下面的「Explain 专项」。</p>
+
+<table>
+<thead><tr><th>小节</th><th>考点</th><th>对应题目</th></tr></thead>
+<tbody>
+<tr><td>§0.1–0.5</td><td>整体因果链、符号、公式读法</td><td>贯穿全部；Explain 专项 1</td></tr>
+<tr><td>§1.1</td><td>预训练四条、缩放律、固定算力 U 形</td><td><strong>II-1(a)</strong></td></tr>
+<tr><td>§1.2 / §1.3</td><td>三级流水线、三个分布三种损失</td><td>Explain 专项 1</td></tr>
+<tr><td>§1.4</td><td>ground truth 四级监督信号、信息量</td><td><strong>II-1(b)</strong>；H 卷 B3</td></tr>
+<tr><td>§2.1 / §2.2</td><td>序列似然、teacher forcing、前缀–回答</td><td><strong>II-2(a)</strong></td></tr>
+<tr><td>§2.3</td><td>loss mask 与分母</td><td><strong>K.3 题 1(a)</strong>；G 卷 A2</td></tr>
+<tr><td>§2.4</td><td>softmax 梯度、和为 0</td><td>G 卷 A3；J 题库</td></tr>
+<tr><td>§2.5</td><td>前向 KL、多峰平均 / hedging</td><td>Explain 专项 2</td></tr>
+<tr><td>§2.6</td><td>chat 模板、特殊 token、掩码边界</td><td>Explain 专项 3</td></tr>
+<tr><td>§2.7 / §2.8</td><td>三个问题、LoRA 参数量</td><td><strong>K.3 题 1(b)</strong>；G 卷 A1；Explain 专项 4</td></tr>
+<tr><td>§2.9 / §2.10</td><td>优缺点、exposure bias 等失败模式</td><td><strong>II-2(a)</strong>；Explain 专项 2</td></tr>
+<tr><td>§3.1</td><td>best-of-$n$、RM 怎么用</td><td><strong>II-3(b)</strong></td></tr>
+<tr><td>§3.2 / §3.3</td><td>BT、$\Delta$、$\sigma$、loss、梯度权重</td><td><strong>K.3 题 2(a)</strong>；H 卷 B1/B2；I 卷 C3；G 卷 C3</td></tr>
+<tr><td>§3.4</td><td>成对 vs 直接打分、Plackett–Luce</td><td><strong>II-3(a)</strong></td></tr>
+<tr><td>§3.5</td><td>结构、初始化、1 个 epoch、fp32</td><td>Explain 专项 5；K.3 题 1(b)</td></tr>
+<tr><td>§3.6</td><td>select-best vs 全排序</td><td><strong>K.3 题 2(c)</strong>；H 卷 B3</td></tr>
+<tr><td>§3.7 / §3.9</td><td>评估失效、reward hacking、学不学价值观</td><td><strong>II-3(c)</strong>；Explain 专项 5</td></tr>
+<tr><td>§3.8</td><td>RM 优缺点</td><td>Explain 专项 5</td></tr>
+<tr><td>§4.1 / §4.3</td><td>RL 与 SFT 的差别、离线 vs 在线</td><td>K.3 题 3(a)；Explain 专项 6</td></tr>
+<tr><td>§4.2</td><td>MDP 六元组、轨迹、状态/动作映射</td><td><strong>III-1(a)</strong></td></tr>
+<tr><td>§4.4</td><td>$\max\mathbb{E}[r]=\sum_y P_\theta r$</td><td>Explain 专项 6</td></tr>
+<tr><td>§4.5</td><td>Return / Value / <strong>Q</strong> / Advantage、$V=\sum\pi Q$</td><td><strong>III-1(a)(b)</strong>；I 卷 C1</td></tr>
+<tr><td>§4.6</td><td>log-derivative、轨迹分解、因果性</td><td><strong>II-2(a)</strong>（连乘取 log）；Explain 专项 7</td></tr>
+<tr><td>§4.7</td><td>三步算法、$k$ 条 rollout、$(r-\mu)/\sigma$、KL 惩罚</td><td><strong>K.3 题 3(a)</strong>；I 卷 C1/C2</td></tr>
+<tr><td>§4.8</td><td>KL 约束、闭式解、$Z(x)$</td><td><strong>III-3(a)</strong></td></tr>
+<tr><td>§4.9</td><td>$\psi_t$ 阶梯、GAE、TRPO、clip、PPO 迭代、GRPO、RLOO</td><td><strong>III-2</strong>；<strong>K.3 题 3(b)</strong>；Explain 专项 8</td></tr>
+<tr><td>§4.10</td><td>DPO 四次前向、隐式奖励、$\beta$</td><td><strong>III-3(b)</strong>；I 卷 C3；K.3 题 3(c)</td></tr>
+<tr><td>§4.11</td><td>RLVR、可验证奖励</td><td><strong>III-3(c)</strong></td></tr>
+<tr><td>附录 A / F / J</td><td>公式速查、数值表、20 道快问快答</td><td>全部卷的查表工具</td></tr>
+</tbody>
+</table>
+
+<div class="box read">
+<span class="label">Explain 专项八题（真题里那一半分数）</span>
+
+<p><strong>1. 为什么必须是 SFT → RM → RL 这个顺序？</strong>
+每一步都是被上一步的缺陷逼出来的：预训练只会续写 → SFT 教格式，但只会模仿、只有正例 →
+RM 用「选」代替「写」，能判断哪条更好，但只能判断不能生成 → RL 自己采样搜索，能超出示范。
+<strong>不能用 RM 替代 SFT</strong>：比较数据不提供「该怎么写」的 token 级示范。</p>
+
+<p><strong>2. 前向 KL 怎么解释 SFT 爱 hedging？</strong>
+$\mathrm{KL}(p\|q)$ 是 mass-covering：$p&gt;0$ 而 $q\to0$ 时惩罚无穷大，所以 $q$ 必须覆盖 $p$ 的所有峰。
+同一个问题有多种都对的写法时，模型学出一个「把峰揉在一起」的平均答案——四平八稳、什么都说了、什么都没说。
+反向 $\mathrm{KL}(q\|p)$ 是 mode-seeking，RL/DPO 的回答更敢下结论，也更容易跑偏。</p>
+
+<p><strong>3. chat 模板那层有哪三个不报错、只会让模型变傻的坑？</strong>
+① 训练用 A 模板、推理用 B 模板，前缀分布变了，输出直接崩；
+② 特殊 token 不在词表里被切碎成十几个普通 token，学不到「角色边界」；
+③ 掩码边界按<strong>渲染后</strong>的 token 位置算，中文字符可能对应 1 个或 3 个 token，按原始字符串算会错。</p>
+
+<p><strong>4. 板书点名的三个 SFT 问题，为什么正好推出后两步？</strong>
+① GT 难收集、② 训练整个 $\theta$ 太贵、③ 一个 prompt 只有一条回答。
+第 ③ 条是信息问题（一条示范没说「那样不行」），直接推出「采样多条让人排序」= RM；
+第 ①② 条解释了为什么后来都在「少写、少训」：RM 把「写」换成「判」，DPO 把「训 RM + 训策略」压成「训一个策略」，LoRA 只动 $r(d+k)$。</p>
+
+<p><strong>5. 为什么 RM 只训 1 个 epoch？为什么 acc 上限不是 100%？</strong>
+参数/样本比约 $7\times10^{4}$，而每条 pair 只有 1 bit；标签是「一次人类判断的采样」，一致率 70–80%，
+剩下的是清洗不掉的内生噪声。第 2 个 epoch 起模型开始背噪声，表现为<strong>训练损失继续降、验证 acc 反而降</strong>——
+这就是 reward hacking 的种子。所以早停、数据质量比数量重要得多。</p>
+
+<p><strong>6. 离线与在线的差别只是「步数多」吗？$\max\mathbb{E}[r]$ 为什么「写得出、算不出」？</strong>
+不是步数，是<strong>数据是谁产的</strong>：离线数据训练前固定、分布不动；在线每步由当前策略采样，数据分布随 $\theta$ 漂移
+（这就是不稳定的总根源）。目标 $\sum_y P_\theta(y\mid x)r(x,y)$ 写得出，但 $y$ 的空间是 $|V|^{|y|}$，枚举不了，
+所以只能用 log-derivative trick 把它换成期望、再用采样估——买到可计算，代价是方差。</p>
+
+<p><strong>7. $\nabla\log p_\theta(\tau)$ 里为什么只剩策略项？「因果性」砍掉了什么？</strong>
+$p_\theta(\tau)=d_0(s_0)\prod\pi_\theta P$，取 log 后三项里 $d_0$ 与 $P$ <strong>不含 $\theta$</strong>，梯度为 0。
+物理含义：<strong>我们改不了环境，只能改自己在环境里的选择</strong>。
+因果性用 $\mathbb{E}[h_t\mid H_t]=\sum_a\nabla\pi_\theta=0$ 证明 $u&lt;t$ 的奖励项期望为 0，
+于是权重从「整条一个 $R(\tau)$」变成「每个位置一个 $G_t$」——买到逐 token 的信号。</p>
+
+<p><strong>8. $\psi_t$ 阶梯表为什么 $A^\pi$ 是 1★、TD 误差却「有偏」？TRPO → PPO 改了什么？</strong>
+越往下越少依赖「这一次采样」、越多依赖「$V$ 的估计」：采样准但吵，$V$ 安静但可能错。
+TD 误差 $r_t+\gamma V(s_{t+1})-V(s_t)$ 只走一步就靠 $V$ 补，$V$ 不准时期望不等于 $A$ → 有偏，
+但方差收益大，所以用一点偏差换大量方差是划算的（这就是 GAE 的 $\lambda$）。
+TRPO 把「别走太远」写成 KL 硬约束、要二阶方法（Fisher 矩阵 + 共轭梯度）；
+PPO 把 $\rho$ 裁进 $[1-\epsilon,1+\epsilon]$，变成一阶就能优化的软惩罚。<strong>clip 是 KL 约束的一阶近似</strong>。</p>
+</div>
+
+<div class="box key">
+<span class="label">四套卷怎么用</span>
+<ol>
+<li><strong>先做 K.3 那套</strong>（最贴近上次真题的三大题型：loss mask / 参数量 / Explain）。</li>
+<li><strong>再做 K.5 卷 II</strong>（补 §1–§3 的缺口，其中 II-2(b) 几乎是上次 3(b) 的翻版）。</li>
+<li><strong>最后做卷 III</strong>（§4 全部计算化：$Q$ / GAE / $Z(x)$ / DPO 四次前向）。</li>
+<li><strong>附录 G/H/I 三套</strong>当分项练习，<strong>附录 J 二十题</strong>当考前一小时的速查自测。</li>
+</ol>
+</div>
+
 <h3 id="apE">E · 参考文献</h3>
 
 <ol class="small">
