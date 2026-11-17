@@ -94,10 +94,10 @@ figcaption{font-size:13px;color:var(--ink3);margin-top:8px}
 标了「含补做图」的两节，作业原脚本只打印数值、不画 figure，那几张图由我另写的
 <code>visualize/</code> 脚本生成，<strong>不是作业代码的输出</strong>。
 各节「题目在问什么」「这张图在说什么」是我写的解读，不是老师给的标准答案。</p></div>
-<nav class="toc" aria-label="目录"><div class="label">目录</div><ol><li><a href="#目录怎么读">目录怎么读</a><ol><li><a href="#两份需要说明的特殊情况">两份需要说明的特殊情况</a></li><li><a href="#复现这些图">复现这些图</a></li></ol></li><li><a href="#八周总览">八周总览</a></li><li><a href="#2026-09-08">2026-09-08</a><ol><li><a href="#p5--gaussian-elimination-计时曲线">P5 · Gaussian elimination 计时曲线</a></li></ol></li><li><a href="#2026-09-15--09-29前三周">2026-09-15 ~ 09-29（前三周）</a></li><li><a href="#2026-10-13">2026-10-13</a><ol><li><a href="#p2--krylov-子空间的正交基以及正交性损失">P2 · Krylov 子空间的正交基，以及正交性损失</a></li><li><a href="#p5--10001000-正矩阵的谱半径">P5 · 1000×1000 正矩阵的谱半径</a></li></ol></li><li><a href="#2026-10-20">2026-10-20</a><ol><li><a href="#p2--pascal-矩阵的最小特征值invit-vs-rqi">P2 · Pascal 矩阵的最小特征值：INVIT vs RQI</a></li><li><a href="#p3--wilkinson-矩阵的子空间迭代5-列-vs-6-列">P3 · Wilkinson 矩阵的子空间迭代：5 列 vs 6 列</a></li><li><a href="#p5--hessenberg-约化householder-vs-mgs-arnoldi">P5 · Hessenberg 约化：Householder vs MGS-Arnoldi</a></li></ol></li><li><a href="#2026-10-27">2026-10-27</a><ol><li><a href="#p1--上三角阵的全体特征向量-vs-eig">P1 · 上三角阵的全体特征向量 vs eig</a></li><li><a href="#p4--秩一修正的--与特征值">P4 · 秩一修正的 $f(\lambda)$ 与特征值</a></li><li><a href="#p5--jacobi-diagonalization">P5 · Jacobi diagonalization</a></li></ol></li><li><a href="#2026-11-03">2026-11-03</a><ol><li><a href="#p4--非平凡-jordan-块的特征值前向误差">P4 · 非平凡 Jordan 块的特征值前向误差</a></li></ol></li><li><a href="#交叉索引图--课堂笔记">交叉索引：图 ↔ 课堂笔记</a></li></ol></nav>
+<nav class="toc" aria-label="目录"><div class="label">目录</div><ol><li><a href="#目录怎么读">目录怎么读</a><ol><li><a href="#两份需要说明的特殊情况">两份需要说明的特殊情况</a></li><li><a href="#复现这些图">复现这些图</a></li></ol></li><li><a href="#周次总览">周次总览</a></li><li><a href="#2026-09-08">2026-09-08</a><ol><li><a href="#p5--gaussian-elimination-计时曲线">P5 · Gaussian elimination 计时曲线</a></li></ol></li><li><a href="#2026-09-15--09-29前三周">2026-09-15 ~ 09-29（前三周）</a></li><li><a href="#2026-10-13">2026-10-13</a><ol><li><a href="#p2--krylov-子空间的正交基以及正交性损失">P2 · Krylov 子空间的正交基，以及正交性损失</a></li><li><a href="#p5--10001000-正矩阵的谱半径">P5 · 1000×1000 正矩阵的谱半径</a></li></ol></li><li><a href="#2026-10-20">2026-10-20</a><ol><li><a href="#p2--pascal-矩阵的最小特征值invit-vs-rqi">P2 · Pascal 矩阵的最小特征值：INVIT vs RQI</a></li><li><a href="#p3--wilkinson-矩阵的子空间迭代5-列-vs-6-列">P3 · Wilkinson 矩阵的子空间迭代：5 列 vs 6 列</a></li><li><a href="#p5--hessenberg-约化householder-vs-mgs-arnoldi">P5 · Hessenberg 约化：Householder vs MGS-Arnoldi</a></li></ol></li><li><a href="#2026-10-27">2026-10-27</a><ol><li><a href="#p1--上三角阵的全体特征向量-vs-eig">P1 · 上三角阵的全体特征向量 vs eig</a></li><li><a href="#p4--秩一修正的--与特征值">P4 · 秩一修正的 $f(\lambda)$ 与特征值</a></li><li><a href="#p5--jacobi-diagonalization">P5 · Jacobi diagonalization</a></li></ol></li><li><a href="#2026-11-03">2026-11-03</a><ol><li><a href="#p4--非平凡-jordan-块的特征值前向误差">P4 · 非平凡 Jordan 块的特征值前向误差</a></li></ol></li><li><a href="#2026-11-10">2026-11-10</a><ol><li><a href="#矩阵指数-scaling--taylor-展开-vs-expm">矩阵指数 · Scaling–Taylor 展开 vs expm</a></li><li><a href="#矩阵平方根的-newton-迭代">矩阵平方根 · Newton 迭代</a></li></ol></li><li><a href="#交叉索引图--课堂笔记">交叉索引：图 ↔ 课堂笔记</a></li></ol></nav>
 <p>把每周作业题、我自己写的 MATLAB 代码、以及代码跑出来的图放在一起对照。<strong>每一道题先看「在问什么」，再看图说了什么结论</strong>——图不是装饰，是用来把题目里那句「What do you observe?」变成能看见的东西。</p>
 <ul>
-<li>覆盖 2026-09-08 ~ 2026-11-03 共 <strong>8 周作业</strong>、<strong>11 份作业 MATLAB 代码 + 2 份补做可视化脚本</strong>、<strong>19 张运行结果图</strong>。</li>
+<li>覆盖 2026-09-08 ~ 2026-11-10 共 <strong>9 周作业</strong>、<strong>13 份作业 MATLAB 代码 + 2 份补做可视化脚本</strong>、<strong>19 张运行结果图</strong>。11-10 两份按课堂「矩阵函数」主题补入，原脚本未导出结果图。</li>
 <li>前 4 周以证明/手算题为主，代码写在 C++ 里或没有代码，所以没有图；有图的从 10-13 开始。</li>
 <li>图全部由本机 <strong>MATLAB R2025a</strong> 无头模式实际运行作业脚本导出，没有手绘、没有示意假图。</li>
 </ul>
@@ -157,7 +157,7 @@ cd('visualize'); VIS_P4_Jordan_forward_error
 </code></pre>
 <p>批量导出用的是 <code>matlab -batch</code> + <code>set(0,'DefaultFigureVisible','off')</code> + <code>print(h,'-dpng','-r130')</code>，中文标签在本机默认字体下正常。<strong>随机矩阵都设了种子</strong>（作业脚本自带的 <code>rng</code> 保留），不同机器重跑数值量级一致、末位会有差别。</p>
 <hr />
-<h2 id="八周总览">八周总览</h2>
+<h2 id="周次总览">九周总览</h2>
 <table>
 <thead>
 <tr>
@@ -224,6 +224,13 @@ cd('visualize'); VIS_P4_Jordan_forward_error
 <td>P4</td>
 <td>3</td>
 <td>Jordan 块把 $10^{-16}$ 的舍入放大成 $10^{-4}$ 的特征值误差</td>
+</tr>
+<tr>
+<td><a href="#2026-11-10">11-10</a></td>
+<td>—（课堂「矩阵函数」主题作业，无 PDF 入库）</td>
+<td>2</td>
+<td>0</td>
+<td>Scaling–Taylor 算 $e^A$ 与内置 <code>expm</code> 同精度；Newton 迭代 $X_{k+1}=\tfrac12(X_k+X_k^{-1}A)$ 二次收敛到 $A^{1/2}$</td>
 </tr>
 </tbody>
 </table>
@@ -413,6 +420,21 @@ cd('visualize'); VIS_P4_Jordan_forward_error
 <p><strong>补做图 3 在说什么</strong>：把 $\operatorname{cond}(X)$ 从 $1$ 扫到 $10^{10}$，误差从 $10^{-6}$ 单调涨到 $O(1)$。构造 $A=XJ/X$ 这一步本身要解线性方程组、要做矩阵乘法，$X$ 越病态，这些运算引入的舍入越大，等于给 $\delta$ 加码。所以真实场景里两个因素叠加：<strong>Jordan 块决定指数 $1/m$、$X$ 的条件数决定扰动 $\delta$ 有多大</strong>。</p>
 <p><strong>其余题</strong>：P1 证明存在特征值使 $|\lambda-\hat\lambda|\le\|r\|_2$、P2 证明 $|\sigma_i(Y^*AX)-\sigma_i(A)|\le\epsilon\,\sigma_i(A)$、P3 构造把 $[x,y]$ 两列正交化的旋转矩阵 —— 都是证明/构造题；P5 复现 <em>From Random Polygon to Ellipse</em> 的实验（论文 PDF 在工作区）未做；P6–P8 选做未做。</p>
 <hr />
+<h2 id="2026-11-10">2026-11-10</h2>
+<p>这周没有单独的题目 PDF 入库，两份代码按课堂「矩阵函数」主题归入本周——正好接上 11.10 笔记<a href="../课堂笔记-20261110-广义特征值与矩阵函数.html">第六、七部分</a>：$f(A)$ 的常用函数里有 $e^A$ 与 $A^{1/2}$，而算 $e^A$ 的工业路线是缩放平方 + Padé。这两份作业就是这个主题的两道编程题。两份<strong>原脚本都只打印误差数值、没有导出结果图</strong>，故本节无图。</p>
+<h3 id="矩阵指数-scaling--taylor-展开-vs-expm">矩阵指数 · Scaling–Taylor 展开 vs <code>expm</code></h3>
+<p><strong>题目在问什么</strong>：自己实现一遍矩阵指数 $e^A$，再和 MATLAB 内置 <code>expm</code> 比精度。实现路线是「先缩放、再 Taylor、最后反复平方」——把范数很大的 $A$ 压到小范数的 $B=A/2^s$，对 $B$ 做截断 Taylor 展开，再用 $e^A=(e^{A/2^s})^{2^s}$ 还原。</p>
+<p><strong>代码</strong>：<a href="./2026-11-10/expm_scaling_taylor.m"><code>expm_scaling_taylor.m</code></a>（原文件名 <code>expotential.m</code>，按内容重命名）　<strong>做法</strong>：$n=1000$，用 $A=PDP^{-1}$ 造一个已知特征值的满矩阵，精确解取 $e^A=Pe^DP^{-1}$；按 $\|A\|_1$ 决定缩放次数 $s=\lceil\log_2(\|A\|_1/0.5)\rceil$，Taylor 项逐项递推 $T_k=T_{k-1}B/k$，到 $\|T_k\|_1&lt;10^{-16}\|E\|_1$ 截断，最后自乘 $s$ 次。输出自写算法与 <code>expm</code> 各自的相对误差。</p>
+<div class="box"><p class="label">一处容易看错的记号</p>
+<p>脚本用 <code>A = P * D / P</code>、<code>exact_exp = P * exp(D) / P</code> 构造相似变换。MATLAB 里 <code>/</code> 是<strong>右除</strong>，<code>(P*D)/P = (P*D)P^{-1} = PDP^{-1}</code>；这里恰好等价于左乘 $P$、右乘 $P^{-1}$，所以 $A$ 的特征值就是 $D$ 的对角元、$e^A=Pe^DP^{-1}$ 成立，真值构造是对的。只是惯例上写成 <code>P*D/P</code> 更清楚，读者别把它误认成 <code>\</code>（左除）。代码原样入库，未改。</p></div>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#p7">11.10 笔记第七部分「矩阵指数怎么算：缩放平方 + Padé」</a>——工业实现把这里的 Taylor 换成 Padé 有理逼近（同样次数精度更高），但「缩放 + 还原」的框架完全一致；<a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#s61">§6.1</a> 列出了 $e^A$ 在常用 $f(A)$ 里的位置。</p>
+<h3 id="矩阵平方根的-newton-迭代">矩阵平方根 · Newton 迭代<span class="tag a">原脚本会画图，未导出</span></h3>
+<p><strong>题目在问什么</strong>：对 Hermitian 正定矩阵 $A$，用 Newton 法迭代求 $A^{1/2}$，并观察收敛。</p>
+<p><strong>代码</strong>：<a href="./2026-11-10/matrix_sqrt_newton.m"><code>matrix_sqrt_newton.m</code></a>（原文件名 <code>hw5_matrix_sqrt.m</code>，按内容重命名）　<strong>做法</strong>：$A=MM^*+nI$ 再对称化保证正定，以 <code>eig</code> 的 $V\sqrt{D}V^*$ 作真值；从 $X_0=I$ 出发迭代</p>
+<div class="math-block">\[X_{k+1}=\tfrac12\left(X_k+X_k^{-1}A\right),\qquad X_{k+1}^2-A=\tfrac12\left(X_k^{-1}(A-X_k^2)\right)(X_k-A)\ \text{（二次收敛）}\]</div>
+<p>记录每步的 Frobenius 相对误差 $\\|X_k-A^{1/2}\\|_F/\\|A^{1/2}\\|_F$，脚本末尾用 <code>semilogy</code> 画收敛史。<strong>这题有两处值得对照笔记</strong>：一是 Newton 迭代的二次收敛，正是 11.10 §6 Parlett 递推之外另一条「不用先 Schur 化」的求 $f(A)$ 路子；二是 $A^{1/2}$ 恰是 §6.1 列出的常用矩阵函数之一。</p>
+<p><strong>关联笔记</strong>：<a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#p6">11.10 笔记第六部分「矩阵函数与 Schur–Parlett」</a>、<a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#s61">§6.1 常用 $f(A)$ 与 Schur 化</a>（这里 $A^{1/2}=V\sqrt{D}V^*$ 的真值构造用的就是笔记里 $f(A)=Q^*f(T)Q$ 的相似协变性）。</p>
+<hr />
 <h2 id="交叉索引图--课堂笔记">交叉索引：图 ↔ 课堂笔记</h2>
 <table>
 <thead>
@@ -458,6 +480,16 @@ cd('visualize'); VIS_P4_Jordan_forward_error
 <td><a href="../课堂笔记-20261027-特征向量的计算.html">10.27 §4.1–§4.4</a></td>
 <td>10-27 P5</td>
 </tr>
+<tr>
+<td>缩放平方算 $e^A$、$f(A)=Q^*f(T)Q$</td>
+<td><a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#s61">11.10 §6.1、§7.2–§7.3</a></td>
+<td>11-10 矩阵指数</td>
+</tr>
+<tr>
+<td>$A^{1/2}$ 的 Newton 迭代与二次收敛</td>
+<td><a href="../课堂笔记-20261110-广义特征值与矩阵函数.html#p6">11.10 §6</a></td>
+<td>11-10 矩阵平方根</td>
+</tr>
 </tbody>
 </table>
 <blockquote>
@@ -467,7 +499,7 @@ cd('visualize'); VIS_P4_Jordan_forward_error
 <p>课程内容与题目 PDF 版权归复旦大学及授课教师所有；代码与图为我本人所作，仅供个人复习存档。</p>
 <hr>
 <p class="footnote">题目 PDF 与课程内容版权归复旦大学及授课教师所有；代码、补做的可视化脚本与结果图为我本人所作。
-本页共 204 个公式，KaTeX 0.16.11 及全部 20 个字体文件随仓库提交于 <code>../assets/katex/</code>，完全离线可用。
+本页共 246 个公式，KaTeX 0.16.11 及全部 20 个字体文件随仓库提交于 <code>../assets/katex/</code>，完全离线可用。
 在 github.com 上点开本文件只会看到源码，看渲染版请走
 <a href="https://michaellu2007.github.io/fdu-note-summarized/数值算法与案例分析/作业代码/作业代码索引.html">GitHub Pages</a>，
 或克隆仓库后直接双击打开。</p>
