@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课堂笔记 · 2026-11-17 · 稀疏矩阵 CSC、分裂迭代与收敛性</title>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<style>
+:root{
+  --ink:#1b1b1f; --ink2:#4a4a52; --ink3:#77777f;
+  --line:#e3e2dd; --bg:#ffffff; --bg2:#f7f6f3; --bg3:#fbfaf8;
+  --accent:#185fa5; --accent-bg:#e6f1fb;
+  --warn:#993c1d; --warn-bg:#faece7;
+  --ok:#0f6e56; --ok-bg:#e1f5ee;
+  --gold:#854f0b; --gold-bg:#faeeda;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#ececef; --ink2:#b8b8c0; --ink3:#8a8a93;
+    --line:#34343a; --bg:#17171a; --bg2:#1f1f24; --bg3:#1b1b20;
+    --accent:#85b7eb; --accent-bg:#12304d;
+    --warn:#f0997b; --warn-bg:#3d1f13;
+    --ok:#5dcaa5; --ok-bg:#0d3227;
+    --gold:#ef9f27; --gold-bg:#3a2a0c;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.8;-webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:56px 32px 96px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 14px}
+h1{font-size:29px;line-height:1.36;font-weight:600;margin:0 0 18px;letter-spacing:-.01em}
+h2{font-size:21px;font-weight:600;margin:56px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line);letter-spacing:-.01em}
+h3{font-size:17px;font-weight:600;margin:34px 0 12px}
+h4{font-size:15px;font-weight:600;margin:24px 0 8px;color:var(--ink2)}
+p{margin:12px 0}
+ul,ol{margin:12px 0;padding-left:24px}
+li{margin:6px 0}
+strong{font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.2px;background:var(--bg2);padding:1px 5px;border-radius:4px}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;overflow-x:auto;font-size:13px;line-height:1.6}
+pre code{background:none;padding:0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.lede{font-size:15px;color:var(--ink2)}
+.toc{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:18px 24px;margin:28px 0 8px}
+.toc ol{margin:8px 0 0;padding-left:22px}
+.toc li{margin:3px 0;font-size:14.5px}
+.toc ol ol{margin:2px 0 8px;padding-left:20px;border-left:1px solid var(--line)}
+.toc ol ol li{font-size:13.5px;color:var(--ink2)}
+.tag{display:inline-block;font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:2px;background:var(--gold-bg);color:var(--gold);white-space:nowrap}
+.tag.a{background:var(--accent-bg);color:var(--accent)}
+.tag.o{background:var(--ok-bg);color:var(--ok)}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px 22px;margin:20px 0;background:var(--bg3)}
+.box.key{background:var(--accent-bg);border-color:transparent}
+.box.warn{background:var(--warn-bg);border-color:transparent}
+.box.ok{background:var(--ok-bg);border-color:transparent}
+.box.gold{background:var(--gold-bg);border-color:transparent}
+.box .label{font-size:12.5px;font-weight:600;letter-spacing:.06em;margin:0 0 6px;text-transform:uppercase}
+.box.key .label{color:var(--accent)}.box.warn .label{color:var(--warn)}.box.ok .label{color:var(--ok)}.box.gold .label{color:var(--gold)}
+.box p:first-of-type{margin-top:0}.box p:last-child{margin-bottom:0}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:13px}
+td.num{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.katex{font-size:1.04em}
+.footnote{font-size:13.2px;color:var(--ink3);margin-top:6px}
+figure{margin:26px 0}
+figcaption{font-size:13px;color:var(--ink3);margin-top:8px;text-align:center}
+.strike{text-decoration:line-through;color:var(--ink3)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">数值算法与案例分析 Ⅰ · 2026-11-17 课堂 · 六张板书整理</p>
+<h1>从离散 Laplace 到迭代法：<br>稀疏矩阵怎么存，矩阵怎么乘，迭代什么时候收敛</h1>
+<p class="lede">这堂课的链条是：<strong>离散化微分方程 → 得到大型稀疏矩阵 → 稀疏矩阵得压缩存储（CSC）→ 压缩格式下怎么做 matvec → 直接解太贵，改迭代 → 迭代的收敛判据 → 收敛太慢怎么办（预条件、多重网格、Krylov）</strong>。本笔记按这条线展开；老师板书上划掉的地方<strong>不是算错，是老师说那种写法不好</strong>，一律原样保留并标出。</p>
+
+<div class="box gold">
+<p class="label">关于板书上的划改（重要）</p>
+<p>主人特别交代：<strong>划掉的不是写错了，是老师认为那种写法不好。</strong>所以本笔记把每处划改都抄进正文，用 <span class="strike">删除线</span> 或「板书划去」标注，并说明老师嫌它哪里不好。请勿把这些行当成笔误跳过——它们往往是理解老师意图的关键（例如 CSC 下为什么不能按 <code>k</code> 一把梭累加）。</p>
+</div>
+
+<div class="toc">
+<strong style="font-size:13px;letter-spacing:.06em;color:var(--ink3)">目录</strong>
+<ol>
+<li><a href="#p1">第一部分 · 问题从哪来：离散 Laplace 与稀疏性</a>
+  <ol><li><a href="#s11">§1.1 五点差分格式</a></li><li><a href="#s12">§1.2 triplets 与压缩格式</a></li></ol>
+</li>
+<li><a href="#p2">第二部分 · CSC 列压缩格式（本讲重点）</a>
+  <ol>
+    <li><a href="#s21">§2.1 三数组的定义</a></li>
+    <li><a href="#s22">§2.2 手算例子：这个 5×5 矩阵怎么存</a></li>
+    <li><a href="#s23">§2.3 <code>col_ptr</code> 为什么有 <em>n</em>+1 个数</a></li>
+    <li><a href="#s24">§2.4 用 CSC 算 <em>y</em> = <em>Ax</em>（按列累加）</a></li>
+    <li><a href="#s25">§2.5 用 CSC 算 <em>y</em> = <em>A</em><sup>T</sup><em>x</em>（转置就是换 <em>i</em>, <em>j</em>）</a></li>
+    <li><a href="#s26">§2.6 两处划掉的写法，为什么不好</a></li>
+    <li><a href="#s27">§2.7 存储开销对比</a></li>
+  </ol>
+</li>
+<li><a href="#p3">第三部分 · 迭代法的基本框架</a>
+  <ol>
+    <li><a href="#s31">§3.1 例子：一个 3×3 方程组与一轮 Jacobi</a></li>
+    <li><a href="#s32">§3.2 分裂 <em>A</em> = <em>M</em> − <em>N</em> 与误差递推</a></li>
+    <li><a href="#s33">§3.3 谱半径判据与预条件</a></li>
+    <li><a href="#s34">§3.4 残差小 ≠ 精度高</a></li>
+  </ol>
+</li>
+<li><a href="#p4">第四部分 · 收敛性判据</a>
+  <ol>
+    <li><a href="#s41">§4.1 严格对角占优</a></li>
+    <li><a href="#s42">§4.2 <em>A</em> Hermite 正定时的 Jacobi</a></li>
+    <li><a href="#s43">§4.3 <em>A</em> Hermite 正定时的 Gauss–Seidel</a></li>
+  </ol>
+</li>
+<li><a href="#p5">第五部分 · 收敛太慢怎么办</a>
+  <ol>
+    <li><a href="#s51">§5.1 多重网格的动机</a></li>
+    <li><a href="#s52">§5.2 Krylov 子空间</a></li>
+  </ol>
+</li>
+<li><a href="#apx">附录 · 六张板书逐张对照 / 符号表</a></li>
+</ol>
+</div>
+
+<div class="box warn">
+<p class="label">来源三态 · 先说清楚哪些是课上写的、哪些是我补的</p>
+<table style="margin:6px 0">
+<tr><th>范围</th><th>来源</th><th>说明</th></tr>
+<tr><td><a href="#s11">§1.1</a>–<a href="#s12">§1.2</a></td><td>板书 1（11.17 那页上半）</td><td>五点差分与 triplets 均为课上原文；Taylor 展开的中间步骤是我补的。</td></tr>
+<tr><td><a href="#s21">§2.1</a>–<a href="#s27">§2.7</a></td><td>板书 1 下半 + 板书 2 + 板书 3 上半</td><td><strong>CSC 的三数组、matvec 伪代码是板书原文</strong>；具体 5×5 矩阵只画了 × 没写数值，我按板书给出的 <code>rowind</code>/<code>col_ptr</code> 还原非零位置并<strong>自填了数值</strong>，手算过程也是我补的。</td></tr>
+<tr><td><a href="#s31">§3.1</a>–<a href="#s34">§3.4</a></td><td>板书 3 下半 + 板书 4 上半</td><td>3×3 例子、<em>A</em>=<em>D</em>−<em>L</em>−<em>U</em>、splitting、谱半径判据为板书；误差递推的逐步展开、预条件的不等式证明是我补的。</td></tr>
+<tr><td><a href="#s41">§4.1</a></td><td>板书 4 下半 + 讲义第 3 章</td><td>对角占优结论与 Jacobi/GS 的证法框架在板书上；「反证 + SDD 阵可逆」的完整说法是我按讲义补的。</td></tr>
+<tr><td><a href="#s42">§4.2</a>–<a href="#s43">§4.3</a></td><td>板书 5</td><td>正定情形下两条证明、复数 <em>β</em> 的推导与几何图为板书；每一步不等式的来源说明是我补的。</td></tr>
+<tr><td><a href="#s51">§5.1</a>–<a href="#s52">§5.2</a></td><td>板书 6 + 讲义第 4 章</td><td>多重网格与 Krylov 定义在板书上；特征值公式的符号我按 6 倍放大图核对（见 <a href="#warn-mg">此处</a>）。</td></tr>
+</table>
+<p class="footnote">判据：板书共 6 张，全部属于本次 11.17 课堂；无「讲义有但课上没讲」的整节内容。每张对应哪一段见<a href="#apx">附录对照表</a>。</p>
+</div>
+
+<!-- ============ PART 1 ============ -->
+<hr>
+<h2 id="p1">第一部分 · 问题从哪来：离散 Laplace 与稀疏性</h2>
+
+<h3 id="s11">§1.1 五点差分格式 <span class="tag">板书 1</span></h3>
+
+<p><strong>先说人话：</strong>要在一个方形区域里解 Laplace 方程，没法把每一点的解都当成未知数连续地求。办法是把区域打成网格，<strong>只保留格点上的值</strong>，再用「相邻点温度的平均值等于中心点」这类局部关系把偏微分方程换成一大堆线性方程。</p>
+
+<p>板书考虑采集（离散）后的势能 <em>U</em>，满足 Laplace 方程：</p>
+\[
+0=\frac{\partial^2 U}{\partial x^2}+\frac{\partial^2 U}{\partial y^2}.
+\]
+
+<p>对每个方向用 Taylor 展开。以 <em>x</em> 方向为例，在格点 <em>i</em> 处对 <em>i</em>+1 和 <em>i</em>−1 分别展开：</p>
+\[
+U_{i,j+1}=U_{i,j}+\frac{\partial U}{\partial x}h+\frac{1}{2}\frac{\partial^2 U}{\partial x^2}h^2+O(h^3),\qquad
+U_{i,j-1}=U_{i,j}-\frac{\partial U}{\partial x}h+\frac{1}{2}\frac{\partial^2 U}{\partial x^2}h^2+O(h^3).
+\]
+
+<div class="box warn">
+<p class="label">板书划改 · 这里的写法被老师划掉了</p>
+<p>板书上 Taylor 那一行写的是 <span class="strike">$h\cdot U_{i,j+1}=U_{i,j}\pm\frac{\partial U}{\partial x}h+\frac{\partial^2 U}{\partial x^2}h^{\pm}$</span>，并把开头的因子与末尾的 ± 划掉重写。<strong>这不是算错</strong>——式子想说的仍是 Taylor 展开；老师划掉是因为把 <em>h</em> 乘在左边、又把两个方向的 ± 写成一行，既不方便相加消项，也容易看错符号。规范写法就是上面两行分开写。</p>
+</div>
+
+<p>两式相加，一阶项抵消，解出二阶导数：</p>
+\[
+\left.\frac{\partial^2 U}{\partial x^2}\right|_{i,j}
+=\frac{U_{i,j+1}+U_{i,j-1}-2U_{i,j}}{h^2}+O(h^2).
+\]
+
+<p><strong>关键那一步：</strong>一阶项 <em>U</em><sub><em>x</em></sub><em>h</em> 与 <em>−U</em><sub><em>x</em></sub><em>h</em> 正好抵消，误差从 $O(h)$ 变成 $O(h^2)$。这一步是整个五点差分能用二阶精度的全部原因。对 <em>y</em> 方向做同样的事，代回 Laplace 方程：</p>
+\[
+U_{i,j+1}+U_{i+1,j}+U_{i,j-1}+U_{i-1,j}-4U_{i,j}=0.
+\]
+
+<figure>
+<svg viewBox="0 0 680 190" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>五点差分模板</title>
+<desc>中心点系数为负四，上下左右四个邻居系数为一，其余点不出现。</desc>
+<defs><marker id="arrowStencil" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink3)"/></marker></defs>
+<g stroke="var(--ink3)" fill="none" stroke-width="1.2">
+<line x1="132" y1="70" x2="132" y2="130"/><line x1="72" y1="130" x2="192" y2="130"/><line x1="132" y1="130" x2="132" y2="190" stroke-dasharray="0"/>
+<line x1="252" y1="70" x2="252" y2="130"/><line x1="192" y1="130" x2="312" y2="130"/>
+<line x1="372" y1="70" x2="372" y2="190"/><line x1="312" y1="130" x2="432" y2="130"/>
+<line x1="492" y1="70" x2="492" y2="190"/><line x1="432" y1="130" x2="552" y2="130"/>
+<line x1="132" y1="70" x2="252" y2="70"/><line x1="252" y1="70" x2="372" y2="70"/><line x1="372" y1="70" x2="492" y2="70"/>
+<line x1="132" y1="190" x2="252" y2="190"/><line x1="252" y1="190" x2="372" y2="190"/><line x1="372" y1="190" x2="492" y2="190"/>
+</g>
+<line x1="600" y1="130" x2="636" y2="130" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowStencil)"/>
+<text x="132" y="62" text-anchor="middle" fill="var(--ink2)" font-size="13">1</text>
+<text x="252" y="138" text-anchor="middle" fill="var(--ink2)" font-size="13">1</text>
+<text x="372" y="62" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="600">−4</text>
+<text x="492" y="138" text-anchor="middle" fill="var(--ink2)" font-size="13">1</text>
+<text x="372" y="208" text-anchor="middle" fill="var(--ink2)" font-size="13">1</text>
+<text x="620" y="112" text-anchor="middle" fill="var(--ink3)" font-size="11">每点只</text>
+<text x="620" y="128" text-anchor="middle" fill="var(--ink3)" font-size="11">连 5 个</text>
+</svg>
+<figcaption>图 1 · 五点差分模板：每个格点只和上下左右四个邻居发生关系，对应矩阵每行最多 5 个非零元。</figcaption>
+</figure>
+
+<div class="box key">
+<p class="label">这一节的结论，直接决定后面所有内容</p>
+<p>一个 <em>n</em>×<em>n</em> 网格就有 <em>n</em><sup>2</sup> 个未知数，但每个方程<strong>只涉及 5 个数</strong>。所以矩阵是 $n^2\times n^2$ 的庞然大物，却只有约 $5n^2$ 个非零元——<strong>稀疏</strong>。存 $n^4$ 个数不可能，存 $5n^2$ 个数可以。这就是 CSC 的动机。板书那句「所以减少计算开销」说的就是这件事。</p>
+</div>
+
+<h3 id="s12">§1.2 triplets 与压缩格式 <span class="tag">板书 1</span></h3>
+
+<p>板书从最朴素的记法开始。对一个矩阵 $A\in\mathbb{R}^{m\times n}$，把每个非零元写成三元组：</p>
+\[
+(i,\;j,\;a_{ij}),\qquad a_{ij}\ne 0.
+\]
+
+<p>这种「 triplets 」（也叫 COO / 坐标格式）要存三个等长的数组：</p>
+<ul>
+<li><code>rowindex</code>：行号；</li>
+<li><code>columnindex</code>：列号；</li>
+<li><code>nzvalue</code>：数值；</li>
+</ul>
+<p>外加 $m$、$n$ 和 <strong>nnz</strong>（number of non-zero，非零元个数）。</p>
+
+<p>板书紧接着指出：triplets 有个浪费——每个非零元都要存一个行号和一个列号，即 $2\,\text{sizeof(int)}+\text{sizeof(double)}$ 字节。接下来要讲的列压缩格式（CSC）把列号那一半省掉了。</p>
+
+<!-- ============ PART 2 ============ -->
+<hr>
+<h2 id="p2">第二部分 · CSC 列压缩格式（本讲重点）</h2>
+
+<h3 id="s21">§2.1 三数组的定义 <span class="tag">板书 1</span><span class="tag">板书 2</span></h3>
+
+<p><strong>先说人话：</strong>CSC 就是<strong>按列把非零元一串一串排开</strong>。既然是按列排，列号就不需要逐个记了——只要记「每一列从哪一位开始」，就足以反推出任何一个数属于哪一列。于是三个数组变成：</p>
+
+<table>
+<tr><th>数组</th><th>长度</th><th>装什么</th></tr>
+<tr><td><code>nzval</code>（values）</td><td>nnz</td><td>按<strong>列优先</strong>顺序排列的所有非零元数值</td></tr>
+<tr><td><code>rowind</code>（row index）</td><td>nnz</td><td>每个非零元所在的<strong>行号</strong>，与 <code>nzval</code> 一一对应</td></tr>
+<tr><td><code>colptr</code>（column pointer）</td><td>$n+1$</td><td>第 <em>j</em> 列的非零元在 <code>nzval</code> 里的<strong>起始下标</strong>；最后一项是 nnz</td></tr>
+</table>
+
+<p>板书把这三个名字写在矩阵图旁边：<code>rowindex</code>、<code>colptr (column pointer)</code>、<code>nzvalue</code>，并标注 <code>nnz</code>。注意板书用的是 <code>colptr</code>，不是 <code>col_index</code>——前者是「指针（起始位置）」，后者容易被误读成「每列一个列号」，这正是老师嫌 triplets 写法不好的地方。</p>
+
+<div class="box ok">
+<p class="label">一句话本质</p>
+<p><code>colptr</code> 就是「每列非零元个数」的<strong>前缀和</strong>。第 <em>j</em> 列的非零元，在 <code>nzval</code> 和 <code>rowind</code> 里恰好占据区间 $[colptr[j],\,colptr[j+1])$ ——左闭右开。</p>
+</div>
+
+<h3 id="s22">§2.2 手算例子：这个 5×5 矩阵怎么存 <span class="tag a">板书 2 · 我补数值与手算</span></h3>
+
+<p>板书画的 5×5 矩阵只标了 ×（非零位置），没有写具体数值。我按板书旁边给出的 <code>rowind</code> 分组和 <code>colptr</code> 还原了非零位置，再给每个位置填一个数值，方便把存储与乘法都算一遍。<strong>数值是我填的，非零结构是板书的。</strong></p>
+
+\[
+A=\begin{bmatrix}
+2 & 0 & -1 & 3 & 0\\
+4 & 1 & 0 & 0 & -2\\
+0 & 0 & 5 & -3 & 0\\
+6 & 0 & 0 & 7 & 0\\
+0 & 8 & 0 & 0 & 9
+\end{bmatrix}\in\mathbb{R}^{5\times 5},\qquad \text{nnz}=12.
+\]
+
+<p><strong>按列扫一遍，把非零元一个一个摘出来：</strong></p>
+<ul>
+<li>第 0 列（往下读）：$a_{00}=2,\ a_{10}=4,\ a_{30}=6$ —— 行号 0, 1, 3，共 3 个；</li>
+<li>第 1 列：$a_{11}=1,\ a_{41}=8$ —— 行号 1, 4，共 2 个；</li>
+<li>第 2 列：$a_{02}=-1,\ a_{22}=5$ —— 行号 0, 2，共 2 个；</li>
+<li>第 3 列：$a_{03}=3,\ a_{23}=-3,\ a_{33}=7$ —— 行号 0, 2, 3，共 3 个；</li>
+<li>第 4 列：$a_{14}=-2,\ a_{44}=9$ —— 行号 1, 4，共 2 个。</li>
+</ul>
+
+<p>把数值按这个顺序排成一行 <code>nzval</code>，把行号排成一行 <code>rowind</code>，每个数在两行里的位置一一对应：</p>
+
+<table>
+<tr><th>下标 <em>k</em></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th><th class="num">11</th></tr>
+<tr><td><code>nzval[k]</code></td><td class="num">2</td><td class="num">4</td><td class="num">6</td><td class="num">1</td><td class="num">8</td><td class="num">−1</td><td class="num">5</td><td class="num">3</td><td class="num">−3</td><td class="num">7</td><td class="num">−2</td><td class="num">9</td></tr>
+<tr><td><code>rowind[k]</code></td><td class="num">0</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">4</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">3</td><td class="num">1</td><td class="num">4</td></tr>
+</table>
+
+<p>再数「每列有几个」并求前缀和，得到 <code>colptr</code>：</p>
+\[
+\text{col\_ptr}=[\,\underbrace{0}_{\text{列0起}},\ \underbrace{3}_{\text{列1起}},\ \underbrace{5}_{\text{列2起}},\ \underbrace{7}_{\text{列3起}},\ \underbrace{10}_{\text{列4起}},\ \underbrace{12}_{\text{终点}=\text{nnz}}\,].
+\]
+
+<p>这个 <code>[0, 3, 5, 7, 10, 12]</code> 与板书放大后读到的数字完全一致（板书上终点先写了一个数又划掉重写成 12——<strong>写法调整，不是算错</strong>）。</p>
+
+<figure>
+<svg viewBox="0 0 730 300" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>CSC 三数组：长条与切点</title>
+<desc>nzval 与 rowind 是两条长度 12 的长条，colptr 的六个数字是切点，把长条切成五段，每段对应一列。</desc>
+<defs>
+<marker id="arrowCscA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink3)"/></marker>
+</defs>
+<text x="18" y="46" fill="var(--ink2)" font-size="12.5">nzval</text>
+<text x="18" y="106" fill="var(--ink2)" font-size="12.5">rowind</text>
+<text x="18" y="166" fill="var(--ink2)" font-size="12.5">colptr</text>
+<g stroke="var(--line)" stroke-width="1">
+<rect x="124" y="38" width="48" height="30" fill="var(--accent-bg)"/><rect x="172" y="38" width="48" height="30" fill="var(--accent-bg)"/><rect x="220" y="38" width="48" height="30" fill="var(--accent-bg)"/>
+<rect x="268" y="38" width="48" height="30" fill="var(--ok-bg)"/><rect x="316" y="38" width="48" height="30" fill="var(--ok-bg)"/>
+<rect x="364" y="38" width="48" height="30" fill="var(--gold-bg)"/><rect x="412" y="38" width="48" height="30" fill="var(--gold-bg)"/>
+<rect x="460" y="38" width="48" height="30" fill="var(--warn-bg)"/><rect x="508" y="38" width="48" height="30" fill="var(--warn-bg)"/><rect x="556" y="38" width="48" height="30" fill="var(--warn-bg)"/>
+<rect x="604" y="38" width="48" height="30" fill="var(--bg2)"/><rect x="652" y="38" width="48" height="30" fill="var(--bg2)"/>
+<rect x="124" y="98" width="48" height="30" fill="var(--accent-bg)"/><rect x="172" y="98" width="48" height="30" fill="var(--accent-bg)"/><rect x="220" y="98" width="48" height="30" fill="var(--accent-bg)"/>
+<rect x="268" y="98" width="48" height="30" fill="var(--ok-bg)"/><rect x="316" y="98" width="48" height="30" fill="var(--ok-bg)"/>
+<rect x="364" y="98" width="48" height="30" fill="var(--gold-bg)"/><rect x="412" y="98" width="48" height="30" fill="var(--gold-bg)"/>
+<rect x="460" y="98" width="48" height="30" fill="var(--warn-bg)"/><rect x="508" y="98" width="48" height="30" fill="var(--warn-bg)"/><rect x="556" y="98" width="48" height="30" fill="var(--warn-bg)"/>
+<rect x="604" y="98" width="48" height="30" fill="var(--bg2)"/><rect x="652" y="98" width="48" height="30" fill="var(--bg2)"/>
+</g>
+<g font-size="12" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle" fill="var(--ink)">
+<text x="148" y="59">2</text><text x="196" y="59">4</text><text x="244" y="59">6</text><text x="292" y="59">1</text><text x="340" y="59">8</text><text x="388" y="59">−1</text><text x="436" y="59">5</text><text x="484" y="59">3</text><text x="532" y="59">−3</text><text x="580" y="59">7</text><text x="628" y="59">−2</text><text x="676" y="59">9</text>
+<text x="148" y="119">0</text><text x="196" y="119">1</text><text x="244" y="119">3</text><text x="292" y="119">1</text><text x="340" y="119">4</text><text x="388" y="119">0</text><text x="436" y="119">2</text><text x="484" y="119">0</text><text x="532" y="119">2</text><text x="580" y="119">3</text><text x="628" y="119">1</text><text x="676" y="119">4</text>
+</g>
+<g stroke="var(--ink3)" stroke-width="1.3" marker-end="url(#arrowCscA)">
+<line x1="124" y1="176" x2="124" y2="136"/><line x1="268" y1="176" x2="268" y2="136"/><line x1="364" y1="176" x2="364" y2="136"/><line x1="460" y1="176" x2="460" y2="136"/><line x1="604" y1="176" x2="604" y2="136"/><line x1="700" y1="176" x2="700" y2="136"/>
+</g>
+<g font-size="13" text-anchor="middle" fill="var(--ink)" font-family="ui-monospace,Menlo,Consolas,monospace">
+<text x="124" y="198">0</text><text x="268" y="198">3</text><text x="364" y="198">5</text><text x="460" y="198">7</text><text x="604" y="198">10</text><text x="700" y="198">12</text>
+</g>
+<g font-size="12" text-anchor="middle" fill="var(--ink2)">
+<text x="196" y="232">第0列 · 3 个</text><text x="316" y="232">第1列 · 2 个</text><text x="412" y="232">第2列 · 2 个</text><text x="532" y="232">第3列 · 3 个</text><text x="652" y="232">第4列 · 2 个</text>
+</g>
+<text x="18" y="270" font-size="12" fill="var(--ink3)">colptr[j] 是切点，colptr[j+1] 是下一个切点；两点之间的那段就是第 j 列。</text>
+</svg>
+<figcaption>图 2 · CSC 的「长条 + 切点」图像：<code>nzval</code> 与 <code>rowind</code> 是两条等长的长条，<code>colptr</code> 的六个数字像切点一样把长条切成五段，颜色相同的段属于同一列。</figcaption>
+</figure>
+
+<div class="box ok">
+<p class="label">自检条件 —— 复习时拿来验算</p>
+<ol style="margin:6px 0">
+<li><code>colptr[0] = 0</code>，<code>colptr[n] = nnz</code>；</li>
+<li><code>colptr</code> 单调不减，相邻差 <code>colptr[j+1] − colptr[j]</code> 就是第 <em>j</em> 列非零元个数；</li>
+<li><code>rowind</code> 的每一项都在 $[0,m)$ 内，同一列的 <code>rowind</code> 通常按行号升序存放。</li>
+</ol>
+</div>
+
+<h3 id="s23">§2.3 <code>col_ptr</code> 为什么有 <em>n</em>+1 个数 <span class="tag a">我补的动机解释 · 板书只列了数组</span></h3>
+
+<p>初看很怪：明明只有 $n=5$ 列，为什么要 6 个数？因为<strong>要描述「区间」就必须给两个端点</strong>。第 <em>j</em> 列占 $[colptr[j],colptr[j+1])$，5 段区间需要 6 个端点。</p>
+
+<p>更实际的理由：<strong>少一个，循环里就得多写一层特例判断。</strong>有了第 6 个数，取第 <em>j</em> 列的循环可以直接写成</p>
+<pre><code>for (k = colptr[j]; k &lt; colptr[j+1]; ++k) { ... }</code></pre>
+<p>不用判断「<em>j</em> 是不是最后一列」。这是数值软件里极常见的<strong>哨兵（sentinel）</strong>手法：多存一个元素，换掉一个分支判断。板书把 <code>col_ptr … (n+1)</code> 写在数组清单里，正是这个意思。</p>
+
+<h3 id="s24">§2.4 用 CSC 算 <em>y</em> = <em>Ax</em>（按列累加） <span class="tag">板书 2</span><span class="tag a">手算我补</span></h3>
+
+<p><strong>先说人话：</strong>普通公式是 $y_i=\sum_j a_{ij}x_j$——「按行累加」。但 CSC 是<strong>按列</strong>存的，按行累加就得满世界找数。换个等价的写法就能顺着存储顺序走：</p>
+\[
+y=\sum_{j=0}^{n-1} x_j\,A_{:j}
+\qquad\text{（把每个 }x_j\text{ 乘到第 }j\text{ 列 }A_{:j}\text{ 上再相加）}
+\]
+<p>也就是<strong>按列累加：</strong>拿 $x_j$ 乘第 <em>j</em> 列，加到 <em>y</em> 上。这一列的非零元在 <code>nzval</code> 里是连续的，一次扫完。</p>
+
+<p>板书给的伪代码（此处板书<strong>没有划掉</strong>）：</p>
+<pre><code>for i := 1 : m
+    y_i ← 0
+    for j := 1 : n
+        if a_ij ≠ 0
+            y_i ← y_i + a_ij * x_j</code></pre>
+<p>（这是「逻辑上」的按非零元累加，下面给出 CSC 上真正可执行的版本。）</p>
+
+<pre><code>y ← 0
+for j = 0 : n-1
+    for k = colptr[j] : colptr[j+1]-1
+        y[rowind[k]] ← y[rowind[k]] + nzval[k] * x[j]</code></pre>
+
+<p><strong>手算一遍。</strong>取 $x=(1,2,3,4,5)^{\mathsf T}$，初始 $y=(0,0,0,0,0)^{\mathsf T}$。按列处理，每列把 $x_j\times$（该列）累加进去：</p>
+
+<table>
+<tr><th>处理列 <em>j</em></th><th>该列非零元与 $x_j$</th><th>累加后的 <em>y</em></th></tr>
+<tr><td class="num">0（$x_0=1$）</td><td>$2\cdot1$→行0，$4\cdot1$→行1，$6\cdot1$→行3</td><td class="num">(2, 4, 0, 6, 0)</td></tr>
+<tr><td class="num">1（$x_1=2$）</td><td>$1\cdot2$→行1，$8\cdot2$→行4</td><td class="num">(2, 6, 0, 6, 16)</td></tr>
+<tr><td class="num">2（$x_2=3$）</td><td>$(−1)\cdot3$→行0，$5\cdot3$→行2</td><td class="num">(−1, 6, 15, 6, 16)</td></tr>
+<tr><td class="num">3（$x_3=4$）</td><td>$3\cdot4$→行0，$(−3)\cdot4$→行2，$7\cdot4$→行3</td><td class="num">(11, 6, 3, 34, 16)</td></tr>
+<tr><td class="num">4（$x_4=5$）</td><td>$(−2)\cdot5$→行1，$9\cdot5$→行4</td><td class="num">(11, −4, 3, 34, 61)</td></tr>
+</table>
+
+<p>所以 $Ax=(11,\,-4,\,3,\,34,\,61)^{\mathsf T}$。用按行公式核对，比如 $y_0=2\cdot1+(-1)\cdot3+3\cdot4=11$，$y_4=8\cdot2+9\cdot5=61$，一致。</p>
+
+<div class="box key">
+<p class="label">一句话本质</p>
+<p>CSC 下 $Ax$ 的代价是 $\Theta(\text{nnz})$：每个非零元恰好被访问一次，而且 <code>nzval</code> 是顺序读的（缓存友好）。换成按行公式去遍历，就变成 $\Theta(mn)$——稀疏性白费了。</p>
+</div>
+
+<h3 id="s25">§2.5 用 CSC 算 <em>y</em> = <em>A</em><sup>T</sup><em>x</em>（转置就是换 <em>i</em>, <em>j</em>） <span class="tag">板书 3 上半</span></h3>
+
+<p>板书在旁边批了一句：<strong>「转置是 <em>i</em>, <em>j</em> 变换一下」</strong>。意思是 $A^{\mathsf T}$ 的第 <em>i</em> 行第 <em>j</em> 列就是 $A$ 的第 <em>j</em> 行第 <em>i</em> 列，所以只要把上一段伪代码里 <code>rowind[k]</code>（行号）和 <code>j</code>（列号）的角色对调：</p>
+
+<pre><code>y ← 0
+for j = 0 : n-1
+    for k = colptr[j] : colptr[j+1]-1
+        i ← rowind[k]
+        y[j] ← y[j] + nzval[k] * x[i]      // 累加目标从 y[i] 换成 y[j]，乘的数从 x[j] 换成 x[i]</code></pre>
+
+<p><strong>为什么这次不能一把梭：</strong>板书写完 <code>y ← 0</code> 后先写了 <span class="strike">for (k=0, k &lt; colptr[n]; ++k)</span>，又<strong>划掉</strong>，改成外面先套一层 <code>for (j=0; j &lt; n; ++j)</code>，里面才是 <code>for (k = colptr[j]; k &lt; colptr[j+1]; ++k)</code>。</p>
+
+<div class="box warn">
+<p class="label">板书划改 · 这是「写法不好」，不是算错</p>
+<p>单层循环 <code>k = 0 … nnz−1</code> 表面上也能把所有非零元走一遍，但 <strong>CSC 里根本没有列号数组</strong>：拿到一个 <em>k</em>，你能直接读出 <code>rowind[k]</code>（行号），却无法直接知道它属于哪一列——列号要从 <code>colptr</code> 反查。所以「按 k 一把梭」在 CSC 上写不出来/要额外查找。老师划掉它，是要求你<strong>显式用列指针定位</strong>：先定列 <em>j</em>，再在该列的连续区间里走 <em>k</em>。这与主人交代的「划掉不是写错，是写法不好」完全吻合。</p>
+</div>
+
+<p><strong>手算一遍：</strong>仍取 $x=(1,2,3,4,5)^{\mathsf T}$，算 $A^{\mathsf T}x$。按上面的伪代码，对每列 <em>j</em>，用 <code>rowind</code> 去 <em>x</em> 里取数，累加到 <em>y[j]</em>：</p>
+<ul>
+<li>$y_0=2\cdot x_0+4\cdot x_1+6\cdot x_3=2+8+24=34$</li>
+<li>$y_1=1\cdot x_1+8\cdot x_4=2+40=42$</li>
+<li>$y_2=(-1)\cdot x_0+5\cdot x_2=-1+15=14$</li>
+<li>$y_3=3\cdot x_0+(-3)\cdot x_2+7\cdot x_3=3-9+28=22$</li>
+<li>$y_4=(-2)\cdot x_1+9\cdot x_4=-4+45=41$</li>
+</ul>
+<p>所以 $A^{\mathsf T}x=(34,42,14,22,41)^{\mathsf T}$。与按行核对：$(A^{\mathsf T}x)_0=\sum_i a_{i0}x_i=2\cdot1+4\cdot2+6\cdot4=34$，一致。</p>
+
+<h3 id="s26">§2.6 两处划掉的写法，为什么不好 <span class="tag">板书 2 + 板书 3</span></h3>
+
+<p>把本讲所有划改集中起来，因为它们都是老师在教「怎么写才对」：</p>
+
+<table>
+<tr><th>位置</th><th>板书原样（划掉）</th><th>老师嫌什么 / 正确写法</th></tr>
+<tr><td>板书 1 · Taylor 行</td><td><span class="strike">$h\cdot U_{i,j+1}=U_{i,j}\pm \frac{\partial U}{\partial x}h+\cdots$</span></td><td>把 <em>h</em> 写在左边、把双向 ± 挤成一行不便相加；应分写 $U_{i,j\pm1}$ 两式再相加。</td></tr>
+<tr><td>板书 2 · matvec 底部</td><td><span class="strike">$y_{\text{rowind}(k)}\leftarrow y_{\text{rowind}(k)}+a_{\text{rowind}(k)}x_{\text{colind}(k)}$</span></td><td>需要 <code>colind</code> 数组，那是 COO/triplets 的东西；CSC 没有列号数组，必须用 <code>colptr</code> 定列。</td></tr>
+<tr><td>板书 3 · 转置 matvec</td><td><span class="strike">for (k=0, k &lt; colptr[n]; ++k)</span></td><td>单层循环拿不到列号；改成外层 <code>for j</code>、内层 <code>colptr[j]…colptr[j+1]</code>。</td></tr>
+<tr><td>板书 1 · nnz</td><td><span class="strike">终点写了一个数</span> → 重写为 12</td><td>写法调整（先写错位置再改正），不是把算法算错。</td></tr>
+</table>
+
+<h3 id="s27">§2.7 存储开销对比 <span class="tag">板书 1</span><span class="tag a">估算我补</span></h3>
+
+<p>板书给出的 triplets 开销是</p>
+\[
+(2\,\text{sizeof(int)}+\text{sizeof(double))}\cdot \text{nnz}.
+\]
+<p>按 4 字节 int、8 字节 double 算，每个非零元 16 字节。CSC 去掉了列号数组，变成 $(\text{sizeof(int)}+\text{sizeof(double))}\cdot\text{nnz}+\text{sizeof(int)}\cdot(n+1)$，即每非零元 12 字节，多出 $4(n+1)$ 字节的 <code>colptr</code>。</p>
+
+<div class="box key">
+<p class="label">什么时候省得多</p>
+<p>当 $\text{nnz}\gg n$ 时省下的列号开销远超过 <code>colptr</code> 的代价。五点差分的 $\text{nnz}\approx 5n^2$，而矩阵阶数是 $n^2$，所以 $\text{nnz}\approx 5\times$(阶数)，压缩收益非常明显。</p>
+</div>
+
+<!-- ============ PART 3 ============ -->
+<hr>
+<h2 id="p3">第三部分 · 迭代法的基本框架</h2>
+
+<h3 id="s31">§3.1 例子：一个 3×3 方程组与一轮 Jacobi <span class="tag">板书 3 下半</span></h3>
+
+<p>板书用这个例子把迭代法讲活：</p>
+\[
+\begin{bmatrix}
+10 & 0.1 & 0.2\\
+0.2 & 20 & 0.1\\
+0.1 & 0.2 & 15
+\end{bmatrix}
+\begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix}
+=\begin{bmatrix}10\\40\\45\end{bmatrix},
+\qquad
+x^{(0)}=\begin{bmatrix}1\\2\\3\end{bmatrix}.
+\]
+
+<p>写成 $A=D-L-U$ 的形式：</p>
+\[
+D=\begin{bmatrix}10&0&0\\0&20&0\\0&0&15\end{bmatrix},\quad
+L=\begin{bmatrix}0&0&0\\-0.2&0&0\\-0.1&-0.2&0\end{bmatrix},\quad
+U=\begin{bmatrix}0&-0.1&-0.2\\0&0&-0.1\\0&0&0\end{bmatrix}.
+\]
+
+<div class="box warn">
+<p class="label">注意符号约定</p>
+<p>$A=D-L-U$，所以 $L$、$U$ 里装的是<strong>带负号</strong>的严格下/上三角部分。这样写是为了让 Jacobi 迭代矩阵恰好是 $D^{-1}(L+U)$，符号更整齐。别把 $L$ 直接当成 $A$ 的下三角。</p>
+</div>
+
+<p>Jacobi 的意思：<strong>第 <em>k</em>+1 轮的每个分量，都用上一轮的其他分量代入求解</strong>。从第 <em>i</em> 行解出 $x_i$：</p>
+\[
+x_1\leftarrow\frac{10-0.1x_2-0.2x_3}{10},\quad
+x_2\leftarrow\frac{40-0.2x_1-0.1x_3}{20},\quad
+x_3\leftarrow\frac{45-0.1x_1-0.2x_2}{15}.
+\]
+
+<p><strong>手算第一轮</strong>（右边全部用 $x^{(0)}=(1,2,3)^{\mathsf T}$）：</p>
+\[
+x_1^{(1)}=\frac{10-0.1\cdot2-0.2\cdot3}{10}=\frac{9.2}{10}=0.92,
+\]
+\[
+x_2^{(1)}=\frac{40-0.2\cdot1-0.1\cdot3}{20}=\frac{39.7}{20}=1.985,
+\]
+\[
+x_3^{(1)}=\frac{45-0.1\cdot1-0.2\cdot2}{15}=\frac{44.5}{15}\approx2.9667.
+\]
+
+<p>这个例子的对角元（10, 20, 15）远大于非对角元之和，是下面 §<a href="#s41">4.1</a> 对角占优收敛条件的典型。</p>
+
+<h3 id="s32">§3.2 分裂 <em>A</em> = <em>M</em> − <em>N</em> 与误差递推 <span class="tag">板书 3 下半</span><span class="tag a">展开我补</span></h3>
+
+<p>由 $Dx-Lx-Ux=b$ 得 Jacobi 迭代式 $x_{\text{new}}=D^{-1}(b+Lx+Ux)$。板书把它抽象成<strong>分裂（splitting）</strong>：把 $A$ 拆成 $M-N$，其中 $M$ 要「近似 $A$ 且好求逆」。</p>
+\[
+A=M-N,\qquad Ax=b\ \Longleftrightarrow\ Mx=b+Nx.
+\]
+
+<p>于是构造迭代：左边用新值、右边用旧值，</p>
+\[
+Mx_{k+1}=b+Nx_k.
+\]
+
+<p><strong>板书在这里有一处划改</strong>：先写了 <span class="strike">$x_{k+1}=M^{-1}(b+Nx_k)$</span> 并把整行划掉，重写为下面这组。这不是式子错，而是老师想强调<strong>要和精确解作差</strong>。精确解满足 $Mx_*=b+Nx_*$（因为 $Ax_*=b$），两式相减：</p>
+\[
+M(x_{k+1}-x_*)=N(x_k-x_*),
+\]
+\[
+x_{k+1}-x_*=\underbrace{M^{-1}N}_{G}\,(x_k-x_*).
+\]
+
+<p>把这一步再展开（这是我补的中间步骤）：递推 <em>k</em> 次就是</p>
+\[
+x_k-x_*=G^k(x_0-x_*).
+\]
+
+<div class="box key">
+<p class="label">这一步是整个迭代法的命门</p>
+<p>迭代误差完全由矩阵 $G=M^{-1}N$（叫<strong>迭代矩阵</strong>）的幂次决定。$G^k\to0$ 当且仅当 $G$ 的所有特征值的模都 < 1。于是问题从「迭代收不收敛」变成「$G$ 的谱半径多大」。</p>
+</div>
+
+<p>板书上的两个特例：</p>
+<ul>
+<li>Jacobi：$M=D$，$N=L+U$，故 $G=D^{-1}(L+U)$；</li>
+<li>Gauss–Seidel：$M=D-L$，$N=U$，故从 $(D-L)x_{k+1}=b+Ux_k$ 得 $x_{k+1}=(D-L)^{-1}(b+Ux_k)$。</li>
+</ul>
+
+<h3 id="s33">§3.3 谱半径判据与预条件 <span class="tag">板书 3 + 板书 4</span><span class="tag a">证明我补</span></h3>
+
+<p>板书写下收敛的充要条件：</p>
+\[
+\rho(M^{-1}N)\lt 1\quad\Longleftrightarrow\quad \lim_{k\to\infty}x_k=x_*.
+\]
+
+<p><strong>为什么是谱半径。</strong>把初始误差按 $G$ 的特征向量展开：$x_0-x_*=\sum_i c_i v_i$，则 $G^k(x_0-x_*)=\sum_i c_i\lambda_i^k v_i$。模最大的特征值 $\rho(G)$ 决定衰减速率；$\rho(G)\lt1$ 时每一项都趋于 0，否则至少有一项不衰减。</p>
+
+<p>板书进一步写出迭代矩阵的一个恒等式：</p>
+\[
+M^{-1}N=M^{-1}(M-A)=I-M^{-1}A.
+\]
+
+<div class="box ok">
+<p class="label">这个式子的意义 · 我补</p>
+<p>它说：$G$ 接近零矩阵 $\Leftrightarrow$ $M^{-1}A$ 接近单位阵 $\Leftrightarrow$ $M$ 接近 $A$。所以<strong>好的分裂就是让 $M$ 尽量像 $A$，同时 $M^{-1}$ 又好算</strong>。板书在 ideal case 那行写：</p>
+<p>1° $M\approx A$；2° $M^{-1}$ 容易算；3° $\kappa(M^{-1}A)\le\kappa(A)$。</p>
+<p>第三条我按 $M^{-1}A=I-G$ 理解：预条件后矩阵更接近单位阵，条件数下降，迭代收敛更快。这里 $M$ 就是<strong>预条件子（preconditioner）</strong>——板书在下面专门拉了个箭头注明这个词。</p>
+</div>
+
+<p>板书末尾给了一个直观估计：$D^{-1}(L+U)$ 的谱半径约等于 0.03 量级（板书写「$\rho(D^{-1}(L+U))\approx0.03$」，旁边注明是「相关范数小于谱半径」的估计），远小于 1，所以这个例子的 Jacobi 收敛很快。</p>
+
+<h3 id="s34">§3.4 残差小 ≠ 精度高 <span class="tag">板书 4 上半</span></h3>
+
+<p>板书写了一句要紧的话：<strong>「精度差 ⇔ 向后误差小」</strong>——意思是<strong>向后误差小并不能保证解的精度高</strong>。它用残差 $r$ 与误差 $x_*-x$ 的关系来说明：</p>
+
+<p>板书原样（含划改）：<span class="strike">$r=A$</span>$b-Ax=$<span class="strike">$A^{-1}$</span>$(x_*-x)$。划掉的是前面误写的 $A$ 与第二个等号后的 $A^{-1}$；<strong>老师划掉的是写法，不是结论</strong>。正确关系是</p>
+\[
+r=b-Ax=A(x_*-x),\qquad x_*-x=A^{-1}r.
+\]
+
+<p>板书接着写出的范数关系（它是上面第二个式子的直接推论）：</p>
+\[
+\|r\|_2=\big((x-x_*)^*A^*A(x_*-x)\big)^{1/2}=\|x_*-x\|_{A^*A}.
+\]
+
+<div class="box warn">
+<p class="label">这段想说什么</p>
+<p>$\|r\|$ 小只说明误差在 $A^*A$ 这个范数下小。若 $A$ 病态（$\kappa(A)$ 大），$A^{-1}$ 会把残差放大很多倍，$x_*-x=A^{-1}r$ 仍可能很大。<strong>所以停止准则不能只看残差</strong>——这正是预条件要解决的核心问题：</p>
+<p>把 $A^{-1}r$ 换成一个好算又稳定的近似，见 §<a href="#s33">3.3</a>。</p>
+</div>
+
+<!-- ============ PART 4 ============ -->
+<hr>
+<h2 id="p4">第四部分 · 收敛性判据</h2>
+
+<h3 id="s41">§4.1 严格对角占优 <span class="tag">板书 4 下半</span><span class="tag a">讲义第 3 章 · 完整说法我补</span></h3>
+
+<p>板书给出最实用的充分条件：</p>
+\[
+|a_{ii}|\ \gtreqless\ \sum_{j\ne i}|a_{ij}|\quad(\text{严格})\qquad\Longrightarrow\qquad \text{Jacobi、Gauss 迭代收敛}.
+\]
+
+<p>板书写作 $|a_{i:i}|\ge\sum_{j\ne i}|a_{ij}|$；严格对角占优（strictly diagonally dominant，SDD）要求<strong>严格大于</strong>。§<a href="#s31">3.1</a> 的例子就是 SDD。</p>
+
+<p><strong>Jacobi 的证法（板书框架 + 我补全）。</strong>设 $D^{-1}(L+U)x=\lambda x$，要证 $|\lambda|\lt1$。反设 $|\lambda|\ge1$，移项得</p>
+\[
+(\lambda D-L-U)x=0.
+\]
+<p>矩阵 $\lambda D-L-U$ 的对角元是 $\lambda a_{ii}$，非对角元是 $-a_{ij}$（$j\ne i$）。因为 $|\lambda|\ge1$，</p>
+\[
+|\lambda a_{ii}|\ \ge\ |a_{ii}|\ \gt\ \sum_{j\ne i}|a_{ij}|.
+\]
+<p>所以 $\lambda D-L-U$ 仍是 SDD。<strong>SDD 矩阵必可逆</strong>（这是关键定理：若 $Bx=0$，取 $|x_i|$ 最大的分量，由第 <em>i</em> 行得 $|b_{ii}||x_i|\le\sum_{j\ne i}|b_{ij}||x_j|\le(\sum_{j\ne i}|b_{ij}|)|x_i|$，与严格不等式矛盾）。于是 $x=0$，与 $x$ 是特征向量矛盾。故 $|\lambda|\lt1$。</p>
+
+<p><strong>Gauss–Seidel 的证法。</strong>从 $(D-L)^{-1}Ux=\lambda x$ 得 $Ux=\lambda(D-L)x$，即</p>
+\[
+(U-\lambda D+\lambda L)x=0
+\quad\Longleftrightarrow\quad
+\lambda\Big(\lambda^{-1}U-D+L\Big)x=0.
+\]
+<p>板书在下面注「is SDD」。因为 $|\lambda|\ge1$ 时 $|\lambda^{-1}|\le1$，矩阵 $-\big(D-L-\lambda^{-1}U\big)$ 的对角元 $-a_{ii}$、非对角元满足同样的占优不等式，故 SDD 可逆，推出矛盾。这正是板书写 $\lambda(\lambda^{-1}U-D-L)x=0$ 的用意——提出 $\lambda$ 后，括号里就是 SDD 的形式。</p>
+
+<div class="box key">
+<p class="label">结论</p>
+<p>SDD  ⇒  Jacobi 与 Gauss–Seidel 都收敛。这是最常用、最好检查的判据，只要在矩阵上逐行比一下对角元就够了。网格离散出来的 Laplace 矩阵恰好满足（对角 4，邻居最多 4，边界点更占优）。</p>
+</div>
+
+<h3 id="s42">§4.2 <em>A</em> Hermite 正定时的 Jacobi <span class="tag">板书 5 上半</span><span class="tag a">每步来源说明我补</span></h3>
+
+<p>另一类判据不要求对角占优，只要求 $A^*=A\succ0$（Hermite 正定）。板书推导：</p>
+\[
+B=D^{-1}(L+U)=D^{-1}(D-A)
+\ \sim\ D^{-1/2}(D-A)D^{-1/2}
+=I-D^{-1/2}AD^{-1/2}.
+\]
+
+<p><strong>这一步为什么可以这么写。</strong>$B=D^{-1}(D-A)$ 一般不对称，但 $D^{-1}(D-A)$ 与 $D^{-1/2}(D-A)D^{-1/2}$ <strong>相似</strong>（取 $S=D^{1/2}$，则 $S^{-1}BS=D^{1/2}D^{-1}(D-A)D^{-1/2}=D^{-1/2}(D-A)D^{-1/2}$），相似矩阵特征值相同。而 $D^{-1/2}(D-A)D^{-1/2}$ 是 Hermite 的，特征值都是实数，才能谈大小。板书那个「$\sim$」就是相似的意思。</p>
+
+<p>记 $H=D^{-1/2}AD^{-1/2}$，因 $A\succ0$ 有 $H\succ0$，其特征值 $\mu_i\gt0$。而 $B$ 的特征值 $\lambda_i=1-\mu_i$：</p>
+\[
+-1\lt\lambda(B)\lt1.
+\]
+
+<p><strong>上界</strong> $\lambda_i=1-\mu_i\lt1$ 来自 $\mu_i\gt0$；<strong>下界</strong>需要额外条件，板书写出等价链：</p>
+\[
+\lambda(B)\gt-1
+\ \Longleftrightarrow\ I-D^{-1/2}AD^{-1/2}\succ-I
+\ \Longleftrightarrow\ 2I\succ D^{-1/2}AD^{-1/2}
+\ \Longleftrightarrow\ 2D\succ A.
+\]
+
+<p>最后一步是两边同乘 $D^{1/2}$（正定阵保序）。所以：</p>
+\[
+A\succ0\ \text{且}\ 2D-A\succ0\quad\Longrightarrow\quad \rho(B)\lt1\quad\Longrightarrow\quad \text{Jacobi 收敛}.
+\]
+
+<h3 id="s43">§4.3 <em>A</em> Hermite 正定时的 Gauss–Seidel <span class="tag">板书 5 下半</span><span class="tag a">每步来源与几何图我补</span></h3>
+
+<p>GS 的迭代矩阵是 $B=(D-L)^{-1}U$，一般非对称、特征值可为复数，证明要绕一圈。板书推导如下。</p>
+
+<p>由 $(D-L)^{-1}Ux=\lambda x$ 得 $Ux=\lambda(D-L)x$。板书先写了 <span class="strike">$x^*Ux=x^*Dx\lambda-x^*Lx\lambda$</span> 并<strong>划掉</strong>，改成下面这条更干净的路：<strong>利用 $A$ Hermite 推出 $U=L^*$。</strong>因为 $A=D-L-U$ 且 $A^*=A$，必有 $U=L^*$（严格上三角是严格下三角的共轭转置）。于是</p>
+\[
+x^*Ux=x^*L^*x=(x^*Lx)^*.
+\]
+
+<p>板书定义（这里 $\theta$ 被写得像 $\vartheta$）：</p>
+\[
+\vartheta=x^*Dx\gt0,\qquad \beta=x^*Lx,\qquad \overline{\beta}=x^*Ux.
+\]
+<p>$\vartheta\gt0$ 因为 $D=\operatorname{diag}(a_{ii})$ 正定；$x^*Ux=\overline{\beta}$ 来自刚才的 $U=L^*$。</p>
+
+<p>把 $Ux=\lambda(D-L)x$ 两边左乘 $x^*$，代入记号：</p>
+\[
+\overline{\beta}=\lambda(\vartheta-\beta)
+\quad\Longrightarrow\quad
+(\vartheta-\beta)\lambda=\overline{\beta}
+\quad\Longrightarrow\quad
+\lambda=\frac{\overline{\beta}}{\vartheta-\beta}.
+\]
+
+<p><strong>板书接着用复数模长判断 $|\lambda|\lt1$</strong>。设 $\beta=\beta_1+i\beta_2$，则 $\overline{\beta}=\beta_1-i\beta_2$，$\vartheta-\beta=(\vartheta-\beta_1)-i\beta_2$：</p>
+\[
+|\lambda|
+=\frac{|\overline{\beta}|}{|\vartheta-\beta|}
+=\frac{\sqrt{\beta_1^2+\beta_2^2}}{\sqrt{(\vartheta-\beta_1)^2+\beta_2^2}}.
+\]
+
+<p>要 $|\lambda|\lt1$，只需分子平方 < 分母平方：</p>
+\[
+\beta_1^2+\beta_2^2\ \lt\ (\vartheta-\beta_1)^2+\beta_2^2
+\ \Longleftrightarrow\ 2\vartheta\beta_1\ \lt\ \vartheta^2
+\ \Longleftrightarrow\ \operatorname{Re}(\beta)=\beta_1\ \lt\ \frac{\vartheta}{2}.
+\]
+
+<p><strong>最后一步用 $A\succ0$。</strong>$x^*Ax=x^*(D-L-U)x=\vartheta-\beta-\overline{\beta}=\vartheta-2\beta_1\gt0$，所以 $\beta_1\lt\vartheta/2$ 自动成立。于是 $|\lambda|\lt1$，GS 收敛。板书把这一步写成 $\eta=\vartheta-\beta-\overline{\beta}\gt0$，$\overline{\beta}=\vartheta-\beta-\eta$，并在复平面上画了 $\beta$、$\overline{\beta}$ 与实轴的关系。</p>
+
+<figure>
+<svg viewBox="0 0 680 260" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>GS 收敛的复平面几何</title>
+<desc>复平面上 beta 与共轭 beta 关于实轴对称，直线 Re=theta/2 在右侧，beta 必在其左，故到原点距离小于到 theta 的距离。</desc>
+<defs><marker id="arrowGS" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink3)"/></marker></defs>
+<line x1="80" y1="140" x2="600" y2="140" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowGS)"/>
+<line x1="340" y1="238" x2="340" y2="30" stroke="var(--ink3)" stroke-width="1.2" marker-end="url(#arrowGS)"/>
+<text x="606" y="145" fill="var(--ink3)" font-size="12">Re</text>
+<text x="346" y="30" fill="var(--ink3)" font-size="12">Im</text>
+<circle cx="340" cy="140" r="3.5" fill="var(--ink)"/>
+<text x="330" y="160" fill="var(--ink2)" font-size="12">0</text>
+<circle cx="520" cy="140" r="4" fill="var(--accent)"/>
+<text x="514" y="162" fill="var(--accent)" font-size="13">θ</text>
+<line x1="430" y1="42" x2="430" y2="228" stroke="var(--warn)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="438" y="56" fill="var(--warn)" font-size="12">Re = θ/2</text>
+<circle cx="330" cy="88" r="5" fill="var(--ok)"/>
+<circle cx="330" cy="192" r="5" fill="var(--ok)"/>
+<text x="292" y="82" fill="var(--ok)" font-size="13">β</text>
+<text x="286" y="210" fill="var(--ok)" font-size="13">β̄</text>
+<line x1="340" y1="140" x2="330" y2="88" stroke="var(--ink3)" stroke-width="1.2"/>
+<line x1="520" y1="140" x2="330" y2="88" stroke="var(--ink3)" stroke-width="1.2"/>
+<text x="70" y="246" font-size="12" fill="var(--ink3)">β 到 0 的距离 &lt; β 到 θ 的距离  ⇔  |β| &lt; |θ−β|  ⇔  |λ| &lt; 1</text>
+</svg>
+<figcaption>图 3 · $A\succ0$ 给出 $\operatorname{Re}\beta\lt\vartheta/2$，即 $\beta$ 落在虚线左侧。此时 $\beta$ 到原点比到 $\vartheta$ 近，正好是 $|\overline{\beta}|\lt|\vartheta-\beta|$，也就是 $|\lambda|\lt1$。</figcaption>
+</figure>
+
+<!-- ============ PART 5 ============ -->
+<hr>
+<h2 id="p5">第五部分 · 收敛太慢怎么办</h2>
+
+<h3 id="s51">§5.1 多重网格的动机 <span class="tag">板书 6</span></h3>
+
+<p>板书从一维 Poisson 方程 $-u''=f$ 的离散写起：</p>
+\[
+-\frac{U_{i+1}+U_{i-1}-2U_i}{h^2}=f_i,
+\qquad
+A=\begin{bmatrix}
+2 & -1 & & \\
+-1 & 2 & \ddots & \\
+& \ddots & \ddots & -1\\
+& & -1 & 2
+\end{bmatrix}.
+\]
+
+<p>板书在旁边写了一个特征值估计，并画出误差在粗网格上的形状：</p>
+\[
+2+2\cos\frac{2k\pi}{n+1}=4\sin^2\frac{k\pi}{n+1}\gt0.
+\]
+
+<div class="box warn" id="warn-mg">
+<p class="label">板书符号核对 · 这里我按放大图核对后照抄，并指出一个疑点</p>
+<p>6 倍放大后，板书这一行读作 <strong>$2+2\cos\frac{2k\pi}{n+1}=4\sin^2\frac{k\pi}{n+1}\gt0$</strong>。但按三角恒等式，$2+2\cos(2\theta)=4\cos^2\theta$，并不是 $4\sin^2\theta$。要得到 $4\sin^2\frac{k\pi}{n+1}$，左边应是 $2-2\cos\frac{2k\pi}{n+1}$（这正是三对角阵 $2,-1$ 的特征值形式）。<strong>所以板书这个「+」可能是书写/抄录时的笔误</strong>——与主人交代的「划掉的不是写错」不同，这一处<strong>没有划改痕迹</strong>，是原式本身的前后不一致。这里照抄板书原文并标出疑点；复习时按 $4\sin^2\frac{k\pi}{n+1}\gt0$ 这个结论记，来源是 $2-2\cos$。</p>
+</div>
+
+<p><strong>板书的核心一句话：</strong>「先粗网格，求插值，然后 splitting 求细分方程；把粗网格的解作为 preconditioner。」</p>
+
+<div class="box key">
+<p class="label">为什么多重网格有效 · 我补的解释</p>
+<p>$4\sin^2\frac{k\pi}{n+1}$ 在 <em>k</em> 小（低频、光滑误差）时很小，在 <em>k</em> 大（高频、振荡误差）时才大。Jacobi/GS 这类<strong>光滑子</strong>能很快压掉高频误差，却对低频几乎无能为力。办法是：把残差<strong>限制</strong>到粗网格上——同一个光滑函数在粗网格上看起来「不光滑了」，于是低频又变成高频，可以再被光滑掉。把粗网格解插值回细网格，就得到 §<a href="#s33">3.3</a> 意义下的预条件子。</p>
+</div>
+
+<h3 id="s52">§5.2 Krylov 子空间 <span class="tag">板书 6</span></h3>
+
+<p>板书最后开了一个新头：Krylov 子空间。</p>
+\[
+\mathcal K(A,r,k)=\operatorname{span}\{r,\,Ar,\,\cdots,\,A^kr\}.
+\]
+
+<p>板书继续写了两行，其中第二行<strong>被打了一个大叉</strong>：</p>
+\[
+A^{\mathsf T}=P(A),
+\]
+\[
+\text{(打叉)}\quad A^{-1}b=P(A)b\in\mathcal K(A,b,n)\quad\text{——「仅对 }n\times n\text{ 有效」}.
+\]
+
+<div class="box warn">
+<p class="label">板书划改 · 打叉不是算错</p>
+<p>打叉的是<strong>那句话的适用性</strong>：把 $A^{-1}b$ 写成多项式作用 $P(A)b$，从而断言它落在 Krylov 子空间里——这件事<strong>只对 $n\times n$ 方阵成立</strong>（由 Cayley–Hamilton 定理，$A^{-1}$ 可写成次数 $\lt n$ 的 $A$ 的多项式）。老师划掉它是提醒：<strong>别在一般长方矩阵上这么用</strong>。这仍然是「这种写法不好/不严谨」，不是数值算错。</p>
+</div>
+
+<p>板书接下来给出 Krylov 方法的出发点（这部分没有划改）：</p>
+\[
+r=b-Ax,
+\]
+\[
+x=x_0+A^{-1}r=x_0+P(A)r,
+\]
+\[
+x_k=x_0+\Delta x_k,\qquad \Delta x_k\in\mathcal K(A,r,k).
+\]
+
+<div class="box key">
+<p class="label">一句话本质 · 我补</p>
+<p>精确修正量是 $A^{-1}r$，但它不好算。把 $A^{-1}$ 换成多项式 $P(A)$，修正量就落在 $\operatorname{span}\{r,Ar,A^2r,\ldots\}$ 里——<strong>于是在这个小 subspace 里找最好的近似解</strong>，而不必碰整个 $\mathbb R^n$。这就是 CG / GMRES / MINRES 这一大家子的共同起点，讲义第 4 章展开。</p>
+</div>
+
+<!-- ============ APPENDIX ============ -->
+<hr>
+<h2 id="apx">附录 · 六张板书逐张对照 / 符号表</h2>
+
+<h3 id="apx1">A.1 板书逐张对照 <span class="tag">六张 모두 课堂板书</span></h3>
+<table class="apx">
+<tr><th>张</th><th>文件名（尾号）</th><th>本讲对应</th><th>主要内容</th></tr>
+<tr><td class="num">1</td><td class="num mono">d753a580…</td><td><a href="#s11">§1.1</a> <a href="#s12">§1.2</a></td><td>日期 11.17；离散 Laplace、五点差分、Taylor 行划改；triplets、CSC 三数组、nnz、存储开销。</td></tr>
+<tr><td class="num">2</td><td class="num mono">b8c02718…</td><td><a href="#s21">§2.1</a> <a href="#s22">§2.2</a> <a href="#s24">§2.4</a> <a href="#s26">§2.6</a></td><td>「列压缩格式（CSC）」标题；5×5 稀疏矩阵 × 位置、<code>rowind/colptr/nzval</code> 示意、nnz=12；<code>x→Ax</code>、<code>x→A^T x</code>、<code>A^*x</code>；划掉的 triplet matvec。</td></tr>
+<tr><td class="num">3</td><td class="num mono">d69f809e…</td><td><a href="#s25">§2.5</a> <a href="#s31">§3.1</a> <a href="#s32">§3.2</a> <a href="#s33">§3.3</a></td><td>转置 matvec 伪代码（划掉单层 k 循环，注「转置是 i,j 变换一下」）；3×3 例子、$A=D-L-U$、Jacobi 公式、splitting、谱半径判据。</td></tr>
+<tr><td class="num">4</td><td class="num mono">e705bad6…</td><td><a href="#s34">§3.4</a> <a href="#s41">§4.1</a></td><td>残差与精度（划改）；GS 公式、$M^{-1}N=I-M^{-1}A$、ideal case 三条、preconditioner 注；网格边界图、对角占优与 Jacobi/GS 收敛证明。</td></tr>
+<tr><td class="num">5</td><td class="num mono">b51bc2e0…</td><td><a href="#s42">§4.2</a> <a href="#s43">§4.3</a></td><td>$A^*=A\succ0$ 下 Jacobi 与 GS 的收敛证明；划掉的 $x^*Ux$ 行；复数 $\beta$ 推导与复平面几何图。</td></tr>
+<tr><td class="num">6</td><td class="num mono">0b7e5a48…</td><td><a href="#s51">§5.1</a> <a href="#s52">§5.2</a></td><td>multigrid method：$-u''=f$、三对角阵、特征值式；「先粗网格…作为 preconditioner」；Krylov subspace 定义、打叉的 $A^{-1}b=P(A)b$、$x_k=x_0+\Delta x_k$。</td></tr>
+</table>
+
+<h3 id="apx2">A.2 符号对照表（同一字母在本讲的不同含义）</h3>
+<table>
+<tr><th>符号</th><th>在这里指</th><th>出现处</th></tr>
+<tr><td><code>colptr</code> / <code>col_ptr</code></td><td>CSC 的列指针数组，长度 $n+1$，不是「列号数组」</td><td><a href="#s21">§2.1</a> <a href="#s23">§2.3</a></td></tr>
+<tr><td>nnz</td><td>矩阵非零元个数</td><td><a href="#s12">§1.2</a></td></tr>
+<tr><td>$M$, $N$</td><td>分裂 $A=M-N$ 中的近似阵与余项；$M$ 即 preconditioner</td><td><a href="#s32">§3.2</a> <a href="#s33">§3.3</a></td></tr>
+<tr><td>$L$, $U$</td><td>$A=D-L-U$ 里<strong>带负号</strong>的严格下/上三角部分；$U=L^*$ 当 $A$ Hermite</td><td><a href="#s31">§3.1</a> <a href="#s43">§4.3</a></td></tr>
+<tr><td>$B$</td><td>迭代矩阵 $M^{-1}N$；在 §<a href="#s42">4.2</a>/<a href="#s43">4.3</a> 特指 Jacobi/GS 的迭代矩阵</td><td><a href="#s32">§3.2</a> <a href="#s42">§4.2</a></td></tr>
+<tr><td>$\vartheta$（板书写得像 $\theta$）</td><td>$x^*Dx\gt0$，正定二次型</td><td><a href="#s43">§4.3</a></td></tr>
+<tr><td>$\beta$, $\overline{\beta}$</td><td>$x^*Lx$ 与 $x^*Ux=\overline{\beta}$</td><td><a href="#s43">§4.3</a></td></tr>
+<tr><td>$P(A)$</td><td>矩阵 $A$ 的多项式；用于把 $A^{-1}$ 近似掉</td><td><a href="#s52">§5.2</a></td></tr>
+</table>
+
+<div class="box warn">
+<p class="label">还没讲的 / 只能算提了个头</p>
+<ul style="margin:6px 0">
+<li>§<a href="#s52">5.2</a>：Krylov 子空间只写了定义和修正量落在子空间这件事；CG、GMRES、Arnoldi 分解<strong>本讲没展开</strong>。10.20 那堂的 <a href="课堂笔记-20261020-Krylov子空间与Arnoldi分解.html">Krylov 子空间与 Arnoldi 分解笔记</a> 是另一条线（幂法 → 子空间迭代），可以对照看。</li>
+<li>§<a href="#s51">5.1</a>：多重网格只给了动机和「粗网格解作预条件子」的思路；限制/插值算子、V-cycle 的具体步骤本讲没写。</li>
+<li>最优松弛因子 SOR 与预条件子的其他构造方式本讲没有涉及。</li>
+</ul>
+</div>
+
+<p class="footnote">整理自 2026-11-17 课堂六张板书照片。凡标「我补」的推导、数值和解释都是为了让过程能自己走通，不是课堂原文；三处以上划改按主人交代一律视为「老师嫌写法不好」，不作为笔误处理。唯一标为可能笔误的是 §<a href="#warn-mg">5.1</a> 特征值式的加号——那里没有划改痕迹，且等式两边数学上不自洽。</p>
+
+</div>
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/katex/contrib/auto-render.min.js"></script>
+<script>
+(function(){function boot(){
+  if(typeof renderMathInElement!=='function')return;
+  renderMathInElement(document.body,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,errorColor:'#c0392b'});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();
+</script>
+</body>
+</html>
