@@ -4,7 +4,7 @@
 
 - 授课教师：**Baojian Zhou**
 - 课件来源：<https://baojian.github.io/llm-26-fall/>
-- 本目录整理的是 **Lecture 04**～**Lecture 08** 五讲（Lecture 08 的幻灯片尚未发布，按课堂板书整理）
+- 本目录整理的是 **Lecture 04**～**Lecture 08** 与 **Lecture 11** 六讲（Lecture 08 的幻灯片尚未发布，按课堂板书整理；Lecture 11 以手写笔记 11 页为主线，课件只用来补可视化与手写页未展开的 VAE / VQ-VAE / D3PM / LLaDA / Dream 部分）
 
 ## 笔记
 
@@ -16,12 +16,15 @@
 | Lecture 07 | **算力预算与扩展律**：一次训练的四元组 (N, D, C, L)、6ND 的三次矩阵乘法推导、16 字节每参数的持久状态、等算力剖面与 U 形最优、损失曲面 E+A/N^α+B/D^β 与最优分配的求导、幂律的双对数拟合（K=1.6, γ=0.25）、Chinchilla 前后指数对比与协议修正、warmup 混杂、冻结预测再揭晓的验证流程（含一次故意失败的外推）、可交互的预算移动演示 | [LLM-07-算力预算与扩展律.html](./LLM-07-算力预算与扩展律.html) |
 | Lecture 08 | **后训练：SFT 与奖励模型**：**第零部分导读**（一个贯穿全讲的例子 + 四步为什么是这个顺序 + 「公式怎么读」的五步约定）；预训练四条与缩放律回顾（含固定算力下的 U 形）、teacher forcing 与「前缀–回答」记号、loss mask 的三个理由、SFT 梯度与「前向 KL ⇒ 多峰平均」、板书点名的三个问题（GT 难收集 / 训练整个 θ 太贵 → LoRA / 一个 prompt 只有一个回答）、Bradley–Terry 的两种写法与「$r=h_t^\top w+b$ 的 bias 会被约掉」、分数差 = 偏好的 log odds、奖励模型的结构与训练细节（1 个 epoch、$\Delta$ 用 fp32）、select-best 与全排序两种标注协议、MDP 六元组与轨迹、Q 函数与「$V=\sum_a\pi Q$」、Agent–Environment 循环、REINFORCE 的 log-derivative trick 与轨迹版完整推导（$\nabla\log p_\theta(\tau)$ 只剩策略项 + 因果性）、Return / Value / Advantage、KL 约束的闭式解、$\psi_t$ 的六种取法（方差阶梯表）、按老师顺序重排：① REINFORCE → ② TRPO（$\rho A$ + KL 硬约束）→ ③ natural policy gradient → ④ PPO（基于 TRPO，clip 只在此出现）→ ⑤ GRPO → 旁路 DPO、PPO / GRPO / RLOO、DPO、可验证奖励；**附录 F–J 为期末复习**：数值速查表（σ / 对数 / 参数量）、模拟卷 A（SFT 与参数量）、模拟卷 B（奖励模型）、模拟卷 C（RL 与 DPO，共 9 题 25 问，附完整解答）、20 道计算快问快答、**附录 K 往届真题题型分析与 3 套 30/30/40 预测卷（含逐节覆盖对照表与 Explain 专项八题）**；附录 A 拆为 A.1 主线 / A.2 PPO·clip / A.3 同批基础公式三张速查表 | [LLM-08-后训练-SFT与奖励模型.html](./LLM-08-后训练-SFT与奖励模型.html) |
 
+| Lecture 11 | **扩散模型与扩散语言模型**：以手写笔记为主线——生成框图与四种模态；Flow model 的轨迹 / 向量场 / ODE / flow map；Picard–Lindelöf 与 Lipschitz 条件；线性 ODE $u_t(x)=-\theta x$ 的完整验证；Euler 数值模拟与误差手算；SDE、布朗运动三条性质、$\mathrm dX_t$ 的 Itô 记号；Euler–Maruyama 与 OU 过程；DDPM 的 AE→VAE→VQ-VAE 脉络、两条 Markov 链、$\beta_i$ 参数化核对、从递推到 $\bar\alpha_i$ 闭式的裂项推导；D3PM、LLaDA 掩码扩散、Dream / Mercury 与质量—速度权衡；附录 A 板书逐张对照、附录 B 公式核对清单 | [LLM-11-扩散模型与扩散语言模型.html](./LLM-11-扩散模型与扩散语言模型.html) |
+
 **渲染版（推荐）**：
 [Lecture 04](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-04-神经语言模型与循环注意力.html) ·
 [Lecture 05](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-05-注意力与Transformer.html) ·
 [Lecture 06](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-06-预训练与解码实践.html) ·
 [Lecture 07](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-07-算力预算与扩展律.html) ·
-[Lecture 08](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-08-后训练-SFT与奖励模型.html)
+[Lecture 08](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-08-后训练-SFT与奖励模型.html) ·
+[Lecture 11](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-11-扩散模型与扩散语言模型.html)
 
 > 表格里的相对路径链接在 **github.com 的文件页**点开只会看到**源码** —— GitHub 只渲染 Markdown，不渲染 HTML。
 > 要看渲染后的页面请用上面的 Pages 链接，或克隆到本地直接双击 `.html`。
@@ -37,6 +40,9 @@
 | 讲者备注 | 幻灯片 `Note:` 里的讲者备注，相当于老师课堂上的口头讲解与提醒 |
 | 补充 | 课件**只有图或只有结论、没有展开**的地方，由本笔记补的推导、验算与几何直觉 |
 | 板书 | 仅用于 Lecture 08：该讲幻灯片尚未发布，标记的是老师黑板上确实写过的内容（附「板书逐张对照」表） |
+| 板书 p<i>N</i> | 仅用于 Lecture 11：手写笔记 PDF 的第 <i>N</i> 页（共 11 页，p1 / p11 空白）；这是该讲的**最主要参考** |
+| 课件 | Lecture 11 中仅用于可视化（forward / reverse 图、VAE / VQ-VAE、D3PM、LLaDA / Dream）与手写页未展开的部分 |
+| 核对 | Lecture 11：手写字迹不清、已按数学一致性校正的公式，逐条列在附录 B |
 
 > **为什么要补这么多「补充」？** 这四讲的幻灯片里有大量**交互式示意图**
 > （网页上靠 JavaScript / Excalidraw 现场绘制，静态打开时是空白的）。本笔记把它们**重画成静态 SVG**，
@@ -51,6 +57,13 @@
 > Lecture 06 还多给了一个**可交互的解码沙盒**（温度 / top-p 两个滑块 + 抽一个 token），
 > 用来亲手验证「阈值越过哪一个 token 就保留到哪一个」这条边界；
 > Lecture 07 有一个**预算移动演示**（1× / 4× / 16×），看等算力剖面的最低点怎么往右移。
+>
+> **Lecture 11 的情况又不同**：这一讲既有手写笔记（11 页 PDF），也有已发布的课件。
+> 笔记**以手写为主线**——顺序、公式、例子都按手写页走（附录 A 有逐张对照表）；
+> 课件只用来补可视化和手写页没有展开的 VAE / VQ-VAE / D3PM / LLaDA / Dream。
+> 老师有几处公式因板书难辨而写得不清楚，笔记逐一核对后写在正文里，附录 B 列了「手写 → 校正后」清单。
+> 特别要注意：老师把 $\beta_i$ 当**噪声标准差**（方差 $\beta_i^2$），
+> 与主流 DDPM 把 $\beta_t$ 当方差不同；笔记保留老师写法并给出逐项对照表（§5.3）。
 >
 > **Lecture 08 的情况不同**：这一讲的幻灯片老师至今没有发布，笔记是按课堂上拍的 **22 张板书**
 > 逐张整理的，附录 D 有一张「板书逐张对照」表（照片序号 → 板书内容 → 对应小节），
@@ -80,6 +93,8 @@
 | L08 §3.2 | 打分函数写作 $h_t^\top w+b$ | 偏置 $b$ 在 $\Delta$ 里被减掉、对损失梯度恒为 0，是不可辨识参数；笔记里说明「只在用绝对分做阈值时才需要」 |
 | L08 §3.5 | 未说训练轮数 | 奖励模型的参数/样本比约 $10^4$，只训 1 个 epoch；验证 acc 先升后降的那一段正是 reward hacking 的种子 |
 | L07 全篇 | 所有损失曲线 | 均为**作者编的合成数据**（$L=1.5+0.8/\sqrt{N/10^8}+0.8/\sqrt{D/2\times10^9}$），不是任何模型家族的测量；笔记在每个图注里重复这一点 |
+| L11 §5.3 | 手写 $P(x_i\mid x_{i-1})=\mathcal N(\sqrt{1-\beta_i^2}x_{i-1},\beta_i^2I_d)$ | **保留**：老师的 $\beta_i$ 是噪声标准差，与主流 DDPM（$\beta_t$ 为方差）等价；正文给出两列参数对照表 |
+| L11 §2.2 / §2.3 / §2.4 | 手写 $\varphi_T(x_0)=x_0$、$\|u_t(x-G)\|\le L$、$e^{+\theta t}x_0$ | 分别校正为 $\varphi_0(x_0)=x_0$、Lipschitz 条件、$e^{-\theta t}x_0$；依据与推导写在正文，完整清单见附录 B |
 
 ## 关于图
 
@@ -98,6 +113,9 @@
 - Lecture 07 的 8 张图全部为重绘：3 张静态 SVG（三次矩阵乘法、warmup 占比、冻结再揭晓），
   2 张由课件给出的生成公式实时计算（等算力剖面，含可交互的预算切换），
   3 张依据课件 `assets/*.json` 重绘（实验网格、前沿拟合、外推失败）
+- Lecture 11 的 5 张图全部是依据课件内容**重绘的静态 SVG**（生成框图、ODE / SDE 轨迹对比、
+  AE / VAE / VQ-VAE 结构、DDPM 两条马尔可夫链、前向逐步加噪），颜色走 CSS 变量，深浅色自动适配；
+  所有示例数值（$\bar\alpha_3=0.9850376$、Euler 误差 $0.0078$、$\sqrt{0.2}=0.4472136$ 等）均独立复算
 
 ## 打开方式
 
