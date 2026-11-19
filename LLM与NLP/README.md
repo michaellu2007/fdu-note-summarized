@@ -4,7 +4,7 @@
 
 - 授课教师：**Baojian Zhou**
 - 课件来源：<https://baojian.github.io/llm-26-fall/>
-- 本目录整理的是 **Lecture 04**～**Lecture 08** 与 **Lecture 11** 六讲（Lecture 08 的幻灯片尚未发布，按课堂板书整理；Lecture 11 以手写笔记 11 页为主线，课件只用来补可视化与手写页未展开的 VAE / VQ-VAE / D3PM / LLaDA / Dream 部分）
+- 本目录整理的是 **Lecture 04**～**Lecture 08** 与 **Lecture 11** 六讲（Lecture 08 的幻灯片尚未发布，按课堂板书整理；Lecture 11 以手写笔记 11 页为主线，**章节顺序严格按手写 p2 → p10 推进**，课件只用来补可视化与手写页未展开的 VAE / VQ-VAE / D3PM / LLaDA / Dream 部分）
 
 ## 笔记
 
@@ -16,7 +16,7 @@
 | Lecture 07 | **算力预算与扩展律**：一次训练的四元组 (N, D, C, L)、6ND 的三次矩阵乘法推导、16 字节每参数的持久状态、等算力剖面与 U 形最优、损失曲面 E+A/N^α+B/D^β 与最优分配的求导、幂律的双对数拟合（K=1.6, γ=0.25）、Chinchilla 前后指数对比与协议修正、warmup 混杂、冻结预测再揭晓的验证流程（含一次故意失败的外推）、可交互的预算移动演示 | [LLM-07-算力预算与扩展律.html](./LLM-07-算力预算与扩展律.html) |
 | Lecture 08 | **后训练：SFT 与奖励模型**：**第零部分导读**（一个贯穿全讲的例子 + 四步为什么是这个顺序 + 「公式怎么读」的五步约定）；预训练四条与缩放律回顾（含固定算力下的 U 形）、teacher forcing 与「前缀–回答」记号、loss mask 的三个理由、SFT 梯度与「前向 KL ⇒ 多峰平均」、板书点名的三个问题（GT 难收集 / 训练整个 θ 太贵 → LoRA / 一个 prompt 只有一个回答）、Bradley–Terry 的两种写法与「$r=h_t^\top w+b$ 的 bias 会被约掉」、分数差 = 偏好的 log odds、奖励模型的结构与训练细节（1 个 epoch、$\Delta$ 用 fp32）、select-best 与全排序两种标注协议、MDP 六元组与轨迹、Q 函数与「$V=\sum_a\pi Q$」、Agent–Environment 循环、REINFORCE 的 log-derivative trick 与轨迹版完整推导（$\nabla\log p_\theta(\tau)$ 只剩策略项 + 因果性）、Return / Value / Advantage、KL 约束的闭式解、$\psi_t$ 的六种取法（方差阶梯表）、按老师顺序重排：① REINFORCE → ② TRPO（$\rho A$ + KL 硬约束）→ ③ natural policy gradient → ④ PPO（基于 TRPO，clip 只在此出现）→ ⑤ GRPO → 旁路 DPO、PPO / GRPO / RLOO、DPO、可验证奖励；**附录 F–J 为期末复习**：数值速查表（σ / 对数 / 参数量）、模拟卷 A（SFT 与参数量）、模拟卷 B（奖励模型）、模拟卷 C（RL 与 DPO，共 9 题 25 问，附完整解答）、20 道计算快问快答、**附录 K 往届真题题型分析与 3 套 30/30/40 预测卷（含逐节覆盖对照表与 Explain 专项八题）**；附录 A 拆为 A.1 主线 / A.2 PPO·clip / A.3 同批基础公式三张速查表 | [LLM-08-后训练-SFT与奖励模型.html](./LLM-08-后训练-SFT与奖励模型.html) |
 
-| Lecture 11 | **扩散模型与扩散语言模型**：以手写笔记为主线——生成框图与四种模态；Flow model 的轨迹 / 向量场 / ODE / flow map；Picard–Lindelöf 与 Lipschitz 条件；线性 ODE $u_t(x)=-\theta x$ 的完整验证；Euler 数值模拟与误差手算；SDE、布朗运动三条性质、$\mathrm dX_t$ 的 Itô 记号；Euler–Maruyama 与 OU 过程；DDPM 的 AE→VAE→VQ-VAE 脉络、两条 Markov 链、$\beta_i$ 参数化核对、从递推到 $\bar\alpha_i$ 闭式的裂项推导；D3PM、LLaDA 掩码扩散、Dream / Mercury 与质量—速度权衡；附录 A 板书逐张对照、附录 B 公式核对清单 | [LLM-11-扩散模型与扩散语言模型.html](./LLM-11-扩散模型与扩散语言模型.html) |
+| Lecture 11 | **扩散模型与扩散语言模型**：以手写笔记为主线——生成框图与四种模态；Flow model 的轨迹 / 向量场 / ODE / flow map；Picard–Lindelöf 与 Lipschitz 条件；线性 ODE $u_t(x)=-\theta x$ 的完整验证；Euler 数值模拟与误差手算；SDE 方程（先）、布朗运动三条性质（后）、$\mathrm dX_t$ 的 Itô 记号；Euler–Maruyama 与 OU 过程；p9：DDPM 的 AE→VAE→VQ-VAE 脉络、两条 Markov 链 → D3PM → Diffusion LM（LLaDA / Dream / Mercury）→ ① Forward Process；p10：$\beta_i$ / $\alpha_i$ 定义 → 递推展开与 $\bar\alpha_i$ 闭式 → ② Reverse Denoising；附录 A 板书逐张对照、附录 B 公式核对清单 | [LLM-11-扩散模型与扩散语言模型.html](./LLM-11-扩散模型与扩散语言模型.html) |
 
 **渲染版（推荐）**：
 [Lecture 04](https://michaellu2007.github.io/fdu-note-summarized/LLM与NLP/LLM-04-神经语言模型与循环注意力.html) ·

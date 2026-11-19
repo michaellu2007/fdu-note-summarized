@@ -241,7 +241,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <span class="tag">核对</span> 手写字迹不清、已按数学一致性校正（附录 B 列清单）。</p>
 <p>手写笔记里 <strong>β 的参数化和主流 DDPM 教材不同</strong>：老师把 <span class="katex-inline">$\beta_i$</span> 当成<strong>噪声标准差</strong>，
 所以写的是 <span class="katex-inline">$\alpha_i=\sqrt{1-\beta_i^2}$</span>、方差 <span class="katex-inline">$\beta_i^2 I_d$</span>；
-主流写法把 <span class="katex-inline">$\beta_t$</span> 当方差。两套记号彼此等价，§5.3 给了逐项对照表，<strong>笔记正文保留老师的写法</strong>。</p>
+主流写法把 <span class="katex-inline">$\beta_t$</span> 当方差。两套记号彼此等价，§6.1 给了逐项对照表，<strong>笔记正文保留老师的写法</strong>。</p>
 </div>
 
 <div class="toc">
@@ -251,8 +251,8 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 <li><a href="#s2">§2 Flow model：轨迹就是 ODE 的解</a></li>
 <li><a href="#s3">§3 数值化：Euler 与学到的向量场</a></li>
 <li><a href="#s4">§4 SDE：把随机性写进微分方程</a></li>
-<li><a href="#s5">§5 DDPM：连续时间离散成 <i>T</i> 步</a></li>
-<li><a href="#s6">§6 从图像到语言：D3PM 与扩散语言模型</a></li>
+<li><a href="#s5">§5 DDPM：从 AE 到离散扩散</a></li>
+<li><a href="#s6">§6 前向加噪与反向去噪</a></li>
 <li><a href="#s7">§7 一页主线</a></li>
 <li><a href="#app-a">附录 A 板书逐张对照</a></li>
 <li><a href="#app-b">附录 B 公式核对清单</a></li>
@@ -262,24 +262,7 @@ h1,h2,h3,h4{scroll-margin-top:22px}
 
 <h2 id="s1">§1 从数据到噪声：生成分布在做什么 <span class="tag s">板书 p2</span></h2>
 
-<h3 id="s1-1">1.1 先算一遍：一次「加噪—去噪」的最小例子 <span class="tag a">推导</span></h3>
-<p>不要先背定义。设一个一维数据点 <span class="katex-inline">$x_0=1$</span>，每一步只做</p>
-<div class="ex">
-<p class="meta">可以手算的例子</p>
-<p>取 <span class="katex-inline">$\beta=0.1$</span>，递推 <span class="katex-inline">$x_i=\sqrt{1-\beta^2}\,x_{i-1}+\beta\varepsilon_i$</span>，
-<span class="katex-inline">$\varepsilon_i\sim\mathcal N(0,1)$</span>。忽略随机项，只看确定性的衰减：</p>
-<ul>
-<li><span class="katex-inline">$\alpha=\sqrt{1-0.1^2}=\sqrt{0.99}=0.9949874$</span>；</li>
-<li>一步后 <span class="katex-inline">$x_1=0.9949874\times 1=0.9950$</span>，噪声标准差 <span class="katex-inline">$0.1$</span>；</li>
-<li>三步后 <span class="katex-inline">$\bar\alpha_3=0.99^{1.5}=0.9850376$</span>，累计噪声系数 <span class="katex-inline">$\sqrt{1-\bar\alpha_3^2}=\sqrt{0.029701}=0.1723398$</span>；</li>
-<li>十步后 <span class="katex-inline">$\bar\alpha_{10}=0.99^5=0.9509900$</span>，累计噪声系数 <span class="katex-inline">$0.3092215$</span>。</li>
-</ul>
-<p>也就是说：加噪十次以后，原始信号只剩 <span class="katex-inline">$95.10\%$</span> 的幅度，噪声的标准差已经到 <span class="katex-inline">$0.3092$</span>。
-<strong>「数据变噪声」容易，因为每一步都是固定的线性变换加固定分布的高斯；反过来要从 <span class="katex-inline">$0.3092$</span> 的噪声里恢复 <span class="katex-inline">$1$</span>，就必须学。</strong></p>
-</div>
-<p>这时再给名字：这一串操作叫<strong>前向扩散（forward diffusion）</strong>，要学的反方向叫<strong>去噪（denoising / reverse process）</strong>。整节课都在把这两句话写成公式。</p>
-
-<h3 id="s1-2">1.2 数据的形状与生成目标 <span class="tag s">板书 p2</span></h3>
+<h3 id="s1-1">1.1 数据的形状与生成目标 <span class="tag s">板书 p2</span></h3>
 <p>板书先统一了记号：<strong>所有生成对象都摊成向量</strong> <span class="katex-inline">$z\in\mathbb R^d$</span>，生成就是学一个从简单分布到数据分布的变换。</p>
 <table>
 <thead><tr><th>对象</th><th>板书记号</th><th>例子（板书原话）</th></tr></thead>
@@ -415,19 +398,7 @@ X_{t+h}=X_t+h\,u_t(X_t)+h\,R_t(h),\qquad h\to 0,\ R_t(h)\to 0.$$</div>
 
 <h2 id="s4">§4 SDE：把随机性写进微分方程 <span class="tag s">板书 p5–p8</span></h2>
 
-<h3 id="s4-1">4.1 先算布朗增量，再说 Brownian Motion <span class="tag s">板书 p6</span></h3>
-<p>取 <span class="katex-inline">$s=0.1$</span>、<span class="katex-inline">$t=0.3$</span>。板书写下的性质是</p>
-<div class="katex-display">$$W_t-W_s\sim\mathcal N\big(0,(t-s)I_d\big),\qquad s\le t.$$</div>
-<p>代入数值：<span class="katex-inline">$W_{0.3}-W_{0.1}\sim\mathcal N(0,0.2 I_d)$</span>，一维时标准差 <span class="katex-inline">$\sqrt{0.2}=0.4472136$</span>。
-这就是「噪声随时间累积」的精确含义：时间跨度越大，增量方差越大。板书列的三条性质：</p>
-<ol class="steps">
-<li><span class="katex-inline">$W_0=0$</span>：永远从零开始；</li>
-<li>高斯增量：<span class="katex-inline">$W_t-W_s\sim\mathcal N(0,(t-s)I_d)$</span>；</li>
-<li>独立增量：<span class="katex-inline">$W_{t_1}-W_{t_0},\ W_{t_2}-W_{t_1},\ \dots$</span> 互相独立。</li>
-</ol>
-<p><span class="tag">核对</span> 手写的 <span class="katex-inline">$\mathcal N(0,(t-s)I_d)$</span> 中 <span class="katex-inline">$I_d$</span> 写得像 <span class="katex-inline">$I_{d}|$</span>，按标准布朗运动记号整理。</p>
-
-<h3 id="s4-2">4.2 随机微分方程 <span class="tag s">板书 p6</span></h3>
+<h3 id="s4-1">4.1 随机微分方程 <span class="tag s">板书 p6</span></h3>
 <p>板书先讲「随机过程不是确定的，而是随机轨迹」：<span class="katex-inline">$X_t$</span> 是随机变量 <span class="katex-inline">$(0\le t\le 1)$</span>，
 <span class="katex-inline">$X:[0,1]\to\mathbb R^d,\ t\mapsto X_t$</span> 是一条随机轨迹。然后在 ODE 右边加上噪音项：</p>
 <div class="katex-display">$$\mathrm dX_t=u_t(X_t)\,\mathrm dt+\sigma_t\,\mathrm dW_t.$$</div>
@@ -454,6 +425,18 @@ X_{t+h}=X_t+h\,u_t(X_t)+h\,R_t(h),\qquad h\to 0,\ R_t(h)\to 0.$$</div>
 </svg>
 <figcaption>对应板书 p6 的两幅小图：上面是光滑轨迹，下面是带抖动的随机轨迹；课件 source-014/015 的「Different starts, different trajectories / Many paths」是同一件事的图示。</figcaption>
 </div>
+
+<h3 id="s4-2">4.2 布朗运动的三条性质 <span class="tag s">板书 p6</span></h3>
+<p>取 <span class="katex-inline">$s=0.1$</span>、<span class="katex-inline">$t=0.3$</span>。板书写下的性质是</p>
+<div class="katex-display">$$W_t-W_s\sim\mathcal N\big(0,(t-s)I_d\big),\qquad s\le t.$$</div>
+<p>代入数值：<span class="katex-inline">$W_{0.3}-W_{0.1}\sim\mathcal N(0,0.2 I_d)$</span>，一维时标准差 <span class="katex-inline">$\sqrt{0.2}=0.4472136$</span>。
+这就是「噪声随时间累积」的精确含义：时间跨度越大，增量方差越大。板书列的三条性质：</p>
+<ol class="steps">
+<li><span class="katex-inline">$W_0=0$</span>：永远从零开始；</li>
+<li>高斯增量：<span class="katex-inline">$W_t-W_s\sim\mathcal N(0,(t-s)I_d)$</span>；</li>
+<li>独立增量：<span class="katex-inline">$W_{t_1}-W_{t_0},\ W_{t_2}-W_{t_1},\ \dots$</span> 互相独立。</li>
+</ol>
+<p><span class="tag">核对</span> 手写的 <span class="katex-inline">$\mathcal N(0,(t-s)I_d)$</span> 中 <span class="katex-inline">$I_d$</span> 写得像 <span class="katex-inline">$I_{d}|$</span>，按标准布朗运动记号整理。</p>
 
 <h3 id="s4-3">4.3 <span class="katex-inline">$\mathrm dX_t$</span> 到底是什么意思 <span class="tag s">板书 p7</span></h3>
 <p>板书特别解释了记号：<strong><span class="katex-inline">$\mathrm dX_t$</span> 是记号，不是「在某个点求导」</strong>（旁边标注 Itô integral）。
@@ -495,7 +478,7 @@ X_{t+h}=X_t+h\,u_t^\theta(X_t)+\sigma_t\sqrt h\,\varepsilon,\quad \varepsilon\si
 并画了「text、image → backbone → image」的简图；旁边中文记的是：转载时可以把不同模态的 projector 变成 token，
 所有模态先输入到 backbone。这正是扩散模型能跨模态的统一接口。</p>
 
-<h2 id="s5">§5 DDPM：把连续时间离散成 <span class="katex-inline">$T$</span> 步 <span class="tag s">板书 p9–p10</span></h2>
+<h2 id="s5">§5 DDPM：从 AE 到离散扩散 <span class="tag s">板书 p9</span></h2>
 
 <h3 id="s5-1">5.1 先有 latent：AE → VAE → VQ-VAE <span class="tag s">板书 p9</span> <span class="tag n">课件</span></h3>
 <p>板书在 DDPM 标题下先写了一段「history」：<strong>AE: Autoencoder → VAE: Variational Autoencoder</strong>，
@@ -564,7 +547,58 @@ p_\theta(x_{t-1}\mid x_t,\dots,x_T)=p_\theta(x_{t-1}\mid x_t).$$</div>
 <figcaption>板书 p9 的链状图：上排固定加噪 <span class="katex-inline">$q$</span>，下排学习去噪 <span class="katex-inline">$p_\theta$</span>。课件 source-049…051 给出两条 Markov 链的定义。</figcaption>
 </div>
 
-<h3 id="s5-3">5.3 Forward：板书公式的参数化核对 <span class="tag s">板书 p9–p10</span> <span class="tag">核对</span></h3>
+<h3 id="s5-3">5.3 D3PM：把高斯换成离散转移核 <span class="tag n">课件</span></h3>
+<p>板书只写了一条线索：<strong>DDPM → D3PM: Discrete</strong>，然后 <strong>DDPM → D3PM → {LLaDA, Dream, Mercury}</strong>。
+课件补上了动机：高斯噪声取任意实值，适合像素强度这类连续数据；文本、类别是离散状态，需要换噪声。</p>
+<table>
+<thead><tr><th>模型</th><th>状态空间</th><th>噪声机制</th><th>适用数据</th></tr></thead>
+<tbody>
+<tr><td>DDPM</td><td>连续 <span class="katex-inline">$\mathbb R^d$</span></td><td>加高斯：<span class="katex-inline">$x_t=\sqrt{1-\beta_t}x_{t-1}+\sqrt{\beta_t}\varepsilon$</span></td><td>图像、音频波形</td></tr>
+<tr><td>D3PM</td><td>有限离散状态 <span class="katex-inline">$\{1,\dots,K\}$</span></td><td>结构化转移矩阵：翻 bit、换 token、吸收态 [MASK]</td><td>文本、类别、离散符号</td></tr>
+</tbody>
+</table>
+<p>机制差别：连续扩散靠「幅度衰减 + 高斯抖动」，离散扩散靠「按转移矩阵换状态」。
+D3PM 的关键设计是<strong>转移核怎么选</strong>——课件 source-054…058 展示了吸收态、均匀转移等核，以及在 text8 / LM1B 上的困惑度与采样速度曲线。</p>
+
+<h3 id="s5-4">5.4 LLaDA：先算一个被 mask 的句子 <span class="tag n">课件</span></h3>
+<p>先看课件 source-062 的预训练描述：随机把比例 <span class="katex-inline">$t\sim U[0,1]$</span> 的 token 遮住；
+SFT 时只遮 response token；采样时从 <span class="katex-inline">$t=1$</span>（全遮）走到 <span class="katex-inline">$t=0$</span>（全露出），
+每一步<strong>同时预测所有 mask</strong>，再灵活重遮。</p>
+<div class="ex">
+<p class="meta">一个 8-token 的手算例子</p>
+<p>句子 <code>The cat sat on the mat .</code>（7 个词 + 标点）。设 <span class="katex-inline">$t=0.5$</span>，按比例遮一半：</p>
+<p style="font-family:ui-monospace,monospace;background:var(--bg3);padding:10px 14px;border-radius:8px">
+t=0 → <span style="color:var(--accent)">The cat sat on the mat .</span><br>
+t=0.5 → [M] cat [M] on [M] mat .　（3/7 ≈ 0.43 被遮）<br>
+t=1 → [M] [M] [M] [M] [M] [M] [M]
+</p>
+<p>训练时模型只看被遮版本，要同时填回所有 [M]；采样时反过来，从全 [M] 开始一步步填。
+这和自回归「只能从左往右、一次一个 token」形成直接对比。</p>
+</div>
+<p>课件 source-031…032 的结论：LLaDA 的规模化趋势与同数据下的 AR baseline 有竞争力；
+source-065 的可视化里，颜色越深表示越晚被预测出来的 token——说明<strong>生成顺序不是左到右，而是由置信度决定</strong>。</p>
+
+<h3 id="s5-5">5.5 Dream 与 Mercury：任意顺序与产品化 <span class="tag n">课件</span></h3>
+<ul>
+<li><strong>Dream</strong>：扩散模型不受顺序约束，可任意顺序合成输出，从而支持更多样的用户查询（source-033）；还能控制解码行为（source-034）、复用已有自回归模型的权重做初始化（source-066/068）。</li>
+<li><strong>Mercury</strong>：Inception Labs 的产品化扩散语言模型（source-060），说明这条路线已经从论文走向可用产品。</li>
+</ul>
+
+<h3 id="s5-6">5.6 质量—速度权衡 <span class="tag n">课件</span></h3>
+<p>课件 source-035 直接给了质量—速度曲线，source-034 给了解码行为控制。把机制写成表：</p>
+<table>
+<thead><tr><th>维度</th><th>自回归 LM</th><th>扩散语言模型</th><th>机制</th></tr></thead>
+<tbody>
+<tr><td>生成顺序</td><td>固定左到右</td><td>任意顺序 / 同时预测</td><td>扩散按噪声水平而不是位置来分解</td></tr>
+<tr><td>并行度</td><td>每步一个 token</td><td>一步可填多个位置</td><td>并行改写的代价是重复重遮与多次迭代</td></tr>
+<tr><td>可控性</td><td>靠 prompt / 约束解码</td><td>可指定解码行为、填充任意位置</td><td>掩码位置本身成为控制变量</td></tr>
+<tr><td>速度—质量</td><td>步数 = 序列长度</td><td>步数可调，少步会掉质量</td><td>迭代次数是显式的质量旋钮</td></tr>
+</tbody>
+</table>
+
+<h2 id="s6">§6 前向加噪与反向去噪（板书 ① ②） <span class="tag s">板书 p9–p10</span></h2>
+
+<h3 id="s6-1">6.1 Forward：板书公式的参数化核对 <span class="tag s">板书 p9–p10</span> <span class="tag">核对</span></h3>
 <p>板书写的两点是：</p>
 <div class="katex-display">$$x_0\sim P_{\rm data}\ \longrightarrow\ x_T\sim P_{\rm prior}:=\mathcal N(0,I_d),$$
 $$P(x_i\mid x_{i-1})=\mathcal N\!\left(\sqrt{1-\beta_i^2}\; x_{i-1},\ \beta_i^2 I_d\right),\qquad i=1,\dots,T.$$</div>
@@ -587,7 +621,7 @@ x_i=\alpha_i x_{i-1}+\beta_i\varepsilon_i,\qquad \varepsilon_i\sim\mathcal N(0,I
 <p>令 <span class="katex-inline">$\beta_i^{2}=\beta_t^{\text{std}}$</span>，两列完全重合：<span class="katex-inline">$\alpha_i^2=\alpha_t^{\text{std}}$</span>，
 <span class="katex-inline">$\bar\alpha_i^2=\bar\alpha_t^{\text{std}}$</span>。板书没有错，只是换了一套记号，<strong>后面推导一律沿用板书</strong>。</p>
 
-<h3 id="s5-4">5.4 从递推到闭式：逐步展开 <span class="tag s">板书 p10</span> <span class="tag a">推导</span></h3>
+<h3 id="s6-2">6.2 从递推到闭式：逐步展开 <span class="tag s">板书 p10</span> <span class="tag a">推导</span></h3>
 <p>板书先用一句话说明「从高斯采样」的事实：</p>
 <div class="katex-display">$$X\sim\mathcal N(\mu,\sigma^2 I_d)\quad\Longrightarrow\quad X=\mu+\sigma\varepsilon,\ \ \varepsilon\sim\mathcal N(0,I_d).$$</div>
 <p>然后把 <span class="katex-inline">$x_1\to x_2\to\cdots\to x_i$</span> 的递推展开。
@@ -602,10 +636,26 @@ x_i=\alpha_i x_{i-1}+\beta_i\varepsilon_i,\qquad \varepsilon_i\sim\mathcal N(0,I
 <p>其中 <span class="katex-inline">$s_k=\prod_{j=k}^{i}\alpha_j^2$</span>，最后一步是裂项相消（<span class="katex-inline">$s_{i+1}=1$</span>, <span class="katex-inline">$s_1=\bar\alpha_i^2$</span>）。
 于是多个独立高斯的加权和可以合并成一个高斯：</p>
 <div class="katex-display">$$\boxed{\;x_i=\bar\alpha_i\,x_0+\sqrt{1-\bar\alpha_i^2}\,\varepsilon,\qquad \varepsilon\sim\mathcal N(0,I_d).\;}$$</div>
-<p>这一步就是 DDPM 的核心便利：<strong>不必模拟中间所有步骤，可以直接跳到任意噪声水平 <span class="katex-inline">$i$</span></strong>。
-§1.1 手算的 <span class="katex-inline">$\bar\alpha_{10}=0.9509900$</span>、噪声系数 <span class="katex-inline">$0.3092215$</span> 正是这个公式在 <span class="katex-inline">$\beta=0.1$</span> 时的数值。</p>
+<p>不要先背定义。设一个一维数据点 <span class="katex-inline">$x_0=1$</span>，每一步只做</p>
+<div class="ex">
+<p class="meta">可以手算的例子</p>
+<p>取 <span class="katex-inline">$\beta=0.1$</span>，递推 <span class="katex-inline">$x_i=\sqrt{1-\beta^2}\,x_{i-1}+\beta\varepsilon_i$</span>，
+<span class="katex-inline">$\varepsilon_i\sim\mathcal N(0,1)$</span>。忽略随机项，只看确定性的衰减：</p>
+<ul>
+<li><span class="katex-inline">$\alpha=\sqrt{1-0.1^2}=\sqrt{0.99}=0.9949874$</span>；</li>
+<li>一步后 <span class="katex-inline">$x_1=0.9949874\times 1=0.9950$</span>，噪声标准差 <span class="katex-inline">$0.1$</span>；</li>
+<li>三步后 <span class="katex-inline">$\bar\alpha_3=0.99^{1.5}=0.9850376$</span>，累计噪声系数 <span class="katex-inline">$\sqrt{1-\bar\alpha_3^2}=\sqrt{0.029701}=0.1723398$</span>；</li>
+<li>十步后 <span class="katex-inline">$\bar\alpha_{10}=0.99^5=0.9509900$</span>，累计噪声系数 <span class="katex-inline">$0.3092215$</span>。</li>
+</ul>
+<p>也就是说：加噪十次以后，原始信号只剩 <span class="katex-inline">$95.10\%$</span> 的幅度，噪声的标准差已经到 <span class="katex-inline">$0.3092$</span>。
+<strong>「数据变噪声」容易，因为每一步都是固定的线性变换加固定分布的高斯；反过来要从 <span class="katex-inline">$0.3092$</span> 的噪声里恢复 <span class="katex-inline">$1$</span>，就必须学。</strong></p>
+</div>
+<p>这时再给名字：这一串操作叫<strong>前向扩散（forward diffusion）</strong>，要学的反方向叫<strong>去噪（denoising / reverse process）</strong>。整节课都在把这两句话写成公式。</p>
 
-<h3 id="s5-5">5.5 Reverse：要学的是什么 <span class="tag s">板书 p10</span> <span class="tag n">课件</span></h3>
+<p>这一步就是 DDPM 的核心便利：<strong>不必模拟中间所有步骤，可以直接跳到任意噪声水平 <span class="katex-inline">$i$</span></strong>。
+上面手算的 <span class="katex-inline">$\bar\alpha_{10}=0.9509900$</span>、噪声系数 <span class="katex-inline">$0.3092215$</span> 正是这个公式在 <span class="katex-inline">$\beta=0.1$</span> 时的数值。</p>
+
+<h3 id="s6-3">6.3 Reverse：要学的是什么 <span class="tag s">板书 p10</span> <span class="tag n">课件</span></h3>
 <p>板书最后一行只写了开头：<span class="katex-inline">$P_\theta(x_{i-1}\mid x_i)$</span>（Reverse Denoising）。
 课件 source-016…029 用一整段动画把它讲清楚：训练一个去噪网络，在不同噪声水平预测「该往哪个方向走」；
 采样时从 <span class="katex-inline">$x_T\sim\mathcal N(0,I_d)$</span> 出发，反复预测 + 走一步，最后得到图像。</p>
@@ -643,57 +693,6 @@ x_i=\alpha_i x_{i-1}+\beta_i\varepsilon_i,\qquad \varepsilon_i\sim\mathcal N(0,I
 再把漂移换成去噪网络，就是 DDPM 的反向链。DDPM 不是另一套理论，而是 §4 的一个离散版本。</p>
 </div>
 
-<h2 id="s6">§6 从图像到语言：D3PM 与扩散语言模型 <span class="tag s">板书 p9</span> <span class="tag n">课件</span></h2>
-
-<h3 id="s6-1">6.1 D3PM：把高斯换成离散转移核 <span class="tag n">课件</span></h3>
-<p>板书只写了一条线索：<strong>DDPM → D3PM: Discrete</strong>，然后 <strong>DDPM → D3PM → {LLaDA, Dream, Mercury}</strong>。
-课件补上了动机：高斯噪声取任意实值，适合像素强度这类连续数据；文本、类别是离散状态，需要换噪声。</p>
-<table>
-<thead><tr><th>模型</th><th>状态空间</th><th>噪声机制</th><th>适用数据</th></tr></thead>
-<tbody>
-<tr><td>DDPM</td><td>连续 <span class="katex-inline">$\mathbb R^d$</span></td><td>加高斯：<span class="katex-inline">$x_t=\sqrt{1-\beta_t}x_{t-1}+\sqrt{\beta_t}\varepsilon$</span></td><td>图像、音频波形</td></tr>
-<tr><td>D3PM</td><td>有限离散状态 <span class="katex-inline">$\{1,\dots,K\}$</span></td><td>结构化转移矩阵：翻 bit、换 token、吸收态 [MASK]</td><td>文本、类别、离散符号</td></tr>
-</tbody>
-</table>
-<p>机制差别：连续扩散靠「幅度衰减 + 高斯抖动」，离散扩散靠「按转移矩阵换状态」。
-D3PM 的关键设计是<strong>转移核怎么选</strong>——课件 source-054…058 展示了吸收态、均匀转移等核，以及在 text8 / LM1B 上的困惑度与采样速度曲线。</p>
-
-<h3 id="s6-2">6.2 LLaDA：先算一个被 mask 的句子 <span class="tag n">课件</span></h3>
-<p>先看课件 source-062 的预训练描述：随机把比例 <span class="katex-inline">$t\sim U[0,1]$</span> 的 token 遮住；
-SFT 时只遮 response token；采样时从 <span class="katex-inline">$t=1$</span>（全遮）走到 <span class="katex-inline">$t=0$</span>（全露出），
-每一步<strong>同时预测所有 mask</strong>，再灵活重遮。</p>
-<div class="ex">
-<p class="meta">一个 8-token 的手算例子</p>
-<p>句子 <code>The cat sat on the mat .</code>（7 个词 + 标点）。设 <span class="katex-inline">$t=0.5$</span>，按比例遮一半：</p>
-<p style="font-family:ui-monospace,monospace;background:var(--bg3);padding:10px 14px;border-radius:8px">
-t=0 → <span style="color:var(--accent)">The cat sat on the mat .</span><br>
-t=0.5 → [M] cat [M] on [M] mat .　（3/7 ≈ 0.43 被遮）<br>
-t=1 → [M] [M] [M] [M] [M] [M] [M]
-</p>
-<p>训练时模型只看被遮版本，要同时填回所有 [M]；采样时反过来，从全 [M] 开始一步步填。
-这和自回归「只能从左往右、一次一个 token」形成直接对比。</p>
-</div>
-<p>课件 source-031…032 的结论：LLaDA 的规模化趋势与同数据下的 AR baseline 有竞争力；
-source-065 的可视化里，颜色越深表示越晚被预测出来的 token——说明<strong>生成顺序不是左到右，而是由置信度决定</strong>。</p>
-
-<h3 id="s6-3">6.3 Dream 与 Mercury：任意顺序与产品化 <span class="tag n">课件</span></h3>
-<ul>
-<li><strong>Dream</strong>：扩散模型不受顺序约束，可任意顺序合成输出，从而支持更多样的用户查询（source-033）；还能控制解码行为（source-034）、复用已有自回归模型的权重做初始化（source-066/068）。</li>
-<li><strong>Mercury</strong>：Inception Labs 的产品化扩散语言模型（source-060），说明这条路线已经从论文走向可用产品。</li>
-</ul>
-
-<h3 id="s6-4">6.4 质量—速度权衡 <span class="tag n">课件</span></h3>
-<p>课件 source-035 直接给了质量—速度曲线，source-034 给了解码行为控制。把机制写成表：</p>
-<table>
-<thead><tr><th>维度</th><th>自回归 LM</th><th>扩散语言模型</th><th>机制</th></tr></thead>
-<tbody>
-<tr><td>生成顺序</td><td>固定左到右</td><td>任意顺序 / 同时预测</td><td>扩散按噪声水平而不是位置来分解</td></tr>
-<tr><td>并行度</td><td>每步一个 token</td><td>一步可填多个位置</td><td>并行改写的代价是重复重遮与多次迭代</td></tr>
-<tr><td>可控性</td><td>靠 prompt / 约束解码</td><td>可指定解码行为、填充任意位置</td><td>掩码位置本身成为控制变量</td></tr>
-<tr><td>速度—质量</td><td>步数 = 序列长度</td><td>步数可调，少步会掉质量</td><td>迭代次数是显式的质量旋钮</td></tr>
-</tbody>
-</table>
-
 <h2 id="s7">§7 一页主线 <span class="tag a">推导</span></h2>
 <div class="box key">
 <span class="label">从向量场到语言模型</span>
@@ -714,15 +713,15 @@ source-065 的可视化里，颜色越深表示越晚被预测出来的 token—
 <thead><tr><th style="width:70px">页</th><th>内容摘要</th><th>对应小节</th></tr></thead>
 <tbody>
 <tr><td>p1</td><td>空白页（棕色封面）</td><td>—</td></tr>
-<tr><td>p2</td><td>Diffusion model 标题；Basic and prob def；文本/图像/视频/分子四种对象；生成框图；Flow model：trajectory、vector fields、ODE</td><td>§1.1–1.2、§2.1、§2.2</td></tr>
+<tr><td>p2</td><td>Diffusion model 标题；Basic and prob def；文本/图像/视频/分子四种对象；生成框图；Flow model：trajectory、vector fields、ODE</td><td>§1.1、§2.1、§2.2</td></tr>
 <tr><td>p3</td><td>ODE <span class="katex-inline">$\mathrm dX_t/\mathrm dt=u_t(X_t)$</span>；Flow matching <span class="katex-inline">$\varphi$</span>；flow = collections of ODE solutions；Picard–Lindelöf 开头</td><td>§2.2–2.3</td></tr>
 <tr><td>p4</td><td>Lipschitz 条件；线性 ODE 例子 <span class="katex-inline">$u_t(x)=-\theta x$</span> 及证明；Numerical ODE simulation / Euler 方法</td><td>§2.3–2.4、§3.1</td></tr>
-<tr><td>p5</td><td>Euler 续；学到的 <span class="katex-inline">$u_t^\theta$</span>；生成框图；「不确定性 smooth」；ODE → SDE；Diffusion models / Stochastic Process 开头</td><td>§3.1–3.3、§4.2</td></tr>
-<tr><td>p6</td><td>随机轨迹图；vector field + <span class="katex-inline">$\sigma_t$</span>；ODE 噪声注入；SDE <span class="katex-inline">$\mathrm dX_t=u_t\mathrm dt+\sigma_t\mathrm dW_t$</span>；布朗运动三条性质</td><td>§4.1–4.2</td></tr>
+<tr><td>p5</td><td>Euler 续；学到的 <span class="katex-inline">$u_t^\theta$</span>；生成框图；「不确定性 smooth」；ODE → SDE；Diffusion models / Stochastic Process 开头</td><td>§3.1–3.3、§4.1</td></tr>
+<tr><td>p6</td><td>随机轨迹图；vector field + <span class="katex-inline">$\sigma_t$</span>；ODE 噪声注入；SDE <span class="katex-inline">$\mathrm dX_t=u_t\mathrm dt+\sigma_t\mathrm dW_t$</span>；布朗运动三条性质</td><td>§4.1–4.2（先 SDE 方程，再布朗性质）</td></tr>
 <tr><td>p7</td><td><span class="katex-inline">$\mathrm dX_t$</span> 是记号（Itô）；差分展开；<span class="katex-inline">$\mathrm dW_t$</span> 的随机增量；SDE 存在唯一性；Euler–Maruyama</td><td>§4.3–4.4</td></tr>
 <tr><td>p8</td><td>OU 过程例子与轨迹图；Song–Yang diffusion model；<span class="katex-inline">$(u_t^\theta,\sigma_t)$</span>；backbone 图</td><td>§4.5–4.6、§5.1</td></tr>
-<tr><td>p9</td><td>DDPM 标题；AE / VAE history；(V)AE 两条分支；DDPM 链；D3PM；Diffusion LM；Forward Process 开头与 <span class="katex-inline">$P(x_i\mid x_{i-1})$</span></td><td>§5.1–5.3、§6.1</td></tr>
-<tr><td>p10</td><td><span class="katex-inline">$\beta_i$</span>、<span class="katex-inline">$\alpha_i$</span> 定义；递推展开；高斯线性组合；闭式 <span class="katex-inline">$\bar\alpha_i$</span>；Reverse Denoising 开头</td><td>§5.3–5.5</td></tr>
+<tr><td>p9</td><td>DDPM 标题；AE / VAE history；(V)AE 两条分支；DDPM 链；D3PM；Diffusion LM；Forward Process 开头与 <span class="katex-inline">$P(x_i\mid x_{i-1})$</span></td><td>§5.1–5.4、§6.1</td></tr>
+<tr><td>p10</td><td><span class="katex-inline">$\beta_i$</span>、<span class="katex-inline">$\alpha_i$</span> 定义；递推展开；高斯线性组合；闭式 <span class="katex-inline">$\bar\alpha_i$</span>；Reverse Denoising 开头</td><td>§6.1–6.3</td></tr>
 <tr><td>p11</td><td>空白页</td><td>—</td></tr>
 </tbody>
 </table>
@@ -736,8 +735,8 @@ source-065 的可视化里，颜色越深表示越晚被预测出来的 token—
 <tr><td>p4 线性 ODE</td><td><span class="katex-inline">$\varphi_t(x_0)=e^{+\theta t}x_0$</span>（负号淡）</td><td><span class="katex-inline">$e^{-\theta t}x_0$</span></td><td>下一行证明用 <span class="katex-inline">$-\theta e^{-\theta t}$</span>；且 <span class="katex-inline">$\theta>0$</span> 需收缩</td></tr>
 <tr><td>p7 布朗增量</td><td><span class="katex-inline">$\mathcal N(0,(t-s)I_d\,\vert)$</span></td><td><span class="katex-inline">$\mathcal N(0,(t-s)I_d)$</span></td><td>标准 Wiener 过程定义</td></tr>
 <tr><td>p7 Euler 差分</td><td><span class="katex-inline">$hR_t(h)$</span> 下标写像 <span class="katex-inline">$R_t(X_t)$</span></td><td><span class="katex-inline">$hR_t(h),\ R_t(h)\to0$</span></td><td>一阶 Taylor 余项只依赖 <span class="katex-inline">$h$</span></td></tr>
-<tr><td>p9–p10 β 参数化</td><td><span class="katex-inline">$\sqrt{1-\beta_i^2}$</span>、<span class="katex-inline">$\beta_i^2 I_d$</span></td><td><strong>保留原样</strong>，另附主流记号对照</td><td>老师把 <span class="katex-inline">$\beta_i$</span> 当标准差，内部自洽（§5.3）</td></tr>
-<tr><td>p10 闭式系数</td><td><span class="katex-inline">$\bar\alpha_i=\prod\sqrt{1-\beta_k^2}$</span></td><td>保留，并补 <span class="katex-inline">$\sqrt{1-\bar\alpha_i^2}$</span> 的裂项证明</td><td>方差求和 <span class="katex-inline">$=1-\bar\alpha_i^2$</span>（§5.4）</td></tr>
+<tr><td>p9–p10 β 参数化</td><td><span class="katex-inline">$\sqrt{1-\beta_i^2}$</span>、<span class="katex-inline">$\beta_i^2 I_d$</span></td><td><strong>保留原样</strong>，另附主流记号对照</td><td>老师把 <span class="katex-inline">$\beta_i$</span> 当标准差，内部自洽（§6.1）</td></tr>
+<tr><td>p10 闭式系数</td><td><span class="katex-inline">$\bar\alpha_i=\prod\sqrt{1-\beta_k^2}$</span></td><td>保留，并补 <span class="katex-inline">$\sqrt{1-\bar\alpha_i^2}$</span> 的裂项证明</td><td>方差求和 <span class="katex-inline">$=1-\bar\alpha_i^2$</span>（§6.2）</td></tr>
 <tr><td>p10 reverse</td><td><span class="katex-inline">$P_\theta(x_{i-1}\mid x_i)$</span>（只写开头）</td><td>保留，补两条 Markov 链定义</td><td>课件 source-051</td></tr>
 <tr><td>p2 <span class="katex-inline">$P(\text{data}\mid\mid\beta_0)$</span></td><td>符号难辨</td><td><strong>保留原样，标疑</strong></td><td>不参与任何推导，不擅自改成 <span class="katex-inline">$p(\text{data}\mid y)$</span></td></tr>
 </tbody>
@@ -748,12 +747,12 @@ source-065 的可视化里，颜色越深表示越晚被预测出来的 token—
 <table>
 <thead><tr><th>主题</th><th>幻灯片</th><th>本笔记用法</th></tr></thead>
 <tbody>
-<tr><td>直觉：加噪容易、去噪难</td><td>source-002…030</td><td>§1、§3.3、§5.5 的图源</td></tr>
-<tr><td>训练 / 采样动画</td><td>source-016…029</td><td>§5.5 动画叙述</td></tr>
+<tr><td>直觉：加噪容易、去噪难</td><td>source-002…030</td><td>§1、§3.3、§6.3 的图源</td></tr>
+<tr><td>训练 / 采样动画</td><td>source-016…029</td><td>§6.3 动画叙述</td></tr>
 <tr><td>AE / VAE / VQ-VAE</td><td>source-037…048</td><td>§5.1 的结构图与表</td></tr>
 <tr><td>DDPM 定义与 Markov 链</td><td>source-049…053</td><td>§5.2 的形式化</td></tr>
-<tr><td>D3PM 离散扩散</td><td>source-054…058</td><td>§6.1</td></tr>
-<tr><td>Mercury / LLaDA / Dream</td><td>source-059…068</td><td>§6.2–6.4</td></tr>
+<tr><td>D3PM 离散扩散</td><td>source-054…058</td><td>§5.3</td></tr>
+<tr><td>Mercury / LLaDA / Dream</td><td>source-059…068</td><td>§5.4–5.6</td></tr>
 <tr><td>参考文献</td><td>slide-69</td><td>Stanford EE367 lecture12、rg2023-ddpm-slides、Dream / LLaDA 官方页</td></tr>
 </tbody>
 </table>
